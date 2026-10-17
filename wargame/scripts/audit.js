@@ -132,6 +132,16 @@ const NOT_PLANTED = {
   t3_osint_ci_cd_webhook_secret: 'asks for CI/CD secret token leakage in public VCS; Git repository secret finding concept, not this page',
   t3_dfir_network_host_containment_api: 'asks for EDR host containment API; management console is an enterprise endpoint server, not this page',
   t3_dfir_browser_history_session_hijack: 'analyzes infostealer SQLite cookie file artifacts, not this page cookie',
+  t1_extsec_manifest_json_permissions_audit: 'analyzes manifest.json cookies and overprivileged permissions, not this page cookie',
+  t1_extsec_isolated_world_shared_dom_concept: 'analyzes isolated world JS heap and shared DOM concept, not this page DOM',
+  t2_extsec_content_script_innerhtml_dom_xss: 'analyzes content script postMessage innerHTML DOM sink, not this page DOM',
+  t2_extsec_keystroke_and_password_sniffing: 'analyzes password input event sniffing patterns in extensions, not this page DOM',
+  t3_extsec_cookie_theft_and_session_hijacking: 'analyzes chrome.cookies API session theft scenarios, not this page cookie',
+  t3_extsec_stealthy_iframe_injection_and_clickjacking: 'analyzes extension DOM iframe injection and clickjacking, not this page DOM',
+  t3_extsec_dompurify_and_trusted_types_enforcement: 'analyzes Trusted Types and DOMPurify DOM sanitization, not this page DOM',
+  t3_extsec_crx_package_decompilation_and_static_analysis: 'analyzes CRX3 package AST parsing for chrome.cookies, not this page cookie',
+  t4_extsec_multi_extension_privilege_escalation_chain: 'analyzes cross-extension messaging confused deputy chains for cookies, not this page cookie',
+  t4_extsec_anti_analysis_techniques_in_malicious_extensions: 'analyzes DevTools detection and debugger evasion in extensions, not this page console',
 };
 
 const aBad = [], aRows = [];

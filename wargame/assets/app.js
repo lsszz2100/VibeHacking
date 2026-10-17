@@ -882,6 +882,7 @@
     initDfir();
     renderSbom("dep_confusion");
     renderServerless("event_inject");
+    renderCloudIR("cloudtrail_audit");
   }
 
   function hidePlayground(){
@@ -892,7 +893,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -2766,6 +2767,265 @@
     verdictOut.textContent = verdictText;
   }
 
+  /* ===== 13. Cloud IR & VPC Flow Logs Inspector ===== */
+  let currentCloudIRScenario = "cloudtrail_audit";
+
+  function renderCloudIR(scenario){
+    if (scenario) currentCloudIRScenario = scenario;
+    const filterEl = document.getElementById("cloudirFilterInput");
+    const sourceEl = document.getElementById("cloudirSourceSelect");
+    const traceBadge = document.getElementById("cloudirTraceBadge");
+    const verdictBadge = document.getElementById("cloudirVerdictBadge");
+    const traceOut = document.getElementById("cloudirTraceOutput");
+    const verdictOut = document.getElementById("cloudirVerdictOutput");
+
+    if (!filterEl || !sourceEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario === "cloudtrail_audit"){
+      filterEl.value = "eventSource:iam.amazonaws.com AND eventName:AttachUserPolicy";
+      sourceEl.value = "cloudtrail_mgmt";
+    } else if (scenario === "sts_exfil"){
+      filterEl.value = "bucketName:corp-customer-pii-vault AND httpStatus:200";
+      sourceEl.value = "s3_data_access";
+    } else if (scenario === "vpc_c2"){
+      filterEl.value = "srcaddr:10.0.4.15 AND dstport:8443";
+      sourceEl.value = "vpc_netflow";
+    } else if (scenario === "soar_contain"){
+      filterEl.value = "severity >= 8.0 AND status:ACTIVE";
+      sourceEl.value = "guardduty_asff";
+    }
+
+    const mode = currentCloudIRScenario;
+    let traceText = "";
+    let verdictText = "";
+
+    if (mode === "cloudtrail_audit"){
+      traceText =
+        "[CloudTrail Management Event Trace (Athena Partition Filter)]:\n" +
+        "  Event ID: evt-99482-admin-escalation\n" +
+        "  Event Time: 2026-10-17T02:44:19Z\n" +
+        "  Event Name: AttachUserPolicy\n" +
+        "  Event Source: iam.amazonaws.com\n" +
+        "  Source IP: 198.51.100.77 (⚠️ Unknown External IP / Non-RFC1918)\n" +
+        "  User Agent: aws-cli/2.15.15 Python/3.11.6 Linux/6.5.0-kali3-amd64\n" +
+        "  Target User: backup-svc-account\n" +
+        "  Attached Policy: arn:aws:iam::aws:policy/AdministratorAccess\n" +
+        "  MFA Authenticated: false (Direct API invocation)";
+      verdictText =
+        "[Control Plane Anomaly Detection Verdict]:\n" +
+        "  - Privilege Delta: Low-priv service account -> Full Cloud Admin\n" +
+        "  - Threat Classification: Initial Access & Persistence (MITRE T1078.004 / T1098)\n" +
+        "  - Immediate Risk: Account-wide total resource takeover\n" +
+        "Verdict: 🚨 CRITICAL: UNAUTHORIZED PRIVILEGE ESCALATION VIA CLOUDTRAIL";
+      traceBadge.textContent = "CLOUDTRAIL: ANOMALY";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "ATTACK: PRIV ESC";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "sts_exfil"){
+      traceText =
+        "[Amazon S3 Access Log & STS Session Correlation]:\n" +
+        "  Bucket: s3://corp-customer-pii-vault\n" +
+        "  Requester Identity: arn:aws:sts::123456789012:assumed-role/DataSyncRole/exfil-session-shadow-ops\n" +
+        "  STS Access Key ID: ASIA99CLOUDEXFIL2026 (Ephemeral Credential)\n" +
+        "  Client IP: 198.51.100.77\n" +
+        "  Exfiltrated Objects:\n" +
+        "    - customer_ssn_2026.parquet (18.45 MB) -> HTTP 200 OK\n" +
+        "    - financial_records_q3.csv (14.21 MB) -> HTTP 200 OK\n" +
+        "    - private_keys_backup.tar.gz (14.63 MB) -> HTTP 200 OK\n" +
+        "  Total Exfiltration Volume: 47.29 MB (3 objects, 100% successful)";
+      verdictText =
+        "[S3 Data Exfiltration Forensic Assessment]:\n" +
+        "  - Stolen Credential Vector: Instance metadata (IMDSv1) scraping\n" +
+        "  - Scope: Regulatory PII & Corporate Cryptographic Keys\n" +
+        "  - Impact: Major regulatory breach (GDPR / HIPAA / PIPA)\n" +
+        "Verdict: 🚨 S3 VAULT EXFILTRATION TRACED TO COMPROMISED STS SESSION";
+      traceBadge.textContent = "S3 ACCESS: EXFILTRATED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "DATA LEAK: 47.3 MB";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "vpc_c2"){
+      traceText =
+        "[VPC Flow Logs Network Correlation (ENI eni-0feebda123456789c)]:\n" +
+        "  Internal Infected Host: 10.0.4.15 (Private Subnet)\n" +
+        "  External Destination IP: 203.0.113.89 (Threat Intel Known C2)\n" +
+        "  Destination Port: 8443 (TCP Protocol 6)\n" +
+        "  Recorded Flow Sessions:\n" +
+        "    - 00:16:40: 10.0.4.15:49152 -> 203.0.113.89:8443 (24 pkts, 8192 bytes, ACCEPT OK)\n" +
+        "    - 00:17:41: 10.0.4.15:49153 -> 203.0.113.89:8443 (24 pkts, 8192 bytes, ACCEPT OK) [Δt = 61s]\n" +
+        "    - 00:18:39: 10.0.4.15:49154 -> 203.0.113.89:8443 (24 pkts, 8192 bytes, ACCEPT OK) [Δt = 58s]\n" +
+        "    - 00:19:40: 10.0.4.15:49155 -> 203.0.113.89:8443 (24 pkts, 8192 bytes, ACCEPT OK) [Δt = 61s]\n" +
+        "    - 00:20:42: 10.0.4.15:49156 -> 203.0.113.89:8443 (24 pkts, 8192 bytes, ACCEPT OK) [Δt = 62s]\n" +
+        "  Statistical Variance: Mean = 60.5s, Jitter StdDev = 1.66s (High periodicity)";
+      verdictText =
+        "[Network Behavioral Threat Correlation]:\n" +
+        "  - Protocol: Encrypted Outbound C2 Heartbeat Session\n" +
+        "  - Beacon Classification: Cobalt Strike / Mythic Agent Profile\n" +
+        "  - Immediate Containment Action: Revoke egress routes & quarantine SG\n" +
+        "Verdict: 📡 PERIODIC C2 BEACON CONFIRMED ACROSS VPC FLOW LOGS";
+      traceBadge.textContent = "VPC FLOW: C2 BEACON";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "BEACON: 60s INTERVAL";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else { // soar_contain
+      traceText =
+        "[GuardDuty Active Findings (ASFF Standard)]:\n" +
+        "  Finding 1: UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS (Sev: 8.0)\n" +
+        "  Finding 2: Trojan:EC2/DNSDataExfiltration (Sev: 8.5)\n" +
+        "[Automated SOAR Multi-Layer Containment Playbook Triggered]:\n" +
+        "  ✓ [IAM Layer] Attached Inline Revocation: aws:TokenIssueTime < 2026-10-17T03:30:00Z\n" +
+        "  ✓ [SCP Layer] Enforced Explicit Deny Permission Boundary on DataSyncRole\n" +
+        "  ✓ [Network Layer] Replaced ENI SGs with sg-quarantine (0.0.0.0/0 blocked)\n" +
+        "  ✓ [Forensic Layer] Captured immutable EBS snapshot snap-forensic-20261017";
+      verdictText =
+        "[SOAR Containment Execution Summary]:\n" +
+        "  - Stolen STS Token Status: REVOKED (All subsequent calls fail with 403)\n" +
+        "  - C2 Egress Channel: TERMINATED (TCP resets injected by quarantine SG)\n" +
+        "  - Evidence Preservation: COMPLETE (EBS snapshot encrypted with forensic CMK)\n" +
+        "  - Containment Status: 100% CONTAINED\n" +
+        "Verdict: 🟢 MULTI-LAYER CLOUD SOAR CONTAINMENT PLAYBOOK EXECUTED";
+      traceBadge.textContent = "SOAR: EXECUTED";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "INCIDENT: CONTAINED";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
+  /* ===== 14. Browser Extension Security Inspector ===== */
+  let currentExtSecScenario = "manifest_audit";
+
+  function renderExtSec(scenario){
+    if (scenario) currentExtSecScenario = scenario;
+    const targetEl = document.getElementById("extsecTargetInput");
+    const auditEl = document.getElementById("extsecAuditVectorSelect");
+    const traceBadge = document.getElementById("extsecTraceBadge");
+    const verdictBadge = document.getElementById("extsecVerdictBadge");
+    const traceOut = document.getElementById("extsecTraceOutput");
+    const verdictOut = document.getElementById("extsecVerdictOutput");
+
+    if (!targetEl || !auditEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario === "manifest_audit"){
+      targetEl.value = "chrome-extension://corp-extension/manifest.json";
+      auditEl.value = "manifest_perms";
+    } else if (scenario === "war_leak"){
+      targetEl.value = "chrome-extension://corp-extension/assets/auth_config.json";
+      auditEl.value = "war_resources";
+    } else if (scenario === "dom_xss"){
+      targetEl.value = "chrome-extension://corp-extension/content.js";
+      auditEl.value = "content_script_sinks";
+    } else if (scenario === "dnr_harden"){
+      targetEl.value = "chrome-extension://corp-extension/rules.json";
+      auditEl.value = "dnr_csp_posture";
+    }
+
+    const mode = currentExtSecScenario;
+    let traceText = "";
+    let verdictText = "";
+
+    if (mode === "manifest_audit"){
+      traceText =
+        "[Manifest V3 Security Audit (manifest.json)]:\n" +
+        "  Extension Name: Corporate Productivity Suite (v1.4.2)\n" +
+        "  Manifest Version: 3\n" +
+        "  Background Context: Service Worker (background.js, type: module)\n" +
+        "  Requested Permissions:\n" +
+        "    - <all_urls> (🚨 Overprivileged Host Access)\n" +
+        "    - webRequestBlocking (⚠️ Disallowed blocking mode in MV3)\n" +
+        "    - cookies (⚠️ Unrestricted cross-origin cookie access)\n" +
+        "    - storage, tabs\n" +
+        "  Host Permissions: ['*://*/*']\n" +
+        "  Audit Finding: Overprivileged wildcard origin and legacy blocking permissions.";
+      verdictText =
+        "[Permission Posture Analysis]:\n" +
+        "  - Host Scope: ENTIRE WEB (Zero domain fencing)\n" +
+        "  - Risk: Silent DOM exfiltration across all user-visited domains\n" +
+        "  - Background Worker: Ephemeral event-driven worker without state persistence\n" +
+        "Verdict: 🚨 CRITICAL: OVERPRIVILEGED MANIFEST PERMISSIONS IDENTIFIED";
+      traceBadge.textContent = "MANIFEST: HIGH RISK";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "AUDIT: FAILED";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "war_leak"){
+      traceText =
+        "[Web Accessible Resources (WAR) Cross-Context Probe]:\n" +
+        "  Target File: chrome-extension://corp-extension/assets/auth_config.json\n" +
+        "  Declared Scope in Manifest: resources: ['assets/auth_config.json'], matches: ['<all_urls>']\n" +
+        "  Extracted JSON Payload:\n" +
+        "    {\n" +
+        "      \"extension_id\": \"pwned_corp_extension_id_9988\",\n" +
+        "      \"sso_client_id\": \"vibe-corp-client-prod\",\n" +
+        "      \"master_token\": \"EXT_AUTH_TOKEN_779922AA\",\n" +
+        "      \"telemetry_endpoint\": \"https://telemetry.internal.corp/collect\"\n" +
+        "    }\n" +
+        "  Extraction Method: External web origin fetch() without authentication";
+      verdictText =
+        "[Cross-Origin Resource Assessment]:\n" +
+        "  - Root Cause: Wildcard '<all_urls>' match pattern in web_accessible_resources\n" +
+        "  - Impact: Hardcoded master authentication secret compromised\n" +
+        "  - Mitigation: Scope to specific trusted origins and enable use_dynamic_url\n" +
+        "Verdict: 🔓 WAR SECRET EXFILTRATED VIA UNRESTRICTED MATCH PATTERN";
+      traceBadge.textContent = "WAR: LEAKED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "SECRET: EXT_AUTH_TOKEN";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "dom_xss"){
+      traceText =
+        "[Content Script Injection & Sinks Analysis (content.js)]:\n" +
+        "  Target Script: content.js (Runs in Isolated World on corporate pages)\n" +
+        "  Vulnerable PostMessage Handler:\n" +
+        "    window.addEventListener('message', (event) => {\n" +
+        "      if (event.data?.type === 'RENDER_PROMO') {\n" +
+        "        // VULNERABLE: Direct innerHTML assignment from external origin\n" +
+        "        promoDiv.innerHTML = event.data.htmlPayload;\n" +
+        "      }\n" +
+        "    });\n" +
+        "  Credential Interception Sniffer:\n" +
+        "    input[type='password'].addEventListener('input', (e) => {\n" +
+        "      chrome.storage.local.set({ harvested_password: e.target.value });\n" +
+        "    });";
+      verdictText =
+        "[Content Script Vulnerability Assessment]:\n" +
+        "  - DOM Sink: promoDiv.innerHTML (DOM-based XSS via postMessage)\n" +
+        "  - Origin Verification: MISSING (Accepts postMessage from any web page)\n" +
+        "  - Malicious Sniffer: In-line keystroke harvesting on password fields\n" +
+        "Verdict: 💉 CONTENT SCRIPT DOM XSS & CREDENTIAL SNIFFING CONFIRMED";
+      traceBadge.textContent = "CONTENT SCRIPT: VULNERABLE";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "SINK: innerHTML XSS";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else { // dnr_harden
+      traceText =
+        "[ExtensionGuard Defense-in-Depth Hardening Applied]:\n" +
+        "  ✓ [Network Layer] Replaced webRequestBlocking with Declarative Net Request (DNR)\n" +
+        "  ✓ [Resource Layer] Scoped web_accessible_resources to 'https://*.internal.corp/*'\n" +
+        "  ✓ [Isolation Layer] Enforced strict Isolated World; removed innerHTML sinks\n" +
+        "  ✓ [CSP Layer] Enforced script-src 'self'; object-src 'self'; (Zero dynamic eval)";
+      verdictText =
+        "[ExtensionGuard Compliance & Security Summary]:\n" +
+        "  - Declarative Net Request: ACTIVE (Zero synchronous thread blocking)\n" +
+        "  - WAR Resource Access: RESTRICTED & DYNAMIC URL ENABLED\n" +
+        "  - DOM Sanitization: DOMPurify enforced; password sniffing eradicated\n" +
+        "  - Remote Code Execution: 100% BLOCKED by Extension CSP\n" +
+        "Verdict: 🟢 100% EXTENSIONGUARD HARDENED POSTURE ENFORCED";
+      traceBadge.textContent = "DNR & CSP: ENFORCED";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "STATUS: HARDENED";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -3045,6 +3305,10 @@
         openPlayground("sbom"); break;
       case "serverless": case "lambda": case "faas": case "warm": case "eventsec": case "firecracker":
         openPlayground("serverless"); break;
+      case "cloudir": case "cloudtrail": case "vpcflow": case "guardduty": case "soar": case "cloudforensics":
+        openPlayground("cloudir"); break;
+      case "extsec": case "manifestv3": case "contentscript": case "dnr": case "war":
+        openPlayground("extsec"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -3573,6 +3837,46 @@
       audio();
       const p = btn.getAttribute("data-serverless-preset");
       renderServerless(p);
+    });
+  });
+
+  // Cloud IR Inspector Controls
+  const cloudirRunBtn = document.getElementById("btnRunCloudIRSim");
+  if (cloudirRunBtn) cloudirRunBtn.addEventListener("click", () => { audio(); renderCloudIR(); });
+  const cloudirSoarBtn = document.getElementById("btnEnforceCloudIRSoar");
+  if (cloudirSoarBtn) cloudirSoarBtn.addEventListener("click", () => {
+    audio();
+    renderCloudIR("soar_contain");
+  });
+  const cloudirFilterInput = document.getElementById("cloudirFilterInput");
+  if (cloudirFilterInput) cloudirFilterInput.addEventListener("input", () => renderCloudIR());
+  const cloudirSourceSelect = document.getElementById("cloudirSourceSelect");
+  if (cloudirSourceSelect) cloudirSourceSelect.addEventListener("change", () => renderCloudIR());
+  document.querySelectorAll("[data-cloudir-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-cloudir-preset");
+      renderCloudIR(p);
+    });
+  });
+
+  // Browser Extension Security Inspector Controls
+  const extsecRunBtn = document.getElementById("btnRunExtSecSim");
+  if (extsecRunBtn) extsecRunBtn.addEventListener("click", () => { audio(); renderExtSec(); });
+  const extsecHardenBtn = document.getElementById("btnEnforceExtSecHarden");
+  if (extsecHardenBtn) extsecHardenBtn.addEventListener("click", () => {
+    audio();
+    renderExtSec("dnr_harden");
+  });
+  const extsecTargetInput = document.getElementById("extsecTargetInput");
+  if (extsecTargetInput) extsecTargetInput.addEventListener("input", () => renderExtSec());
+  const extsecAuditVectorSelect = document.getElementById("extsecAuditVectorSelect");
+  if (extsecAuditVectorSelect) extsecAuditVectorSelect.addEventListener("change", () => renderExtSec());
+  document.querySelectorAll("[data-extsec-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-extsec-preset");
+      renderExtSec(p);
     });
   });
 

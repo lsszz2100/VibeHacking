@@ -72,6 +72,8 @@ docker-compose --version
 | 40 | [엔터프라이즈 침해사고 대응 & DFIR 실전 랩](./40_enterprise_dfir_ir_lab/) | 프로세스 트리 트리아지, VAD 인메모리 주입 탐지, NTFS $MFT 타임라인 재구성, C2 통신 격리 & SOAR 대응 | ★★★★★ | [44장 침해 대응](../44_Incident_Response_DFIR/09_live_triage_memory_timeline_and_anti_forensics_deepdive.md) | `dfir` / `dfir` |
 | 41 | [소프트웨어 공급망 보안 & SBOM 실전 랩](./41_supply_chain_security_lab/) | Dependency Confusion 탐지, Actions Pwn Request 감사, CycloneDX 1.6 vs SPDX 3.0 VEX, SLSA L3 & Cosign Rekor | ★★★★★ | [35장 공급망 공격](../35_Supply_Chain_Attacks/07_advanced_software_supply_chain_and_slsa_deepdive.md) | `sbom` / `supplychain` |
 | 42 | [서버리스 클라우드 보안 & 이벤트 인젝션 랩](./42_serverless_security_lab/) | S3 이벤트 인젝션 RCE, Warm Container /tmp 영속성 & 세션 토큰 탈취, 과도한 IAM AssumeRole 권한 상승, 런타임 하드닝 | ★★★★★ | [53장 서버리스 보안](../53_Serverless_Security/07_serverless_event_injection_and_lambda_runtime_deepdive.md) | `serverless` / `cloud` |
+| 43 | [클라우드 사고 대응 & 위협 헌팅 랩](./43_cloud_incident_response_lab/) | CloudTrail 감사 로그 분석 & AttachUserPolicy 권한 상승 식별, STS 토큰 유출 S3 데이터 유출 복원, VPC Flow Logs C2 비콘 상관분석, GuardDuty & SOAR 격리 | ★★★★★ | [58장 클라우드 사고 대응](../58_Cloud_IR/07_enterprise_cloudtrail_and_vpc_flow_logs_forensics_deepdive.md) | `cloudir` / `cloud` |
+| 44 | [브라우저 확장 프로그램 보안 & Manifest V3 실전 랩](./44_browser_extension_security_lab/) | Manifest V3 권한 명세 & 백그라운드 서비스 워커 감사, WAR 토큰 유출, Content Script DOM innerHTML XSS & 패스워드 스니핑, DNR 마이그레이션 & CSP 하드닝 | ★★★★★ | [51장 브라우저 확장 프로그램](../51_Browser_Extension_Security/07_manifest_v3_message_passing_and_content_script_deepdive.md) | `extsec` / `web` |
 
 ---
 

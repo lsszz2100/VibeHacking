@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  cloud-ir-lab:
+    build: .
+    container_name: vibehacking-lab43-cloudir
+    ports:
+      - "127.0.0.1:8043:8043"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=43"

@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1960</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2030</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -102,6 +102,8 @@
     <button class="chip" data-cmd="dbshield">dbshield</button>
     <button class="chip" data-cmd="crypto">crypto</button>
     <button class="chip" data-cmd="serverless">serverless</button>
+    <button class="chip" data-cmd="cloudir">cloudir</button>
+    <button class="chip" data-cmd="extsec">extsec</button>
     <button class="chip" data-cmd="ls">ls</button>
     <button class="chip" data-cmd="tracks">tracks</button>
     <button class="chip" data-cmd="map">map</button>
@@ -156,6 +158,8 @@
         <button class="pg-tab" data-tab="dfir">🚨 DFIR Live Triage &amp; Timeline</button>
         <button class="pg-tab" data-tab="sbom">🧬 SBOM &amp; Supply Chain Inspector</button>
         <button class="pg-tab" data-tab="serverless">⚡ Serverless &amp; Warm Container</button>
+        <button class="pg-tab" data-tab="cloudir">☁️ Cloud IR &amp; VPC Flow</button>
+        <button class="pg-tab" data-tab="extsec">🧩 Browser Extension Security</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -716,6 +720,90 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="serverlessVerdictBadge" class="token-tag token-inj">VERDICT: VULNERABLE</span>
                 </div>
                 <div id="serverlessVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cloud IR & VPC Flow Logs Inspector Panel -->
+        <div id="pgPanel-cloudir" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Cloud IR &amp; Threat Hunting Presets:</span>
+              <button class="pg-btn danger" data-cloudir-preset="cloudtrail_audit">1. CloudTrail Anomaly (AttachUserPolicy Admin Escalation)</button>
+              <button class="pg-btn danger" data-cloudir-preset="sts_exfil">2. Stolen STS Session (S3 PII Vault Exfiltration)</button>
+              <button class="pg-btn danger" data-cloudir-preset="vpc_c2">3. VPC Flow Logs (Periodic 60s Jitter C2 Beacon)</button>
+              <button class="pg-btn" data-cloudir-preset="soar_contain">4. 🛡️ GuardDuty &amp; Automated SOAR Multi-Layer Containment</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <span class="dim" style="font-size:11px;">Telemetry Query / Filter:</span>
+              <input id="cloudirFilterInput" class="bgp-asn-input" style="width:230px;" value="eventSource:iam.amazonaws.com AND eventName:AttachUserPolicy" />
+              <span class="dim" style="font-size:11px;">Telemetry Source:</span>
+              <select id="cloudirSourceSelect" class="bgp-select" style="width:240px;">
+                <option value="cloudtrail_mgmt">AWS CloudTrail (Management Plane Events)</option>
+                <option value="s3_data_access">Amazon S3 Access Logs (PII Data Vault)</option>
+                <option value="vpc_netflow">VPC Flow Logs (Private Subnet ENI)</option>
+                <option value="guardduty_asff">GuardDuty &amp; ASFF Threat Findings</option>
+              </select>
+              <button id="btnRunCloudIRSim" class="pg-btn primary">☁️ Triage Telemetry</button>
+              <button id="btnEnforceCloudIRSoar" class="pg-btn danger">🛡️ Execute SOAR Containment</button>
+            </div>
+            <div class="dbshield-grid" style="margin-top:8px;">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>☁️ CloudTrail, S3 Data Access &amp; VPC NetFlow Telemetry</span>
+                  <span id="cloudirTraceBadge" class="token-tag token-inj">STATUS: UNTRIAGED</span>
+                </div>
+                <div id="cloudirTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ GuardDuty Correlation &amp; SOAR Automated Containment</span>
+                  <span id="cloudirVerdictBadge" class="token-tag token-inj">VERDICT: UNCONTAINED</span>
+                </div>
+                <div id="cloudirVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Browser Extension Security & Manifest V3 Inspector Panel -->
+        <div id="pgPanel-extsec" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Extension Security Presets:</span>
+              <button class="pg-btn danger" data-extsec-preset="manifest_audit">1. Manifest V3 Audit (&lt;all_urls&gt; &amp; Service Worker)</button>
+              <button class="pg-btn danger" data-extsec-preset="war_leak">2. WAR Token Leak (auth_config.json Master Secret)</button>
+              <button class="pg-btn danger" data-extsec-preset="dom_xss">3. Content Script DOM XSS &amp; Password Sniffer</button>
+              <button class="pg-btn" data-extsec-preset="dnr_harden">4. 🛡️ Declarative Net Request &amp; Strict CSP Hardening</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <span class="dim" style="font-size:11px;">Target URI / Component:</span>
+              <input id="extsecTargetInput" class="bgp-asn-input" style="width:230px;" value="chrome-extension://corp-extension/manifest.json" />
+              <span class="dim" style="font-size:11px;">Audit Scope:</span>
+              <select id="extsecAuditVectorSelect" class="bgp-select" style="width:240px;">
+                <option value="manifest_perms">Manifest V3 Permissions &amp; Service Worker</option>
+                <option value="war_resources">Web Accessible Resources (WAR) Cross-Context Probe</option>
+                <option value="content_script_sinks">Content Script DOM Injections &amp; Credential Sniffer</option>
+                <option value="dnr_csp_posture">Declarative Net Request (DNR) Ruleset &amp; Extension CSP</option>
+              </select>
+              <button id="btnRunExtSecSim" class="pg-btn primary">🧩 Audit Extension</button>
+              <button id="btnEnforceExtSecHarden" class="pg-btn danger">🛡️ Apply Extension Hardening</button>
+            </div>
+            <div class="dbshield-grid" style="margin-top:8px;">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🧩 Extension Manifest, WAR &amp; Content Script Telemetry</span>
+                  <span id="extsecTraceBadge" class="token-tag token-inj">STATUS: UNTRIAGED</span>
+                </div>
+                <div id="extsecTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ Exploitation Verdict &amp; ExtensionGuard Posture</span>
+                  <span id="extsecVerdictBadge" class="token-tag token-inj">VERDICT: UNPROTECTED</span>
+                </div>
+                <div id="extsecVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>

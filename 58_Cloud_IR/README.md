@@ -2,7 +2,7 @@
 
 > 🌤️ **VibeHacking 교재 섹션 58**
 > - **CLI 학습**: `python3 vhack.py study 58`
-> - **연계 실습 랩**: [Lab 08: AI/LLM 보안 랩](../labs/)
+> - **연계 실습 랩**: [Lab 43: 클라우드 사고 대응 & 위협 헌팅 랩](../labs/43_cloud_incident_response_lab/)
 
 ## 📚 목차
 
@@ -14,6 +14,7 @@
 | [04_gcp_forensics.md](./04_gcp_forensics.md) | **GCP 포렌식** — GCP 포렌식은 Google Cloud Platform 환경에서 발생한 보안 사고를 조사하는 기술이다. Cloud Audit Logs, Cloud Logging, Security Co... |
 | [05_cloud_threat_hunting.md](./05_cloud_threat_hunting.md) | **클라우드 위협 헌팅** — 클라우드 위협 헌팅은 자동화된 보안 탐지 시스템이 놓쳤을 수 있는 고도화된 공격자를 사람이 직접 능동적으로 찾아내는 활동이다. 경보가 없어도 "혹시 공격자가 이미 들어와 있지 않을까?... |
 | [06_cloud_ir_ctf_lab.md](./06_cloud_ir_ctf_lab.md) | **클라우드 침해 대응 CTF 실습 랩** — 이 실습을 마치면 다음을 할 수 있다: |
+| [07_enterprise_cloudtrail_and_vpc_flow_logs_forensics_deepdive.md](./07_enterprise_cloudtrail_and_vpc_flow_logs_forensics_deepdive.md) | **클라우드 침해사고 대응(IR) 심층 분석: CloudTrail 감사, STS 자격증명 유출, VPC Flow Logs C2 상관분석 및 SOAR 자동 격리** — CloudTrail 관리 감사 로그 분석, STS 세션 토큰 유출 포렌식, VPC Flow Logs C2 비콘 상관분석, GuardDuty 연동 자동화 SOAR 봉쇄 |
 
 ## 🎯 학습 목표
 

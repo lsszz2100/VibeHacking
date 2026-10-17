@@ -486,6 +486,22 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [53, 14, 48],
     },
+    "43": {
+        "name": "클라우드 사고 대응 & 위협 헌팅 랩",
+        "dir":  "43_cloud_incident_response_lab",
+        "desc": "CloudIRShield: CloudTrail 감사 로그 분석 & AttachUserPolicy 비인가 권한 상승 식별 · 탈취된 STS 세션 토큰 S3 데이터 유출 포렌식 · VPC Flow Logs 상관분석 C2 주기적 비콘 추출 · GuardDuty 심각도 8.0+ 트리아지 및 자동화 SOAR 워크로드 격리",
+        "url":  "웹 콘솔 & 클라우드 IR 대시보드: http://localhost:8043",
+        "difficulty": "★★★★★",
+        "related": [58, 14, 44],
+    },
+    "44": {
+        "name": "브라우저 확장 프로그램 보안 & Manifest V3 실전 랩",
+        "dir":  "44_browser_extension_security_lab",
+        "desc": "ExtensionGuard: Manifest V3 권한 명세 & 백그라운드 서비스 워커 감사 · Web Accessible Resources(WAR) 토큰 유출 · Content Script DOM innerHTML XSS & 패스워드 스니핑 · Declarative Net Request(DNR) 및 확장 프로그램 CSP 하드닝",
+        "url":  "웹 콘솔 & 확장 프로그램 보안 대시보드: http://localhost:8044",
+        "difficulty": "★★★★★",
+        "related": [51, 1, 31],
+    },
 }
 
 
@@ -1502,6 +1518,8 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8040, "Lab 40 (IRShield Enterprise DFIR Lab)"),
         (8041, "Lab 41 (SupplyChainShield Software Supply Chain Lab)"),
         (8042, "Lab 42 (ServerlessGuard Serverless Security Lab)"),
+        (8043, "Lab 43 (CloudIRShield Cloud Incident Response Lab)"),
+        (8044, "Lab 44 (ExtensionGuard Browser Extension Security Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

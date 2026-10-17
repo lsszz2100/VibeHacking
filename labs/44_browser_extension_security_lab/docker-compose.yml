@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  extension-lab:
+    build: .
+    container_name: vibehacking-lab44-extension
+    ports:
+      - "127.0.0.1:8044:8044"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=44"

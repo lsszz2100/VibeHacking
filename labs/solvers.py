@@ -1082,6 +1082,90 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Serverless Runtime Fully Hardened! Ephemeral isolation enforced -> FLAG{serverless_hardened_least_privilege_runtime_secured}"
             }
         ]
+    },
+    "43": {
+        "title": "Lab 43: CloudIRShield (클라우드 사고 대응 & 위협 헌팅)",
+        "port": 8043,
+        "steps": [
+            {
+                "step": 1,
+                "name": "CloudTrail 비인가 권한 상승 이벤트 식별 및 이상 징후 트리아지",
+                "target": "POST /api/v1/cloudtrail/detect-anomaly",
+                "poc_explanation": "CloudTrail 관리 감사 로그를 전수 조사하여 외부 미인가 IP(198.51.100.77)가 backup-svc-account 계정에 AdministratorAccess 권한을 부여한 AttachUserPolicy 이벤트를 식별합니다.",
+                "exploit_payload": '{"event_id": "evt-99482-admin-escalation", "source_ip": "198.51.100.77", "action": "AttachUserPolicy"}',
+                "defense": "SCP(서비스 제어 정책)로 루트 및 고위험 권한 변경 API 호출을 제한하고 CloudWatch Alarms 연동 실시간 탐지.",
+                "sample_output": "🚨 CloudTrail Anomaly Triaged! -> FLAG{cloudtrail_event_log_audit_anomaly_detected_8043}"
+            },
+            {
+                "step": 2,
+                "name": "유출된 STS 토큰 추적 및 S3 볼트 대량 데이터 유출 포렌식",
+                "target": "POST /api/v1/forensics/verify-exfil",
+                "poc_explanation": "탈취된 STS 임시 자격증명(ASIA99CLOUDEXFIL2026) 및 수임 세션(exfil-session-shadow-ops)을 통해 corp-customer-pii-vault 버킷에서 47.3MB 상당의 PII와 개인키가 다운로드된 타임라인을 복원합니다.",
+                "exploit_payload": '{"session_name": "exfil-session-shadow-ops", "compromised_token": "ASIA99CLOUDEXFIL2026", "target_bucket": "corp-customer-pii-vault"}',
+                "defense": "S3 버킷 정책에 aws:PrincipalArn 및 aws:SourceIp 조건을 부여하고 Macie를 통한 PII 접근 이상 모니터링 강제.",
+                "sample_output": "🔍 S3 Data Exfiltration Traced! -> FLAG{cloud_sts_token_s3_data_exfiltration_traced_8043}"
+            },
+            {
+                "step": 3,
+                "name": "VPC Flow Logs 상관분석을 통한 외부 C2 비콘 통신 채널 추출",
+                "target": "POST /api/v1/vpc/correlate-c2",
+                "poc_explanation": "프라이빗 서브넷 ENI NetFlow 데이터를 상관분석하여 감염된 내부 워크로드(10.0.4.15)가 공격자 C2 서버(203.0.113.89:8443)로 매 60초 주기(지터 포함) 비콘 패킷을 전송하는 세션을 분리합니다.",
+                "exploit_payload": '{"compromised_ip": "10.0.4.15", "c2_ip": "203.0.113.89", "c2_port": 8443, "protocol": "TCP"}',
+                "defense": "Route 53 Resolver DNS 방화벽 및 AWS Network Firewall을 적용하여 알려진 위협 피드 C2 도메인/IP 아웃바운드 차단.",
+                "sample_output": "📡 C2 Beacon Channel Correlated! -> FLAG{vpc_flow_logs_c2_beacon_correlation_identified_8043}"
+            },
+            {
+                "step": 4,
+                "name": "GuardDuty 경보 기반 자동화 SOAR 워크로드 격리 및 토큰 무효화",
+                "target": "POST /api/v1/soar/contain-incident",
+                "poc_explanation": "GuardDuty의 자격증명 유출 및 DNS C2 탐지 경보를 기반으로 IAM 활성 세션 폐기, Explicit Deny 권한 경계, 격리 보안그룹(SG) 강제, EBS 포렌식 스냅샷 생성을 자동 실행합니다.",
+                "exploit_payload": '{"revoke_iam_sessions": true, "apply_deny_boundary": true, "quarantine_security_group": true, "snapshot_ebs_volume": true}',
+                "defense": "AWS Security Hub 및 EventBridge 기반의 자동화 사고 대응(SOAR) 람다 파이프라인 구축.",
+                "sample_output": "🛡️ Incident Fully Contained! SOAR Playbook Finished -> FLAG{guardduty_soar_automated_containment_executed_8043}"
+            }
+        ]
+    },
+    "44": {
+        "title": "Lab 44: ExtensionGuard - Browser Extension Security Lab",
+        "description": "브라우저 확장 프로그램(Manifest V3) 권한 명세 감사, Web Accessible Resources(WAR) 토큰 유출, Content Script DOM XSS & 자격증명 스니핑, Declarative Net Request(DNR) 및 CSP 하드닝",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Manifest V3 과도한 권한 명세 감사 및 백그라운드 서비스 워커 분석",
+                "target": "POST /api/v1/extension/manifest-audit (manifest_version, overprivileged_permissions, service_worker)",
+                "poc_explanation": "manifest.json 명세서를 분석하여 과도한 권한(<all_urls>, webRequestBlocking, cookies)과 백그라운드 서비스 워커(background.js)의 취약한 권한 모델을 진단합니다.",
+                "exploit_payload": '{"manifest_version": 3, "overprivileged_permissions": ["<all_urls>", "webRequestBlocking", "cookies"], "service_worker": "background.js"}',
+                "defense": "최소 권한 원칙(Least Privilege) 준수, activeTab 권한 활용 및 광범위 host_permissions 제거.",
+                "sample_output": "🔍 Manifest V3 Audit Passed! -> FLAG{manifest_v3_permission_audit_service_worker_analyzed_8044}"
+            },
+            {
+                "step": 2,
+                "name": "Web Accessible Resources 와일드카드 매칭을 통한 마스터 인증 토큰 탈취",
+                "target": "POST /api/v1/extension/leak-token (target_file, extracted_token, fix_action)",
+                "poc_explanation": "web_accessible_resources에 <all_urls>로 노출된 assets/auth_config.json에 접근하여 내부 마스터 인증 토큰(EXT_AUTH_TOKEN_779922AA)을 무단 추출합니다.",
+                "exploit_payload": '{"target_file": "assets/auth_config.json", "extracted_token": "EXT_AUTH_TOKEN_779922AA", "fix_action": "RESTRICT_MATCHES"}',
+                "defense": "web_accessible_resources matches에 특정 신뢰 오리진만 명시하거나 use_dynamic_url을 사용하여 핑거프린팅 및 무단 접근 차단.",
+                "sample_output": "🔓 WAR Secret Exfiltrated! -> FLAG{web_accessible_resources_cross_context_token_leaked_8044}"
+            },
+            {
+                "step": 3,
+                "name": "Content Script DOM innerHTML 주입 XSS 및 패스워드 스니핑 확인",
+                "target": "POST /api/v1/extension/exploit-dom (vulnerability, harvested_credential_field, sink)",
+                "poc_explanation": "주입된 content.js에서 postMessage를 통한 innerHTML DOM 삽입 취약점을 유발하고, 웹페이지의 password 입력 필드 스니핑 행위를 확인합니다.",
+                "exploit_payload": '{"vulnerability": "DOM_XSS_INNERHTML", "harvested_credential_field": "password", "sink": "promoDiv.innerHTML"}',
+                "defense": "안전하지 않은 DOM 싱크(innerHTML, outerHTML) 대신 textContent나 DOMPurify 새니타이징 사용, 격리된 월드 환경에서 민감 입력 접근 차단.",
+                "sample_output": "💉 DOM XSS & Sniffing Verified! -> FLAG{content_script_dom_xss_credential_harvested_8044}"
+            },
+            {
+                "step": 4,
+                "name": "Declarative Net Request(DNR) 마이그레이션 및 엄격한 확장 프로그램 CSP 하드닝",
+                "target": "POST /api/v1/extension/harden (use_declarative_net_request, enforce_isolated_world, strict_extension_csp, disable_remote_code_execution)",
+                "poc_explanation": "차단형 webRequest를 선언적 DNR 규칙으로 전면 전환하고, 격리 월드 강제 및 원격 스크립트 실행(eval)을 전면 차단하는 엄격한 CSP를 적용합니다.",
+                "exploit_payload": '{"use_declarative_net_request": true, "enforce_isolated_world": true, "strict_extension_csp": true, "disable_remote_code_execution": true}',
+                "defense": "Manifest V3 권장 보안 아키텍처 준수: DNR 사용, script-src \'self\' CSP 적용 및 원격 코드 로딩 전면 금지.",
+                "sample_output": "🛡️ Extension Hardening Applied! -> FLAG{dnr_ruleset_and_extension_csp_hardened_8044}"
+            }
+        ]
     }
 }
 

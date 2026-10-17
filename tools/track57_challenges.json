@@ -1,0 +1,982 @@
+[
+  {
+    "id": "t0_cloudir_control_plane_audit_fundamentals",
+    "tier": 0,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "클라우드 컨트롤 플레인 감사 및 CloudTrail 기본 원리",
+      "en": "Cloud Control Plane Audit & CloudTrail Fundamentals"
+    },
+    "prompt": {
+      "ko": "클라우드 제공자 환경에서 IAM, EC2, S3 관리 작업을 불변의 이벤트 로그로 기록하는 CloudTrail 컨트롤 플레인 감사 원리를 분석합니다.\n지정된 식별자 `cloudir_control_plane_audit_fundamentals_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_control_plane_audit_fundamentals_v1\") 앞 20자리}`",
+      "en": "Analyze immutable CloudTrail control plane audit trails recording IAM, EC2, and S3 administrative actions.\nCompute the first 20 hex characters of SHA256(\"cloudir_control_plane_audit_fundamentals_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_control_plane_audit_fundamentals_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "컨트롤 플레인 로그는 누가, 언제, 어떤 API를 호출했는지 입증하는 핵심 증거입니다.",
+        "식별자 `cloudir_control_plane_audit_fundamentals_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Control plane audit logs form the immutable bedrock for answering who, when, and which API was invoked.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_control_plane_audit_fundamentals_v1\")."
+      ]
+    },
+    "hash": "4408d57c5d07b07699a520e1794365798c1207d2a0af35fc263ca89d306b8939"
+  },
+  {
+    "id": "t0_cloudir_shared_responsibility_in_incident_response",
+    "tier": 0,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "클라우드 침해사고 대응 공동 책임 모델",
+      "en": "Cloud Incident Response Shared Responsibility Model"
+    },
+    "prompt": {
+      "ko": "IaaS, PaaS, SaaS 환경별 클라우드 사고 대응 공동 책임 모델에서 고객이 직접 수행해야 하는 포렌식 증거 수집과 워크로드 격리 범위를 분석합니다.\n지정된 식별자 `cloudir_shared_responsibility_in_incident_response_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_shared_responsibility_in_incident_response_v1\") 앞 20자리}`",
+      "en": "Evaluate customer vs cloud provider boundaries in digital forensics, evidence acquisition, and workload containment across IaaS and PaaS.\nCompute the first 20 hex characters of SHA256(\"cloudir_shared_responsibility_in_incident_response_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_shared_responsibility_in_incident_response_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "IaaS 환경에서 게스트 OS 포렌식과 IAM 자격증명 무효화는 고객의 책임 영역입니다.",
+        "식별자 `cloudir_shared_responsibility_in_incident_response_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Guest OS forensics, credential invalidation, and network containment remain customer responsibilities.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_shared_responsibility_in_incident_response_v1\")."
+      ]
+    },
+    "hash": "cf422535e5f2d4b1d3d065f66e4d6d863f11a6cf02dbc417965ed0a70d259d7c"
+  },
+  {
+    "id": "t1_cloudir_cloudtrail_event_json_structure",
+    "tier": 1,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CloudTrail 이벤트 레코드 JSON 스키마 해부",
+      "en": "CloudTrail Event Record JSON Schema Dissection"
+    },
+    "prompt": {
+      "ko": "CloudTrail 이벤트의 userIdentity, eventSource, eventName, sourceIPAddress, userAgent 필드 구조를 분석하여 공격 행위를 역추적합니다.\n지정된 식별자 `cloudir_cloudtrail_event_json_structure_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_cloudtrail_event_json_structure_v1\") 앞 20자리}`",
+      "en": "Dissect CloudTrail JSON structure including userIdentity, eventSource, eventName, sourceIPAddress, and userAgent.\nCompute the first 20 hex characters of SHA256(\"cloudir_cloudtrail_event_json_structure_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_cloudtrail_event_json_structure_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "userIdentity 내부의 arn, accessKeyId, sessionContext는 공격 주체를 정확히 특정합니다.",
+        "식별자 `cloudir_cloudtrail_event_json_structure_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "The arn and sessionContext fields within userIdentity pinpoint the calling actor.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_cloudtrail_event_json_structure_v1\")."
+      ]
+    },
+    "hash": "74ed406320c4934f09db8ff7a07c60a4f01481a9f385b37d8bc7be304bfd326d"
+  },
+  {
+    "id": "t1_cloudir_management_vs_data_events",
+    "tier": 1,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "관리 이벤트와 데이터 이벤트의 차이점 및 비용 최적화",
+      "en": "Management vs Data Events & Cost Optimization"
+    },
+    "prompt": {
+      "ko": "리소스 생성/설정 변경을 기록하는 관리 이벤트(Management Events)와 S3 GetObject, Lambda Invoke 같은 대용량 데이터 이벤트(Data Events)의 수집 차이를 분석합니다.\n지정된 식별자 `cloudir_management_vs_data_events_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_management_vs_data_events_v1\") 앞 20자리}`",
+      "en": "Differentiate control plane management events from high-volume S3/Lambda data events for efficient digital forensics.\nCompute the first 20 hex characters of SHA256(\"cloudir_management_vs_data_events_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_management_vs_data_events_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "데이터 이벤트는 S3 객체 유출 분석에 필수적이지만 대량 발생하므로 선별적 활성화가 요구됩니다.",
+        "식별자 `cloudir_management_vs_data_events_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Data events capture individual object downloads essential for proving exfiltration scale.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_management_vs_data_events_v1\")."
+      ]
+    },
+    "hash": "d913e91f04a067bf61d7e86f19ea679791157609f2c505f4172fff00ea0e1af1"
+  },
+  {
+    "id": "t1_cloudir_sts_temporary_credentials_lifecycle",
+    "tier": 1,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "STS 임시 자격증명 수명주기와 ASIA 세션 토큰",
+      "en": "STS Temporary Credentials Lifecycle & ASIA Session Tokens"
+    },
+    "prompt": {
+      "ko": "AWS Security Token Service(STS)가 발급하는 임시 세션 토큰(접두사 `ASIA`)의 만료 시간 및 클라우드 외부 악용 시나리오를 분석합니다.\n지정된 식별자 `cloudir_sts_temporary_credentials_lifecycle_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_sts_temporary_credentials_lifecycle_v1\") 앞 20자리}`",
+      "en": "Analyze the lifecycle, expiration, and off-cloud exfiltration risks of AWS STS temporary session credentials bearing the ASIA prefix.\nCompute the first 20 hex characters of SHA256(\"cloudir_sts_temporary_credentials_lifecycle_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_sts_temporary_credentials_lifecycle_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "접두사 ASIA는 STS 발급 임시 토큰이며 x-amz-security-token 헤더와 함께 제출됩니다.",
+        "식별자 `cloudir_sts_temporary_credentials_lifecycle_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "ASIA prefixes signify ephemeral credentials requiring session token headers.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_sts_temporary_credentials_lifecycle_v1\")."
+      ]
+    },
+    "hash": "a0cf04216ea3d6a4e6204ea567aa777b421564db87949ee12887410618eb6b13"
+  },
+  {
+    "id": "t1_cloudir_vpc_flow_logs_netflow_format",
+    "tier": 1,
+    "cat": "correlation",
+    "track": "cloudir",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VPC Flow Logs NetFlow v2 포맷 및 ENI 캡처",
+      "en": "VPC Flow Logs NetFlow v2 Format & ENI Packet Capture"
+    },
+    "prompt": {
+      "ko": "서브넷 ENI 계층에서 기록되는 VPC Flow Logs 기본 포맷(출발지/목적지 IP, 포트, 프로토콜, 패킷수, 바이트수, 작업 결과)을 분석합니다.\n지정된 식별자 `cloudir_vpc_flow_logs_netflow_format_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_vpc_flow_logs_netflow_format_v1\") 앞 20자리}`",
+      "en": "Inspect VPC Flow Logs NetFlow format capturing srcaddr, dstaddr, srcport, dstport, protocol, and ACCEPT/REJECT verdicts.\nCompute the first 20 hex characters of SHA256(\"cloudir_vpc_flow_logs_netflow_format_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_vpc_flow_logs_netflow_format_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "VPC Flow Logs는 패킷 페이로드는 남기지 않지만 네트워크 메타데이터를 완벽히 보존합니다.",
+        "식별자 `cloudir_vpc_flow_logs_netflow_format_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Flow logs capture transmission metadata without payload data overhead.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_vpc_flow_logs_netflow_format_v1\")."
+      ]
+    },
+    "hash": "e03f252c690497e3e4d91089a03885b6a87286f569280387e9648ca0080ada8d"
+  },
+  {
+    "id": "t1_cloudir_guardduty_threat_intelligence_findings",
+    "tier": 1,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GuardDuty 위협 인텔리전스 및 악성 IP 탐지",
+      "en": "GuardDuty Threat Intelligence & Malicious IP Detection"
+    },
+    "prompt": {
+      "ko": "Amazon GuardDuty가 DNS 로그, VPC Flow, CloudTrail을 머신러닝 및 위협 인텔리전스와 상관분석하여 비인가 API 및 C2 통신을 경보하는 원리를 분석합니다.\n지정된 식별자 `cloudir_guardduty_threat_intelligence_findings_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_guardduty_threat_intelligence_findings_v1\") 앞 20자리}`",
+      "en": "Examine GuardDuty behavioral anomaly detection correlating VPC Flow, DNS, and CloudTrail against threat intelligence feeds.\nCompute the first 20 hex characters of SHA256(\"cloudir_guardduty_threat_intelligence_findings_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_guardduty_threat_intelligence_findings_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "GuardDuty는 심각도(Severity) 7.0 이상일 때 즉각적인 보안 격리 플레이북 트리거를 권고합니다.",
+        "식별자 `cloudir_guardduty_threat_intelligence_findings_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Findings with severity 7.0+ indicate active compromises demanding rapid containment.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_guardduty_threat_intelligence_findings_v1\")."
+      ]
+    },
+    "hash": "95f6120e6989ad25ebc8bd1a7dac3062fdc798867e83c0f57ea1329ddd093a5b"
+  },
+  {
+    "id": "t1_cloudir_s3_server_access_logging_architecture",
+    "tier": 1,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "S3 서버 액세스 로깅 및 버킷 접근 모니터링",
+      "en": "S3 Server Access Logging & Bucket Access Monitoring"
+    },
+    "prompt": {
+      "ko": "S3 버킷 수준에서 요청자, 객체 키, HTTP 응답 상태, 턴어라운드 시간 및 전송 바이트를 텍스트 로그로 기록하는 서버 액세스 로깅 아키텍처를 분석합니다.\n지정된 식별자 `cloudir_s3_server_access_logging_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_s3_server_access_logging_architecture_v1\") 앞 20자리}`",
+      "en": "Review S3 server access logging tracking requester identities, object keys, HTTP status codes, and bytes transmitted.\nCompute the first 20 hex characters of SHA256(\"cloudir_s3_server_access_logging_architecture_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_s3_server_access_logging_architecture_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "S3 액세스 로그는 REST.GET.OBJECT 작업의 정확한 타임스탬프와 바이트 크기를 입증합니다.",
+        "식별자 `cloudir_s3_server_access_logging_architecture_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "S3 access logs capture precise bytes transferred during object exfiltration.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_s3_server_access_logging_architecture_v1\")."
+      ]
+    },
+    "hash": "22998ddcc0ac71df5cdc7de3d506e6430d0eaf792f6fc31a904cbcbf9dd3692f"
+  },
+  {
+    "id": "t2_cloudir_athena_sql_cloudtrail_log_analysis",
+    "tier": 2,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Amazon Athena SQL 기반 대규모 CloudTrail 로그 분석",
+      "en": "Amazon Athena SQL CloudTrail Log Analytics"
+    },
+    "prompt": {
+      "ko": "수십 GB의 압축된 CloudTrail JSON 로그를 Amazon Athena로 파티셔닝하고 SQL 쿼리로 단시간에 비인가 API 호출자를 적출합니다.\n지정된 식별자 `cloudir_athena_sql_cloudtrail_log_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_athena_sql_cloudtrail_log_analysis_v1\") 앞 20자리}`",
+      "en": "Leverage Amazon Athena SQL partitioning over compressed CloudTrail JSON archives to query unauthorized API invocations.\nCompute the first 20 hex characters of SHA256(\"cloudir_athena_sql_cloudtrail_log_analysis_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_athena_sql_cloudtrail_log_analysis_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "날짜 및 리전별 파티션을 구성하면 스캔 데이터양을 95% 이상 절감할 수 있습니다.",
+        "식별자 `cloudir_athena_sql_cloudtrail_log_analysis_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Partitioning by date and region accelerates forensic queries and cuts data scanned.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_athena_sql_cloudtrail_log_analysis_v1\")."
+      ]
+    },
+    "hash": "cf6455d9d65ea4cc85d4554d7575da87668cbe8ea63d5cc8d0bfc7a9df9ec939"
+  },
+  {
+    "id": "t2_cloudir_imds_v1_credential_theft_forensics",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 90,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "IMDSv1 자격증명 탈취 흔적 조사 및 IMDSv2 하드닝",
+      "en": "IMDSv1 Credential Theft Forensics & IMDSv2 Hardening"
+    },
+    "prompt": {
+      "ko": "SSRF 취약점을 통해 `169.254.169.254` 메타데이터 엔드포인트에서 탈취된 IAM 역할 토큰의 사용 정황을 CloudTrail과 인스턴스 로그로 대조 분석합니다.\n지정된 식별자 `cloudir_imds_v1_credential_theft_forensics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_imds_v1_credential_theft_forensics_v1\") 앞 20자리}`",
+      "en": "Investigate instance metadata token theft via SSRF and enforce IMDSv2 session token headers to neutralize unauthenticated scraping.\nCompute the first 20 hex characters of SHA256(\"cloudir_imds_v1_credential_theft_forensics_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_imds_v1_credential_theft_forensics_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "IMDSv2는 세션 지향 토큰(PUT 요청, X-aws-ec2-metadata-token)을 강제하여 SSRF를 차단합니다.",
+        "식별자 `cloudir_imds_v1_credential_theft_forensics_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "IMDSv2 requires session tokens obtained via PUT requests with TTL limits.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_imds_v1_credential_theft_forensics_v1\")."
+      ]
+    },
+    "hash": "bf4a41950fc59056e9b8ddd53b38d5d8445cd8a179efcb756ce808df5e1a8b22"
+  },
+  {
+    "id": "t2_cloudir_assumed_role_session_attribution",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 90,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AssumeRole 세션 식별자를 통한 공격 주체 역추적",
+      "en": "AssumeRole Session Name Attribution & Tracking"
+    },
+    "prompt": {
+      "ko": "공격자가 STS AssumeRole 호출 시 임의로 지정한 `RoleSessionName`과 발신자 원본 IP를 CloudTrail 전역에서 상관분석하여 횡적 이동 경로를 역추적합니다.\n지정된 식별자 `cloudir_assumed_role_session_attribution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_assumed_role_session_attribution_v1\") 앞 20자리}`",
+      "en": "Trace adversary lateral movements by correlating arbitrary RoleSessionName values with source IP histories across CloudTrail.\nCompute the first 20 hex characters of SHA256(\"cloudir_assumed_role_session_attribution_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_assumed_role_session_attribution_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "arn:aws:sts::account:assumed-role/Role/Session 구조에서 세션명은 고유한 조사 키워드입니다.",
+        "식별자 `cloudir_assumed_role_session_attribution_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "The assumed-role ARN suffix acts as an indispensable pivot indicator for incident correlation.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_assumed_role_session_attribution_v1\")."
+      ]
+    },
+    "hash": "9c1cb037d2a429f95b662e737a9facee8395fbecf31028ca8a68c640d8fddfae"
+  },
+  {
+    "id": "t2_cloudir_vpc_flow_c2_beacon_jitter_correlation",
+    "tier": 2,
+    "cat": "correlation",
+    "track": "cloudir",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VPC Flow Logs 기반 지터 C2 비콘 통신 상관분석",
+      "en": "VPC Flow Logs Jittered C2 Beacon Correlation"
+    },
+    "prompt": {
+      "ko": "프라이빗 서브넷 호스트에서 외부 IP로 매 60초 주기(±2초 지터)로 발송되는 반복적 TCP 8443 세션 플로우를 통계적 상관분석으로 격리합니다.\n지정된 식별자 `cloudir_vpc_flow_c2_beacon_jitter_correlation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_vpc_flow_c2_beacon_jitter_correlation_v1\") 앞 20자리}`",
+      "en": "Statistically isolate periodic TCP 8443 beacon sessions exhibiting low delta-T variance from VPC Flow Logs archives.\nCompute the first 20 hex characters of SHA256(\"cloudir_vpc_flow_c2_beacon_jitter_correlation_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_vpc_flow_c2_beacon_jitter_correlation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "비콘 주기의 표준편차가 극도로 낮은 세션은 악성 C2 하트비트의 전형적 특징입니다.",
+        "식별자 `cloudir_vpc_flow_c2_beacon_jitter_correlation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Low delta-T standard deviation between connection starts indicates automated C2 beaconing.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_vpc_flow_c2_beacon_jitter_correlation_v1\")."
+      ]
+    },
+    "hash": "462c9acbd797ccc91508541c3384abf5ad4336a9b122c697f70c9e49ae510bf7"
+  },
+  {
+    "id": "t2_cloudir_cross_account_lateral_movement_tracking",
+    "tier": 2,
+    "cat": "correlation",
+    "track": "cloudir",
+    "points": 90,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티 어카운트 환경 크로스 어카운트 측면 이동 추적",
+      "en": "Cross-Account Lateral Movement Tracking"
+    },
+    "prompt": {
+      "ko": "공격자가 개발 계정(Dev)에서 획득한 자격증명으로 운영 계정(Prod)의 신뢰 관계(Trust Relationship)를 악용하여 침투하는 경로를 추적합니다.\n지정된 식별자 `cloudir_cross_account_lateral_movement_tracking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_cross_account_lateral_movement_tracking_v1\") 앞 20자리}`",
+      "en": "Reconstruct cross-account pivoting where an attacker in a development account assumes trusted roles in production environments.\nCompute the first 20 hex characters of SHA256(\"cloudir_cross_account_lateral_movement_tracking_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_cross_account_lateral_movement_tracking_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "발신 계정의 CloudTrail AssumeRole 요청과 수신 계정의 세션 시작 이벤트를 교차 검증하세요.",
+        "식별자 `cloudir_cross_account_lateral_movement_tracking_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Correlate the outbound AssumeRole call in account A with the inbound role session in account B.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_cross_account_lateral_movement_tracking_v1\")."
+      ]
+    },
+    "hash": "aa330549324a4a8ef6d8e112abd1ae1944fe69a9594b8ca44d13d3d52552e3fe"
+  },
+  {
+    "id": "t2_cloudir_s3_ransomware_bucket_versioning_audit",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 90,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "S3 버킷 랜섬웨어 암호화 및 버전 관리 포렌식",
+      "en": "S3 Ransomware Encryption & Object Versioning Forensics"
+    },
+    "prompt": {
+      "ko": "공격자가 S3 버킷의 원본 객체를 KMS CMK로 덮어쓰기 암호화할 때, S3 Versioning 및 Object Lock MFA Delete를 통해 데이터를 복원하는 포렌식 절차를 수립합니다.\n지정된 식별자 `cloudir_s3_ransomware_bucket_versioning_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_s3_ransomware_bucket_versioning_audit_v1\") 앞 20자리}`",
+      "en": "Establish forensics and recovery playbooks against S3 extortion where attackers overwrite objects with rogue KMS keys.\nCompute the first 20 hex characters of SHA256(\"cloudir_s3_ransomware_bucket_versioning_audit_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_s3_ransomware_bucket_versioning_audit_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "S3 Versioning이 활성화되어 있다면 삭제 마커(DeleteMarker) 이전의 이전 버전을 복원할 수 있습니다.",
+        "식별자 `cloudir_s3_ransomware_bucket_versioning_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enabled versioning preserves pre-encryption object versions behind delete markers.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_s3_ransomware_bucket_versioning_audit_v1\")."
+      ]
+    },
+    "hash": "f1c69fa04053c3c627a87b26d6728b432507b2cb813f41db083500de4e64789c"
+  },
+  {
+    "id": "t2_cloudir_quarantine_security_group_isolation",
+    "tier": 2,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 90,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "감염 워크로드 격리 보안그룹 자동 교체 기법",
+      "en": "Quarantine Security Group Network Isolation Mechanics"
+    },
+    "prompt": {
+      "ko": "감염된 EC2 인스턴스의 기존 보안그룹을 즉시 해제하고 인바운드/아웃바운드 규칙이 전무한 `sg-quarantine`으로 교체하여 C2 통신을 봉쇄하는 절차를 분석합니다.\n지정된 식별자 `cloudir_quarantine_security_group_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_quarantine_security_group_isolation_v1\") 앞 20자리}`",
+      "en": "Execute instant network containment by stripping all attached security groups and attaching a zero-rule quarantine SG.\nCompute the first 20 hex characters of SHA256(\"cloudir_quarantine_security_group_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_quarantine_security_group_isolation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "보안그룹은 상태 저장(Stateful) 방식이므로 규칙 삭제 즉시 기존 확립된 TCP 세션도 강제 차단됩니다.",
+        "식별자 `cloudir_quarantine_security_group_isolation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Stateful security group rules immediately drop active bidirectional established TCP connections.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_quarantine_security_group_isolation_v1\")."
+      ]
+    },
+    "hash": "1166e6fc6035ad033e5c4d648658b1ac80287e5abf76894500db348e82e5d3a7"
+  },
+  {
+    "id": "t2_cloudir_aws_config_drift_detection_timeline",
+    "tier": 2,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 90,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AWS Config 리소스 구성 드리프트 및 변경 타임라인",
+      "en": "AWS Config Resource Drift & Compliance Timeline"
+    },
+    "prompt": {
+      "ko": "AWS Config가 기록한 리소스 구성 타임라인을 조회하여 보안 그룹 룰 임의 추가, S3 퍼블릭 액세스 차단 해제 등 악의적 구성 드리프트를 복원합니다.\n지정된 식별자 `cloudir_aws_config_drift_detection_timeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_aws_config_drift_detection_timeline_v1\") 앞 20자리}`",
+      "en": "Leverage AWS Config history to reconstruct timeline drift, such as unauthorized security group openings or public S3 bucket exposures.\nCompute the first 20 hex characters of SHA256(\"cloudir_aws_config_drift_detection_timeline_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_aws_config_drift_detection_timeline_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "AWS Config는 리소스의 시점별 스냅샷과 변경 이력을 제공하여 변경 전후를 완벽히 비교합니다.",
+        "식별자 `cloudir_aws_config_drift_detection_timeline_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Config historical snapshots detail precise parameter modifications and actor associations.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_aws_config_drift_detection_timeline_v1\")."
+      ]
+    },
+    "hash": "8c2fee2e85d643e7c6903da84df6566cdba20396d6fe690852028b31b70462a4"
+  },
+  {
+    "id": "t3_cloudir_iam_permission_boundary_explicit_deny",
+    "tier": 3,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "IAM 권한 경계(Permissions Boundary) 기반 즉시 권한 박탈",
+      "en": "IAM Permissions Boundary Explicit Deny Containment"
+    },
+    "prompt": {
+      "ko": "침해된 IAM 사용자 및 역할에 Explicit Deny 문이 포함된 권한 경계를 연결하여 기존 정책 수정 없이 즉각 모든 권한을 무력화하는 방어 기법을 분석합니다.\n지정된 식별자 `cloudir_iam_permission_boundary_explicit_deny_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_iam_permission_boundary_explicit_deny_v1\") 앞 20자리}`",
+      "en": "Apply an explicit-deny permissions boundary to immediately neutralize compromised IAM identities without altering attached policies.\nCompute the first 20 hex characters of SHA256(\"cloudir_iam_permission_boundary_explicit_deny_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_iam_permission_boundary_explicit_deny_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "AWS 평가 논리에서 Explicit Deny는 어떠한 Allow보다 항상 우선 적용됩니다.",
+        "식별자 `cloudir_iam_permission_boundary_explicit_deny_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "An explicit Deny evaluation rule strictly overrides any existing Allow statements.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_iam_permission_boundary_explicit_deny_v1\")."
+      ]
+    },
+    "hash": "6258e6c8f82612be634efffd53cc3720faf2189eedfa68b6369ca8880396be63"
+  },
+  {
+    "id": "t3_cloudir_sts_session_revocation_timestamp_injection",
+    "tier": 3,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AWS STS 활성 세션 타임스탬프 기반 강제 무효화 정책",
+      "en": "STS Active Session Revocation via Timestamp Policy"
+    },
+    "prompt": {
+      "ko": "`aws:CurrentTime < [EpochTimestamp]` 조건을 포함하는 인라인 정책을 역할에 주입하여 이미 발급된 STS 임시 세션 토큰을 즉각 무효화합니다.\n지정된 식별자 `cloudir_sts_session_revocation_timestamp_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_sts_session_revocation_timestamp_injection_v1\") 앞 20자리}`",
+      "en": "Revoke already-issued active STS credentials by attaching inline policies restricting `aws:TokenIssueTime` against epoch cutoffs.\nCompute the first 20 hex characters of SHA256(\"cloudir_sts_session_revocation_timestamp_injection_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_sts_session_revocation_timestamp_injection_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "역할에 Deny 정책으로 TokenIssueTime 조건을 걸면 유효 기간이 남은 임시 토큰도 즉시 차단됩니다.",
+        "식별자 `cloudir_sts_session_revocation_timestamp_injection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Conditioning TokenIssueTime invalidates active ephemeral tokens without deleting the IAM role.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_sts_session_revocation_timestamp_injection_v1\")."
+      ]
+    },
+    "hash": "1f8890f9ff1ee9c10483bbdb8d926cd1d100aabeb65032639338ce3af1b0b1f4"
+  },
+  {
+    "id": "t3_cloudir_cloudtrail_digest_sha256_integrity_validation",
+    "tier": 3,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CloudTrail Digest 파일 무결성 및 해시 체인 검증",
+      "en": "CloudTrail Digest File SHA256 Integrity Verification"
+    },
+    "prompt": {
+      "ko": "CloudTrail 로그 파일 무결성 검증 기능이 생성하는 Digest 파일의 RSA 서명 및 SHA-256 해시 체인을 검사하여 로그 변조 여부를 입증합니다.\n지정된 식별자 `cloudir_cloudtrail_digest_sha256_integrity_validation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_cloudtrail_digest_sha256_integrity_validation_v1\") 앞 20자리}`",
+      "en": "Verify cryptographic integrity of CloudTrail digest files using SHA-256 hash chains and RSA public key signatures.\nCompute the first 20 hex characters of SHA256(\"cloudir_cloudtrail_digest_sha256_integrity_validation_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_cloudtrail_digest_sha256_integrity_validation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "aws cloudtrail validate-logs 명령어로 각 로그 블록의 해시 불변성을 수학적으로 입증합니다.",
+        "식별자 `cloudir_cloudtrail_digest_sha256_integrity_validation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Cryptographic digest validation proves that logs were not deleted or modified in S3.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_cloudtrail_digest_sha256_integrity_validation_v1\")."
+      ]
+    },
+    "hash": "ed20a8f183f78723df94094082cb3c158649075d333f112e5acb80fa8344e36a"
+  },
+  {
+    "id": "t3_cloudir_ebs_volume_forensic_snapshot_preservation",
+    "tier": 3,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "EBS 볼륨 포렌식 스냅샷 복제 및 증거 보존(Chain of Custody)",
+      "en": "EBS Volume Forensic Snapshot & Evidence Chain of Custody"
+    },
+    "prompt": {
+      "ko": "침해된 EC2 인스턴스를 중지하지 않고 EBS 볼륨의 특정 시점 스냅샷을 생성한 후 격리된 포렌식 분석 계정으로 KMS 암호화 복제하는 절차를 분석합니다.\n지정된 식별자 `cloudir_ebs_volume_forensic_snapshot_preservation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_ebs_volume_forensic_snapshot_preservation_v1\") 앞 20자리}`",
+      "en": "Capture point-in-time EBS volume snapshots of live instances and transfer them securely to an isolated security investigation account.\nCompute the first 20 hex characters of SHA256(\"cloudir_ebs_volume_forensic_snapshot_preservation_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_ebs_volume_forensic_snapshot_preservation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "스냅샷은 라이브 인스턴스의 디스크 I/O 중단 없이 포렌식 비트 레벨 이미지를 생성합니다.",
+        "식별자 `cloudir_ebs_volume_forensic_snapshot_preservation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "EBS snapshots capture complete sector-level drive states without terminating target workloads.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_ebs_volume_forensic_snapshot_preservation_v1\")."
+      ]
+    },
+    "hash": "196ec0482987bcd3945717cdf51259ccb902b130c00ef9335ac8ce8f784fbbe1"
+  },
+  {
+    "id": "t3_cloudir_vpc_traffic_mirroring_packet_inspection",
+    "tier": 3,
+    "cat": "correlation",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VPC Traffic Mirroring 기반 원시 패킷 심층 검사",
+      "en": "VPC Traffic Mirroring Deep Packet Inspection"
+    },
+    "prompt": {
+      "ko": "VPC Traffic Mirroring을 구성하여 의심스러운 EC2의 ENI 인바운드/아웃바운드 원시 패킷(VXLAN 캡슐화)을 Zeek/Suricata IDS 인스턴스로 미러링 분석합니다.\n지정된 식별자 `cloudir_vpc_traffic_mirroring_packet_inspection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_vpc_traffic_mirroring_packet_inspection_v1\") 앞 20자리}`",
+      "en": "Deploy VPC Traffic Mirroring to stream raw VXLAN-encapsulated packet payloads from target workloads to Zeek/Suricata analyzers.\nCompute the first 20 hex characters of SHA256(\"cloudir_vpc_traffic_mirroring_packet_inspection_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_vpc_traffic_mirroring_packet_inspection_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Flow Logs와 달리 Traffic Mirroring은 애플리케이션 계층 HTTP/TLS 페이로드까지 전수 분석 가능합니다.",
+        "식별자 `cloudir_vpc_traffic_mirroring_packet_inspection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Traffic Mirroring provides full layer 7 payload visibility inside the cloud perimeter.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_vpc_traffic_mirroring_packet_inspection_v1\")."
+      ]
+    },
+    "hash": "4687bbb1f05f994194e9576419b971597145e4aa219619782fa56d7d5f6f3e1f"
+  },
+  {
+    "id": "t3_cloudir_guardduty_runtime_monitoring_ebpf_agent",
+    "tier": 3,
+    "cat": "correlation",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GuardDuty EKS 런타임 모니터링 및 eBPF 에이전트 분석",
+      "en": "GuardDuty EKS Runtime Monitoring & eBPF Security Agent"
+    },
+    "prompt": {
+      "ko": "GuardDuty EKS 런타임 모니터링이 eBPF 커널 프로브를 활용하여 컨테이너 내부의 파일 실행, 네트워크 소켓 생성, 권한 상승 시스템콜을 감지하는 원리를 분석합니다.\n지정된 식별자 `cloudir_guardduty_runtime_monitoring_ebpf_agent_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_guardduty_runtime_monitoring_ebpf_agent_v1\") 앞 20자리}`",
+      "en": "Analyze GuardDuty EKS runtime monitoring utilizing in-kernel eBPF probes to catch container breakout and reverse shell executions.\nCompute the first 20 hex characters of SHA256(\"cloudir_guardduty_runtime_monitoring_ebpf_agent_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_guardduty_runtime_monitoring_ebpf_agent_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "eBPF 에이전트는 컨테이너 네임스페이스를 넘어 호스트 커널 수준에서 execve 시스템콜을 추적합니다.",
+        "식별자 `cloudir_guardduty_runtime_monitoring_ebpf_agent_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "eBPF tracks kernel syscall telemetry across container namespace boundaries.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_guardduty_runtime_monitoring_ebpf_agent_v1\")."
+      ]
+    },
+    "hash": "07d367a3322695b045b698f22833cccca9e400f2b0a48bbcda4f709ed45f40a0"
+  },
+  {
+    "id": "t3_cloudir_lambda_soar_containment_orchestration",
+    "tier": 3,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "EventBridge & Lambda 결합 클라우드 SOAR 자동 봉쇄 오케스트레이션",
+      "en": "EventBridge & Lambda Cloud SOAR Containment Orchestration"
+    },
+    "prompt": {
+      "ko": "GuardDuty 경보 발생 시 EventBridge 규칙이 보안 오케스트레이션 Lambda를 트리거하여 밀리초 단위로 자격증명 폐기 및 네트워크 격리를 자동 완제하는 아키텍처를 분석합니다.\n지정된 식별자 `cloudir_lambda_soar_containment_orchestration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_lambda_soar_containment_orchestration_v1\") 앞 20자리}`",
+      "en": "Orchestrate automated containment pipelines where EventBridge triggers containment Lambdas to revoke keys and isolate workloads.\nCompute the first 20 hex characters of SHA256(\"cloudir_lambda_soar_containment_orchestration_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_lambda_soar_containment_orchestration_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "SOAR 자동화는 사람의 개입 없이 공격자의 C2 데이터 유출 시간을 원천 차단합니다.",
+        "식별자 `cloudir_lambda_soar_containment_orchestration_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Automated serverless playbooks eliminate human dwell-time delays during active breaches.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_lambda_soar_containment_orchestration_v1\")."
+      ]
+    },
+    "hash": "949ee8ebc7eb3b8281bdbff2fe0373b66272ddbbefbfa5cfc491d1666de55380"
+  },
+  {
+    "id": "t3_cloudir_macie_sensitive_pii_discovery_audit",
+    "tier": 3,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Amazon Macie 머신러닝 기반 민감 PII 노출 감사",
+      "en": "Amazon Macie Sensitive PII Exposure Discovery"
+    },
+    "prompt": {
+      "ko": "Amazon Macie를 활용하여 S3 버킷 내 주민등록번호, 신용카드 번호, API 시크릿 파일의 비인가 노출 여부와 유출 영향도를 머신러닝으로 평가합니다.\n지정된 식별자 `cloudir_macie_sensitive_pii_discovery_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_macie_sensitive_pii_discovery_audit_v1\") 앞 20자리}`",
+      "en": "Deploy Amazon Macie ML discovery jobs to classify sensitive PII, credentials, and regulatory exposure across targeted S3 vaults.\nCompute the first 20 hex characters of SHA256(\"cloudir_macie_sensitive_pii_discovery_audit_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_macie_sensitive_pii_discovery_audit_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Macie는 유출된 파일의 법적 규제(GDPR, HIPAA, 개인정보보호법) 위반 위험도를 정량화합니다.",
+        "식별자 `cloudir_macie_sensitive_pii_discovery_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Macie quantifies privacy compliance violations from compromised data buckets.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_macie_sensitive_pii_discovery_audit_v1\")."
+      ]
+    },
+    "hash": "f995da86ae8150847b022d710b45b794b3e1c188a18d2c62f3d29f3666f590c9"
+  },
+  {
+    "id": "t3_cloudir_route53_resolver_dns_firewall_log_triage",
+    "tier": 3,
+    "cat": "correlation",
+    "track": "cloudir",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Route 53 Resolver DNS 방화벽 차단 로그 트리아지",
+      "en": "Route 53 Resolver DNS Firewall Block Logs Triage"
+    },
+    "prompt": {
+      "ko": "Route 53 Resolver DNS Firewall 쿼리 로그를 조사하여 내부 악성코드가 수행하는 DNS 터널링(DGA, TXT 레코드 데이터 유출) 시도를 식별하고 차단합니다.\n지정된 식별자 `cloudir_route53_resolver_dns_firewall_log_triage_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_route53_resolver_dns_firewall_log_triage_v1\") 앞 20자리}`",
+      "en": "Triage Route 53 Resolver DNS Firewall query logs to detect DNS tunneling exfiltration and algorithmically generated domain (DGA) lookups.\nCompute the first 20 hex characters of SHA256(\"cloudir_route53_resolver_dns_firewall_log_triage_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_route53_resolver_dns_firewall_log_triage_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "비정상적으로 긴 서브도메인이나 높은 엔트로피를 가진 도메인 질의는 DNS 유출의 증거입니다.",
+        "식별자 `cloudir_route53_resolver_dns_firewall_log_triage_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "High-entropy long subdomains frequently indicate DNS tunneling payload exfiltration.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_route53_resolver_dns_firewall_log_triage_v1\")."
+      ]
+    },
+    "hash": "c1cb4b6beaeead5c62e6830de51e1e273b414da40cf56e748274ca5e73a627ac"
+  },
+  {
+    "id": "t4_cloudir_multi_account_cloudtrail_lake_federation",
+    "tier": 4,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AWS Organizations 멀티 어카운트 CloudTrail Lake 페더레이션 쿼리",
+      "en": "AWS Organizations CloudTrail Lake Federated SQL Query"
+    },
+    "prompt": {
+      "ko": "AWS Organizations 산하 수백 개 계정의 감사 로그를 CloudTrail Lake 이벤트 데이터 저장소(EDS)로 중앙 집약하고 단일 SQL 쿼리로 글로벌 공격 경로를 분석합니다.\n지정된 식별자 `cloudir_multi_account_cloudtrail_lake_federation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_multi_account_cloudtrail_lake_federation_v1\") 앞 20자리}`",
+      "en": "Centralize multi-account audit logs into AWS CloudTrail Lake Event Data Stores and execute federated queries across organizational units.\nCompute the first 20 hex characters of SHA256(\"cloudir_multi_account_cloudtrail_lake_federation_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_multi_account_cloudtrail_lake_federation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "CloudTrail Lake는 별도의 Athena 설정 없이도 불변의 SQL 분석 엔진을 제공합니다.",
+        "식별자 `cloudir_multi_account_cloudtrail_lake_federation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "CloudTrail Lake delivers managed immutable SQL analytics without manual data pipelines.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_multi_account_cloudtrail_lake_federation_v1\")."
+      ]
+    },
+    "hash": "f2317dda9566e96473386eb0d4d3ea53455cba727b8642a8afcc15621b3ce6eb"
+  },
+  {
+    "id": "t4_cloudir_instance_credential_exfiltration_outside_aws",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GuardDuty InstanceCredentialExfiltration.OutsideAWS 고도화 대응",
+      "en": "Advanced Defense Against Credential Exfiltration Outside AWS"
+    },
+    "prompt": {
+      "ko": "EC2 내부용으로 발급된 IAM 역할 자격증명이 공격자 호스트(Outside AWS)에서 사용될 때 발생하는 GuardDuty 최상위 심각도 경보를 분석하고 세션을 차단합니다.\n지정된 식별자 `cloudir_instance_credential_exfiltration_outside_aws_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_instance_credential_exfiltration_outside_aws_v1\") 앞 20자리}`",
+      "en": "Investigate and contain high-severity GuardDuty detections where EC2 instance role credentials are used from external IP infrastructure.\nCompute the first 20 hex characters of SHA256(\"cloudir_instance_credential_exfiltration_outside_aws_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_instance_credential_exfiltration_outside_aws_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "aws:ViaAWSService 또는 aws:SourceIp 조건을 활용하여 외부 IP에서의 역할 토큰 호출을 원천 무효화하세요.",
+        "식별자 `cloudir_instance_credential_exfiltration_outside_aws_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "VPC endpoint and VPC IP conditional checks prevent off-cloud usage of instance tokens.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_instance_credential_exfiltration_outside_aws_v1\")."
+      ]
+    },
+    "hash": "22cb9fbcd2d644a0680b18c4c492c9a04e5bed91060507fc35ee39c44c3fa8ff"
+  },
+  {
+    "id": "t4_cloudir_kms_key_policy_ransomware_recovery",
+    "tier": 4,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "KMS 고객 관리형 키(CMK) 삭제 거부 및 랜섬웨어 복구",
+      "en": "KMS CMK Key Policy Ransomware Recovery & Deletion Lock"
+    },
+    "prompt": {
+      "ko": "공격자가 데이터 암호화 후 KMS 키를 삭제 예약(`ScheduleKeyDeletion`)하여 복구를 방해할 때, 키 정책에 삭제 거부(Deny)를 적용하고 복구하는 기법을 분석합니다.\n지정된 식별자 `cloudir_kms_key_policy_ransomware_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_kms_key_policy_ransomware_recovery_v1\") 앞 20자리}`",
+      "en": "Defend against cloud extortionists scheduling KMS CMK deletions by enforcing SCP deletion guards and canceling pending key destructions.\nCompute the first 20 hex characters of SHA256(\"cloudir_kms_key_policy_ransomware_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_kms_key_policy_ransomware_recovery_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "KMS는 최소 7일의 삭제 대기 기간을 강제하므로 즉시 CancelKeyDeletion API로 복원 가능합니다.",
+        "식별자 `cloudir_kms_key_policy_ransomware_recovery_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "KMS enforces mandatory waiting windows, granting responders time to cancel pending deletions.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_kms_key_policy_ransomware_recovery_v1\")."
+      ]
+    },
+    "hash": "3e5ff53a8a9708026e9721f400abd01d99bf5dd4e133a9273735fd97c7edb694"
+  },
+  {
+    "id": "t4_cloudir_azure_activity_log_entra_id_forensics",
+    "tier": 4,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티 클라우드 Azure Activity Log & Entra ID 침해 포렌식",
+      "en": "Multi-Cloud Azure Activity Log & Entra ID Identity Forensics"
+    },
+    "prompt": {
+      "ko": "Microsoft Azure 환경에서 Entra ID(Azure AD) 조건부 액세스 우회 및 Activity Log 기반 글로벌 관리자 역할 할당 침해 타임라인을 재구성합니다.\n지정된 식별자 `cloudir_azure_activity_log_entra_id_forensics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_azure_activity_log_entra_id_forensics_v1\") 앞 20자리}`",
+      "en": "Correlate Microsoft Entra ID sign-in logs with Azure Activity Log events to reconstruct privileged role assignment breaches.\nCompute the first 20 hex characters of SHA256(\"cloudir_azure_activity_log_entra_id_forensics_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_azure_activity_log_entra_id_forensics_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Sign-in logs의 위험 이벤트(RiskEventTypes)와 Activity Log의 Write RoleAssignments 작업을 교차 검증하세요.",
+        "식별자 `cloudir_azure_activity_log_entra_id_forensics_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Cross-reference Entra ID risk events with ARM RoleAssignment write operations.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_azure_activity_log_entra_id_forensics_v1\")."
+      ]
+    },
+    "hash": "8a1dad64a4414dcf7fa7ca426f3ed6c89d90288e33deb15d524be9e4001cf404"
+  },
+  {
+    "id": "t4_cloudir_gcp_cloud_audit_logs_service_account_abuse",
+    "tier": 4,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GCP Cloud Audit Logs 서비스 계정 키 악용 추적",
+      "en": "GCP Cloud Audit Logs Service Account Key Abuse Tracking"
+    },
+    "prompt": {
+      "ko": "Google Cloud Platform(GCP)에서 유출된 서비스 계정 JSON 키를 통한 Cloud Storage 버킷 데이터 탈취와 Compute Engine 권한 상승을 추적합니다.\n지정된 식별자 `cloudir_gcp_cloud_audit_logs_service_account_abuse_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_gcp_cloud_audit_logs_service_account_abuse_v1\") 앞 20자리}`",
+      "en": "Audit GCP Admin Activity and Data Access audit logs to detect leaked service account key abuse and Cloud Storage scraping.\nCompute the first 20 hex characters of SHA256(\"cloudir_gcp_cloud_audit_logs_service_account_abuse_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_gcp_cloud_audit_logs_service_account_abuse_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "protoPayload.authenticationInfo.serviceAccountKeyName 필드로 특정 유출 키를 식별합니다.",
+        "식별자 `cloudir_gcp_cloud_audit_logs_service_account_abuse_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Filter authenticationInfo for specific compromised serviceAccountKeyName identifiers.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_gcp_cloud_audit_logs_service_account_abuse_v1\")."
+      ]
+    },
+    "hash": "aaa49b49596d11c2fd891c39c118d05c710370f8a650b28c50cf9c0da2b28e88"
+  },
+  {
+    "id": "t4_cloudir_vpc_lattice_zero_trust_lateral_containment",
+    "tier": 4,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Amazon VPC Lattice 제로 트러스트 서비스 간 측면 이동 봉쇄",
+      "en": "Amazon VPC Lattice Zero-Trust Lateral Movement Containment"
+    },
+    "prompt": {
+      "ko": "Amazon VPC Lattice 애플리케이션 네트워킹 환경에서 서비스 네트워크 인증 정책을 적용하여 침해된 서비스의 마이크로서비스 간 측면 이동을 완전 차단합니다.\n지정된 식별자 `cloudir_vpc_lattice_zero_trust_lateral_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_vpc_lattice_zero_trust_lateral_containment_v1\") 앞 20자리}`",
+      "en": "Enforce zero-trust VPC Lattice auth policies restricting service-to-service communication to quarantine compromised microservices.\nCompute the first 20 hex characters of SHA256(\"cloudir_vpc_lattice_zero_trust_lateral_containment_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_vpc_lattice_zero_trust_lateral_containment_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Lattice 인증 정책은 SigV4 기반으로 호출자 서비스의 IAM 신원을 엄격히 검증합니다.",
+        "식별자 `cloudir_vpc_lattice_zero_trust_lateral_containment_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Lattice auth policies mandate SigV4 validation across service-to-service calls.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_vpc_lattice_zero_trust_lateral_containment_v1\")."
+      ]
+    },
+    "hash": "6ae2d75f43178ceeeb959a4c1e5e9104f58fd7cc4985441f3d588703ce6a1a11"
+  },
+  {
+    "id": "t4_cloudir_security_hub_automated_remediation_asff",
+    "tier": 4,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AWS Security Hub ASFF 규격 기반 자동화 교정 파이프라인",
+      "en": "AWS Security Hub ASFF Automated Remediation Pipeline"
+    },
+    "prompt": {
+      "ko": "AWS Security Finding Format(ASFF) 표준으로 통합된 GuardDuty, Inspector, Macie 경보를 바탕으로 자동 교정 플레이북을 트리거하는 아키텍처를 분석합니다.\n지정된 식별자 `cloudir_security_hub_automated_remediation_asff_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_security_hub_automated_remediation_asff_v1\") 앞 20자리}`",
+      "en": "Construct unified remediation pipelines consuming AWS Security Finding Format (ASFF) objects across multiple security engines.\nCompute the first 20 hex characters of SHA256(\"cloudir_security_hub_automated_remediation_asff_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_security_hub_automated_remediation_asff_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "ASFF 규격은 다양한 보안 제품의 탐지 결과를 단일 JSON 스키마로 표준화합니다.",
+        "식별자 `cloudir_security_hub_automated_remediation_asff_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "ASFF normalizes diverse security findings into consistent JSON remediation targets.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_security_hub_automated_remediation_asff_v1\")."
+      ]
+    },
+    "hash": "d05640c98f70bab885035221bddd38721e8831f2639de0ade48f35a22d27edc2"
+  },
+  {
+    "id": "t4_cloudir_eks_audit_log_k8s_control_plane_forensics",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Amazon EKS 컨트롤 플레인 감사 로그 및 파드 탈출 포렌식",
+      "en": "Amazon EKS Control Plane Audit Logs & Pod Escape Forensics"
+    },
+    "prompt": {
+      "ko": "CloudWatch Logs에 기록된 Amazon EKS apiserver, authenticator, audit 로그를 분석하여 권한 있는 ServiceAccount 탈취 및 노드 탈출 행위를 조사합니다.\n지정된 식별자 `cloudir_eks_audit_log_k8s_control_plane_forensics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_eks_audit_log_k8s_control_plane_forensics_v1\") 앞 20자리}`",
+      "en": "Analyze Amazon EKS apiserver audit logs to trace privileged ServiceAccount abuse and container-to-node escape mechanisms.\nCompute the first 20 hex characters of SHA256(\"cloudir_eks_audit_log_k8s_control_plane_forensics_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_eks_audit_log_k8s_control_plane_forensics_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Kubernetes 감사 로그의 stageTimestamp와 requestURI를 조사하여 비인가 pod/exec 명령을 추출하세요.",
+        "식별자 `cloudir_eks_audit_log_k8s_control_plane_forensics_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Audit pod/exec and pod/attach requests in EKS API server logs to confirm interactive shell escapes.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_eks_audit_log_k8s_control_plane_forensics_v1\")."
+      ]
+    },
+    "hash": "bc497e70bea079cc8075694dcbef39d86dd416bd60e8cb38265f0e545d1ce964"
+  },
+  {
+    "id": "t4_cloudir_threat_actor_anti_forensics_log_evasion",
+    "tier": 4,
+    "cat": "audit",
+    "track": "cloudir",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CloudTrail StopLogging 및 로그 그룹 삭제 시도 탐지 기법",
+      "en": "Detecting CloudTrail StopLogging & Anti-Forensics Evasion"
+    },
+    "prompt": {
+      "ko": "공격자가 침해 흔적을 지우기 위해 호출하는 `StopLogging`, `DeleteTrail`, `DeleteLogGroup` 안티 포렌식 API 호출을 탐지하고 보존하는 아키텍처를 분석합니다.\n지정된 식별자 `cloudir_threat_actor_anti_forensics_log_evasion_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_threat_actor_anti_forensics_log_evasion_v1\") 앞 20자리}`",
+      "en": "Detect anti-forensics API calls including StopLogging, DeleteTrail, and DeleteLogGroup using SCP locks and immutable bucket replication.\nCompute the first 20 hex characters of SHA256(\"cloudir_threat_actor_anti_forensics_log_evasion_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_threat_actor_anti_forensics_log_evasion_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "조직 SCP로 CloudTrail 수정/삭제 API를 루트 계정까지 포함하여 원천 차단해야 합니다.",
+        "식별자 `cloudir_threat_actor_anti_forensics_log_evasion_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Organization SCPs must guard logging infrastructure against destruction by administrators.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_threat_actor_anti_forensics_log_evasion_v1\")."
+      ]
+    },
+    "hash": "893411cf76cf9fe8b2f79397296873d8dfcb3afda028d0e3cc781313224d6948"
+  },
+  {
+    "id": "t4_cloudir_capstone_full_spectrum_cloud_incident_defense",
+    "tier": 4,
+    "cat": "containment",
+    "track": "cloudir",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 풀스펙트럼 멀티 클라우드 침해사고 대응 캡스톤",
+      "en": "Enterprise Full-Spectrum Multi-Cloud Incident Response Capstone"
+    },
+    "prompt": {
+      "ko": "CloudTrail 감사, STS 세션 토큰 추적, VPC Flow 비콘 상관분석, GuardDuty 경보 트리아지 및 자동화 SOAR 격리를 유기적으로 결합한 종합 캡스톤을 완수합니다.\n지정된 식별자 `cloudir_capstone_full_spectrum_cloud_incident_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudir_capstone_full_spectrum_cloud_incident_defense_v1\") 앞 20자리}`",
+      "en": "Synthesize full-spectrum cloud IR defenses spanning CloudTrail auditing, STS token tracing, VPC NetFlow correlation, and automated SOAR containment.\nCompute the first 20 hex characters of SHA256(\"cloudir_capstone_full_spectrum_cloud_incident_defense_v1\").\n\nFormat: `FLAG{SHA256(\"cloudir_capstone_full_spectrum_cloud_incident_defense_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "컨트롤 플레인부터 네트워크, 데이터 계층까지 다계층 증거를 상관분석하여 전면적인 자동 봉쇄를 실행하세요.",
+        "식별자 `cloudir_capstone_full_spectrum_cloud_incident_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Unify defense-in-depth forensics across control plane, network, and storage tiers.",
+        "Extract first 20 hex chars of SHA256(\"cloudir_capstone_full_spectrum_cloud_incident_defense_v1\")."
+      ]
+    },
+    "hash": "c4939c1f703409d8e585bb9d0bac1c60a7a7bd866d2cb9ba6a508538ac28234b"
+  }
+]

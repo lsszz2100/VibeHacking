@@ -1104,6 +1104,102 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "읽기 전용 루트 파일시스템, /tmp 스크러빙, JSON Schema 검증 및 s3:GetObject로 한정된 IAM 최소 권한을 모두 활성화하세요."}
                 ],
             },
+            "LAB43_CLOUDTRAIL_AUDIT": {
+                "id": "LAB43_CLOUDTRAIL_AUDIT",
+                "title": "CloudIRShield: CloudTrail Anomaly Audit & Escalation Identification",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{cloudtrail_event_log_audit_anomaly_detected_8043}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "CloudTrail 관리 이벤트에서 비인가 외부 IP(198.51.100.77)가 AdministratorAccess를 부여한 AttachUserPolicy 이벤트를 식별하세요."}
+                ],
+            },
+            "LAB43_STS_S3_EXFIL": {
+                "id": "LAB43_STS_S3_EXFIL",
+                "title": "CloudIRShield: STS Token Carving & S3 Vault Exfiltration Forensics",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{cloud_sts_token_s3_data_exfiltration_traced_8043}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "탈취된 STS 세션(exfil-session-shadow-ops) 및 토큰(ASIA99CLOUDEXFIL2026)으로 수행된 corp-customer-pii-vault 다운로드 타임라인을 복원하세요."}
+                ],
+            },
+            "LAB43_VPC_C2_CORRELATE": {
+                "id": "LAB43_VPC_C2_CORRELATE",
+                "title": "CloudIRShield: VPC Flow Logs Correlation & C2 Beacon Extraction",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{vpc_flow_logs_c2_beacon_correlation_identified_8043}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "내부 워크로드 10.0.4.15에서 외부 C2 IP 203.0.113.89:8443으로 주기적으로 발송되는 TCP 비콘 NetFlow를 분리하세요."}
+                ],
+            },
+            "LAB43_GUARDDUTY_SOAR_REMEDY": {
+                "id": "LAB43_GUARDDUTY_SOAR_REMEDY",
+                "title": "CloudIRShield: GuardDuty Triage & Automated SOAR Containment",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{guardduty_soar_automated_containment_executed_8043}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "IAM 세션 폐기, Deny 경계 적용, 격리 보안그룹 부착, EBS 스냅샷 수집 4대 완제 조치를 일괄 실행하세요."}
+                ],
+            },
+            "LAB44_MANIFEST_V3_AUDIT": {
+                "id": "LAB44_MANIFEST_V3_AUDIT",
+                "title": "ExtensionGuard: Manifest V3 Permission Audit & Service Worker Inspection",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{manifest_v3_permission_audit_service_worker_analyzed_8044}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "manifest.json에서 <all_urls>, webRequestBlocking, cookies 과잉 권한과 background.js 서비스 워커를 감사하세요."}
+                ],
+            },
+            "LAB44_WAR_CONTEXT_LEAK": {
+                "id": "LAB44_WAR_CONTEXT_LEAK",
+                "title": "ExtensionGuard: Web Accessible Resources Master Token Leak",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{web_accessible_resources_cross_context_token_leaked_8044}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "web_accessible_resources 와일드카드 매칭으로 노출된 assets/auth_config.json에서 마스터 토큰(EXT_AUTH_TOKEN_779922AA)을 탈취하세요."}
+                ],
+            },
+            "LAB44_CONTENT_SCRIPT_DOM_XSS": {
+                "id": "LAB44_CONTENT_SCRIPT_DOM_XSS",
+                "title": "ExtensionGuard: Content Script DOM XSS & Password Sniffing",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{content_script_dom_xss_credential_harvested_8044}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "content.js의 postMessage innerHTML 싱크 삽입 및 password 입력 필드 스니퍼를 진단하세요."}
+                ],
+            },
+            "LAB44_DNR_CSP_HARDENING": {
+                "id": "LAB44_DNR_CSP_HARDENING",
+                "title": "ExtensionGuard: DNR Ruleset Migration & Strict CSP Hardening",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{dnr_ruleset_and_extension_csp_hardened_8044}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Declarative Net Request, 격리 월드, 엄격한 CSP, 원격 코드 실행 차단을 일괄 강제 적용하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1143,6 +1239,8 @@ class CTFState:
             ["LAB40_PROCESS_TRIAGE", "LAB40_MFT_FORENSICS", "LAB40_C2_CONTAINMENT", "LAB40_SOAR_REMEDIATION"],
             ["LAB41_DEP_CONFUSION", "LAB41_CI_INJECTION", "LAB41_SBOM_TRIAGE", "LAB41_SLSA_COSIGN"],
             ["LAB42_EVENT_INJECT", "LAB42_WARM_CONTAINER", "LAB42_IAM_ESCALATE", "LAB42_HARDEN_RUNTIME"],
+            ["LAB43_CLOUDTRAIL_AUDIT", "LAB43_STS_S3_EXFIL", "LAB43_VPC_C2_CORRELATE", "LAB43_GUARDDUTY_SOAR_REMEDY"],
+            ["LAB44_MANIFEST_V3_AUDIT", "LAB44_WAR_CONTEXT_LEAK", "LAB44_CONTENT_SCRIPT_DOM_XSS", "LAB44_DNR_CSP_HARDENING"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):
