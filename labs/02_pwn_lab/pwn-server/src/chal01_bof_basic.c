@@ -18,8 +18,8 @@ void vuln() {
     char buf[64];
     printf("Enter your input: ");
     fflush(stdout);
-    // 취약 포인트: gets()는 경계 검사 없음
-    gets(buf);
+    // 수정: gets() 대신 fgets()로 버퍼 크기 제한
+    fgets(buf, sizeof(buf), stdin);
     printf("You entered: %s\n", buf);
 }
 
