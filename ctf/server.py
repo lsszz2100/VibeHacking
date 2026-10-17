@@ -5,6 +5,8 @@ import sys
 import time
 import math
 import json
+import re
+import secrets
 import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -1457,6 +1459,10 @@ def register_team(req: TeamRegisterRequest):
     name = req.team_name.strip()
     if not name or len(name) < 2:
         raise HTTPException(status_code=400, detail="Team name too short")
+    if len(name) > 32:
+        raise HTTPException(status_code=400, detail="Team name too long (max 32 characters)")
+    if not re.match(r"^[a-zA-Z0-9_\-\. \uac00-\ud7a3\u3040-\u30ff\u4e00-\u9fff]+$", name):
+        raise HTTPException(status_code=400, detail="Team name contains invalid characters")
     if name in state.teams:
         return {"status": "exists", "message": "Team already registered", "team": name}
     now = int(time.time())
@@ -1488,7 +1494,7 @@ def submit_flag(req: FlagSubmitRequest):
         )
 
     submitted_flag = req.flag.strip()
-    is_correct = (submitted_flag == chal["flag"])
+    is_correct = secrets.compare_digest(submitted_flag, chal["flag"])
 
     now = int(time.time())
     state.submissions_log.append({
@@ -1791,6 +1797,10 @@ def ctf_home():
         const TEAM_COLORS = ['#ec4899', '#38bdf8', '#fbbf24', '#4ade80', '#a855f7', '#f43f5e', '#34d399', '#f97316'];
         let cachedTimeline = [];
 
+        function esc(s) {
+          return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
         function showToast(msg) {
           const t = document.getElementById('toastBox');
           t.innerHTML = msg;
@@ -1851,7 +1861,7 @@ def ctf_home():
             // Draw lines for each team
             const legendDiv = document.getElementById('chartLegend');
             legendDiv.innerHTML = teams.map((t, idx) => `
-              <span style="color: ${TEAM_COLORS[idx % TEAM_COLORS.length]}; font-weight: bold;">■ ${t}</span>
+              <span style="color: ${TEAM_COLORS[idx % TEAM_COLORS.length]}; font-weight: bold;">■ ${esc(t)}</span>
             `).join('');
 
             teams.forEach((t) => {
@@ -1896,7 +1906,7 @@ def ctf_home():
               const fbBadge = item.first_blood_count > 0 
                 ? `<span class="badge-fb">🩸 x${item.first_blood_count}</span>` 
                 : `<span style="color: #64748b;">-</span>`;
-              tr.innerHTML = `<td>#${item.rank}</td><td><b>${item.team}</b></td><td><b>${item.score}</b> pts</td><td>${item.solves_count}</td><td>${fbBadge}</td>`;
+              tr.innerHTML = `<td>#${item.rank}</td><td><b>${esc(item.team)}</b></td><td><b>${item.score}</b> pts</td><td>${item.solves_count}</td><td>${fbBadge}</td>`;
               tbody.appendChild(tr);
             });
 
@@ -1905,7 +1915,7 @@ def ctf_home():
               feedDiv.innerHTML = data.first_bloods.map(fb => `
                 <div class="fb-feed-item">
                   <div>
-                    <span class="fb-team">${fb.team}</span>님이 <span style="color: #e2e8f0;">${fb.title || fb.chal_id}</span> 문제를 최초 해결!
+                    <span class="fb-team">${esc(fb.team)}</span>님이 <span style="color: #e2e8f0;">${esc(fb.title || fb.chal_id)}</span> 문제를 최초 해결!
                   </div>
                   <span class="badge-fb">+${fb.bonus}pt</span>
                 </div>
@@ -1926,14 +1936,14 @@ def ctf_home():
               <div class="chal-card" onclick="selectChal('${c.id}')">
                 <div>
                   <div class="chal-header">
-                    <span class="chal-cat">${c.category}</span>
+                    <span class="chal-cat">${esc(c.category)}</span>
                     <span class="chal-points">${c.current_points}pt</span>
                   </div>
-                  <div class="chal-title">${c.title || c.id}</div>
+                  <div class="chal-title">${esc(c.title || c.id)}</div>
                 </div>
                 <div class="chal-footer">
                   <span>🚩 Solves: ${c.solves_count}</span>
-                  ${c.hints_count > 0 ? `<button class="btn-hint" onclick="event.stopPropagation(); requestHint('${c.id}', '${(c.title || c.id).replace(/'/g, "\\'")}')">💡 힌트 (50pt)</button>` : ''}
+                  ${c.hints_count > 0 ? `<button class="btn-hint" onclick="event.stopPropagation(); requestHint('${c.id}', '${esc((c.title || c.id).replace(/'/g, "\\'"))}')">💡 힌트 (50pt)</button>` : ''}
                 </div>
               </div>
             `).join('');
@@ -1945,7 +1955,7 @@ def ctf_home():
         function selectChal(id) {
           document.getElementById('chalInput').value = id;
           document.getElementById('flagInput').focus();
-          showToast(`🎯 문제 [${id}]가 선택되었습니다.`);
+          showToast(`🎯 문제 [${esc(id)}]가 선택되었습니다.`);
         }
 
         function requestHint(chalId, title) {
@@ -1955,11 +1965,11 @@ def ctf_home():
           const mBody = document.getElementById('modalBody');
           const mActions = document.getElementById('modalActions');
           
-          mTitle.innerHTML = `💡 힌트 상점: ${chalId}`;
+          mTitle.innerHTML = `💡 힌트 상점: ${esc(chalId)}`;
           mBody.innerHTML = `
-            <p style="margin-top:0;"><b>[${title}]</b> 문제의 힌트를 확인하시겠습니까?</p>
+            <p style="margin-top:0;"><b>[${esc(title)}]</b> 문제의 힌트를 확인하시겠습니까?</p>
             <div style="background: rgba(251,191,36,0.1); border-left: 3px solid var(--gold); padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 0.9rem;">
-              ⚠️ 팀 <b>${team}</b>의 점수에서 <b>50pt</b>가 차감됩니다.<br>(이미 해금한 경우 차감 없이 무료로 재확인)
+              ⚠️ 팀 <b>${esc(team)}</b>의 점수에서 <b>50pt</b>가 차감됩니다.<br>(이미 해금한 경우 차감 없이 무료로 재확인)
             </div>
           `;
           mActions.innerHTML = `
@@ -1982,22 +1992,22 @@ def ctf_home():
             });
             const data = await res.json();
             if (!res.ok) {
-              mBody.innerHTML = `<p style="color: var(--red);">❌ 해금 실패: ${data.detail || data.message}</p>`;
+              mBody.innerHTML = `<p style="color: var(--red);">❌ 해금 실패: ${esc(data.detail || data.message)}</p>`;
               return;
             }
             
             mBody.innerHTML = `
               <div style="background: rgba(74, 222, 128, 0.1); border-left: 3px solid var(--green); padding: 12px; margin-bottom: 12px; border-radius: 4px;">
                 <b style="color: var(--green);">🔓 ${data.status === 'already_unlocked' ? '기존 해금된 힌트' : '힌트 해금 완료 (-50pt)'}</b>
-                <div style="margin-top: 8px; font-family: monospace; font-size: 0.95rem; color: #f1f5f9; line-height: 1.4;">${data.hint}</div>
+                <div style="margin-top: 8px; font-family: monospace; font-size: 0.95rem; color: #f1f5f9; line-height: 1.4;">${esc(data.hint)}</div>
               </div>
-              <div style="font-size: 0.85rem; color: #94a3b8;">팀 ${team} 현재 점수: <b>${data.remaining_score}</b> pt</div>
+              <div style="font-size: 0.85rem; color: #94a3b8;">팀 ${esc(team)} 현재 점수: <b>${data.remaining_score}</b> pt</div>
             `;
             mActions.innerHTML = `<button class="btn-cancel" onclick="closeHintModal()">닫기</button>`;
             loadBoard();
             drawTimelineChart();
           } catch (e) {
-            mBody.innerHTML = `<p style="color: var(--red);">오류 발생: ${e.message}</p>`;
+            mBody.innerHTML = `<p style="color: var(--red);">오류 발생: ${esc(e.message)}</p>`;
           }
         }
 
@@ -2036,9 +2046,9 @@ def ctf_home():
             es.addEventListener('flag_solve', (e) => {
               const ev = JSON.parse(e.data);
               if (ev.first_blood) {
-                showToast(`🩸 <b>FIRST BLOOD!</b> <span style="color:#fbbf24;">${ev.team}</span>님이 <b>${ev.title || ev.chal_id}</b> 최초 해결! (+${ev.points}pt)`);
+                showToast(`🩸 <b>FIRST BLOOD!</b> <span style="color:#fbbf24;">${esc(ev.team)}</span>님이 <b>${esc(ev.title || ev.chal_id)}</b> 최초 해결! (+${ev.points}pt)`);
               } else {
-                showToast(`🚩 <b>FLAG SOLVE!</b> <span style="color:#38bdf8;">${ev.team}</span>님이 <b>${ev.title || ev.chal_id}</b> 해결! (+${ev.points}pt)`);
+                showToast(`🚩 <b>FLAG SOLVE!</b> <span style="color:#38bdf8;">${esc(ev.team)}</span>님이 <b>${esc(ev.title || ev.chal_id)}</b> 해결! (+${ev.points}pt)`);
               }
               loadBoard();
               loadChallenges();
@@ -2046,7 +2056,7 @@ def ctf_home():
             });
             es.addEventListener('hint_unlocked', (e) => {
               const ev = JSON.parse(e.data);
-              showToast(`💡 <b>힌트 해금!</b> <span style="color:#fbbf24;">${ev.team}</span>님이 <b>${ev.chal_id}</b> 힌트 구매 (-${ev.cost}pt)`);
+              showToast(`💡 <b>힌트 해금!</b> <span style="color:#fbbf24;">${esc(ev.team)}</span>님이 <b>${esc(ev.chal_id)}</b> 힌트 구매 (-${ev.cost}pt)`);
               loadBoard();
               drawTimelineChart();
             });

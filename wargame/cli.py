@@ -1,6 +1,6 @@
 """
 VibeHacking Terminal Native Wargame Client (TUI / CLI).
-Allows playing all 35 tracks and 1,225 challenges directly in terminal.
+Allows playing all 58 tracks and 2,030 challenges directly in terminal.
 """
 
 from __future__ import annotations
@@ -69,9 +69,13 @@ def load_user_progress() -> dict:
 
 
 def save_user_progress(progress: dict) -> None:
-    """사용자의 로컬 워게임 진행도 저장"""
+    """사용자의 로컬 워게임 진행도 저장 (안전한 파일 권한 설정)"""
     try:
         PROGRESS_FILE.write_text(json.dumps(progress, indent=2, ensure_ascii=False), encoding="utf-8")
+        try:
+            PROGRESS_FILE.chmod(0o600)
+        except OSError:
+            pass
     except Exception as e:
         print(yellow(f"경고: 진행도 저장 실패: {e}"), file=sys.stderr)
 

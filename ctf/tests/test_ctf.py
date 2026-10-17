@@ -313,3 +313,31 @@ def test_ctf_progressive_unlock_mode(client):
         client.post("/api/ctf/config/mode", json={"progressive_unlock": orig_mode})
 
 
+def test_team_registration_security(client):
+    """팀명 XSS 및 악의적 특수문자 검증 테스트"""
+    # 1. 특수문자 / XSS 페이로드 차단 검증
+    malicious_names = [
+        "<script>alert(1)</script>",
+        "team<img src=x onerror=alert(1)>",
+        "team' OR '1'='1",
+        "team\" onmouseover=evil()",
+        "a",  # 2자 미만
+        "A" * 35,  # 32자 초과
+    ]
+    for bad_name in malicious_names:
+        res = client.post("/api/ctf/register", json={"team_name": bad_name})
+        assert res.status_code == 400, f"Expected {bad_name} to be rejected"
+
+    # 2. 안전한 정상 팀명 허용 검증
+    valid_names = [
+        "VibeSec_Alpha",
+        "화이트해커-01",
+        "Cyber Ninja 99",
+        "team.ops-2026",
+    ]
+    for good_name in valid_names:
+        res = client.post("/api/ctf/register", json={"team_name": good_name})
+        assert res.status_code == 200, f"Expected {good_name} to be accepted"
+        assert res.json()["status"] == "registered"
+
+

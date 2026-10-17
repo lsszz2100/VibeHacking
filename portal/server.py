@@ -5,6 +5,7 @@ import sys
 import subprocess
 import socket
 import shutil
+import re
 try:
     import psutil
 except ImportError:
@@ -107,7 +108,7 @@ class BatchLabRequest(BaseModel):
 
 @app.get("/api/labs/categories")
 def get_lab_categories():
-    """37개 랩 카테고리별 통계 및 분포 반환"""
+    """44개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
     stats: Dict[str, dict] = {}
     for lid, meta in LABS.items():
         cat = get_lab_category(lid)
@@ -128,7 +129,7 @@ def get_lab_categories():
 
 @app.get("/api/labs")
 def list_labs(category: Optional[str] = None):
-    """36개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
+    """44개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
     result = []
     target_cat = category.strip().lower() if category else None
     for lid, meta in sorted(LABS.items()):
@@ -318,6 +319,30 @@ DANGEROUS_PATTERNS = [
     "> /dev/sd", "> /dev/nvme", "dd if=/dev/zero",
 ]
 
+DANGEROUS_REGEXES = [
+    re.compile(r"\brm\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\s+([/~*]|\$HOME)", re.IGNORECASE),
+    re.compile(r"\brm\s+-(?:r\s+-f|f\s+-r)\s+([/~*]|\$HOME)", re.IGNORECASE),
+    re.compile(r"\bmkfs(\.[a-z0-9]+)?\b", re.IGNORECASE),
+    re.compile(r"\bdd\s+.*(of=/dev/(sd[a-z]|nvme|hd[a-z]|vd[a-z])|if=/dev/zero)", re.IGNORECASE),
+    re.compile(r">:?\s*/dev/(sd[a-z]|nvme|hd[a-z]|vd[a-z])", re.IGNORECASE),
+    re.compile(r":\(\)\s*\{\s*:\|:&\s*\}\s*;\s*:", re.IGNORECASE),
+    re.compile(r"\b(shutdown|reboot|poweroff|init\s+[06])\b", re.IGNORECASE),
+    re.compile(r"\bbash\s+-i\s+>&?\s*/dev/tcp/", re.IGNORECASE),
+]
+
+
+def is_dangerous_command(cmd: str) -> Optional[str]:
+    """잠재적으로 시스템을 파괴하거나 탈취할 수 있는 위험 명령어 패턴 검증"""
+    norm_cmd = cmd.strip()
+    for danger in DANGEROUS_PATTERNS:
+        if danger in norm_cmd:
+            return danger
+    for reg in DANGEROUS_REGEXES:
+        m = reg.search(norm_cmd)
+        if m:
+            return m.group(0)
+    return None
+
 
 @app.post("/api/labs/{lab_id}/exec")
 def exec_in_lab(lab_id: str, req: ExecRequest):
@@ -335,13 +360,13 @@ def exec_in_lab(lab_id: str, req: ExecRequest):
         raise HTTPException(status_code=400, detail="Invalid lab directory path")
 
     # 호스트 파괴 명령어 차단
-    for danger in DANGEROUS_PATTERNS:
-        if danger in cmd_str:
-            return {
-                "status": "blocked",
-                "exit_code": 1,
-                "output": f"[SECURITY ERROR] 위험한 시스템 파괴 명령어가 차단되었습니다: {danger}"
-            }
+    danger = is_dangerous_command(cmd_str)
+    if danger:
+        return {
+            "status": "blocked",
+            "exit_code": 1,
+            "output": f"[SECURITY ERROR] 위험한 시스템 파괴 명령어가 차단되었습니다: {danger}"
+        }
     
     try:
         proc = subprocess.run(cmd_str, shell=True, cwd=str(target_dir), capture_output=True, text=True, timeout=10)

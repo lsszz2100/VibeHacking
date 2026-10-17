@@ -954,7 +954,7 @@
     const timeStr = new Date().toTimeString().split(" ")[0] + "." + Math.floor(Math.random()*900 + 100);
     const item = document.createElement("div");
     item.className = "frame-item" + (isInjected ? " frame-injected" : "");
-    item.innerHTML = '<span>[' + timeStr + '] ID:' + id + ' (DLC:' + dlc + ') DATA:' + data + '</span>' +
+    item.innerHTML = '<span>[' + esc(timeStr) + '] ID:' + esc(id) + ' (DLC:' + esc(dlc) + ') DATA:' + esc(data) + '</span>' +
                      '<span>' + (isInjected ? '⚡ INJECTED' : 'RX') + '</span>';
     logEl.appendChild(item);
     while (logEl.children.length > 35) logEl.removeChild(logEl.firstChild);

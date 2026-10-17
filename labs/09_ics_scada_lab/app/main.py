@@ -11,13 +11,22 @@ import socket
 import struct
 import threading
 import time
+from contextlib import asynccontextmanager
 from typing import Dict, Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-app = FastAPI(title="Industrial Process Control HMI - Hydrocracker Train #2")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    threading.Thread(target=simulation_worker, daemon=True).start()
+    threading.Thread(target=modbus_server_worker, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="Industrial Process Control HMI - Hydrocracker Train #2", lifespan=lifespan)
 
 # Static files directory
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -263,12 +272,6 @@ def modbus_server_worker():
 
 
 # Web Endpoints
-@app.on_event("startup")
-def startup_event():
-    threading.Thread(target=simulation_worker, daemon=True).start()
-    threading.Thread(target=modbus_server_worker, daemon=True).start()
-
-
 @app.get("/api/telemetry")
 def get_telemetry():
     with plc.lock:
