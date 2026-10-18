@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  pqc-lab:
+    build: .
+    container_name: vibehacking-lab45-pqc
+    ports:
+      - "127.0.0.1:8045:8045"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=45"

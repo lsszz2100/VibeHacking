@@ -26,6 +26,7 @@ import re
 import subprocess
 import sys
 import textwrap
+from datetime import datetime
 from pathlib import Path
 
 # ── 색상 코드 (터미널 지원 여부 자동 감지) ──────────────────────────────────
@@ -501,6 +502,14 @@ LABS: dict[str, dict] = {
         "url":  "웹 콘솔 & 확장 프로그램 보안 대시보드: http://localhost:8044",
         "difficulty": "★★★★★",
         "related": [51, 1, 31],
+    },
+    "45": {
+        "name": "양자 내성 암호 & PQC 마이그레이션 실전 랩",
+        "dir":  "45_quantum_cryptography_pqc_lab",
+        "desc": "PQCShield: 고전 PKI 트래픽 HNDL 위협 & 쇼어 알고리즘 소인수분해 취약성 · TLS 1.3 하이브리드 KEM MitM 다운그레이드 공격 · 격자 암호 다항식 연산 비상수 시간 타이밍 부채널 & 결함 주입 감사 · NIST FIPS 203 ML-KEM-768 & FIPS 204 ML-DSA-65 전면 마이그레이션 및 Dual-KDF 하드닝",
+        "url":  "웹 콘솔 & PQC 보안 대시보드: http://localhost:8045",
+        "difficulty": "★★★★★",
+        "related": [57, 16, 39],
     },
 }
 
@@ -1520,6 +1529,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8042, "Lab 42 (ServerlessGuard Serverless Security Lab)"),
         (8043, "Lab 43 (CloudIRShield Cloud Incident Response Lab)"),
         (8044, "Lab 44 (ExtensionGuard Browser Extension Security Lab)"),
+        (8045, "Lab 45 (PQCShield Quantum Cryptography Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2055,6 +2065,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_bundle = sub.add_parser("bundle", help="오프라인 배포 무결성 검증 및 패키징 번들 생성")
     p_bundle.add_argument("--tar", metavar="OUTPUT_PATH", help="tar.gz 압축 패키지 생성 경로")
 
+    # report
+    p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON, MITRE ATT&CK & CVSS 3.1)")
+    report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
+
+    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 45개 랩)")
+    p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 45)")
+    p_rep_gen.add_argument("--format", choices=["md", "html", "json"], default="md", help="출력 형식 (기본값: md)")
+    p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
+
+    report_sub.add_parser("summary", help="전체 45개 랩 취약점 통계 및 심각도 요약")
+    report_sub.add_parser("list-templates", help="지원되는 보고서 포맷 및 템플릿 목록")
+
     # setup-docker
     p_docker = sub.add_parser("setup-docker", help="Docker 및 Docker Compose 환경 자동 설치/설정 가이드")
     p_docker.add_argument("--dry-run", action="store_true", help="실제 실행 없이 실행될 명령어만 출력")
@@ -2073,6 +2095,62 @@ def cmd_bundle(args: argparse.Namespace) -> None:
     if getattr(args, "tar", None):
         cmd.extend(["--tar", args.tar])
     subprocess.run(cmd)
+
+
+def cmd_report(args: argparse.Namespace) -> None:
+    from tools.report_generator import SecurityReportGenerator
+
+    cmd = getattr(args, "report_cmd", None)
+    if cmd == "summary":
+        gen = SecurityReportGenerator()
+        stats = gen.get_summary_stats()
+        print(bold(cyan("\n🛡️ VibeHacking 45개 랩 취약점 진단 요약 (Executive Summary)")))
+        print(f"  • 진단 대상 랩: {bold(str(stats['total_labs']))}개 랩")
+        print(f"  • 식별된 취약점: {bold(str(stats['total_findings']))}건")
+        print(f"  • 평균 CVSS 3.1 스코어: {bold(str(stats['average_cvss']))} / 10.0")
+        print(bold("\n📊 심각도 분포:"))
+        sev = stats['severity_counts']
+        print(f"  - 🚨 Critical: {bold(red(str(sev.get('Critical', 0))))}건")
+        print(f"  - ⚠️ High:     {bold(yellow(str(sev.get('High', 0))))}건")
+        print(f"  - 🟡 Medium:   {bold(cyan(str(sev.get('Medium', 0))))}건")
+        print(f"  - 🟢 Low:      {bold(green(str(sev.get('Low', 0))))}건")
+        print()
+        return
+
+    if cmd == "list-templates":
+        print(bold(cyan("\n📋 지원되는 보고서 포맷 (Supported Formats)")))
+        print(f"  1. {bold('md')}   : GitHub Flavored Markdown (깃허브 리포트, Wiki, PR 요약용)")
+        print(f"  2. {bold('html')} : 반응형 다크 테마 HTML5 (인쇄/PDF 친화적 스타일 내장)")
+        print(f"  3. {bold('json')} : 기계 판독형 구조화 데이터 (CI/CD, SIEM, SOAR 파이프라인 연계용)")
+        print()
+        return
+
+    # default: generate
+    selected_labs = getattr(args, "lab_id", None)
+    fmt = getattr(args, "format", "md")
+    output_path = getattr(args, "output", None)
+
+    gen = SecurityReportGenerator(selected_labs=selected_labs)
+    if fmt == "json":
+        res = gen.to_json()
+    elif fmt == "html":
+        res = gen.to_html()
+    else:
+        res = gen.to_markdown()
+
+    if output_path:
+        out = Path(output_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(res, encoding="utf-8")
+        print(green(f"\n✓ 진단 보고서가 성공적으로 생성되었습니다: {bold(str(out))} ({len(res)} bytes)\n"))
+    else:
+        reports_dir = REPO_ROOT / "reports"
+        reports_dir.mkdir(parents=True, exist_ok=True)
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        auto_file = reports_dir / f"security_report_{date_str}.{fmt}"
+        auto_file.write_text(res, encoding="utf-8")
+        print(green(f"\n✓ 진단 보고서가 저장되었습니다: {bold(str(auto_file))} ({len(res)} bytes)"))
+        print(dim("  (특정 경로 저장은 -o / --output <경로> 옵션을 사용하세요)\n"))
 
 
 def main() -> None:
@@ -2099,6 +2177,7 @@ def main() -> None:
         "portal":       cmd_portal,
         "ctf":          cmd_ctf,
         "bundle":       cmd_bundle,
+        "report":       cmd_report,
         "logs":         lambda a: _lab_logs(a.lab_id, getattr(a, "follow", False), getattr(a, "tail", 50)),
         "solve":        lambda a: _lab_solve(a.lab_id, getattr(a, "step", 1)),
         "update":       cmd_update,

@@ -883,6 +883,8 @@
     renderSbom("dep_confusion");
     renderServerless("event_inject");
     renderCloudIR("cloudtrail_audit");
+    renderExtSec("manifest_audit");
+    renderPQC("shor_audit");
   }
 
   function hidePlayground(){
@@ -893,7 +895,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -3026,6 +3028,120 @@
     verdictOut.textContent = verdictText;
   }
 
+  /* ===== 15. Lattice Key Exchange & Post-Quantum Cryptography (PQC) Inspector ===== */
+  let currentPQCScenario = "shor_audit";
+
+  function renderPQC(scenario){
+    if (scenario) currentPQCScenario = scenario;
+    const targetEl = document.getElementById("pqcTargetInput");
+    const primEl = document.getElementById("pqcPrimitiveSelect");
+    const traceBadge = document.getElementById("pqcTraceBadge");
+    const verdictBadge = document.getElementById("pqcVerdictBadge");
+    const traceOut = document.getElementById("pqcTraceOutput");
+    const verdictOut = document.getElementById("pqcVerdictOutput");
+
+    if (!targetEl || !primEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario === "shor_audit"){
+      targetEl.value = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384";
+      primEl.value = "classical_rsa";
+    } else if (scenario === "hybrid_downgrade"){
+      targetEl.value = "TLS_X25519_KYBER768_CHACHA20_POLY1305";
+      primEl.value = "hybrid_kem";
+    } else if (scenario === "lattice_fault"){
+      targetEl.value = "KYBER-768-CCA-DECAPSULATION-ENGINE";
+      primEl.value = "ml_kem_768";
+    } else if (scenario === "pqc_harden"){
+      targetEl.value = "FIPS-203-ML-KEM-768 + FIPS-204-ML-DSA-65 (Dual-Stack)";
+      primEl.value = "ml_kem_768";
+    }
+
+    const mode = currentPQCScenario;
+    let traceText = "";
+    let verdictText = "";
+
+    if (mode === "shor_audit"){
+      traceText =
+        "[Quantum Surface Telemetry (RSA-2048 & ECDSA-P256 Vulnerability)]:\n" +
+        "  Target Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384\n" +
+        "  Classical Hardness: Integer Factorization & Elliptic Curve DLP\n" +
+        "  Quantum Complexity: O(poly(log N)) via Shor's Algorithm (Order Finding)\n" +
+        "  Cryptanalytic Threat: Harvest Now, Decrypt Later (HNDL)\n" +
+        "  Physical Qubit Requirement: ~4,096 logical qubits / ~20M physical qubits\n" +
+        "  Audit Finding: Asymmetric key exchange & auth vulnerable to quantum factorization.";
+      verdictText =
+        "[Quantum Threat Vulnerability Assessment]:\n" +
+        "  - Forward Secrecy: COMPROMISED retroactively upon Q-Day\n" +
+        "  - Signature Forgery: Trivial private key recovery via period finding\n" +
+        "  - Immediate Risk: Long-lived confidential corporate traffic exposure\n" +
+        "Verdict: 🚨 CRITICAL: QUANTUM DECRYPTION HAZARD IDENTIFIED (Shor Poly-Time Factoring)";
+      traceBadge.textContent = "QUANTUM: COMPROMISED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "SECURITY: 0-BIT PQC";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "hybrid_downgrade"){
+      traceText =
+        "[TLS 1.3 Handshake Extension Tampering & Downgrade Trace]:\n" +
+        "  Client Hello Advertised: key_share: [x25519_kyber768 (0x6399), x25519 (0x001d)]\n" +
+        "  Intermediary Manipulation: Stripped 0x6399 extension packet payload\n" +
+        "  Server Response: Selected Group 0x001d (Classical X25519 only)\n" +
+        "  Combined Secret KDF: SK = HKDF-Extract(classical_shared_secret, NULL)\n" +
+        "  Audit Finding: Client silently accepted classical-only curve fallback.";
+      verdictText =
+        "[Cryptographic Downgrade Assessment]:\n" +
+        "  - Downgrade Resilience: FAILED (Fallback permitted without alert)\n" +
+        "  - Security Delta: 128-bit quantum security -> 0-bit classical security\n" +
+        "  - Mitigation Required: Draft TLS hybrid downgrade prevention alert\n" +
+        "Verdict: 🚨 HIGH: CRYPTOGRAPHIC DOWNGRADE DETECTED (Lattice KEM Stripped)";
+      traceBadge.textContent = "HANDSHAKE: DOWNGRADE";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "MITM: DOWNGRADED";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "lattice_fault"){
+      traceText =
+        "[Fujisaki-Okamoto (FO) Transform Decapsulation Fault Audit]:\n" +
+        "  Target Primitive: ML-KEM-768 (Kyber) Decapsulation Routine\n" +
+        "  Injected Disturbance: Clock glitch during implicit rejection equality check\n" +
+        "  Decapsulation Step: c' = Encrypt(pk, m'); if (c != c') return K_fake\n" +
+        "  Observed Behavior: Equality branch bypassed; corrupted decapsulation returned\n" +
+        "  Side-Channel Telemetry: Non-constant time execution variance detected (Δt = 420ns)";
+      verdictText =
+        "[Lattice Implementation Fault Analysis]:\n" +
+        "  - Hardware Vulnerability: Incomplete re-encryption verification\n" +
+        "  - Key Recovery Risk: Chosen ciphertext attack reveals polynomial error vector s\n" +
+        "  - Defense Required: Constant-time arithmetic & redundant register verification\n" +
+        "Verdict: ⚠️ HIGH: FAULT INJECTION DETECTED (Implicit Re-encryption Bypassed)";
+      traceBadge.textContent = "DECAPSULATION: FAULT";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "SIDE-CHANNEL: LEAK";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else { // pqc_harden
+      traceText =
+        "[PQCShield Post-Quantum Defense-in-Depth Hardening Enforced]:\n" +
+        "  ✓ [KEM Layer] FIPS 203 ML-KEM-768 (Module-LWE, 256-bit quantum security)\n" +
+        "  ✓ [Signature Layer] FIPS 204 ML-DSA-65 (Module-LWE Fiat-Shamir with Aborts)\n" +
+        "  ✓ [Hybrid TLS] Enforced strict dual-key KDF (X25519 + ML-KEM-768, non-downgradable)\n" +
+        "  ✓ [Implementation] Redundant re-encryption validation & constant-time polynomial NTT";
+      verdictText =
+        "[PQC Posture & Crypto Agility Summary]:\n" +
+        "  - Quantum Resistance: 100% PROTECTED against Shor & Grover algorithms\n" +
+        "  - Downward Protection: Strict cipher suite pin prevents MITM stripping\n" +
+        "  - Side-Channel Hardening: Masked sampling & verified constant-time NTT\n" +
+        "  - Compliance: NIST FIPS 203/204/205 & BSI PQC Migration Guidelines\n" +
+        "Verdict: 🟢 100% POST-QUANTUM HARDENED POSTURE ENFORCED (FIPS 203/204)";
+      traceBadge.textContent = "LATTICE: FIPS-203/204";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "STATUS: QUANTUM-SAFE";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -3309,6 +3425,8 @@
         openPlayground("cloudir"); break;
       case "extsec": case "manifestv3": case "contentscript": case "dnr": case "war":
         openPlayground("extsec"); break;
+      case "pqc": case "lattice": case "kem": case "kyber": case "dilithium": case "fips203":
+        openPlayground("pqc"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -3877,6 +3995,21 @@
       audio();
       const p = btn.getAttribute("data-extsec-preset");
       renderExtSec(p);
+    });
+  });
+
+  // Lattice Key Exchange & Post-Quantum Cryptography (PQC) Inspector Controls
+  const pqcRunBtn = document.getElementById("pqcRunBtn");
+  if (pqcRunBtn) pqcRunBtn.addEventListener("click", () => { audio(); renderPQC(); });
+  const pqcTargetInput = document.getElementById("pqcTargetInput");
+  if (pqcTargetInput) pqcTargetInput.addEventListener("input", () => renderPQC());
+  const pqcPrimitiveSelect = document.getElementById("pqcPrimitiveSelect");
+  if (pqcPrimitiveSelect) pqcPrimitiveSelect.addEventListener("change", () => renderPQC());
+  document.querySelectorAll("[data-pqc-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-pqc-preset");
+      renderPQC(p);
     });
   });
 

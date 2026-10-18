@@ -1202,6 +1202,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "Declarative Net Request, 격리 월드, 엄격한 CSP, 원격 코드 실행 차단을 일괄 강제 적용하세요."}
                 ],
             },
+            "LAB45_HNDL_SHOR_AUDIT": {
+                "id": "LAB45_HNDL_SHOR_AUDIT",
+                "title": "PQCShield: Classical PKI & Harvest-Now-Decrypt-Later Shor Vulnerability",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{classical_pki_hndl_shor_vulnerable_8045}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "도청된 TLS 세션 목록에서 RSA-2048 세션을 식별하고 쇼어 알고리즘 소인수분해 취약점을 분석하세요."}
+                ],
+            },
+            "LAB45_HYBRID_KEM_DOWNGRADE": {
+                "id": "LAB45_HYBRID_KEM_DOWNGRADE",
+                "title": "PQCShield: TLS 1.3 Hybrid KEM MitM Extension Stripping Downgrade",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{hybrid_kem_downgrade_mitm_exploited_8045}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "ClientHello에서 x25519_kyber768 확장을 제거하여 고전 x25519로 강제 다운그레이드 협상시키세요."}
+                ],
+            },
+            "LAB45_LATTICE_FAULT_TRIAGE": {
+                "id": "LAB45_LATTICE_FAULT_TRIAGE",
+                "title": "PQCShield: Lattice Non-Constant Time Side-Channel & Fault Injection Triage",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{lattice_fault_injection_leak_neutralized_8045}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "NTT 압축 분기문 타이밍 편차를 식별하고 비트 연산 기반 상수 시간(constant_time_ntt) 완화책을 적용하세요."}
+                ],
+            },
+            "LAB45_FIPS203_204_HARDEN": {
+                "id": "LAB45_FIPS203_204_HARDEN",
+                "title": "PQCShield: NIST FIPS 203 ML-KEM & FIPS 204 ML-DSA Migration Hardening",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{pqc_fips203_mlkem768_mldsa65_hardened_8045}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "FIPS 203 ML-KEM-768, FIPS 204 ML-DSA-65, RFC 9370 Dual-KDF 바인딩 및 Strict PQC 정책을 전면 배포하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1243,6 +1291,7 @@ class CTFState:
             ["LAB42_EVENT_INJECT", "LAB42_WARM_CONTAINER", "LAB42_IAM_ESCALATE", "LAB42_HARDEN_RUNTIME"],
             ["LAB43_CLOUDTRAIL_AUDIT", "LAB43_STS_S3_EXFIL", "LAB43_VPC_C2_CORRELATE", "LAB43_GUARDDUTY_SOAR_REMEDY"],
             ["LAB44_MANIFEST_V3_AUDIT", "LAB44_WAR_CONTEXT_LEAK", "LAB44_CONTENT_SCRIPT_DOM_XSS", "LAB44_DNR_CSP_HARDENING"],
+            ["LAB45_HNDL_SHOR_AUDIT", "LAB45_HYBRID_KEM_DOWNGRADE", "LAB45_LATTICE_FAULT_TRIAGE", "LAB45_FIPS203_204_HARDEN"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

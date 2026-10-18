@@ -475,6 +475,14 @@ const ALLOWLIST = new Map([
   ['t4_extsec_multi_extension_privilege_escalation_chain -> t4_deputy', 'Cross-extension messaging exploits Confused Deputy'],
   ['t4_extsec_webgpu_and_wasm_in_isolated_world -> t3_cryptojacking', 'WebAssembly/WebGPU compute abuse causes cryptojacking'],
   ['t4_extsec_zero_trust_browser_architecture_and_extension_hardening -> t4_adgpo', 'Zero-trust enterprise browser policy applies GPO'],
+  // Post-Quantum Cryptography & PQC domain terms
+  ['t2_pqc_ml_kem_768_parameter_set_and_key_size -> t0_seed', 'ML-KEM-768 public key incorporates 32-byte deterministic seed'],
+  ['t2_pqc_fujisaki_okamoto_transform_cca_security -> t3_pkes', 'Fujisaki-Okamoto transform converts CPA lattice PKEs into IND-CCA2 KEMs'],
+  ['t2_pqc_quantum_resistant_x509_certificate_chains -> t0_mtu', 'Large post-quantum certificates require MTU consideration'],
+  ['t3_pqc_post_quantum_ipsec_and_vpn_migration -> t2_ipsec', 'PQC migration analyzes post-quantum IPsec architectures'],
+  ['t3_pqc_stateful_hash_based_signatures_xmss_lms -> t1_snapshot', 'Stateful hash signatures caution against VM snapshot rollback'],
+  ['t4_pqc_enterprise_pqc_asset_inventory_and_cbom -> t3_sccyclonedx', 'Cryptographic Bill of Materials follows CycloneDX 1.6 format'],
+  ['t4_pqc_capstone_enterprise_pqc_defense_architecture -> t2_ipsec', 'Capstone architecture transitions enterprise IPsec VPNs'],
 ]);
 
 function loadChallenges() {

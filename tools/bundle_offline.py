@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 VibeHacking Offline Packager & Integrity Verifier
-Verifies that all 39 Labs, 53 Wargame Tracks (1,855 Challenges),
-79 Textbook Chapters, and Offline Static Assets are completely present and sound.
+Verifies that all 45 Labs, 59 Wargame Tracks (2,065 Challenges),
+Deep-Dive Textbook Chapters, and Offline Static Assets are completely present and sound.
 Optionally packages the offline bundle into an archive.
 """
 
@@ -33,11 +33,11 @@ def check_textbook():
     return True, f"{len(sections)} sections, {total_md} chapters"
 
 def check_labs():
-    print("[2/5] Checking 44 Hands-on Labs...")
+    print("[2/5] Checking 45 Hands-on Labs...")
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
-    if len(lab_dirs) != 44:
-        return False, f"Expected 44 labs, found {len(lab_dirs)}"
+    if len(lab_dirs) != 45:
+        return False, f"Expected 45 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,10 +62,10 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 2030:
-        return False, f"Expected 2,030 challenges in challenges.js, found {id_count}"
+    if id_count != 2065:
+        return False, f"Expected 2,065 challenges in challenges.js, found {id_count}"
     
-    print(f"  ✓ Wargame database verified: {id_count} challenges across 58 tracks.")
+    print(f"  ✓ Wargame database verified: {id_count} challenges across 59 tracks.")
     return True, f"{id_count} challenges verified"
 
 def check_offline_assets():

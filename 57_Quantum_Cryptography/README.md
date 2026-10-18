@@ -13,6 +13,7 @@
 | [04_nist_pqc_standards.md](./04_nist_pqc_standards.md) | **4. NIST PQC 표준화: 라운드별 현황, 최종 선정, FIPS 표준** — NIST(미국 국립표준기술연구소)가 양자 컴퓨터 위협에 대비하여 2016년부터 8년간 전 세계 암호학자들과 함께 진행한 차세대 암호 표준화 프로젝트이다. 2024년 8월에 최종 3개 ... |
 | [05_pqc_migration_strategy.md](./05_pqc_migration_strategy.md) | **5. PQC 마이그레이션 전략: 암호화 자산 인벤토리부터 전환까지** — PQC 마이그레이션은 기업이나 조직의 기존 암호 시스템(RSA, ECC 등)을 양자 컴퓨터에 안전한 새 표준(ML-KEM, ML-DSA 등)으로 전환하는 프로세스이다. 단순히 알고리즘... |
 | [06_quantum_crypto_ctf_lab.md](./06_quantum_crypto_ctf_lab.md) | **양자 암호학 CTF 실습 랩** — 양자 컴퓨팅 시대의 암호학적 취약점을 CTF 형식으로 학습한다. 쇼어 알고리즘, 그로버 알고리즘, 후양자 암호의 약점을 실습한다. |
+| [07_post_quantum_cryptography_and_lattice_migration_deepdive.md](./07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | **7. 양자 내성 암호(PQC) 심층 분석: LWE, ML-KEM/ML-DSA, 하이브리드 키 교환 & 마이그레이션** — 쇼어 알고리즘 위협과 HNDL 수집 공격 대비, NIST FIPS 203/204 표준, Module-LWE 격자 수학, TLS 1.3 하이브리드 KEM 및 부채널 공격 방어 실무. |
 
 ## 🎯 학습 목표
 

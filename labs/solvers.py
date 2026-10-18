@@ -1166,6 +1166,49 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Extension Hardening Applied! -> FLAG{dnr_ruleset_and_extension_csp_hardened_8044}"
             }
         ]
+    },
+    "45": {
+        "title": "Lab 45: PQCShield — 양자 내성 암호 & PQC 마이그레이션",
+        "description": "양자 컴퓨팅 위협 대비 고전 암호(RSA/ECDH) HNDL 취약점 분석, 하이브리드 KEM 다운그레이드 공격, 격자 암호 부채널/결함 감사 및 NIST FIPS 203/204 표준 하드닝",
+        "port": 8045,
+        "steps": [
+            {
+                "step": 1,
+                "name": "고전 PKI 트래픽 HNDL 위험 분석 및 쇼어 알고리즘 소인수분해 취약성 판별",
+                "target": "POST /api/v1/pqc/traffic/analyze (session_id, analysis_type)",
+                "poc_explanation": "도청된 TLS 세션을 전수 조사하여 RSA-2048/ECDH 키 교환의 양자 컴퓨터 소인수분해 및 '지금 수집, 나중 해독(HNDL)' 노출 위험을 분석합니다.",
+                "exploit_payload": '{"session_id": "sess-tls-001", "analysis_type": "shor_factorization"}',
+                "defense": "고전 비대칭키 단독 사용 중단 및 양자 안전 키 캡슐화 메커니즘(ML-KEM)으로 마이그레이션.",
+                "sample_output": "⚛️ Shor Vulnerability Confirmed! -> FLAG{classical_pki_hndl_shor_vulnerable_8045}"
+            },
+            {
+                "step": 2,
+                "name": "TLS 1.3 하이브리드 KEM MitM 다운그레이드 공격 및 세션 가로채기",
+                "target": "POST /api/v1/pqc/hybrid/downgrade-exploit (strip_extension, target_group)",
+                "poc_explanation": "중간자(MitM) 공격자가 ClientHello에서 x25519_kyber768 확장을 제거하여 서버가 고전 x25519로 강제 다운그레이드 협상하도록 유도합니다.",
+                "exploit_payload": '{"strip_extension": "x25519_kyber768", "target_group": "x25519"}',
+                "defense": "서버 TLS 스택에 Strict PQC Policy 적용 및 고전 암호 폴백(allow_classical_fallback) 원천 비활성화.",
+                "sample_output": "⚡ Hybrid Downgrade Exploited! -> FLAG{hybrid_kem_downgrade_mitm_exploited_8045}"
+            },
+            {
+                "step": 3,
+                "name": "격자 암호 다항식 연산 비상수 시간 타이밍 부채널 및 결함 주입 감사",
+                "target": "POST /api/v1/pqc/lattice/fault-audit (audit_target, remediation_proposal)",
+                "poc_explanation": "격자 오라클의 다항식 환 압축 분기문 타이밍 편차 및 Fiat-Shamir 거부 샘플링 글리치 결함 주입 벡터를 탐지하고 완화책을 검증합니다.",
+                "exploit_payload": '{"audit_target": "timing_skew", "remediation_proposal": "constant_time_ntt"}',
+                "defense": "다항식 계수 압축 및 감산 루틴에 비트 연산 기반 상수 시간(Constant-time) 알고리즘 적용 및 엄격한 사후 노름 검증.",
+                "sample_output": "🔍 Lattice Side-Channel Triage Verified! -> FLAG{lattice_fault_injection_leak_neutralized_8045}"
+            },
+            {
+                "step": 4,
+                "name": "NIST FIPS 203 ML-KEM & FIPS 204 ML-DSA 마이그레이션 및 Dual-KDF 하드닝",
+                "target": "POST /api/v1/pqc/harden (strict_pqc_required, kem_standard, signature_standard, dual_kdf_binding, constant_time_ntt)",
+                "poc_explanation": "FIPS 203 ML-KEM-768 및 FIPS 204 ML-DSA-65를 전면 배포하고, RFC 9370 Dual-KDF 바인딩 및 Strict PQC 정책을 강제합니다.",
+                "exploit_payload": '{"strict_pqc_required": true, "kem_standard": "FIPS 203 (ML-KEM-768)", "signature_standard": "FIPS 204 (ML-DSA-65)", "dual_kdf_binding": true, "constant_time_ntt": true}',
+                "defense": "NIST 공식 PQC 표준 준수: ML-KEM-768 KEM, ML-DSA-65 서명 체인, 하이브리드 Dual-KDF 및 상수 시간 NTT 보장.",
+                "sample_output": "🛡️ PQC Hardening Applied! -> FLAG{pqc_fips203_mlkem768_mldsa65_hardened_8045}"
+            }
+        ]
     }
 }
 
