@@ -2066,12 +2066,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_bundle.add_argument("--tar", metavar="OUTPUT_PATH", help="tar.gz 압축 패키지 생성 경로")
 
     # report
-    p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON, MITRE ATT&CK & CVSS 3.1)")
+    p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON/CSV, MITRE ATT&CK & CVSS 3.1)")
     report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
 
     p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 45개 랩)")
     p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 45)")
-    p_rep_gen.add_argument("--format", choices=["md", "html", "json"], default="md", help="출력 형식 (기본값: md)")
+    p_rep_gen.add_argument("--severity", nargs="*", metavar="SEV", help="위험도 등급 필터 (Critical High Medium Low)")
+    p_rep_gen.add_argument("--live", action="store_true", help="현재 실행 중인 랩 컨테이너 실시간 공격 표면 감지")
+    p_rep_gen.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="출력 형식 (기본값: md)")
     p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
 
     report_sub.add_parser("summary", help="전체 45개 랩 취약점 통계 및 심각도 요약")
@@ -2122,19 +2124,28 @@ def cmd_report(args: argparse.Namespace) -> None:
         print(f"  1. {bold('md')}   : GitHub Flavored Markdown (깃허브 리포트, Wiki, PR 요약용)")
         print(f"  2. {bold('html')} : 반응형 다크 테마 HTML5 (인쇄/PDF 친화적 스타일 내장)")
         print(f"  3. {bold('json')} : 기계 판독형 구조화 데이터 (CI/CD, SIEM, SOAR 파이프라인 연계용)")
+        print(f"  4. {bold('csv')}  : 감사팀 및 스프레드시트용 구조화 데이터 (UTF-8 BOM 내장)")
         print()
         return
 
     # default: generate
     selected_labs = getattr(args, "lab_id", None)
+    severity_filter = getattr(args, "severity", None)
+    live_status = getattr(args, "live", False)
     fmt = getattr(args, "format", "md")
     output_path = getattr(args, "output", None)
 
-    gen = SecurityReportGenerator(selected_labs=selected_labs)
+    gen = SecurityReportGenerator(
+        selected_labs=selected_labs,
+        severity_filter=severity_filter,
+        live_status=live_status
+    )
     if fmt == "json":
         res = gen.to_json()
     elif fmt == "html":
         res = gen.to_html()
+    elif fmt == "csv":
+        res = gen.to_csv()
     else:
         res = gen.to_markdown()
 

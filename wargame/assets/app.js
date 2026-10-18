@@ -3032,7 +3032,6 @@
   let currentPQCScenario = "shor_audit";
 
   function renderPQC(scenario){
-    if (scenario) currentPQCScenario = scenario;
     const targetEl = document.getElementById("pqcTargetInput");
     const primEl = document.getElementById("pqcPrimitiveSelect");
     const traceBadge = document.getElementById("pqcTraceBadge");
@@ -3042,18 +3041,26 @@
 
     if (!targetEl || !primEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
 
-    if (scenario === "shor_audit"){
-      targetEl.value = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384";
-      primEl.value = "classical_rsa";
-    } else if (scenario === "hybrid_downgrade"){
-      targetEl.value = "TLS_X25519_KYBER768_CHACHA20_POLY1305";
-      primEl.value = "hybrid_kem";
-    } else if (scenario === "lattice_fault"){
-      targetEl.value = "KYBER-768-CCA-DECAPSULATION-ENGINE";
-      primEl.value = "ml_kem_768";
-    } else if (scenario === "pqc_harden"){
-      targetEl.value = "FIPS-203-ML-KEM-768 + FIPS-204-ML-DSA-65 (Dual-Stack)";
-      primEl.value = "ml_kem_768";
+    if (scenario){
+      currentPQCScenario = scenario;
+      if (scenario === "shor_audit"){
+        targetEl.value = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384";
+        primEl.value = "classical_rsa";
+      } else if (scenario === "hybrid_downgrade"){
+        targetEl.value = "TLS_X25519_KYBER768_CHACHA20_POLY1305";
+        primEl.value = "hybrid_kem";
+      } else if (scenario === "lattice_fault"){
+        targetEl.value = "KYBER-768-CCA-DECAPSULATION-ENGINE";
+        primEl.value = "ml_kem_768";
+      } else if (scenario === "pqc_harden"){
+        targetEl.value = "FIPS-203-ML-KEM-768 + FIPS-204-ML-DSA-65 (Dual-Stack)";
+        primEl.value = "ml_dsa_65";
+      }
+    } else {
+      if (primEl.value === "classical_rsa") currentPQCScenario = "shor_audit";
+      else if (primEl.value === "hybrid_kem") currentPQCScenario = "hybrid_downgrade";
+      else if (primEl.value === "ml_kem_768") currentPQCScenario = "lattice_fault";
+      else if (primEl.value === "ml_dsa_65") currentPQCScenario = "pqc_harden";
     }
 
     const mode = currentPQCScenario;

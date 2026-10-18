@@ -51,6 +51,15 @@ class TestCVSS31Calculator:
         assert CVSS31Calculator.roundup(4.00001) == 4.1
         assert CVSS31Calculator.roundup(7.12) == 7.2
 
+    def test_zero_impact_scope_changed(self):
+        # Scope Changed with Zero Impact (ISS <= 0 boundary guard)
+        vector = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:N/A:N"
+        res = CVSS31Calculator.calculate(vector)
+        assert res["base_score"] == 0.0
+        assert res["severity"] == "None"
+        assert res["scope"] == "Changed"
+
+
 
 class TestLabCatalogCoverage:
     """45개 전 실습 랩의 취약점 데이터베이스 완전성 검증"""
@@ -123,6 +132,66 @@ class TestReportGeneratorRendering:
         assert "FIPS 203 ML-KEM-768" in html
         assert "badge high" in html or "badge critical" in html
 
+    def test_html_xss_escaping(self, monkeypatch):
+        # Test XSS protection in HTML output
+        mock_catalog = {
+            "99": {
+                "title": "<script>alert('xss-title')</script>",
+                "category": "Web Security",
+                "findings": [
+                    {
+                        "vuln_id": "VIBE-2026-9901",
+                        "name": "Injection <img src=x onerror=alert(1)>",
+                        "component": "<b>VulnerableComponent</b>",
+                        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                        "mitre_id": "T1190",
+                        "mitre_technique": "Exploit Public-Facing Application",
+                        "mitre_tactic": "Initial Access",
+                        "impact": "Attack impact with <script>",
+                        "remediation": "Mitigation steps with <iframe>"
+                    }
+                ]
+            }
+        }
+        monkeypatch.setattr("tools.report_generator.LAB_CATALOG", mock_catalog)
+        gen = SecurityReportGenerator(selected_labs=["99"])
+        html = gen.to_html()
+        assert "<script>alert('xss-title')</script>" not in html
+        assert "&lt;script&gt;alert(" in html
+        assert "<img src=x onerror=alert(1)>" not in html
+        assert "&lt;img src=x onerror=alert(1)&gt;" in html
+        assert "<b>VulnerableComponent</b>" not in html
+        assert "&lt;b&gt;VulnerableComponent&lt;/b&gt;" in html
+
+    def test_csv_rendering(self):
+        gen = SecurityReportGenerator(selected_labs=["01", "45"])
+        csv_data = gen.to_csv()
+        assert csv_data.startswith("\ufeff")  # UTF-8 BOM for Excel
+        lines = csv_data.strip().splitlines()
+        header = lines[0]
+        assert "Finding_ID" in header
+        assert "Vulnerability_Name" in header
+        assert "Severity" in header
+        assert "CVSS_Score" in header
+        assert len(lines) >= 3
+
+    def test_severity_filtering(self):
+        gen = SecurityReportGenerator(severity_filter=["Critical"])
+        assert len(gen.findings) > 0
+        for f in gen.findings:
+            assert f.severity == "Critical"
+        stats = gen.get_summary_stats()
+        assert stats["severity_counts"]["High"] == 0
+        assert stats["severity_counts"]["Critical"] > 0
+
+    def test_live_mode_detection(self):
+        gen = SecurityReportGenerator(selected_labs=["01"], live_status=True)
+        assert gen.live_status is True
+        for f in gen.findings:
+            assert hasattr(f, "live_active")
+            assert isinstance(f.live_active, bool)
+
+
 
 class TestVhackCLIReportIntegration:
     """vhack report CLI 서브커맨드 실행 테스트"""
@@ -161,3 +230,23 @@ class TestVhackCLIReportIntegration:
         assert target_file.exists()
         content = json.loads(target_file.read_text(encoding="utf-8"))
         assert content["metadata"]["total_labs"] == 2
+
+    def test_vhack_report_generate_csv_cli(self, tmp_path):
+        target_file = tmp_path / "critical_report.csv"
+        cmd = [
+            sys.executable,
+            str(self.REPO_ROOT / "vhack.py"),
+            "report",
+            "generate",
+            "--severity", "Critical",
+            "--format", "csv",
+            "-o", str(target_file)
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.REPO_ROOT))
+        assert proc.returncode == 0
+        assert target_file.exists()
+        content = target_file.read_text(encoding="utf-8")
+        assert content.startswith("\ufeff")
+        assert "Finding_ID" in content
+        assert "Critical" in content
+

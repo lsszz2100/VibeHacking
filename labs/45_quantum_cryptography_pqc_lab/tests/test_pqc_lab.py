@@ -227,3 +227,25 @@ def test_full_scenario_progression():
     # Final status: All solved
     final_status = client.get("/api/v1/status").json()
     assert final_status["all_stages_solved"] is True
+
+
+def test_schema_max_length_validation():
+    oversized = "A" * 129
+    res = client.post("/api/v1/pqc/traffic/analyze", json={
+        "session_id": oversized,
+        "analysis_type": "shor_factorization"
+    })
+    assert res.status_code == 422
+
+    res2 = client.post("/api/v1/pqc/hybrid/downgrade-exploit", json={
+        "strip_extension": oversized,
+        "target_group": "x25519"
+    })
+    assert res2.status_code == 422
+
+    res3 = client.post("/api/v1/pqc/lattice/fault-audit", json={
+        "audit_target": oversized,
+        "remediation_proposal": "constant_time_ntt"
+    })
+    assert res3.status_code == 422
+

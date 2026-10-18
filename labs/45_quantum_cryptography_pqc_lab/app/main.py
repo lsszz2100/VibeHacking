@@ -149,21 +149,21 @@ sim_state = SimulationState()
 # ============================================================================
 
 class TrafficAnalysisRequest(BaseModel):
-    session_id: str = Field(..., description="Target session ID to evaluate for HNDL & Shor exploitability")
-    analysis_type: str = Field("shor_factorization", description="Type of quantum analysis: 'shor_factorization' or 'discrete_log'")
+    session_id: str = Field(..., max_length=128, description="Target session ID to evaluate for HNDL & Shor exploitability")
+    analysis_type: str = Field("shor_factorization", max_length=128, description="Type of quantum analysis: 'shor_factorization' or 'discrete_log'")
 
 class DowngradeExploitRequest(BaseModel):
-    strip_extension: str = Field("x25519_kyber768", description="PQC group extension to strip from ClientHello")
-    target_group: str = Field("x25519", description="Fallback classical group to force server into")
+    strip_extension: str = Field("x25519_kyber768", max_length=128, description="PQC group extension to strip from ClientHello")
+    target_group: str = Field("x25519", max_length=128, description="Fallback classical group to force server into")
 
 class FaultAuditRequest(BaseModel):
-    audit_target: str = Field(..., description="Target anomaly to isolate: 'timing_skew' or 'rejection_sampling_fault'")
-    remediation_proposal: str = Field(..., description="Remediation approach: 'constant_time_ntt' or 'strict_norm_bound_assertion'")
+    audit_target: str = Field(..., max_length=128, description="Target anomaly to isolate: 'timing_skew' or 'rejection_sampling_fault'")
+    remediation_proposal: str = Field(..., max_length=128, description="Remediation approach: 'constant_time_ntt' or 'strict_norm_bound_assertion'")
 
 class HardeningRequest(BaseModel):
     strict_pqc_required: bool = Field(True, description="Enforce strict rejection of non-PQC TLS handshakes")
-    kem_standard: str = Field("FIPS 203 (ML-KEM-768)", description="Target NIST KEM algorithm")
-    signature_standard: str = Field("FIPS 204 (ML-DSA-65)", description="Target NIST digital signature algorithm")
+    kem_standard: str = Field("FIPS 203 (ML-KEM-768)", max_length=128, description="Target NIST KEM algorithm")
+    signature_standard: str = Field("FIPS 204 (ML-DSA-65)", max_length=128, description="Target NIST digital signature algorithm")
     dual_kdf_binding: bool = Field(True, description="Enable Dual-KDF RFC 9370 hybrid transcript binding")
     constant_time_ntt: bool = Field(True, description="Assert constant-time polynomial multiplication without conditional branch")
 

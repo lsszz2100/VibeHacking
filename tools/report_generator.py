@@ -9,9 +9,13 @@ VibeHacking Security Diagnostic Report Generator (보안 진단 보고서 생성
 
 from __future__ import annotations
 
+import csv
+import html
+import io
 import json
 import math
 import re
+import subprocess
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -68,7 +72,9 @@ class CVSS31Calculator:
         a = cls.CIA_MAP.get(metrics.get("A", "H"), 0.56)
 
         iss = 1.0 - ((1.0 - c) * (1.0 - i) * (1.0 - a))
-        if scope == "U":
+        if iss <= 0:
+            impact = 0.0
+        elif scope == "U":
             impact = 6.42 * iss
         else:
             impact = 7.52 * (iss - 0.029) - 3.25 * ((iss - 0.02) ** 15)
@@ -127,6 +133,7 @@ class VulnerabilityFinding:
     remediation: str
     calculated_score: float = 0.0
     severity: str = "Medium"
+    live_active: bool = False
 
     def __post_init__(self):
         cvss_info = CVSS31Calculator.calculate(self.cvss_vector)
@@ -955,11 +962,20 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 class SecurityReportGenerator:
     """45개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
-    def __init__(self, selected_labs: Optional[List[str]] = None):
+    def __init__(
+        self,
+        selected_labs: Optional[List[str]] = None,
+        severity_filter: Optional[List[str]] = None,
+        live_status: bool = False
+    ):
         if not selected_labs:
             self.selected_lab_ids = sorted(LAB_CATALOG.keys(), key=lambda x: int(x))
         else:
             self.selected_lab_ids = [str(x).zfill(2) for x in selected_labs if str(x).zfill(2) in LAB_CATALOG]
+
+        self.severity_filter = [s.capitalize() for s in severity_filter] if severity_filter else None
+        self.live_status = live_status
+        self.active_lab_ids = self._detect_active_labs() if live_status else set()
 
         self.findings: List[VulnerabilityFinding] = []
         for lid in self.selected_lab_ids:
@@ -975,12 +991,28 @@ class SecurityReportGenerator:
                     mitre_id=f["mitre_id"],
                     mitre_technique=f["mitre_technique"],
                     mitre_tactic=f["mitre_tactic"],
-                    impact=f["impact"],
-                    description=f["description"],
-                    affected_component=f["affected_component"],
-                    remediation=f["remediation"]
+                    impact=f.get("impact", ""),
+                    description=f.get("description", f.get("impact", "")),
+                    affected_component=f.get("affected_component", f.get("component", "Core Application Service")),
+                    remediation=f.get("remediation", ""),
+                    live_active=(lid in self.active_lab_ids)
                 )
+                if self.severity_filter and finding.severity not in self.severity_filter:
+                    continue
                 self.findings.append(finding)
+
+    def _detect_active_labs(self) -> set[str]:
+        active = set()
+        try:
+            res = subprocess.run(["docker", "ps", "--format", "{{.Names}}"], capture_output=True, text=True, timeout=2)
+            if res.returncode == 0:
+                for line in res.stdout.splitlines():
+                    m = re.search(r"lab(\d{1,2})", line, re.IGNORECASE)
+                    if m:
+                        active.add(m.group(1).zfill(2))
+        except Exception:
+            pass
+        return active
 
     def get_summary_stats(self) -> Dict[str, Any]:
         total_vulns = len(self.findings)
@@ -1004,8 +1036,28 @@ class SecurityReportGenerator:
             "severity_counts": severity_counts,
             "tactic_counts": tactic_counts,
             "category_counts": category_counts,
+            "live_active_labs": len(self.active_lab_ids),
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
+
+    def to_csv(self) -> str:
+        """감사팀 및 엑셀 보고서용 UTF-8 BOM CSV 생성"""
+        output = io.StringIO()
+        output.write("\ufeff")
+        writer = csv.writer(output)
+        writer.writerow([
+            "Finding_ID", "Lab_ID", "Lab_Title", "Category", "Vulnerability_Name",
+            "Severity", "CVSS_Score", "CVSS_Vector", "MITRE_ID", "MITRE_Technique",
+            "MITRE_Tactic", "Affected_Component", "Live_Active", "Impact", "Remediation"
+        ])
+        for f in self.findings:
+            writer.writerow([
+                f.vuln_id, f.lab_id, f.lab_title, f.category, f.name,
+                f.severity, f.calculated_score, f.cvss_vector, f.mitre_id, f.mitre_technique,
+                f.mitre_tactic, f.affected_component, "Active" if f.live_active else "Inactive",
+                f.impact, f.remediation
+            ])
+        return output.getvalue()
 
     def to_json(self) -> str:
         stats = self.get_summary_stats()
@@ -1024,6 +1076,10 @@ class SecurityReportGenerator:
         lines = []
         lines.append("# 🛡️ VibeHacking Enterprise Security Diagnostic & Threat Assessment Report")
         lines.append(f"> **Generated at**: `{ts}` &nbsp;|&nbsp; **Target Scope**: `{stats['total_labs']} Labs` &nbsp;|&nbsp; **Standard**: `CVSS 3.1 & MITRE ATT&CK Enterprise Matrix`")
+        if self.live_status:
+            lines.append(f"> **Live Active Labs**: `{stats['live_active_labs']} Active Containers Running`")
+        if self.severity_filter:
+            lines.append(f"> **Severity Filter**: `{', '.join(self.severity_filter)}`")
         lines.append("")
         lines.append("---")
         lines.append("")
@@ -1055,7 +1111,8 @@ class SecurityReportGenerator:
 
         for idx, f in enumerate(self.findings, 1):
             badge = "🚨 CRITICAL" if f.severity == "Critical" else ("⚠️ HIGH" if f.severity == "High" else "🟡 MEDIUM")
-            lines.append(f"### {idx}. [{f.vuln_id}] {f.name}")
+            live_badge = " `[⚡ LIVE ACTIVE]`" if f.live_active else ""
+            lines.append(f"### {idx}. [{f.vuln_id}] {f.name}{live_badge}")
             lines.append(f"- **대상 랩 / 환경**: `{f.lab_title}` (`Lab {f.lab_id}`)")
             lines.append(f"- **보안 분류**: `{f.category}`")
             lines.append(f"- **심각도**: **{badge}** (CVSS 3.1 Base Score: **`{f.calculated_score}`**)")
@@ -1085,34 +1142,49 @@ class SecurityReportGenerator:
         ts = stats["generated_at"]
         sev = stats["severity_counts"]
 
-        # HTML 내장 템플릿 (외부 CSS/JS 의존성 제로, 다크 모드 & 반응형)
+        # HTML 내장 템플릿 (XSS 방어 html.escape 적용, 다크 모드 & 반응형)
         findings_html = []
         for idx, f in enumerate(self.findings, 1):
-            sev_class = f.severity.lower()
+            sev_class = html.escape(f.severity.lower())
+            f_name = html.escape(f.name)
+            f_vid = html.escape(f.vuln_id)
+            f_title = html.escape(f.lab_title)
+            f_cat = html.escape(f.category)
+            f_mid = html.escape(f.mitre_id)
+            f_mtech = html.escape(f.mitre_technique)
+            f_mtac = html.escape(f.mitre_tactic)
+            f_vec = html.escape(f.cvss_vector)
+            f_desc = html.escape(f.description)
+            f_imp = html.escape(f.impact)
+            f_comp = html.escape(f.affected_component)
+            f_rem = html.escape(f.remediation)
+            live_indicator = '<span class="tag live-tag">LIVE ACTIVE</span>' if f.live_active else ''
+
             findings_html.append(f"""
             <div class="finding-card {sev_class}">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#{idx}</span>
-                        <span class="badge {sev_class}">{f.severity.upper()} {f.calculated_score}</span>
-                        <h3 class="finding-title">{f.name}</h3>
+                        <span class="badge {sev_class}">{html.escape(f.severity.upper())} {f.calculated_score}</span>
+                        {live_indicator}
+                        <h3 class="finding-title">{f_name}</h3>
                     </div>
-                    <span class="vuln-id">{f.vuln_id}</span>
+                    <span class="vuln-id">{f_vid}</span>
                 </div>
                 <div class="finding-meta">
-                    <span class="meta-item"><b>Target:</b> {f.lab_title}</span>
-                    <span class="meta-item"><b>Category:</b> {f.category}</span>
-                    <span class="meta-item"><b>MITRE:</b> <span class="tag">{f.mitre_id}</span> {f.mitre_technique} ({f.mitre_tactic})</span>
+                    <span class="meta-item"><b>Target:</b> {f_title}</span>
+                    <span class="meta-item"><b>Category:</b> {f_cat}</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">{f_mid}</span> {f_mtech} ({f_mtac})</span>
                 </div>
-                <div class="vector-box"><code>{f.cvss_vector}</code></div>
+                <div class="vector-box"><code>{f_vec}</code></div>
                 <div class="finding-body">
-                    <p><b>🔍 취약점 분석:</b> {f.description}</p>
-                    <p><b>💥 영향도:</b> {f.impact}</p>
-                    <p><b>🎯 영향 컴포넌트:</b> <code>{f.affected_component}</code></p>
+                    <p><b>🔍 취약점 분석:</b> {f_desc}</p>
+                    <p><b>💥 영향도:</b> {f_imp}</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>{f_comp}</code></p>
                 </div>
                 <div class="remediation-box">
                     <b>🛡️ 대응 권고사항 (Remediation):</b>
-                    <pre>{f.remediation}</pre>
+                    <pre>{f_rem}</pre>
                 </div>
             </div>
             """)
@@ -1148,6 +1220,7 @@ class SecurityReportGenerator:
         .badge.high {{ background: rgba(249, 115, 22, 0.2); color: var(--high-color); border: 1px solid var(--high-color); }}
         .badge.medium {{ background: rgba(234, 179, 8, 0.2); color: var(--med-color); border: 1px solid var(--med-color); }}
         .badge.low {{ background: rgba(59, 130, 246, 0.2); color: var(--low-color); border: 1px solid var(--low-color); }}
+        .live-tag {{ background: rgba(16, 185, 129, 0.2) !important; color: var(--accent-green) !important; border: 1px solid var(--accent-green); font-size: 11px; }}
         .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }}
         .stat-card {{ background: var(--surface-color); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px; text-align: center; }}
         .stat-value {{ font-size: 28px; font-weight: bold; color: var(--accent-blue); margin-top: 4px; }}
@@ -1231,13 +1304,19 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="VibeHacking Security Diagnostic Report Generator")
     parser.add_argument("--lab-id", nargs="*", help="Filter by specific lab IDs (e.g. 01 42 45)")
-    parser.add_argument("--format", choices=["md", "html", "json"], default="md", help="Output format (default: md)")
+    parser.add_argument("--severity", nargs="*", help="Filter by severity levels (Critical High Medium Low)")
+    parser.add_argument("--live", action="store_true", help="Probe running lab containers and mark active attack surfaces")
+    parser.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="Output format (default: md)")
     parser.add_argument("--output", "-o", help="Output file path (default: stdout)")
     parser.add_argument("--summary", action="store_true", help="Print summary stats only")
 
     args = parser.parse_args()
 
-    gen = SecurityReportGenerator(selected_labs=args.lab_id)
+    gen = SecurityReportGenerator(
+        selected_labs=args.lab_id,
+        severity_filter=args.severity,
+        live_status=args.live
+    )
 
     if args.summary:
         stats = gen.get_summary_stats()
@@ -1248,6 +1327,8 @@ def main():
         output_str = gen.to_json()
     elif args.format == "html":
         output_str = gen.to_html()
+    elif args.format == "csv":
+        output_str = gen.to_csv()
     else:
         output_str = gen.to_markdown()
 
