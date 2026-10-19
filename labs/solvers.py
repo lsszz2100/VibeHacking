@@ -1209,6 +1209,50 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ PQC Hardening Applied! -> FLAG{pqc_fips203_mlkem768_mldsa65_hardened_8045}"
             }
         ]
+    },
+    "46": {
+        "title": "리눅스 커널 하드닝 & 런타임 방어 실습 (KernelGuard)",
+        "port": 8046,
+        "difficulty": "★★★★★",
+        "description": "Seccomp-BPF 시스템콜 필터링, Landlock LSM 샌드박싱, IMA/EVM 무결성 측정, KSPP 커널 완화 기법 실습",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Seccomp-BPF 아키텍처 고정 및 악성 시스템콜 차단",
+                "target": "POST /api/stage1/apply_seccomp (arch, blocked_syscalls, action_on_blocked, default_action)",
+                "poc_explanation": "AUDIT_ARCH_X86_64 아키텍처를 검증하고 ptrace 및 process_vm_writev 시스템콜에 대해 SECCOMP_RET_KILL_PROCESS를 적용합니다.",
+                "exploit_payload": '{"arch": "AUDIT_ARCH_X86_64", "blocked_syscalls": ["ptrace", "process_vm_writev", "kexec_load"], "action_on_blocked": "SECCOMP_RET_KILL_PROCESS", "default_action": "SECCOMP_RET_ALLOW"}',
+                "defense": "아키텍처 불일치 다운그레이드 공격 방어 및 프로세스 메모리 주입/디버깅 시스템콜 원천 차단.",
+                "sample_output": "🛡️ Seccomp-BPF Enforced! -> FLAG{seccomp_bpf_arch_pinned_filter_enforced_8046}"
+            },
+            {
+                "step": 2,
+                "name": "Landlock LSM 비특권 파일시스템 샌드박싱 격리",
+                "target": "POST /api/stage2/restrict_landlock (target_path, allowed_actions, lock_no_new_privs)",
+                "poc_explanation": "애플리케이션 작업 디렉터리(/srv/app/data)로 파일 접근을 한정하고 no_new_privs 플래그로 샌드박스를 영구 잠금합니다.",
+                "exploit_payload": '{"target_path": "/srv/app/data", "allowed_actions": ["READ_FILE", "WRITE_FILE"], "lock_no_new_privs": true}',
+                "defense": "비특권 프로세스 샌드박싱: 경로 이탈을 통한 /etc/shadow 및 /root/.ssh 접근 원천 차단.",
+                "sample_output": "🔒 Landlock Ruleset Locked! -> FLAG{landlock_lsm_unprivileged_sandbox_locked_8046}"
+            },
+            {
+                "step": 3,
+                "name": "IMA & EVM 무결성 측정 분석 및 디지털 서명 검증 강제",
+                "target": "POST /api/stage3/appraise (target_binary, remedy_action, enforce_signature_check)",
+                "poc_explanation": "런타임 측정 로그를 대조하여 변조된 백도어 바이너리를 식별하고, 정품 바이너리 복원 및 xattr security.ima 서명 검증을 강제합니다.",
+                "exploit_payload": '{"target_binary": "/usr/bin/daemon_worker", "remedy_action": "restore_authentic", "enforce_signature_check": true}',
+                "defense": "IMA Appraisal: 서명되지 않거나 위변조된 바이너리의 커널 로딩 및 실행 차단.",
+                "sample_output": "🔍 IMA Signature Verified! -> FLAG{ima_appraisal_evm_signature_verified_8046}"
+            },
+            {
+                "step": 4,
+                "name": "KSPP 커널 메모리 자기 보호 완화 기법 전면 활성화",
+                "target": "POST /api/stage4/harden (init_on_alloc, slab_nomerge, kcfi_enforce, kpti)",
+                "poc_explanation": "Clang kCFI 제어 흐름 보호, SLAB 프리리스트 난독화, init_on_alloc 메모리 0화, KPTI 페이지 테이블 격리를 일괄 적용합니다.",
+                "exploit_payload": '{"init_on_alloc": true, "slab_nomerge": true, "kcfi_enforce": true, "kpti": true}',
+                "defense": "KSPP 가이드라인 준수: ROP/JOP 가젯 차단, 힙 크로스 캐시 오염 방어, 멜트다운 정보 유출 방어.",
+                "sample_output": "🛡️ KSPP Mitigations Active! -> FLAG{kspp_kernel_memory_mitigation_cfi_hardened_8046}"
+            }
+        ]
     }
 }
 

@@ -6,9 +6,9 @@
 
 # 양자 내성 암호(PQC) 심층 분석: 격자 기반 암호학(LWE/ML-KEM/ML-DSA), 하이브리드 키 교환 및 엔터프라이즈 마이그레이션
 
-> 🏢 **연계 실습 랩**: [Lab 45: PQCShield - Quantum Cryptography & PQC Lab](../../labs/45_quantum_cryptography_pqc_lab)  
+> 🏢 **연계 실습 랩**: [Lab 45: PQCShield - Quantum Cryptography & PQC Lab](../labs/45_quantum_cryptography_pqc_lab)  
 > 🎯 **관련 워게임 트랙**: `pqc` (양자 내성 암호 & PQC 마이그레이션 35제)  
-> 🛠️ **관련 시뮬레이터**: [Wargame Playground: Lattice Key Exchange & PQC Inspector](../../wargame/index.html#playground)
+> 🛠️ **관련 시뮬레이터**: [Wargame Playground: Lattice Key Exchange & PQC Inspector](../wargame/index.html#playground)
 
 ---
 
@@ -123,9 +123,9 @@ def derive_hybrid_session_key(x25519_ss: bytes, mlkem_ss: bytes) -> bytes:
 
 # Deep Dive: Post-Quantum Cryptography (PQC) - Lattice-Based Cryptography (ML-KEM/ML-DSA), Hybrid Key Exchange & Migration
 
-> 🏢 **Hands-on Lab**: [Lab 45: PQCShield - Quantum Cryptography & PQC Lab](../../labs/45_quantum_cryptography_pqc_lab)  
+> 🏢 **Hands-on Lab**: [Lab 45: PQCShield - Quantum Cryptography & PQC Lab](../labs/45_quantum_cryptography_pqc_lab)  
 > 🎯 **Wargame Track**: `pqc` (Post-Quantum Cryptography & PQC Migration - 35 Challenges)  
-> 🛠️ **Simulator**: [Wargame Playground: Lattice Key Exchange & PQC Inspector](../../wargame/index.html#playground)
+> 🛠️ **Simulator**: [Wargame Playground: Lattice Key Exchange & PQC Inspector](../wargame/index.html#playground)
 
 ---
 

@@ -511,6 +511,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [57, 16, 39],
     },
+    "46": {
+        "name": "리눅스 커널 하드닝 & 런타임 방어 실습",
+        "dir":  "46_linux_kernel_hardening_lab",
+        "desc": "KernelGuard: Seccomp-BPF 시스템콜 필터링 및 아키텍처 고정 · Landlock LSM 비특권 파일시스템 샌드박싱 격리 · IMA & EVM 무결성 측정 분석 및 xattr 디지털 서명 검증 · KSPP 커널 메모리 자기 보호(kCFI, SLAB_FREELIST, init_on_alloc, KPTI) 완화 기법 전면 활성화",
+        "url":  "웹 콘솔 & 커널 보안 대시보드: http://localhost:8046",
+        "difficulty": "★★★★★",
+        "related": [26, 1, 3],
+    },
 }
 
 
@@ -1530,6 +1538,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8043, "Lab 43 (CloudIRShield Cloud Incident Response Lab)"),
         (8044, "Lab 44 (ExtensionGuard Browser Extension Security Lab)"),
         (8045, "Lab 45 (PQCShield Quantum Cryptography Lab)"),
+        (8046, "Lab 46 (KernelGuard Linux Kernel Hardening Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2069,14 +2078,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON/CSV, MITRE ATT&CK & CVSS 3.1)")
     report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
 
-    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 45개 랩)")
-    p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 45)")
+    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 46개 랩)")
+    p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 46)")
     p_rep_gen.add_argument("--severity", nargs="*", metavar="SEV", help="위험도 등급 필터 (Critical High Medium Low)")
     p_rep_gen.add_argument("--live", action="store_true", help="현재 실행 중인 랩 컨테이너 실시간 공격 표면 감지")
     p_rep_gen.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="출력 형식 (기본값: md)")
     p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
 
-    report_sub.add_parser("summary", help="전체 45개 랩 취약점 통계 및 심각도 요약")
+    report_sub.add_parser("summary", help="전체 46개 랩 취약점 통계 및 심각도 요약")
     report_sub.add_parser("list-templates", help="지원되는 보고서 포맷 및 템플릿 목록")
 
     # setup-docker
@@ -2106,7 +2115,7 @@ def cmd_report(args: argparse.Namespace) -> None:
     if cmd == "summary":
         gen = SecurityReportGenerator()
         stats = gen.get_summary_stats()
-        print(bold(cyan("\n🛡️ VibeHacking 45개 랩 취약점 진단 요약 (Executive Summary)")))
+        print(bold(cyan("\n🛡️ VibeHacking 46개 랩 취약점 진단 요약 (Executive Summary)")))
         print(f"  • 진단 대상 랩: {bold(str(stats['total_labs']))}개 랩")
         print(f"  • 식별된 취약점: {bold(str(stats['total_findings']))}건")
         print(f"  • 평균 CVSS 3.1 스코어: {bold(str(stats['average_cvss']))} / 10.0")
@@ -2116,6 +2125,10 @@ def cmd_report(args: argparse.Namespace) -> None:
         print(f"  - ⚠️ High:     {bold(yellow(str(sev.get('High', 0))))}건")
         print(f"  - 🟡 Medium:   {bold(cyan(str(sev.get('Medium', 0))))}건")
         print(f"  - 🟢 Low:      {bold(green(str(sev.get('Low', 0))))}건")
+        print(bold("\n📋 컴플라이언스 표준 매핑 현황:"))
+        print(f"  - 🇰🇷 KISA ISMS-P:  {bold(green(str(len(stats.get('kisa_counts', {})))))}개 통제 기준 매핑")
+        print(f"  - 🏛️ NIST CSF 2.0:  {bold(cyan(str(len(stats.get('nist_csf_counts', {})))))}개 카테고리 매핑")
+        print(f"  - 🌐 OWASP Top 10:  {bold(yellow(str(len(stats.get('owasp_counts', {})))))}개 위험 분류 매핑")
         print()
         return
 

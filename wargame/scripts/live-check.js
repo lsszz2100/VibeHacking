@@ -44,6 +44,7 @@ const ATTEMPT_DELAYS_MS = (process.env.LIVE_CHECK_DELAYS_MS || '0,5000,10000,150
 function walk(dir, prefix = '') {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    if (entry.name === '__pycache__' || entry.name.startsWith('.')) continue;
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (entry.isDirectory()) out.push(...walk(path.join(dir, entry.name), rel));
     else if (entry.isFile()) out.push(rel);

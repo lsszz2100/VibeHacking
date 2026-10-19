@@ -75,6 +75,7 @@ docker-compose --version
 | 43 | [클라우드 사고 대응 & 위협 헌팅 랩](./43_cloud_incident_response_lab/) | CloudTrail 감사 로그 분석 & AttachUserPolicy 권한 상승 식별, STS 토큰 유출 S3 데이터 유출 복원, VPC Flow Logs C2 비콘 상관분석, GuardDuty & SOAR 격리 | ★★★★★ | [58장 클라우드 사고 대응](../58_Cloud_IR/07_enterprise_cloudtrail_and_vpc_flow_logs_forensics_deepdive.md) | `cloudir` / `cloud` |
 | 44 | [브라우저 확장 프로그램 보안 & Manifest V3 실전 랩](./44_browser_extension_security_lab/) | Manifest V3 권한 명세 & 백그라운드 서비스 워커 감사, WAR 토큰 유출, Content Script DOM innerHTML XSS & 패스워드 스니핑, DNR 마이그레이션 & CSP 하드닝 | ★★★★★ | [51장 브라우저 확장 프로그램](../51_Browser_Extension_Security/07_manifest_v3_message_passing_and_content_script_deepdive.md) | `extsec` / `web` |
 | 45 | [양자 내성 암호 & PQC 마이그레이션 실전 랩](./45_quantum_cryptography_pqc_lab/) | 고전 PKI 트래픽 HNDL 위협 & 쇼어 알고리즘 분석, TLS 1.3 하이브리드 KEM MitM 다운그레이드 공격, 격자 암호 다항식 연산 비상수 시간 타이밍 부채널/결함 감사, NIST FIPS 203/204 표준 하드닝 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqc` / `crypto` |
+| 46 | [리눅스 커널 하드닝 & 런타임 방어 실습](./46_linux_kernel_hardening_lab/) | Seccomp-BPF 시스템콜 필터링 및 아키텍처 고정, Landlock LSM 비특권 파일시스템 샌드박싱 격리, IMA/EVM 무결성 측정 분석 및 xattr 디지털 서명 검증, KSPP 커널 메모리 완화 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/07_linux_kernel_hardening_and_runtime_defense_deepdive.md) | `linuxhard` / `endpoint` |
 
 ---
 

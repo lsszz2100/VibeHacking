@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  kernel-lab:
+    build: .
+    container_name: vibehacking-lab46-kernel
+    ports:
+      - "127.0.0.1:8046:8046"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=46"

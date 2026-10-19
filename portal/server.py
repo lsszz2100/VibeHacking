@@ -93,7 +93,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "31": "web", "32": "network", "33": "compliance", "34": "osint", "35": "cloud",
     "36": "database", "37": "wireless", "38": "endpoint", "39": "crypto",
     "40": "dfir", "41": "supplychain", "42": "cloud", "43": "cloud",
-    "44": "web", "45": "crypto",
+    "44": "web", "45": "crypto", "46": "endpoint",
 }
 
 

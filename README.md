@@ -21,9 +21,9 @@
 
 <br/>
 
-[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·2065 문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
+[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·2100 문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 2065 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 75개 섹션 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
+> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 2100 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 75개 섹션 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
 
 <br/>
 
@@ -62,7 +62,7 @@ features = {
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
     "완전한 커버리지": "75섹션 전 보안 영역",
-    "CTF 실습 환경"  : "도커 기반 38개 랩 즉시 구동",
+    "CTF 실습 환경"  : "도커 기반 46개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
 ```

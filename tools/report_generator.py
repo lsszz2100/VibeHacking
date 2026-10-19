@@ -113,8 +113,379 @@ class CVSS31Calculator:
 
 
 # ============================================================================
-# 2. Comprehensive 45-Lab Vulnerability & MITRE ATT&CK Catalog
+# 2. Comprehensive 46-Lab Vulnerability, MITRE ATT&CK & Compliance Catalog
 # ============================================================================
+
+COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
+    "01": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (입력데이터 검증 및 표현)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platform Security / PR.DS-01 Data Security",
+        "owasp_id": "A03:2021",
+        "owasp_name": "Injection",
+    },
+    "02": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (메모리 버퍼 및 포인터 관리)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platform Security / PR.PS-05 Software Integrity",
+        "owasp_id": "A04:2021",
+        "owasp_name": "Insecure Design",
+    },
+    "03": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근통제 (불필요 프로토콜 및 포트 차단)",
+        "nist_csf_id": "PR.AC-05",
+        "nist_csf_name": "Network Integrity & Segmentation",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "04": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (역공학 방지 기술)",
+        "nist_csf_id": "PR.PS-05",
+        "nist_csf_name": "Software Integrity & Behavioral Evasion Defense",
+        "owasp_id": "A04:2021",
+        "owasp_name": "Insecure Design",
+    },
+    "05": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (특권 권한 및 SUID 관리)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Least Privilege Access & System Hardening",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "06": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 예방 및 탐지 (악성코드 감염 예방)",
+        "nist_csf_id": "DE.CM-01",
+        "nist_csf_name": "Continuous Endpoint Monitoring & Payload Detection",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures",
+    },
+    "07": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 예방 및 탐지 (메모리 변조 및 은닉 탐지)",
+        "nist_csf_id": "DE.CM-01",
+        "nist_csf_name": "Continuous Host Monitoring / DE.AE-04 Correlation",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures",
+    },
+    "08": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (역직렬화 취약점 차단)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platform Security / PR.DS-01 Data Security",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures",
+    },
+    "09": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (힙 동적 할당 및 메모리 안전성)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platform Security / PR.PS-05 Software Integrity",
+        "owasp_id": "A04:2021",
+        "owasp_name": "Insecure Design",
+    },
+    "10": {
+        "kisa_id": "2.6.2",
+        "kisa_name": "사용자 인증 (인증수단 관리 및 사전 공격 차단)",
+        "nist_csf_id": "PR.AC-01",
+        "nist_csf_name": "Credential Management / PR.AC-02 Authentication",
+        "owasp_id": "A07:2021",
+        "owasp_name": "Identification and Authentication Failures",
+    },
+    "11": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (AI 모델 입력 검증 및 프롬프트 주입 차단)",
+        "nist_csf_id": "GV.RM-01",
+        "nist_csf_name": "AI Risk Management Strategy & Model Integrity",
+        "owasp_id": "A03:2021",
+        "owasp_name": "Injection (OWASP LLM01: Prompt Injection)",
+    },
+    "12": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (객체 참조 권한 검증 및 동시성 제어)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Least Privilege Access & Authorization Checks",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "13": {
+        "kisa_id": "2.5.2",
+        "kisa_name": "보안시스템 로그 관리 (감사 로그 생성 및 무결성 보장)",
+        "nist_csf_id": "DE.CM-03",
+        "nist_csf_name": "Event Logging & Audit Log Protection",
+        "owasp_id": "A09:2021",
+        "owasp_name": "Security Logging and Monitoring Failures",
+    },
+    "14": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (컨테이너 격리 및 권한 제한)",
+        "nist_csf_id": "PR.AC-05",
+        "nist_csf_name": "Network & Workload Segmentation / Container Hardening",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "15": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근통제 (무선 네트워크 암호화 정책)",
+        "nist_csf_id": "PR.AC-05",
+        "nist_csf_name": "Wireless Network Security / PR.DS-02 Over-the-Air Protection",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures",
+    },
+    "16": {
+        "kisa_id": "2.7.1",
+        "kisa_name": "암호정책 적용 (안전한 암호 알고리즘 및 키 길이)",
+        "nist_csf_id": "PR.DS-02",
+        "nist_csf_name": "In-Transit Cryptographic Protection & Key Exchange",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures",
+    },
+    "17": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 예방 및 탐지 (비인가 외부 통신 채널 차단)",
+        "nist_csf_id": "DE.CM-01",
+        "nist_csf_name": "Network Continuous Monitoring / DE.AE-03 C2 Anomaly Analysis",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "18": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (CI/CD 파이프라인 무결성)",
+        "nist_csf_id": "PR.PS-05",
+        "nist_csf_name": "Software Supply Chain Security & Pipeline Least Privilege",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures",
+    },
+    "19": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (제어 흐름 무결성 보호)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platform Security / PR.PS-05 Binary Hardening",
+        "owasp_id": "A04:2021",
+        "owasp_name": "Insecure Design",
+    },
+    "20": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (인자 및 환경변수 주입 검증)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platform Security / PR.PS-02 Input Validation",
+        "owasp_id": "A03:2021",
+        "owasp_name": "Injection",
+    },
+    "21": {
+        "kisa_id": "2.6.2",
+        "kisa_name": "사용자 인증 (디렉터리 서비스 취약점 패치)",
+        "nist_csf_id": "PR.AC-01",
+        "nist_csf_name": "Credential Protection / PR.AC-02 Identification & Authentication",
+        "owasp_id": "A07:2021",
+        "owasp_name": "Identification and Authentication Failures",
+    },
+    "22": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (인증 정보 메모리 보호 및 디렉터리 복제 통제)",
+        "nist_csf_id": "PR.AC-01",
+        "nist_csf_name": "Credential Defense / DE.CM-01 Endpoint Threat Hunting",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "23": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (데이터베이스 관리자 권한 분립)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Least Privilege / PR.PS-01 Database Hardening",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "24": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근통제 (L2 네트워크 스위칭 보안)",
+        "nist_csf_id": "PR.AC-05",
+        "nist_csf_name": "Network Integrity & Segmentation / PR.IR-01 Infrastructure Resilience",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "25": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 예방 및 탐지 (위협 인텔리전스 무결성 검증)",
+        "nist_csf_id": "ID.RA-02",
+        "nist_csf_name": "Threat Intelligence Integrity / DE.AE-01 Threat Correlation",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures",
+    },
+    "26": {
+        "kisa_id": "2.10.2",
+        "kisa_name": "취약점 점검 및 조치 (운영체제 보안 설정 기준 준수)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Operating System Configuration Management / ID.RA-01 Vulnerability Scanning",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "27": {
+        "kisa_id": "2.6.2",
+        "kisa_name": "사용자 인증 (기본 비밀번호 및 백도어 계정 제거)",
+        "nist_csf_id": "PR.AC-02",
+        "nist_csf_name": "Authentication Management / PR.PS-01 IoT Firmware Hardening",
+        "owasp_id": "A07:2021",
+        "owasp_name": "Identification and Authentication Failures",
+    },
+    "28": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (모바일 앱 컴포넌트 접근통제)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Mobile App Least Privilege / PR.PS-01 Sandbox Isolation",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "29": {
+        "kisa_id": "2.7.2",
+        "kisa_name": "암호키 관리 (인증서 템플릿 발행 및 등록 권한 통제)",
+        "nist_csf_id": "PR.AC-01",
+        "nist_csf_name": "Credential & Certificate Governance / PR.AC-02 Strong Authentication",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "30": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (지적재산 보호 및 코드 난독화)",
+        "nist_csf_id": "PR.PS-05",
+        "nist_csf_name": "Software Integrity & IP Protection",
+        "owasp_id": "A04:2021",
+        "owasp_name": "Insecure Design",
+    },
+    "31": {
+        "kisa_id": "2.6.2",
+        "kisa_name": "사용자 인증 (OAuth 토큰 검증 및 서명 유효성 체크)",
+        "nist_csf_id": "PR.AC-01",
+        "nist_csf_name": "Federated Identity Management / PR.AC-02 OAuth/OIDC Hardening",
+        "owasp_id": "A07:2021",
+        "owasp_name": "Identification and Authentication Failures",
+    },
+    "32": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근통제 (인터넷 라우팅 프로토콜 무결성 RPKI)",
+        "nist_csf_id": "PR.IR-01",
+        "nist_csf_name": "Infrastructure Resilience / PR.AC-05 Border Gateway Security",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "33": {
+        "kisa_id": "2.10.2",
+        "kisa_name": "취약점 점검 및 조치 (주요정보통신기반시설 기술적 취약점 기준)",
+        "nist_csf_id": "ID.RA-01",
+        "nist_csf_name": "Vulnerability Management / PR.PS-01 System Baseline Hardening",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "34": {
+        "kisa_id": "2.7.2",
+        "kisa_name": "암호키 관리 (소스코드 내 비밀번호/API키 하드코딩 금지)",
+        "nist_csf_id": "PR.AC-01",
+        "nist_csf_name": "Secret Management / PR.DS-01 Sensitive Data Protection",
+        "owasp_id": "A07:2021",
+        "owasp_name": "Identification and Authentication Failures",
+    },
+    "35": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (클라우드 IAM 최소 권한 원칙 부여)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Least Privilege Access / PR.AC-01 Cloud Entitlement Management",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "36": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (동적 라이브러리 및 저장 프로시저 실행 통제)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Database Platform Security / PR.AC-04 Database Execution Privileges",
+        "owasp_id": "A03:2021",
+        "owasp_name": "Injection",
+    },
+    "37": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근통제 (근거리 무선 통신 암호화 페어링)",
+        "nist_csf_id": "PR.AC-02",
+        "nist_csf_name": "IoT Device Authentication / PR.DS-02 Over-the-Air Encryption",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures",
+    },
+    "38": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 예방 및 탐지 (보안 솔루션 무력화 시도 탐지 및 방지)",
+        "nist_csf_id": "DE.CM-01",
+        "nist_csf_name": "Host Telemetry Monitoring / PR.PS-01 Endpoint Defense Tamper Resistance",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+    "39": {
+        "kisa_id": "2.7.1",
+        "kisa_name": "암호정책 적용 (암호화 알고리즘 안전 모드 및 패딩 검증)",
+        "nist_csf_id": "PR.DS-05",
+        "nist_csf_name": "Cryptographic Integrity / PR.DS-01 Data Confidentiality",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures",
+    },
+    "40": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 예방 및 탐지 (랜섬웨어 이상 행위 모니터링 및 즉시 격리)",
+        "nist_csf_id": "RS.MA-01",
+        "nist_csf_name": "Incident Response / DE.AE-02 Endpoint Behavioral Analysis",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures",
+    },
+    "41": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (오픈소스 소프트웨어 공급망 보안)",
+        "nist_csf_id": "PR.PS-05",
+        "nist_csf_name": "Software Supply Chain Security / PR.DS-05 Cryptographic Verification",
+        "owasp_id": "A06:2021",
+        "owasp_name": "Vulnerable and Outdated Components",
+    },
+    "42": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "소프트웨어 개발 보안 (서버리스 함수 이벤트 페이로드 검증)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Serverless Runtime Hardening / PR.AC-04 Function Least Privilege",
+        "owasp_id": "A03:2021",
+        "owasp_name": "Injection",
+    },
+    "43": {
+        "kisa_id": "2.5.2",
+        "kisa_name": "보안시스템 로그 관리 (클라우드 감사 추적 로그 위변조 방지)",
+        "nist_csf_id": "PR.PS-04",
+        "nist_csf_name": "Audit Log Protection / DE.CM-03 Cloud Audit Monitoring",
+        "owasp_id": "A09:2021",
+        "owasp_name": "Security Logging and Monitoring Failures",
+    },
+    "44": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (엔드포인트 브라우저 확장 프로그램 권한 통제)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Browser Sandbox & Extension Governance / PR.AC-04 Least Privilege",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control",
+    },
+    "45": {
+        "kisa_id": "2.7.1",
+        "kisa_name": "암호정책 적용 (양자내성암호 PQC 전환 계획 및 하이브리드 키 교환)",
+        "nist_csf_id": "PR.DS-02",
+        "nist_csf_name": "Post-Quantum Cryptographic Migration / GV.RM-01 Cryptographic Risk",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures",
+    },
+    "46": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "시스템 접근통제 (커널 샌드박싱 및 시스템콜 공격 표면 최소화)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Kernel & Platform Security / PR.AC-05 Workload Isolation",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration",
+    },
+}
 
 @dataclass
 class VulnerabilityFinding:
@@ -134,11 +505,27 @@ class VulnerabilityFinding:
     calculated_score: float = 0.0
     severity: str = "Medium"
     live_active: bool = False
+    kisa_id: str = ""
+    kisa_name: str = ""
+    nist_csf_id: str = ""
+    nist_csf_name: str = ""
+    owasp_id: str = ""
+    owasp_name: str = ""
 
     def __post_init__(self):
         cvss_info = CVSS31Calculator.calculate(self.cvss_vector)
         self.calculated_score = cvss_info["base_score"]
         self.severity = cvss_info["severity"]
+        cmap = COMPLIANCE_MAP.get(self.lab_id, {})
+        if not self.kisa_id:
+            self.kisa_id = cmap.get("kisa_id", "2.10.2")
+            self.kisa_name = cmap.get("kisa_name", "취약점 점검 및 조치")
+        if not self.nist_csf_id:
+            self.nist_csf_id = cmap.get("nist_csf_id", "PR.PS-01")
+            self.nist_csf_name = cmap.get("nist_csf_name", "Platform Security")
+        if not self.owasp_id:
+            self.owasp_id = cmap.get("owasp_id", "A05:2021")
+            self.owasp_name = cmap.get("owasp_name", "Security Misconfiguration")
 
 
 LAB_CATALOG: Dict[str, Dict[str, Any]] = {
@@ -951,6 +1338,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Enforce NIST FIPS 203 ML-KEM-768 & FIPS 204 ML-DSA-65 with strict non-downgradable hybrid KDF policy."
             }
         ]
+    },
+    "46": {
+        "title": "46 Linux Kernel Hardening & Runtime Defense",
+        "category": "Endpoint Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-4601",
+                "name": "Unrestricted Syscall Attack Surface & Cross-Process Memory Tampering",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1055",
+                "mitre_technique": "Process Injection",
+                "mitre_tactic": "Privilege Escalation",
+                "impact": "Unprivileged worker process invokes ptrace and process_vm_writev to inject shellcode into host services.",
+                "description": "Lack of Seccomp-BPF architecture-pinned syscall filtering permits malicious debug syscalls and memory tampering.",
+                "affected_component": "KernelGuard Worker Daemon (Port 8046)",
+                "remediation": "Deploy Seccomp-BPF filter pinning AUDIT_ARCH_X86_64, Landlock LSM filesystem confinement, and IMA appraisal."
+            }
+        ]
     }
 }
 
@@ -1019,12 +1424,21 @@ class SecurityReportGenerator:
         severity_counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "None": 0}
         tactic_counts: Dict[str, int] = {}
         category_counts: Dict[str, int] = {}
+        kisa_counts: Dict[str, int] = {}
+        nist_counts: Dict[str, int] = {}
+        owasp_counts: Dict[str, int] = {}
         total_score = 0.0
 
         for f in self.findings:
             severity_counts[f.severity] = severity_counts.get(f.severity, 0) + 1
             tactic_counts[f.mitre_tactic] = tactic_counts.get(f.mitre_tactic, 0) + 1
             category_counts[f.category] = category_counts.get(f.category, 0) + 1
+            k_key = f"{f.kisa_id} {f.kisa_name}" if f.kisa_id else "Unmapped"
+            kisa_counts[k_key] = kisa_counts.get(k_key, 0) + 1
+            n_key = f"{f.nist_csf_id} {f.nist_csf_name}" if f.nist_csf_id else "Unmapped"
+            nist_counts[n_key] = nist_counts.get(n_key, 0) + 1
+            o_key = f"{f.owasp_id} {f.owasp_name}" if f.owasp_id else "Unmapped"
+            owasp_counts[o_key] = owasp_counts.get(o_key, 0) + 1
             total_score += f.calculated_score
 
         avg_score = round(total_score / total_vulns, 1) if total_vulns else 0.0
@@ -1036,6 +1450,9 @@ class SecurityReportGenerator:
             "severity_counts": severity_counts,
             "tactic_counts": tactic_counts,
             "category_counts": category_counts,
+            "kisa_counts": kisa_counts,
+            "nist_csf_counts": nist_counts,
+            "owasp_counts": owasp_counts,
             "live_active_labs": len(self.active_lab_ids),
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -1048,13 +1465,16 @@ class SecurityReportGenerator:
         writer.writerow([
             "Finding_ID", "Lab_ID", "Lab_Title", "Category", "Vulnerability_Name",
             "Severity", "CVSS_Score", "CVSS_Vector", "MITRE_ID", "MITRE_Technique",
-            "MITRE_Tactic", "Affected_Component", "Live_Active", "Impact", "Remediation"
+            "MITRE_Tactic", "KISA_ISMSP", "NIST_CSF_2_0", "OWASP_Top_10",
+            "Affected_Component", "Live_Active", "Impact", "Remediation"
         ])
         for f in self.findings:
             writer.writerow([
                 f.vuln_id, f.lab_id, f.lab_title, f.category, f.name,
                 f.severity, f.calculated_score, f.cvss_vector, f.mitre_id, f.mitre_technique,
-                f.mitre_tactic, f.affected_component, "Active" if f.live_active else "Inactive",
+                f.mitre_tactic, f"{f.kisa_id} {f.kisa_name}", f"{f.nist_csf_id} {f.nist_csf_name}",
+                f"{f.owasp_id} {f.owasp_name}",
+                f.affected_component, "Active" if f.live_active else "Inactive",
                 f.impact, f.remediation
             ])
         return output.getvalue()
@@ -1075,7 +1495,7 @@ class SecurityReportGenerator:
 
         lines = []
         lines.append("# 🛡️ VibeHacking Enterprise Security Diagnostic & Threat Assessment Report")
-        lines.append(f"> **Generated at**: `{ts}` &nbsp;|&nbsp; **Target Scope**: `{stats['total_labs']} Labs` &nbsp;|&nbsp; **Standard**: `CVSS 3.1 & MITRE ATT&CK Enterprise Matrix`")
+        lines.append(f"> **Generated at**: `{ts}` &nbsp;|&nbsp; **Target Scope**: `{stats['total_labs']} Labs` &nbsp;|&nbsp; **Standard**: `CVSS 3.1, MITRE ATT&CK, KISA ISMS-P, NIST CSF 2.0 & OWASP Top 10`")
         if self.live_status:
             lines.append(f"> **Live Active Labs**: `{stats['live_active_labs']} Active Containers Running`")
         if self.severity_filter:
@@ -1104,6 +1524,26 @@ class SecurityReportGenerator:
         for tac, count in sorted(stats["tactic_counts"].items(), key=lambda x: -x[1]):
             lines.append(f"| `{tac}` | {count} | {round(count / total * 100, 1)}% |")
         lines.append("")
+        lines.append("### 📋 컴플라이언스 표준 매핑 현황 (Compliance Frameworks)")
+        lines.append("")
+        lines.append("#### 🇰🇷 KISA ISMS-P 인증 기준 통제 항목")
+        lines.append("| KISA ISMS-P 기준 | 해당 취약점 수 |")
+        lines.append("|---|---|")
+        for kisa_item, count in sorted(stats["kisa_counts"].items(), key=lambda x: -x[1]):
+            lines.append(f"| `{kisa_item}` | {count}건 |")
+        lines.append("")
+        lines.append("#### 🏛️ NIST CSF 2.0 프레임워크 카테고리")
+        lines.append("| NIST CSF 2.0 카테고리 | 해당 취약점 수 |")
+        lines.append("|---|---|")
+        for nist_item, count in sorted(stats["nist_csf_counts"].items(), key=lambda x: -x[1]):
+            lines.append(f"| `{nist_item}` | {count}건 |")
+        lines.append("")
+        lines.append("#### 🌐 OWASP Top 10 (2021) 취약점 분류")
+        lines.append("| OWASP 분류 | 해당 취약점 수 |")
+        lines.append("|---|---|")
+        for owasp_item, count in sorted(stats["owasp_counts"].items(), key=lambda x: -x[1]):
+            lines.append(f"| `{owasp_item}` | {count}건 |")
+        lines.append("")
         lines.append("---")
         lines.append("")
         lines.append("## 2. Detailed Vulnerability Findings (취약점별 상세 진단서)")
@@ -1118,6 +1558,7 @@ class SecurityReportGenerator:
             lines.append(f"- **심각도**: **{badge}** (CVSS 3.1 Base Score: **`{f.calculated_score}`**)")
             lines.append(f"- **CVSS 3.1 Vector**: `{f.cvss_vector}`")
             lines.append(f"- **MITRE ATT&CK 매핑**: `{f.mitre_id}` — **{f.mitre_technique}** (전술: `{f.mitre_tactic}`)")
+            lines.append(f"- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `{f.kisa_id} {f.kisa_name}` | 🏛️ NIST CSF 2.0: `{f.nist_csf_id}` | 🌐 OWASP Top 10: `{f.owasp_id}`")
             lines.append(f"- **영향을 받는 컴포넌트**: `{f.affected_component}`")
             lines.append("")
             lines.append(f"**🔍 상세 취약점 분석 (Description)**:\n> {f.description}")
@@ -1175,6 +1616,7 @@ class SecurityReportGenerator:
                     <span class="meta-item"><b>Target:</b> {f_title}</span>
                     <span class="meta-item"><b>Category:</b> {f_cat}</span>
                     <span class="meta-item"><b>MITRE:</b> <span class="tag">{f_mid}</span> {f_mtech} ({f_mtac})</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P {html.escape(f.kisa_id)}</span> <span class="tag comp-nist">NIST {html.escape(f.nist_csf_id)}</span> <span class="tag comp-owasp">{html.escape(f.owasp_id)}</span></span>
                 </div>
                 <div class="vector-box"><code>{f_vec}</code></div>
                 <div class="finding-body">
@@ -1221,6 +1663,9 @@ class SecurityReportGenerator:
         .badge.medium {{ background: rgba(234, 179, 8, 0.2); color: var(--med-color); border: 1px solid var(--med-color); }}
         .badge.low {{ background: rgba(59, 130, 246, 0.2); color: var(--low-color); border: 1px solid var(--low-color); }}
         .live-tag {{ background: rgba(16, 185, 129, 0.2) !important; color: var(--accent-green) !important; border: 1px solid var(--accent-green); font-size: 11px; }}
+        .comp-kisa {{ background: rgba(16, 185, 129, 0.2); color: #34d399; }}
+        .comp-nist {{ background: rgba(56, 189, 248, 0.2); color: #38bdf8; }}
+        .comp-owasp {{ background: rgba(245, 158, 11, 0.2); color: #fbbf24; }}
         .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }}
         .stat-card {{ background: var(--surface-color); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px; text-align: center; }}
         .stat-value {{ font-size: 28px; font-weight: bold; color: var(--accent-blue); margin-top: 4px; }}
@@ -1259,7 +1704,7 @@ class SecurityReportGenerator:
                 <span><b>Generated:</b> {ts}</span>
                 <span><b>Assessment Scope:</b> {stats['total_labs']} Labs</span>
                 <span><b>Total Vulnerabilities:</b> {stats['total_findings']} Findings</span>
-                <span><b>Standard:</b> CVSS 3.1 &amp; MITRE ATT&CK</span>
+                <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
 
@@ -1286,7 +1731,25 @@ class SecurityReportGenerator:
         </section>
 
         <section>
-            <h2 class="section-title">2. Detailed Findings ({len(self.findings)} Findings)</h2>
+            <h2 class="section-title">2. Compliance Overview (컴플라이언스 표준 대응)</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">KISA ISMS-P Controls</div>
+                    <div class="stat-value" style="color: #34d399">{len(stats['kisa_counts'])}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">NIST CSF 2.0 Categories</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">{len(stats['nist_csf_counts'])}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">OWASP Top 10 Categories</div>
+                    <div class="stat-value" style="color: var(--med-color)">{len(stats['owasp_counts'])}</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title">3. Detailed Findings ({len(self.findings)} Findings)</h2>
             {"".join(findings_html)}
         </section>
     </div>

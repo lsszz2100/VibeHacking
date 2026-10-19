@@ -281,11 +281,29 @@
     o.connect(g); g.connect(c.destination);
     o.start(t0); o.stop(t0+dur+0.02);
   }
+  function sweep(startFreq, endFreq, dur, type, gain, when){
+    const c = audio(); if (!c) return;
+    const t0 = c.currentTime + (when||0);
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type || "sawtooth";
+    o.frequency.setValueAtTime(startFreq, t0);
+    o.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain||0.06, t0+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
   const sKey     = () => tone(420+Math.random()*120, 0.03, "square", 0.025);
   const sEnter   = () => tone(280, 0.05, "square", 0.04);
+  const sClick   = () => tone(1200, 0.015, "triangle", 0.03);
   function sGrant(){ [523,659,784,1046].forEach((f,i)=>tone(f,0.16,"triangle",0.07,i*0.07)); }
   function sDeny(){ tone(150,0.16,"sawtooth",0.07); tone(120,0.22,"sawtooth",0.06,0.06); }
   function sBreach(){ [392,523,659,784,1046,1318].forEach((f,i)=>tone(f,0.22,"triangle",0.08,i*0.06)); }
+  function sBadge(){ [523,659,784,1046,1318,1568].forEach((f,i)=>tone(f,0.18,"square",0.07,i*0.05)); }
+  function sLaser(){ sweep(1200, 220, 0.12, "sawtooth", 0.06); }
+  function sPowerUp(){ [262,330,392,523,659,784,1046].forEach((f,i)=>tone(f,0.12,"triangle",0.07,i*0.04)); }
+  function sAlarm(){ tone(880,0.08,"square",0.06,0); tone(660,0.08,"square",0.06,0.09); tone(880,0.08,"square",0.06,0.18); }
 
   /* ===== output ===== */
   const out = document.getElementById("out");
@@ -560,7 +578,7 @@
   }
 
   function finale(){
-    sBreach();
+    sPowerUp();
     const art = [
       "  ██████  ██████  ██████  ███████ ",
       " ██      ██    ██ ██   ██ ██      ",
@@ -792,7 +810,7 @@
           const desc = ach.desc[L()] || ach.desc.ko;
           showToast(ach.icon, (L()==="ko" ? "업적 달성: " : "Achievement: ") + title, desc);
           print('<span class="bold ok">🏆 [' + esc(S("badgeUnlocked")) + '] ' + ach.icon + ' ' + esc(title) + '</span>');
-          sGrant();
+          sBadge();
         }
       }
     });
@@ -895,7 +913,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -3149,6 +3167,168 @@
     verdictOut.textContent = verdictText;
   }
 
+  /* ===== 16. Linux Kernel Hardening & Sandboxing Inspector ===== */
+  let currentKernelScenario = "seccomp_bpf";
+
+  function renderKernel(scenario){
+    const targetEl = document.getElementById("kernelTargetInput");
+    const policyEl = document.getElementById("kernelMitigationSelect");
+    const traceBadge = document.getElementById("kernelTraceBadge");
+    const verdictBadge = document.getElementById("kernelVerdictBadge");
+    const traceOut = document.getElementById("kernelTraceOutput");
+    const verdictOut = document.getElementById("kernelVerdictOutput");
+
+    if (!targetEl || !policyEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario){
+      currentKernelScenario = scenario;
+      if (scenario === "seccomp_bpf"){
+        targetEl.value = "/usr/local/bin/worker_service (PID: 1046)";
+        policyEl.value = "seccomp_strict";
+      } else if (scenario === "landlock_sandbox"){
+        targetEl.value = "/var/www/app/renderer (PID: 2046)";
+        policyEl.value = "landlock_jail";
+      } else if (scenario === "ima_appraise"){
+        targetEl.value = "/opt/bin/tampered_crypto_agent (PID: 3046)";
+        policyEl.value = "ima_evm_sig";
+      } else if (scenario === "kspp_mitigate"){
+        targetEl.value = "Kernel Space Ring 0 & Workload Pods";
+        policyEl.value = "full_kspp";
+      }
+    } else {
+      if (policyEl.value === "seccomp_strict") currentKernelScenario = "seccomp_bpf";
+      else if (policyEl.value === "landlock_jail") currentKernelScenario = "landlock_sandbox";
+      else if (policyEl.value === "ima_evm_sig") currentKernelScenario = "ima_appraise";
+      else if (policyEl.value === "full_kspp") currentKernelScenario = "kspp_mitigate";
+      else currentKernelScenario = "unhardened";
+    }
+
+    const mode = currentKernelScenario;
+    let traceText = "";
+    let verdictText = "";
+
+    if (mode === "unhardened"){
+      traceText =
+        "[Kernel Syscall Gate & Runtime Telemetry (Unhardened Profile)]:\n" +
+        "  Target Process: " + targetEl.value + "\n" +
+        "  Seccomp State: SECCOMP_MODE_DISABLED (All 450+ syscalls permitted)\n" +
+        "  LSM Confinement: None (Landlock ruleset inactive, default DAC only)\n" +
+        "  IMA/EVM Status: Inactive (Unsigned binaries execute without verification)\n" +
+        "  Syscall Trace:\n" +
+        "    > ptrace(PTRACE_ATTACH, pid=1, ...) => RET: 0 (SUCCESS - Host PID hijacking)\n" +
+        "    > process_vm_writev(pid=100, ...) => RET: 4096 bytes injected into root daemon\n" +
+        "    > openat('/etc/shadow', O_RDONLY) => RET: 4 (SUCCESS - Credential access)";
+      verdictText =
+        "[Host Attack Surface Assessment]:\n" +
+        "  - Process Isolation: BROKEN (Worker process can manipulate peer processes)\n" +
+        "  - Filesystem Integrity: UNPROTECTED (Arbitrary root directories traversable)\n" +
+        "  - Vulnerability: Immediate host compromise via debug syscall injection (T1055)\n" +
+        "Verdict: 🚨 CRITICAL: UNRESTRICTED HOST KERNEL ATTACK SURFACE";
+      traceBadge.textContent = "SECCOMP: DISABLED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: VULNERABLE";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "seccomp_bpf"){
+      traceText =
+        "[Seccomp-BPF Syscall Interception Telemetry]:\n" +
+        "  Target Process: " + targetEl.value + "\n" +
+        "  Filter Arch: AUDIT_ARCH_X86_64 (Strict architecture pinning)\n" +
+        "  PR_SET_NO_NEW_PRIVS: 1 (Permanent inheritance locked)\n" +
+        "  Policy Mode: SECCOMP_RET_ERRNO (EPERM default for non-whitelisted syscalls)\n" +
+        "  Intercepted Syscalls:\n" +
+        "    [PASS] read(3, buf, 1024) => SECCOMP_RET_ALLOW (OK)\n" +
+        "    [PASS] write(1, buf, 512) => SECCOMP_RET_ALLOW (OK)\n" +
+        "    [PASS] epoll_wait(4, ev, 64) => SECCOMP_RET_ALLOW (OK)\n" +
+        "    [BLOCK] ptrace(PTRACE_ATTACH, 100) => SECCOMP_RET_ERRNO (EPERM: Blocked!)\n" +
+        "    [BLOCK] process_vm_writev(...) => SECCOMP_RET_ERRNO (EPERM: Blocked!)\n" +
+        "    [BLOCK] execve('/bin/sh', ...) => SECCOMP_RET_KILL_PROCESS (Terminated!)";
+      verdictText =
+        "[Seccomp-BPF Isolation Verification]:\n" +
+        "  - Whitelist Coverage: 18 essential runtime syscalls permitted\n" +
+        "  - Attack Surface Reduction: 96% reduction in accessible kernel entrypoints\n" +
+        "  - Shell Spawn Prevention: execve blocked at syscall dispatcher layer\n" +
+        "Verdict: 🛡️ SECCOMP-BPF SANDBOX ENFORCED (Dangerous Syscalls Blocked with EPERM)";
+      traceBadge.textContent = "SECCOMP: ACTIVE";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "SYSCALL: FILTERED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else if (mode === "landlock_sandbox"){
+      traceText =
+        "[Landlock LSM V5 Unprivileged Sandboxing Telemetry]:\n" +
+        "  Target Process: " + targetEl.value + "\n" +
+        "  Ruleset Handle: landlock_create_ruleset(LANDLOCK_CREATE_RULESET_VERSION)\n" +
+        "  Filesystem Allowed Trees:\n" +
+        "    ✓ /var/www/app (RO: READ_FILE | READ_DIR | EXECUTE)\n" +
+        "    ✓ /tmp/session (RW: READ_FILE | WRITE_FILE | MAKE_REG)\n" +
+        "  Network Scoping:\n" +
+        "    ✓ TCP Port 8080 (LANDLOCK_ACCESS_NET_CONNECT_TCP only)\n" +
+        "  Trapped Security Violations:\n" +
+        "    [BLOCK] openat(AT_FDCWD, '/etc/shadow', O_RDONLY) => EACCES (Access Denied!)\n" +
+        "    [BLOCK] openat(AT_FDCWD, '/root/.ssh', O_RDONLY) => EACCES (Access Denied!)\n" +
+        "    [BLOCK] connect(fd, 10.0.0.1:4444) => EACCES (Non-whitelisted C2 Port Denied!)";
+      verdictText =
+        "[Landlock LSM Containment Verdict]:\n" +
+        "  - Unprivileged Sandbox: Established without requiring CAP_SYS_ADMIN\n" +
+        "  - Directory Traversal Defense: Irreversible monotonic filesystem scoping\n" +
+        "  - Lateral Movement Defense: Outbound TCP socket restriction active\n" +
+        "Verdict: 🛡️ LANDLOCK LSM CONFINEMENT ACTIVE (Monotonic Jail Enforced)";
+      traceBadge.textContent = "LANDLOCK: RESTRICTED";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "PATH: JAILED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else if (mode === "ima_appraise"){
+      traceText =
+        "[IMA/EVM Integrity Appraisal & Measurement Telemetry]:\n" +
+        "  Target Binary: " + targetEl.value + "\n" +
+        "  IMA Policy Rule: appraise func=BPRM_CHECK appraise_type=imasig\n" +
+        "  EVM Keyring: .evm (TPM 2.0 PCR-bound asymmetric key loaded)\n" +
+        "  Appraisal Execution Trace:\n" +
+        "    1. Calc Hash: SHA-256(/opt/bin/tampered_crypto_agent) = c8f10a92...\n" +
+        "    2. Read xattr: security.ima (Stored RSA-3072 signature)\n" +
+        "    3. Verify Signature: RSA_verify(digest, sig, .ima_keyring) => FAILED!\n" +
+        "    4. EVM Metadata Check: security.selinux / uid / gid HMAC mismatch!\n" +
+        "    5. Kernel Action: bprm_check returned EACCES (-13, Permission Denied)";
+      verdictText =
+        "[Cryptographic Integrity Appraisal Summary]:\n" +
+        "  - Tamper Detection: Real-time cryptographic detection of modified binary\n" +
+        "  - Bootkit / Rootkit Defense: Unsigned binaries and scripts fail execution\n" +
+        "  - Measurement Log: Anomaly event recorded into TPM PCR 10\n" +
+        "Verdict: 🚫 UNAUTHORIZED TAMPERING BLOCKED (IMA Appraisal EACCES Triggered)";
+      traceBadge.textContent = "IMA: DIGSIG_MISMATCH";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "EXEC: EACCES";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else { // kspp_mitigate
+      traceText =
+        "[KSPP Kernel Self-Protection Project Full Defense Enforced]:\n" +
+        "  ✓ [Address Space] KASLR (28-bit physical entropy) + FG-KASLR (Function granularity)\n" +
+        "  ✓ [CPU Registers] CR4.SMEP=1 (Block user exec) + CR4.SMAP=1 (Block user data read)\n" +
+        "  ✓ [Hardware Shadow Stack] Intel CET enabled (ROP gadget return address protected)\n" +
+        "  ✓ [Control Flow] Clang kCFI (Forward-edge indirect call prototype hash check)\n" +
+        "  ✓ [SLUB Heap] CONFIG_SLAB_FREELIST_HARDENED (Freelist ptr XOR cookie obfuscation)\n" +
+        "  ✓ [Memory Safety] CONFIG_INIT_ON_ALLOC_DEFAULT_ON + INIT_ON_FREE_DEFAULT_ON\n" +
+        "  ✓ [Boundary Defense] CONFIG_FORTIFY_SOURCE (Intra-object bounds checking enabled)\n" +
+        "  ✓ [Kernel Lockdown] Lockdown: Integrity (Disabled /dev/mem, ioperm, raw I/O)";
+      verdictText =
+        "[Host & Kernel Zero Trust Hardening Summary]:\n" +
+        "  - Exploit Mitigation: Ret2usr, ROP, heap spraying, and UAF chains completely negated\n" +
+        "  - Speculative Execution: Retpoline + eIBRS active (Spectre/Meltdown neutralized)\n" +
+        "  - Defense-in-Depth: Multi-layered containment from hardware CPU to userland sandboxing\n" +
+        "Verdict: 🟢 100% KERNEL RUNTIME DEFENSE POSTURE ENFORCED (KSPP + Seccomp + Landlock)";
+      traceBadge.textContent = "KSPP: FULL_HARDENED";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "STATUS: ZERO_TRUST";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -3434,6 +3614,8 @@
         openPlayground("extsec"); break;
       case "pqc": case "lattice": case "kem": case "kyber": case "dilithium": case "fips203":
         openPlayground("pqc"); break;
+      case "kernel": case "linuxhard": case "seccomp": case "landlock": case "ima": case "evm": case "kspp":
+        openPlayground("kernel"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -4017,6 +4199,22 @@
       audio();
       const p = btn.getAttribute("data-pqc-preset");
       renderPQC(p);
+    });
+  });
+
+  // Linux Kernel Hardening & Sandboxing Inspector Controls
+  const kernelRunBtn = document.getElementById("kernelRunBtn");
+  if (kernelRunBtn) kernelRunBtn.addEventListener("click", () => { audio(); sLaser(); renderKernel(); });
+  const kernelTargetInput = document.getElementById("kernelTargetInput");
+  if (kernelTargetInput) kernelTargetInput.addEventListener("input", () => renderKernel());
+  const kernelMitigationSelect = document.getElementById("kernelMitigationSelect");
+  if (kernelMitigationSelect) kernelMitigationSelect.addEventListener("change", () => renderKernel());
+  document.querySelectorAll("[data-kernel-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-kernel-preset");
+      renderKernel(p);
     });
   });
 

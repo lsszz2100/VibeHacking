@@ -10,6 +10,7 @@
 | [04_linux_security_auditing.md](./04_linux_security_auditing.md) | **Linux 보안 감사** — 보안 감사 vs 침투 테스트: |
 | [05_linux_hardening_automation.md](./05_linux_hardening_automation.md) | **Linux 보안 강화 자동화 — CIS 벤치마크·Ansible·감사 스크립트** — 새로 설치된 Linux 서버는 기본 설정으로는 보안에 취약합니다. 불필요한 서비스 실행, 약한 패스워드 정책, 넓은 파일 권한 등이 문제입니다. 보안 강화는 이를 체계적으로 개선하는 ... |
 | [06_linux_hardening_ctf_lab.md](./06_linux_hardening_ctf_lab.md) | **Linux 하드닝 CTF 실습 랩** — version: "3.9" |
+| [07_linux_kernel_hardening_and_runtime_defense_deepdive.md](./07_linux_kernel_hardening_and_runtime_defense_deepdive.md) | **리눅스 커널 하드닝 & 런타임 방어 심층 분석** — Seccomp-BPF 시스템콜 필터링, Landlock 비특권 샌드박싱, IMA/EVM 무결성 측정, KSPP 커널 자체 보호 완화 기법 |
 
 ## 학습 목표
 

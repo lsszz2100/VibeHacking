@@ -1250,6 +1250,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "FIPS 203 ML-KEM-768, FIPS 204 ML-DSA-65, RFC 9370 Dual-KDF 바인딩 및 Strict PQC 정책을 전면 배포하세요."}
                 ],
             },
+            "LAB46_SECCOMP_FILTER": {
+                "id": "LAB46_SECCOMP_FILTER",
+                "title": "KernelGuard: Seccomp-BPF Syscall Filter & Architecture Pinning",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{seccomp_bpf_arch_pinned_filter_enforced_8046}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "AUDIT_ARCH_X86_64 아키텍처를 검증하고 ptrace/process_vm_writev를 SECCOMP_RET_KILL_PROCESS로 차단하세요."}
+                ],
+            },
+            "LAB46_LANDLOCK_SANDBOX": {
+                "id": "LAB46_LANDLOCK_SANDBOX",
+                "title": "KernelGuard: Landlock LSM Unprivileged Filesystem Sandboxing",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{landlock_lsm_unprivileged_sandbox_locked_8046}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "no_new_privs 플래그를 설정하고 /srv/app/data 경로에만 읽기/쓰기를 허용하는 Landlock 룰셋을 잠그세요."}
+                ],
+            },
+            "LAB46_IMA_APPRAISAL": {
+                "id": "LAB46_IMA_APPRAISAL",
+                "title": "KernelGuard: IMA/EVM Runtime Integrity Measurement & Signature Appraisal",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{ima_appraisal_evm_signature_verified_8046}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "변조된 바이너리를 정품으로 복원하고 xattr security.ima 디지털 서명 검증을 강제하세요."}
+                ],
+            },
+            "LAB46_KSPP_MITIGATION": {
+                "id": "LAB46_KSPP_MITIGATION",
+                "title": "KernelGuard: KSPP Clang kCFI & Memory Mitigation Hardening",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{kspp_kernel_memory_mitigation_cfi_hardened_8046}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "kcfi_enforce, init_on_alloc, slab_nomerge, kpti를 일괄 활성화하여 KSPP 하드닝을 완료하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1292,6 +1340,7 @@ class CTFState:
             ["LAB43_CLOUDTRAIL_AUDIT", "LAB43_STS_S3_EXFIL", "LAB43_VPC_C2_CORRELATE", "LAB43_GUARDDUTY_SOAR_REMEDY"],
             ["LAB44_MANIFEST_V3_AUDIT", "LAB44_WAR_CONTEXT_LEAK", "LAB44_CONTENT_SCRIPT_DOM_XSS", "LAB44_DNR_CSP_HARDENING"],
             ["LAB45_HNDL_SHOR_AUDIT", "LAB45_HYBRID_KEM_DOWNGRADE", "LAB45_LATTICE_FAULT_TRIAGE", "LAB45_FIPS203_204_HARDEN"],
+            ["LAB46_SECCOMP_FILTER", "LAB46_LANDLOCK_SANDBOX", "LAB46_IMA_APPRAISAL", "LAB46_KSPP_MITIGATION"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

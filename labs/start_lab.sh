@@ -118,6 +118,7 @@ start_lab() {
         "43_cloud_incident_response_lab"
         "44_browser_extension_security_lab"
         "45_quantum_cryptography_pqc_lab"
+        "46_linux_kernel_hardening_lab"
     )
 
     local lab_names=(
@@ -167,6 +168,7 @@ start_lab() {
         "클라우드 사고 대응 & 위협 헌팅 랩"
         "브라우저 확장 프로그램 보안 & Manifest V3 실전 랩"
         "양자 내성 암호 & PQC 마이그레이션 실전 랩"
+        "리눅스 커널 하드닝 & 런타임 방어 실습"
     )
 
     local lab_ports=(
@@ -216,10 +218,11 @@ start_lab() {
         "웹 콘솔 & 클라우드 IR 대시보드: http://localhost:8043"
         "웹 콘솔 & 확장 프로그램 보안 대시보드: http://localhost:8044"
         "웹 콘솔 & PQC 보안 대시보드: http://localhost:8045"
+        "웹 콘솔 & 커널 보안 대시보드: http://localhost:8046"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 45 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~45 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 46 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~46 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -391,6 +394,7 @@ case "$ARG" in
     43)   start_lab 43 ;;
     44)   start_lab 44 ;;
     45)   start_lab 45 ;;
+    46)   start_lab 46 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

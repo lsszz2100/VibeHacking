@@ -169,7 +169,6 @@ const ALLOWLIST = new Map([
   ['t3_fuzzing_deterministic_poc -> t0_pwnrip', 'Deterministic PoC challenge discusses RIP register reproduction'],
   ['t3_fuzzing_cfi_safe_stack -> t4_pwncfi', 'CFI challenge discusses Control Flow Integrity defenses'],
   ['t4_fuzzing_browser_dom_fuzzing -> t2_ebpfjit', 'Browser fuzzing challenge discusses JIT compiler fuzzing'],
-  ['t4_fuzzing_smart_contract_echidna -> t0_web3evm', 'Smart contract fuzzing discusses EVM execution engine'],
   ['t4_fuzzing_concolic_symbolic -> t2_resmt', 'Concolic fuzzing discusses SMT solvers'],
   ['t4_fuzzing_concolic_symbolic -> t3_rez3', 'Concolic fuzzing discusses Z3 theorem prover'],
   ['t4_fuzzing_concolic_symbolic -> t3_reconcolic', 'Hybrid fuzzing analyzes concolic execution'],
@@ -348,7 +347,6 @@ const ALLOWLIST = new Map([
   ['t4_blehack_knob_encryption_key_negotiation -> t3_wlknob', 'Key Negotiation of Bluetooth entropy reduction references KNOB attack'],
   ['t4_blehack_bluetooth_mesh_replay_seq_cache -> t2_sceviction', 'Mesh sequence cache exhaustion triggers replay cache eviction'],
   ['t4_blehack_ble_gatt_fuzzing_defensics -> t4_gatt', 'Protocol fuzzing targets BLE GATT server implementations'],
-  ['t4_blehack_sdr_iq_constellation_diagram -> t0_web3evm', 'RF modulation EVM Error Vector Magnitude constellation analysis'],
   ['t4_blehack_hardware_secure_element_ble_key -> t2_scdpa', 'Secure element hardware resists DPA power analysis'],
   ['t4_blehack_hardware_secure_element_ble_key -> t4_secureenclave', 'Hardware cryptographic isolation utilizes Secure Enclave technology'],
   ['t4_blehack_zero_trust_wireless_mesh_defense -> t1_ztmicro', 'Zero trust wireless IoT defense enforces microsegmentation'],
@@ -470,6 +468,19 @@ const ALLOWLIST = new Map([
   ['t3_pqc_stateful_hash_based_signatures_xmss_lms -> t1_snapshot', 'Stateful hash signatures caution against VM snapshot rollback'],
   ['t4_pqc_enterprise_pqc_asset_inventory_and_cbom -> t3_sccyclonedx', 'Cryptographic Bill of Materials follows CycloneDX 1.6 format'],
   ['t4_pqc_capstone_enterprise_pqc_defense_architecture -> t2_ipsec', 'Capstone architecture transitions enterprise IPsec VPNs'],
+  // Linux Kernel Hardening & Runtime Defense domain terms
+  ['t0_linuxhard_seccomp_strict_vs_filter_mode -> t4_pwnsigreturn', 'Seccomp strict mode permits sigreturn syscall'],
+  ['t1_linuxhard_kspp_stack_canaries_and_shadow_stack -> t4_pwncet', 'Intel CET shadow stack mitigation'],
+  ['t1_linuxhard_kspp_stack_canaries_and_shadow_stack -> t4_rop', 'Shadow stack defeats return-oriented programming (ROP)'],
+  ['t1_linuxhard_kernel_address_space_layout_randomization_kaslr -> t4_rop', 'KASLR prevents deterministic ROP gadgets'],
+  ['t4_linuxhard_ima_evm_secure_boot_unified_kernel_image -> t3_firmwaresecureboot', 'Integrity Measurement Architecture hooks UEFI Secure Boot'],
+  ['t4_linuxhard_kspp_retpoline_and_speculative_execution_mitigations -> t3_ebpfspectre', 'Speculative execution mitigations counter Spectre v2'],
+  ['t4_linuxhard_kspp_retpoline_and_speculative_execution_mitigations -> t4_web3pause', 'Speculative execution barriers utilize pause/lfence'],
+  ['t4_linuxhard_kspp_fortify_source_and_bounds_checking -> t3_firmwareslowbof', 'FORTIFY_SOURCE enforces compile-time bounds checks on memcpy'],
+  ['t4_linuxhard_krsi_kernel_runtime_security_instrumentation -> t2_ebpftetragon', 'KRSI runtime sensors contrast with Tetragon architecture'],
+  ['t4_linuxhard_krsi_kernel_runtime_security_instrumentation -> t3_falco', 'KRSI runtime security complements Falco eBPF rules'],
+  ['t4_linuxhard_krsi_kernel_runtime_security_instrumentation -> t2_auditd', 'KRSI replaces legacy auditd performance bottlenecks'],
+  ['t4_linuxhard_seccomp_bpf_assembler_jit_spray_mitigation -> t2_ebpfjit', 'Seccomp and eBPF JIT compiler spray defense'],
 ]);
 
 function loadChallenges() {

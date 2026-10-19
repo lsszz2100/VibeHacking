@@ -62,14 +62,14 @@ class TestCVSS31Calculator:
 
 
 class TestLabCatalogCoverage:
-    """45개 전 실습 랩의 취약점 데이터베이스 완전성 검증"""
+    """46개 전 실습 랩의 취약점 데이터베이스 완전성 검증"""
 
-    def test_all_45_labs_present(self):
-        expected_ids = {str(i).zfill(2) for i in range(1, 46)}
+    def test_all_46_labs_present(self):
+        expected_ids = {str(i).zfill(2) for i in range(1, 47)}
         catalog_ids = set(LAB_CATALOG.keys())
         missing = expected_ids - catalog_ids
         assert not missing, f"Missing labs in report catalog: {missing}"
-        assert len(catalog_ids) == 45
+        assert len(catalog_ids) == 46
 
     def test_finding_fields_integrity(self):
         for lid, lab in LAB_CATALOG.items():
@@ -95,7 +95,7 @@ class TestReportGeneratorRendering:
     def test_full_catalog_summary(self):
         gen = SecurityReportGenerator()
         stats = gen.get_summary_stats()
-        assert stats["total_labs"] == 45
+        assert stats["total_labs"] == 46
         assert stats["total_findings"] >= 45
         assert stats["average_cvss"] >= 7.0
         assert stats["severity_counts"]["Critical"] > 0
@@ -173,7 +173,24 @@ class TestReportGeneratorRendering:
         assert "Vulnerability_Name" in header
         assert "Severity" in header
         assert "CVSS_Score" in header
+        assert "KISA_ISMSP" in header
+        assert "NIST_CSF_2_0" in header
+        assert "OWASP_Top_10" in header
         assert len(lines) >= 3
+
+    def test_compliance_mapping_coverage(self):
+        gen = SecurityReportGenerator()
+        stats = gen.get_summary_stats()
+        assert len(stats["kisa_counts"]) >= 5
+        assert len(stats["nist_csf_counts"]) >= 5
+        assert len(stats["owasp_counts"]) >= 5
+        for f in gen.findings:
+            assert f.kisa_id, f"Finding {f.vuln_id} missing kisa_id"
+            assert f.kisa_name, f"Finding {f.vuln_id} missing kisa_name"
+            assert f.nist_csf_id, f"Finding {f.vuln_id} missing nist_csf_id"
+            assert f.nist_csf_name, f"Finding {f.vuln_id} missing nist_csf_name"
+            assert f.owasp_id, f"Finding {f.vuln_id} missing owasp_id"
+            assert f.owasp_name, f"Finding {f.vuln_id} missing owasp_name"
 
     def test_severity_filtering(self):
         gen = SecurityReportGenerator(severity_filter=["Critical"])
@@ -202,9 +219,12 @@ class TestVhackCLIReportIntegration:
         cmd = [sys.executable, str(self.REPO_ROOT / "vhack.py"), "report", "summary"]
         proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.REPO_ROOT))
         assert proc.returncode == 0
-        assert "45개 랩 취약점 진단 요약" in proc.stdout
+        assert "46개 랩 취약점 진단 요약" in proc.stdout
         assert "Critical" in proc.stdout
         assert "High" in proc.stdout
+        assert "KISA ISMS-P" in proc.stdout
+        assert "NIST CSF 2.0" in proc.stdout
+        assert "OWASP Top 10" in proc.stdout
 
     def test_vhack_report_list_templates_cli(self):
         cmd = [sys.executable, str(self.REPO_ROOT / "vhack.py"), "report", "list-templates"]
