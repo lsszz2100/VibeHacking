@@ -33,8 +33,9 @@ void menu() {
 
 int read_int() {
     int v;
-    scanf("%d", &v);
-    getchar();
+    char buf[32];
+    fgets(buf, sizeof(buf), stdin);
+    sscanf(buf, "%d", &v);
     return v;
 }
 
@@ -76,9 +77,8 @@ int main() {
                 printf("잘못된 인덱스\n");
                 continue;
             }
-            printf("데이터 (최대 %d바이트): ", CHUNK_SIZE + 16);
-            // 취약 포인트: CHUNK_SIZE보다 16바이트 더 쓸 수 있음 (힙 오버플로우)
-            fgets(chunks[idx], CHUNK_SIZE + 16, stdin);
+            printf("데이터 (최대 %d바이트): ", CHUNK_SIZE);
+            fgets(chunks[idx], CHUNK_SIZE, stdin);
 
         } else if (choice == 4) {
             printf("인덱스: ");
