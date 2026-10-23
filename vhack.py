@@ -2045,18 +2045,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
     p_logs.add_argument("-n", "--tail", type=int, default=50, help="출력할 마지막 줄 수 (기본값: 50)")
     p_solve = lab_sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
-    p_solve.add_argument("lab_id", metavar="랩번호", help="01~23")
+    p_solve.add_argument("lab_id", metavar="랩번호", help="01~49")
     p_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
 
     # logs (top-level shortcut)
     p_top_logs = sub.add_parser("logs", help="실습 랩 컨테이너 실시간 로그 확인")
-    p_top_logs.add_argument("lab_id", metavar="랩번호", help="01~23")
+    p_top_logs.add_argument("lab_id", metavar="랩번호", help="01~49")
     p_top_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
     p_top_logs.add_argument("-n", "--tail", type=int, default=50, help="출력할 마지막 줄 수 (기본값: 50)")
 
     # solve (top-level shortcut)
     p_top_solve = sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
-    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~23")
+    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~49")
     p_top_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
 
     # search
@@ -2125,14 +2125,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON/CSV, MITRE ATT&CK & CVSS 3.1)")
     report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
 
-    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 46개 랩)")
-    p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 46)")
+    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 49개 랩)")
+    p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 49)")
     p_rep_gen.add_argument("--severity", nargs="*", metavar="SEV", help="위험도 등급 필터 (Critical High Medium Low)")
     p_rep_gen.add_argument("--live", action="store_true", help="현재 실행 중인 랩 컨테이너 실시간 공격 표면 감지")
     p_rep_gen.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="출력 형식 (기본값: md)")
     p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
 
-    report_sub.add_parser("summary", help="전체 46개 랩 취약점 통계 및 심각도 요약")
+    report_sub.add_parser("summary", help="전체 49개 랩 취약점 통계 및 심각도 요약")
     report_sub.add_parser("list-templates", help="지원되는 보고서 포맷 및 템플릿 목록")
 
     # setup-docker
@@ -2251,7 +2251,7 @@ def cmd_disclaimer(args: argparse.Namespace) -> None:
     else:
         print(bold(cyan("\n⚖️  VibeHacking 법적 고지 및 면책조항 (Legal Notice & Disclaimer)\n")))
         print(bold("1. 🛡️ 교육 및 학술 연구 목적 한정 (Educational & Defensive Only):"))
-        print("   VibeHacking의 모든 교재(75개 섹션), 46개 실습 랩, 워게임 및 CLI 도구는")
+        print("   VibeHacking의 모든 교재(75개 섹션), 49개 실습 랩, 워게임 및 CLI 도구는")
         print("   화이트햇 보안 교육, 방어 역량 강화, 합법적 모의해킹 훈련 목적으로만 제공됩니다.")
         print(bold("\n2. 🚫 무단 시스템 침투 및 공격 엄격 금지 (Strict Prior Authorization):"))
         print("   시스템 소유자의 명시적인 사전 서면 승인(Written Consent) 없는 제3자 시스템 대상")
