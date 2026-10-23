@@ -1514,13 +1514,23 @@ labs/
 
 ---
 
-## Legal Notice
+## ⚠️ Legal Notice & Disclaimer
 
-> **All techniques in this repository must only be used in authorized environments.**
+> [!WARNING]
+> **All materials, exploit PoCs, Docker lab environments, and CLI tools in VibeHacking are provided exclusively for authorized cybersecurity education, academic research, and defensive capability building.**
 
-- Use within CTF, Bug Bounty, or contracted penetration testing scope only
-- Follow Responsible Disclosure principles when vulnerabilities are discovered
-- Unauthorized system access violates applicable laws including the Computer Fraud and Abuse Act (CFAA) and equivalent statutes in your jurisdiction
+```diff
+- [!] STRICT PROHIBITION: Unauthorized access, scanning, or exploitation of third-party systems is illegal.
++ [✓] AUTHORIZED: Sanctioned CTFs, public/private Bug Bounties within scope, contracted pentests (RoE compliant)
++ [✓] ETHICS: Follow Coordinated Vulnerability Disclosure (Responsible Disclosure) upon finding security flaws
+- [!] LIABILITY: Violators face severe criminal penalties under CFAA (US), Computer Misuse Act (UK), and equivalent laws
+```
+
+* **Disclaimer of Warranties ("AS IS")**: All content is provided "as is" without warranty of any kind. Authors and contributors disclaim any liability for damages or legal consequences arising from the use or misuse of these materials.
+* **Sole User Responsibility**: All legal, ethical, and operational liability rests solely with the individual user.
+* **Policies & Guidelines**:
+  * ⚖️ **Full Legal Disclaimer & Statutory Framework**: [DISCLAIMER.md](./DISCLAIMER.md)
+  * 🛡️ **Coordinated Vulnerability Disclosure & Security Policy**: [SECURITY.md](./SECURITY.md)
 
 ---
 

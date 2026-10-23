@@ -1,6 +1,8 @@
 * **시작하기**
   * [🏠 프로젝트 소개](README.md)
-  * [🔬 실습 랩 가이드 (1~17)](labs/README.md)
+  * [⚖️ 법적 고지 및 면책조항](DISCLAIMER.md)
+  * [🛡️ 보안 정책 및 윤리 지침](SECURITY.md)
+  * [🔬 실습 랩 가이드 (1~46)](labs/README.md)
   * [🎮 브라우저 워게임 (PWA)](wargame/index.html)
 
 * **1. 시스템 & 저수준 보안**
@@ -93,3 +95,9 @@
   * [58. 클라우드 사고 대응](58_Cloud_IR/README.md)
   * [64. 위협 인텔 플랫폼](64_Threat_Intel_Platform/README.md)
   * [68. 퍼플팀](68_Purple_Team/README.md)
+
+* **⚖️ 거버넌스 & 기여**
+  * [⚖️ 면책조항 (DISCLAIMER)](DISCLAIMER.md)
+  * [🛡️ 보안 정책 (SECURITY)](SECURITY.md)
+  * [🤝 기여 가이드](CONTRIBUTING.md)
+  * [📜 행동 강령](CODE_OF_CONDUCT.md)

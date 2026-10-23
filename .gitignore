@@ -1,20 +1,51 @@
-# 보안 민감 파일
+# ── 보안 민감 파일 및 자격증명 차단 ───────────────────────────
 *.env
 .env.*
 *.key
 *.pem
 *.p12
 *.pfx
+*.crt
+*.cer
+*.der
+*.jks
+*.keystore
 secrets/
 secrets.*
 private/
 credentials.*
+credentials.csv
 config.local.*
 *.token
 *_token.txt
 api_keys.*
+.netrc
 
-# 실습 결과물 (로컬에만 보관)
+# SSH 및 인증 키
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+id_ecdsa
+id_ecdsa.pub
+*.id_rsa
+*.ppk
+
+# 클라우드 및 인프라 상태 파일 (시크릿 누출 방지)
+*.kubeconfig
+kubeconfig
+config.kube
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# 비밀번호 데이터베이스 및 VPN 프로필
+*.kdbx
+*.ovpn
+*.wireguard
+
+# 실습 결과물 및 덤프 (로컬에만 보관)
 *.pcap
 *.cap
 *.hccapx
@@ -23,10 +54,14 @@ api_keys.*
 memdump.*
 *.raw
 *.tar.gz
+*.core
 wordlists/
 passwords/
 crack_results.*
 hashes_cracked.*
+
+# 생성된 보안 보고서 (민감 자산 정보 포함 가능)
+reports/security_report_*.*
 
 # OS
 .DS_Store
@@ -55,4 +90,3 @@ venv/
 
 # Infra DB HA & Backup Runtime Data
 infra/db_ha_backup/data/
-

@@ -532,6 +532,7 @@ BANNER = rf"""
  /_/ \_\  |_.__/ \__,_|\___|_|\_\_| |_|\__,_|_(_)_|_| |_|\__, |
                                                              __/ |
   사이버보안 학습 플랫폼 · {len(SECTIONS)}개 섹션 · {len(LABS)}개 실습 환경       |___/
+  ⚖️  [법적 고지] 합법적 교육·방어 연구 전용 · 면책조항: vhack disclaimer
 """
 
 # ── 유틸 ─────────────────────────────────────────────────────────────────────
@@ -837,6 +838,8 @@ def _lab_start(lab_id: str | None) -> None:
 
     print(bold(f"\n🚀 {meta['name']} 시작 중..."))
     print(dim(f"   경로: {lab_path}"))
+    print(bold(yellow("  ⚠️  [격리 및 보안 주의] 본 실습 컨테이너는 학습을 위해 의도된 취약점을 포함하고 있습니다.")))
+    print(yellow("      외부 공용망(공용 Wi-Fi, 클라우드 공인 IP 등)에 노출하지 마시고, 127.0.0.1 로컬 환경에서만 실습하세요."))
     rc = _run_compose(lab_path, "up", "-d", "--build")
     if rc == 0:
         print(green(f"\n✓ {meta['name']} 시작 완료!"))
@@ -1787,7 +1790,12 @@ def cmd_wargame(args: argparse.Namespace) -> None:
         return
 
     port = args.port
-    url = f"http://localhost:{port}"
+    host = getattr(args, "host", "127.0.0.1")
+    if host == "0.0.0.0":
+        print(bold(yellow("\n  ⚠️  [보안 주의] 0.0.0.0 바인딩은 모든 로컬/외부 네트워크 인터페이스에 개방됩니다.")))
+        print(yellow("      신뢰할 수 없는 공용 네트워크(공공 Wi-Fi 등)에서는 127.0.0.1(기본값) 사용을 권장합니다.\n"))
+    display_host = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+    url = f"http://{display_host}:{port}"
     print(bold(cyan("\n🎮 VibeHacking 워게임 로컬 침투 콘솔")))
     print(dim(f"  디렉토리: {wargame_dir}"))
     print(f"  접속 주소: {bold(green(url))}")
@@ -1810,8 +1818,8 @@ def cmd_wargame(args: argparse.Namespace) -> None:
 
     socketserver.TCPServer.allow_reuse_address = True
     try:
-        with socketserver.TCPServer(("", port), WargameHTTPHandler) as httpd:
-            print(green(f"✓ 워게임 로컬 웹 서버 실행 중 (포트 {port})"))
+        with socketserver.TCPServer((host, port), WargameHTTPHandler) as httpd:
+            print(green(f"✓ 워게임 로컬 웹 서버 실행 중 ({host}:{port})"))
             httpd.serve_forever()
     except KeyboardInterrupt:
         print(yellow("\n[-] 워게임 서버를 정상적으로 종료했습니다.\n"))
@@ -1859,7 +1867,12 @@ def cmd_play(args: argparse.Namespace) -> None:
 def cmd_docs(args: argparse.Namespace) -> None:
     """75개 챕터 종합 사이버보안 웹 리더 포털 로컬 서버 실행"""
     port = args.port
-    url = f"http://localhost:{port}"
+    host = getattr(args, "host", "127.0.0.1")
+    if host == "0.0.0.0":
+        print(bold(yellow("\n  ⚠️  [보안 주의] 0.0.0.0 바인딩은 모든 로컬/외부 네트워크 인터페이스에 개방됩니다.")))
+        print(yellow("      신뢰할 수 없는 공용 네트워크(공공 Wi-Fi 등)에서는 127.0.0.1(기본값) 사용을 권장합니다.\n"))
+    display_host = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+    url = f"http://{display_host}:{port}"
     print(bold(cyan("\n📖 VibeHacking 75개 챕터 웹 리더 & 통합 포털")))
     print(dim(f"  루트 디렉토리: {REPO_ROOT}"))
     print(f"  접속 주소: {bold(green(url))}")
@@ -1882,8 +1895,8 @@ def cmd_docs(args: argparse.Namespace) -> None:
 
     socketserver.TCPServer.allow_reuse_address = True
     try:
-        with socketserver.TCPServer(("", port), DocsHTTPHandler) as httpd:
-            print(green(f"✓ 웹 리더 포털 서버 실행 중 (포트 {port})"))
+        with socketserver.TCPServer((host, port), DocsHTTPHandler) as httpd:
+            print(green(f"✓ 웹 리더 포털 서버 실행 중 ({host}:{port})"))
             httpd.serve_forever()
     except KeyboardInterrupt:
         print(yellow("\n[-] 웹 리더 포털 서버를 정상적으로 종료했습니다.\n"))
@@ -1968,6 +1981,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py alias remove       alias 제거
           python3 vhack.py alias status       설치 현황 확인
           python3 vhack.py doctor             자가 진단 및 포트 충돌 점검
+          python3 vhack.py disclaimer         법적 고지 및 면책조항 확인
           python3 vhack.py wargame            브라우저 워게임 로컬 서버 실행
           python3 vhack.py docs               75개 챕터 웹 리더 포털 로컬 서버 실행
           python3 vhack.py update             git pull
@@ -2042,6 +2056,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # wargame
     p_wg = sub.add_parser("wargame", help="브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈")
+    p_wg.add_argument("--host", default="127.0.0.1", help="바인딩 호스트 IP (기본값: 127.0.0.1 - 보안 권장)")
     p_wg.add_argument("--port", type=int, default=8000, help="웹 서버 포트 (기본값: 8000)")
     p_wg.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
     p_wg.add_argument("--cli", action="store_true", help="터미널 CUI 워게임 모드로 실행")
@@ -2055,8 +2070,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     # docs
     p_docs = sub.add_parser("docs", help="75개 챕터 웹 리더 & 통합 포털 로컬 서버 실행")
+    p_docs.add_argument("--host", default="127.0.0.1", help="바인딩 호스트 IP (기본값: 127.0.0.1 - 보안 권장)")
     p_docs.add_argument("--port", type=int, default=3000, help="웹 서버 포트 (기본값: 3000)")
     p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
+
+    # disclaimer / legal
+    p_disc = sub.add_parser("disclaimer", aliases=["legal"], help="법적 고지, 면책조항 및 윤리 지침 확인")
+    p_disc.add_argument("--en", action="store_true", help="영문 면책조항 출력 (English version)")
 
     # portal
     p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (23개 랩 제어, 진단, 웹 리더 연계)")
@@ -2177,6 +2197,54 @@ def cmd_report(args: argparse.Namespace) -> None:
         print(dim("  (특정 경로 저장은 -o / --output <경로> 옵션을 사용하세요)\n"))
 
 
+def cmd_disclaimer(args: argparse.Namespace) -> None:
+    """법적 고지 및 면책조항, 윤리 지침 출력"""
+    en = getattr(args, "en", False)
+    if en:
+        print(bold(cyan("\n⚖️  VibeHacking Legal Notice & Ethical Guidelines (Disclaimer)\n")))
+        print(bold("1. Educational & Defensive Research Exclusivity:"))
+        print("   All tools, scripts, exploit PoCs, and Docker labs in this repository are developed")
+        print("   strictly for educational, academic research, and defensive White Hat skill building.")
+        print(bold("\n2. Strict Explicit Authorization Requirement:"))
+        print("   Using these techniques or tools against any third-party system without prior written")
+        print("   consent from the authorized owner is strictly illegal.")
+        print(bold("\n3. Governing Cybercrime Statutes:"))
+        print("   • South Korea: Network Act (Arts. 48, 48-2, 49, 71 - up to 7 yrs imprisonment)")
+        print("   • United States: CFAA (18 U.S.C. § 1030), ECPA (18 U.S.C. § 2510)")
+        print("   • European Union: Directive 2013/40/EU on attacks against information systems")
+        print("   • United Kingdom: Computer Misuse Act 1990 (Sections 1 to 3ZA)")
+        print("   • Japan: Unauthorized Computer Access Act")
+        print(bold("\n4. Disclaimer of Warranties ('AS IS') & Limitation of Liability:"))
+        print("   All materials are provided 'AS IS' without warranty of any kind. Authors and")
+        print("   contributors disclaim any and all liability for misuse or operational damages.")
+        print("   All legal, civil, and criminal liability rests entirely with the individual user.")
+        print(bold("\n5. Coordinated Vulnerability Disclosure & Contacts:"))
+        print(f"   • Security Contact: {cyan('leemanrank@gmail.com')}")
+        print(f"   • Full Documents:   {dim('DISCLAIMER.md')} · {dim('SECURITY.md')}\n")
+    else:
+        print(bold(cyan("\n⚖️  VibeHacking 법적 고지 및 면책조항 (Legal Notice & Disclaimer)\n")))
+        print(bold("1. 🛡️ 교육 및 학술 연구 목적 한정 (Educational & Defensive Only):"))
+        print("   VibeHacking의 모든 교재(75개 섹션), 46개 실습 랩, 워게임 및 CLI 도구는")
+        print("   화이트햇 보안 교육, 방어 역량 강화, 합법적 모의해킹 훈련 목적으로만 제공됩니다.")
+        print(bold("\n2. 🚫 무단 시스템 침투 및 공격 엄격 금지 (Strict Prior Authorization):"))
+        print("   시스템 소유자의 명시적인 사전 서면 승인(Written Consent) 없는 제3자 시스템 대상")
+        print("   스캐닝, 침투 시도, 취약점 악용, 서비스 방해(DoS)는 명백한 불법 행위입니다.")
+        print(bold("\n3. ⚖️ 관련 국내외 형사 처벌 법령:"))
+        print("   • 「정보통신망법」 제48조/제49조/제71조 (무단침입, 비밀침해 - 최대 7년 이하 징역/7천만원 벌금)")
+        print("   • 「정보통신기반 보호법」 제12조/제28조 (주요기반시설 침해 - 최대 10년 이하 징역/1억원 벌금)")
+        print("   • 「형법」 제314조 (컴퓨터등장애업무방해), 제316조 (비밀침해)")
+        print("   • 미국 CFAA (18 U.S.C. § 1030), EU Directive 2013/40/EU, 일본 不正アクセス禁止法")
+        print(bold("\n4. 📄 보증의 부인 (AS-IS) 및 사용자 전적 책임 원칙:"))
+        print("   본 저장소의 모든 자료는 어떠한 명시적/묵시적 보증 없이 '있는 그대로(AS IS)' 제공됩니다.")
+        print("   자료의 사용, 오용, 오작동으로 인한 모든 민·형사상 법적 책임은 전적으로 사용자 본인에게 있으며,")
+        print("   프로젝트 제작자 및 기여자는 일체의 법적 책임을 부담하지 않습니다.")
+        print(bold("\n5. 📬 취약점 제보 및 상세 규정 문서:"))
+        print(f"   • 보안 취약점 제보: {cyan('leemanrank@gmail.com')}")
+        print(f"   • 상세 법적 고지:   {dim('DISCLAIMER.md')}")
+        print(f"   • 보안 정책/SLA:    {dim('SECURITY.md')}")
+        print(dim("   (영문 안내 확인: vhack disclaimer --en)\n"))
+
+
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
@@ -2202,6 +2270,8 @@ def main() -> None:
         "ctf":          cmd_ctf,
         "bundle":       cmd_bundle,
         "report":       cmd_report,
+        "disclaimer":   cmd_disclaimer,
+        "legal":        cmd_disclaimer,
         "logs":         lambda a: _lab_logs(a.lab_id, getattr(a, "follow", False), getattr(a, "tail", 50)),
         "solve":        lambda a: _lab_solve(a.lab_id, getattr(a, "step", 1)),
         "update":       cmd_update,

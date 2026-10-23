@@ -32,15 +32,16 @@ vhack — VibeHacking CLI
   python3 vhack.py <명령어> [옵션]
 
 명령어:
-  list      전체 75개 섹션 목록 표시
-  study     섹션 파일 열람
-  lab       Docker 실습 환경 관리 (01~15)
-  search    전체 마크다운 문서 검색
-  info      섹션 상세 정보
-  alias     셸 alias 자동 등록/제거/확인
-  doctor    시스템 필수 의존성, 포트 충돌, 실습 환경 자가 진단
-  wargame   브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈
-  update    git pull로 최신 버전 업데이트
+  list        전체 75개 섹션 목록 표시
+  study       섹션 파일 열람
+  lab         Docker 실습 환경 관리 (01~46)
+  search      전체 마크다운 문서 검색
+  info        섹션 상세 정보
+  alias       셸 alias 자동 등록/제거/확인
+  doctor      시스템 필수 의존성, 포트 충돌, 실습 환경 자가 진단
+  disclaimer  법적 고지, 면책조항 및 윤리 지침 확인 (vhack disclaimer)
+  wargame     브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈
+  update      git pull로 최신 버전 업데이트
 ```
 
 ### 설치 & 전역 사용
@@ -802,4 +803,16 @@ root@vibe:/perimeter$ submit FLAG{...} # submit → ACCESS GRANTED
 - Each challenge maps to a topic from the repo's 75 sections. See [`wargame/README.md`](wargame/README.md) for details.
 - 💡 The first flag hides in the page source (`Ctrl+U`). You can even ask an AI CLI for "just a hint on wargame #N".
 
-> ⚠️ **Legal Notice**: Use all content for authorized security research, CTF competitions, and learning only. Unauthorized use against real systems is illegal.
+## 12. 법적 고지 및 면책조항 (Legal & Disclaimer)
+
+CLI에서 언제든지 법적 고지 및 윤리 지침을 확인할 수 있습니다:
+
+```bash
+# 한국어 법적 고지 및 주요 처벌 법령 확인
+vhack disclaimer
+
+# 영문 법적 고지 및 SLA 확인
+vhack disclaimer --en
+```
+
+> ⚠️ **Legal Notice**: VibeHacking의 모든 콘텐츠는 인가된 환경(CTF, 버그바운티, 계약된 모의해킹, 로컬 랩)에서만 사용해야 합니다. 비인가 시스템에 대한 무단 침투는 국내외 법률에 의해 엄격히 처벌됩니다. 상세 규정은 [`DISCLAIMER.md`](./DISCLAIMER.md) 및 [`SECURITY.md`](./SECURITY.md)를 참조하십시오.

@@ -1,0 +1,77 @@
+name: Repository Security & Compliance Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 1' # Every Monday at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compliance-and-secrets:
+    name: Compliance & Secret Leak Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Verify Mandatory Security & Governance Files
+        run: |
+          echo "Checking essential compliance files..."
+          for f in DISCLAIMER.md SECURITY.md LICENSE CODE_OF_CONDUCT.md CONTRIBUTING.md; do
+            if [ ! -s "$f" ]; then
+              echo "::error file=$f::Required file $f is missing or empty!"
+              exit 1
+            fi
+            echo "  ✓ $f verified ($(wc -l < "$f") lines)"
+          done
+
+      - name: Scan for Accidental Secret & Credential Leaks
+        run: |
+          echo "Scanning for high-entropy secret patterns..."
+          # Detect actual hardcoded unmasked AWS access keys outside lab fixtures and educational docs
+          ERRORS=0
+          REAL_KEYS=$(git grep -E 'AKIA[0-9A-Z]{16}' -- ':!*.pyc' ':!*.json' ':!*.csv' ':!*.md' ':!labs/' 2>/dev/null | grep -v 'AKIAIOSFODNN7EXAMPLE' | grep -v 'AKIAXXXX' || true)
+          if [ -n "$REAL_KEYS" ]; then
+            echo "::error::Possible AWS Access Key detected in repository:"
+            echo "$REAL_KEYS"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          REAL_PKEYS=$(git grep -E '-----BEGIN (RSA|EC|DSA|OPENSSH) PRIVATE KEY-----' -- ':!labs/' ':!*.md' ':!wargame/' 2>/dev/null || true)
+          if [ -n "$REAL_PKEYS" ]; then
+            echo "::error::Unencrypted private key detected outside authorized lab fixtures:"
+            echo "$REAL_PKEYS"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if [ $ERRORS -gt 0 ]; then
+            echo "Secret scan failed with $ERRORS issues."
+            exit 1
+          fi
+          echo "  ✓ No high-risk exposed production credentials found."
+
+  python-security-scan:
+    name: Python SAST & Secure Coding Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Bandit Security Scanner
+        run: pip install bandit
+
+      - name: Run Bandit Security Audit on Core CLI & Utilities
+        run: |
+          # Audit vhack.py and tools/ directory with Bandit, excluding assert checks
+          bandit -r vhack.py tools/ -s B101,B404,B603,B607 --severity-level medium --confidence-level medium || true

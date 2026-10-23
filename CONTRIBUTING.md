@@ -22,7 +22,7 @@
 #### 작성 규칙
 - **언어**: 한국어로 작성 후 영어 번역 추가 (기존 파일 참고)
 - **코드 블록**: 복사-붙여넣기 가능한 완성형 명령어만 포함
-- **윤리**: 교육 목적에 부합하는 내용만 포함 ([SECURITY.md](./SECURITY.md) 참고)
+- **윤리 및 법률 준수**: 교육 및 방어 목적에 부합하는 내용만 포함 ([SECURITY.md](./SECURITY.md) 및 [DISCLAIMER.md](./DISCLAIMER.md) 준수 필수)
 - **파일명**: `NN_영문_소문자.md` 형식 유지
 
 #### 이슈 템플릿
@@ -61,7 +61,7 @@ Thank you for contributing to VibeHacking.
 #### Writing Guidelines
 - **Language**: Write in Korean, then add English translation (refer to existing files)
 - **Code blocks**: Only include complete, copy-paste-ready commands
-- **Ethics**: Content must align with educational purposes (see [SECURITY.md](./SECURITY.md))
+- **Ethics & Legal Compliance**: Content must align strictly with educational purposes (see [SECURITY.md](./SECURITY.md) and [DISCLAIMER.md](./DISCLAIMER.md))
 - **Filename**: Follow `NN_english_lowercase.md` format
 
 #### Issue Templates
