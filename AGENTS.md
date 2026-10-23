@@ -6,8 +6,8 @@
 
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
-- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH, 총 484개 챕터)
-  - **31대 심층 인제스천 챕터 완비**:
+- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH, 총 487개 챕터)
+  - **34대 심층 인제스천 챕터 완비**:
     1. `02_Network_Hacking/07_practical_packet_analysis_deepdive.md` (Wireshark 심층 해부, 패킷 분석, DNS 터널링, TLS 복호화)
     2. `06_Malware_Analysis/08_advanced_pdf_maldoc_structure_analysis_deepdive.md` (PDF 바이너리 객체, OLE/CFBF 매크로, CVE-2017-11882, CVE-2021-40444, 힙 스프레이)
     3. `06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md` (파이썬 오픈소스 기반 정적/동적 악성코드 분석 자동화, pefile/peframe, Shannon 엔트로피 패킹 판별, YARA 시그니처 룰셋, Cuckoo 가상 샌드박스 API 후킹 및 안티 분석 회피 무력화)
@@ -39,9 +39,12 @@
     29. `51_Browser_Extension_Security/07_browser_extension_security_and_dom_isolation_deepdive.md` (브라우저 확장 프로그램 & 클라이언트 보안 심층 분석: Manifest V3 마이그레이션, Isolated World DOM 우회, Content Script postMessage DOM XSS, 과도한 권한 쿠키 탈취, CSP unsafe-eval 무력화, 웹스토어 공급망 인수 방어, 기업 GPO 거버넌스)
     30. `57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md` (양자 내성 암호 & 격자 기반 마이그레이션 심층 분석: Shor/Grover 양자 알고리즘 위협, FIPS 203 ML-KEM/Kyber, FIPS 204 ML-DSA/Dilithium, FIPS 205 SLH-DSA, 하이브리드 키 교환 X25519+ML-KEM-768, PQC 하드닝 및 마이그레이션 로드맵)
     31. `26_Linux_Kernel_and_Driver_Development/07_linux_kernel_hardening_and_runtime_defense_deepdive.md` (리눅스 커널 하드닝 & 런타임 방어 심층 분석: Seccomp-BPF BPF 필터 strict/filter 모드, process_vm_writev/ptrace 차단, Landlock LSM 무특권 파일시스템 샌드박싱, KSPP 커널 자가 보호 프로젝션, IMA/EVM 무결성 측정, KRSI eBPF 런타임 계측)
+    32. `28_Mobile_Hacking/08_android_native_so_and_frida_unpinning_deepdive.md` (안드로이드 네이티브 SO 분석 & Frida SSL 언피닝 심층 분석: JNI 네이티브 라이브러리 리버싱, 메모리 보호 우회, BoringSSL/OpenSSL SSL_CTX SSL_set_custom_verify 훅, OkHttp CertificatePinner 언피닝)
+    33. `61_Firmware_Hacking/07_qemu_firmware_emulation_and_nvram_deepdive.md` (QEMU 임베디드 펌웨어 에뮬레이션 & NVRAM 가상화 분석: Binwalk SquashFS 언패킹, QEMU 유저/시스템 모드 에뮬레이션, libnvram.so 가상화 주입 LD_PRELOAD, uHTTPd/GoAhead 웹 CGI 취약점 익스플로잇)
+    34. `69_LLM_Security/07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md` (AI 에이전트 & MCP 툴 포이즈닝·탈취 및 샌드박싱 방어: Model Context Protocol JSON-RPC 도구 호출 탈취, 간접 프롬프트 주입 IPI, 도구 섀도잉 및 Confused Deputy 공격, Dual-LLM 가드레일 & Landlock LSM 샌드박싱)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 46개 실전 랩 완비** (`labs/01` ~ `labs/46`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 49개 실전 랩 완비** (`labs/01` ~ `labs/49`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (루팅 탐지 우회, SSL Pinning 패치, Native 심볼 후킹, JNI Crypto 암호문 복호화, 포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (SEH 스택 오버라이트, SafeSEH/DEP/ASLR 회피, UAC 바이패스, HEVD IOCTL 임의 메모리 쓰기, Token Stealing 권한상승, 포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (CAN 버스 패킷 스니핑/주입, 계기판 속도 스푸핑, UDS SecurityAccess 시드키 인증 우회, ECU hardReset DoS, 포트: `8021`)
@@ -70,44 +73,50 @@
   - **Lab 44 (BrowserExtGuard)**: 브라우저 확장 프로그램 & 클라이언트 보안 실전 랩 (Manifest V3 선언적 넷 리퀘스트, Isolated World DOM 탈출, Content Script postMessage DOM XSS, 과도한 권한 쿠키 탈취, CSP unsafe-eval 무력화, 웹스토어 공급망 인수 방어, 기업 GPO 거버넌스, 포트: `8044`)
   - **Lab 45 (PQCShield)**: 양자 내성 암호(PQC) & 격자 기반 암호 마이그레이션 실전 랩 (Shor 알고리즘 RSA/ECC 위협, FIPS 203 ML-KEM-768 하이브리드 키 교환, FIPS 204 ML-DSA 서명 검증, CBOM 암호 자산 인벤토리 감사, 포트: `8045`)
   - **Lab 46 (KernelGuard)**: 리눅스 커널 하드닝 & 시스템콜 샌드박싱 실전 랩 (Seccomp-BPF BPF 필터 strict/filter 모드, process_vm_writev/ptrace 시스템콜 차단, Landlock LSM 파일시스템 무특권 격리, IMA 파일 무결성 해시 검증 및 커널 런타임 방어, 포트: `8046`)
-- **브라우저 & 터미널 워게임**: **총 60개 트랙 / 2,100문제** 달성 (`wargame/index.html`, HUD `0/2100`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 60개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
+  - **Lab 47 (AgentGuard)**: AI 에이전트 & MCP 보안 실전 실습 (간접 프롬프트 주입(IPI) 도구 호출 가로채기, 악성 MCP 도구 섀도잉 및 토큰 유출 차단, Confused Deputy 파라미터 변조 권한 상승 방어, Dual LLM 가드레일 및 Landlock 샌드박싱 강제, 포트: `8047`)
+  - **Lab 48 (FirmwareGuard)**: 임베디드 펌웨어 & IoT RCE 실전 실습 (Binwalk MIPS SquashFS 언패킹, QEMU 유저 모드 libnvram.so 가상화 주입 LD_PRELOAD, 임베디드 웹 CGI 원격 명령 실행 RCE 익스플로잇, DM-Verity 및 시큐어 부트 커널 무결성 잠금, 포트: `8048`)
+  - **Lab 49 (PQCTLSGuard)**: 양자 내성 하이브리드 TLS 1.3 실습 (고전 TLS 1.3 암호 세션 HNDL 위협 감사, X25519 + ML-KEM-768(Kyber) 하이브리드 키 교환 세션 수립, ML-DSA-65(Dilithium) 격자 기반 전자 서명 검증, 다운그레이드 공격 차단 및 비양자 폴백 금지 정책, 포트: `8049`)
+- **브라우저 & 터미널 워게임**: **총 61개 트랙 / 2,135문제** 달성 (`wargame/index.html`, HUD `0/2135`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 61개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
   - **Web Audio API 8-bit 치프튠 사운드 FX 엔진**: 키 입력, 플래그 승인(sGrant), 거절(sDeny), 노드 브리치(sBreach), 업적 달성(sBadge), 시뮬레이터 레이저(sLaser), 피날레(sPowerUp) 등 브라우저 사운드 합성 탑재
-  - **워게임 16대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, BGP 하이재킹 & RPKI, OAuth PKCE & Key Confusion, DB RBAC & UDF Shield, EDR 회피 & 메모리 패칭 인스펙터, AES-CBC Padding Oracle & Bit-Flipping Inspector, DFIR Live Triage & Memory Timeline Inspector, SBOM & Supply Chain Dependency Inspector, Serverless & FaaS Security Inspector, Cloud Incident Response & Athena CloudTrail Inspector, Browser Extension & DOM Security Inspector, Lattice KEM & PQC Inspector, 🐧 Linux Kernel Hardening & Sandboxing Inspector
-  - **56~60번째 신규 트랙 완비**:
+  - **워게임 17대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, BGP 하이재킹 & RPKI, OAuth PKCE & Key Confusion, DB RBAC & UDF Shield, EDR 회피 & 메모리 패칭 인스펙터, AES-CBC Padding Oracle & Bit-Flipping Inspector, DFIR Live Triage & Memory Timeline Inspector, SBOM & Supply Chain Dependency Inspector, Serverless & FaaS Security Inspector, Cloud Incident Response & Athena CloudTrail Inspector, Browser Extension & DOM Security Inspector, Lattice KEM & PQC Inspector, 🐧 Linux Kernel Hardening & Sandboxing Inspector, 🤖 AI Agent & MCP Tool Hijacking Inspector
+  - **56~61번째 신규 트랙 완비**:
     - `serverless` ⚡ 서버리스 & FaaS 보안 (35개 문제: Tier 0~4)
     - `cloudir` 🌩️ 클라우드 침해사고 대응 & AWS 포렌식 (35개 문제: Tier 0~4)
     - `extsec` 🧩 브라우저 확장 프로그램 & DOM 격리 보안 (35개 문제: Tier 0~4)
     - `pqc` ⚛️ 양자 내성 암호 & 격자 기반 마이그레이션 (35개 문제: Tier 0~4)
     - `linuxhard` 🐧 리눅스 커널 하드닝 & 런타임 방어 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (2,100문제 0유출), `solve-derivable.js` (1,102+ 통과)
+    - `agentmcp` 🤖 AI 에이전트 & MCP 보안 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (2,135제), `audit.js --strict` (305/305행 0결함), `leakscan.js` (2,135문제 0유출), `solve-derivable.js` (1,137+ 통과)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(46개 랩 시작/중지/재시작), 16대 카테고리 필터링 탭 바 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`, 정규식 기반 `is_dangerous_command` 파괴 명령어 차단 필터 탑재), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(49개 랩 시작/중지/재시작), 16대 카테고리 필터링 탭 바 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`, 정규식 기반 `is_dangerous_command` 파괴 명령어 차단 필터 탑재), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
 - **보안 진단 보고서 생성기 (Report CLI)**:
-  - `tools/report_generator.py`, `vhack report`: 46개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
+  - `tools/report_generator.py`, `vhack report`: 49개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
-  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 46개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
+  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 49개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
   - `ctf/server.py`, `ctf/tests/test_ctf.py`: 98개 랩 플래그 풀, 순차 해금 모드(Progressive Unlock) 지원, 팀 등록 정규식 검증(XSS 방어), `secrets.compare_digest` 시간차 분석 공격 방어, 전역 HTML 엔티티 이스케이프(`esc()`), 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프, 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
 - **오프라인 번들러 및 릴리스 배포 파이프라인 (Bundler & Release)**:
-  - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 46개 랩, 60개 트랙(2,100문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/vibehacking-v2.2.0.tar.gz`) 생성 지원
+  - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 49개 랩, 61개 트랙(2,135문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/vibehacking-v2.3.0.tar.gz`) 생성 지원
 - **vhack CLI 고도화**:
-  - `vhack play`: 60개 트랙 2,100문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리, 0o600 권한 보호)
+  - `vhack play`: 61개 트랙 2,135문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리, 0o600 권한 보호)
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
-  - `vhack solve`: 46개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8046 가용성 등 시스템 진단
-  - `vhack lab test [--all | <lab_id>]`: 46개 실습 랩 자동 무결성 검증 (574개 테스트 All Green)
-  - `vhack lab status`: 46개 랩 종합 상태 대시보드
-  - `vhack report summary`: 46개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
+  - `vhack solve`: 49개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8049 가용성 등 시스템 진단
+  - `vhack lab test [--all | <lab_id>]`: 49개 실습 랩 자동 무결성 검증 (590+개 테스트 All Green)
+  - `vhack lab status`: 49개 랩 종합 상태 대시보드
+  - `vhack report summary`: 49개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
+  - `vhack disclaimer` / `vhack legal`: 법적 고지, 정보통신망법/CFAA 처벌 법령, AS-IS 면책 안내
 - **CI/CD 및 자동 색인 파이프라인**:
-  - [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml): Labs 01~46, `vhack doctor`, Pytest 전체 574개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화
+  - [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml): Labs 01~49, `vhack doctor`, Pytest All Green, Wargame 4대 엄격 검증 스위트 자동화
+  - [`.github/workflows/security.yml`](file:///.github/workflows/security.yml): CodeQL 정적 분석, Dependabot 보안 패치, pip-audit 및 비밀정보 스캔 자동화
   - [`.github/workflows/deploy-docs.yml`](file:///.github/workflows/deploy-docs.yml) & [`.github/workflows/deploy-wargame.yml`](file:///.github/workflows/deploy-wargame.yml): GitHub Pages 배포 자동화
   - [`.github/workflows/seo-submit.yml`](file:///.github/workflows/seo-submit.yml): 커밋 시 검색엔진 자동 색인 및 IndexNow 즉시 전송
 - **검색엔진 최적화 (SEO) & 웹 홍보 툴킷**:
   - `Open Graph / Twitter Cards / Schema.org JSON-LD`: 1200x630 터미널 배너(`assets/og-preview.svg`) 및 리치 카드 최적화
-  - `sitemap.xml` & `robots.txt`: 75개 섹션, 46개 랩, 워게임 전체 URL 표준 색인 매핑 및 크롤러 허용
+  - `sitemap.xml` & `robots.txt`: 75개 섹션, 49개 랩, 워게임 전체 URL 표준 색인 매핑 및 크롤러 허용
   - `IndexNow 실시간 색인`: Bing, Naver, Yandex, Seznam 대상 HTTP 202 Accepted 전송 (`tools/submit_seo_sitemap.py`)
   - `커뮤니티 홍보 툴킷`: GeekNews, Reddit, X, Disquiet 맞춤 문안 및 원클릭 공유 배지 (`tools/promo_kit.py`, `README.md`)
   - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8044 가용성 등 시스템 진단
@@ -175,6 +184,9 @@
 | **44** | 브라우저 확장 프로그램 & 클라이언트 보안 실전 랩 (BrowserExtGuard) | Manifest V3 선언적 넷 리퀘스트, Isolated World 탈출, Content Script DOM XSS, 과도한 권한 쿠키 탈취, CSP unsafe-eval 무력화, 웹스토어 공급망 방어 | `51_Browser_Extension_Security` | `extsec` | `vhack lab start 44` |
 | **45** | 양자 내성 암호 & 격자 마이그레이션 실전 랩 (PQCShield) | Shor 알고리즘 RSA/ECC 위협, FIPS 203 ML-KEM-768 하이브리드 키 교환, FIPS 204 ML-DSA 서명 검증, CBOM 암호 자산 인벤토리 감사 | `57_Quantum_Cryptography` | `pqc` | `vhack lab start 45` |
 | **46** | 리눅스 커널 하드닝 & 런타임 방어 실전 랩 (KernelGuard) | Seccomp-BPF BPF 필터 strict/filter 모드, process_vm_writev/ptrace 시스템콜 차단, Landlock LSM 파일시스템 격리, IMA 무결성 검증 | `26_Linux_Hardening` | `linuxhard` | `vhack lab start 46` |
+| **47** | AI 에이전트 & MCP 보안 실전 랩 (AgentGuard) | 간접 프롬프트 주입(IPI) 도구 탈취, 악성 MCP 도구 섀도잉 및 토큰 유출 차단, Confused Deputy 권한 상승 방어, Dual LLM 가드레일 & Landlock 샌드박싱 | `69_LLM_Security` | `agentmcp` | `vhack lab start 47` |
+| **48** | 임베디드 펌웨어 & IoT RCE 실전 랩 (FirmwareGuard) | Binwalk MIPS SquashFS 분리, QEMU libnvram.so 가상화 주입 LD_PRELOAD, 임베디드 웹 CGI 원격 명령 실행 RCE 익스플로잇, 시큐어 부트 무결성 | `61_Firmware_Hacking` | `hardware` | `vhack lab start 48` |
+| **49** | 양자 내성 하이브리드 TLS 1.3 실전 랩 (PQCTLSGuard) | 고전 TLS 1.3 HNDL 위협 감사, X25519 + ML-KEM-768(Kyber) 하이브리드 키 교환, ML-DSA-65(Dilithium) 격자 서명 검증, 다운그레이드 방어 | `57_Quantum_Cryptography` | `pqc` | `vhack lab start 49` |
 
 ---
 
@@ -183,15 +195,15 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (574개 테스트 전원 통과: Labs 01~46, Solvers, Portal, CTF, Wargame CLI, Report Generator)
+# 1. 전체 단위/통합 테스트 (Labs 01~49, Solvers, Portal, CTF, Wargame CLI, Report Generator)
 pytest -q
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (46개 랩 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (49개 랩 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 46개 랩 포트 충돌 검사 완비)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 49개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사
@@ -212,19 +224,19 @@ vhack portal
 # 9. 모의해킹 대회 스코어보드 & Progressive Unlock 엔진 실행 (힌트 상점 완비)
 vhack ctf
 
-# 10. 46개 실습 랩 자동 익스플로잇 솔버 실행
+# 10. 49개 실습 랩 자동 익스플로잇 솔버 실행
 vhack solve 01 --step 1
 
-# 11. 워게임 무결성 및 구조 검증 (2,100문제, 60트랙, 5티어)
+# 11. 워게임 무결성 및 구조 검증 (2,135문제, 61트랙, 5티어)
 node wargame/scripts/verify.js
 
-# 12. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (2,100문제 0건)
+# 12. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (2,135문제 0건)
 node wargame/scripts/leakscan.js
 
 # 13. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 14. 워게임 텍스트 유도 가능 문제 솔버 전수 검증 (1,102/2,100 통과)
+# 14. 워게임 텍스트 유도 가능 문제 솔버 전수 검증 (1,137/2,135 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -253,6 +265,33 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-10-23 (v2.3.0 Mega Milestone: 49 Labs, 61 Wargame Tracks / 2,135 Challenges, 34 Deepdives / 487 Chapters, 17 Simulators, Hardening & Legal Disclaimer, 4/4 Audit Suites All Green, 커밋 `e0b3ddc`, `ea0c25e`)**:
+  - **보안 및 법적 면책조항 전면 강화 (Hardening & Legal)**:
+    - [DISCLAIMER.md](DISCLAIMER.md) 수립: 교육/방어 목적 한정, 사전 서면 승인 없는 침투 엄격 금지, 정보통신망법 제48/49/71조, 형법 제314/316조, CFAA 법적 책임 고지, AS-IS 보증 부인.
+    - [SECURITY.md](SECURITY.md) 고도화: 책임 있는 취약점 공개(CVD) 정책, 엄격한 대응 SLA (48h 최초 확인 / 5영업일 패치 / 30일 배포), Safe Harbor 면책 조항 완비.
+    - CI/CD 보안 파이프라인: `.github/dependabot.yml`, `.github/workflows/security.yml`, `.pre-commit-config.yaml`, 보안 취약점 보고 이슈 템플릿 완비.
+    - CLI 로컬 바인딩 격리: `vhack.py` 기본 호스트를 `127.0.0.1`로 격리(`0.0.0.0` 경고 출력), `vhack disclaimer`/`legal` 명령어 탑재.
+  - **3대 심층 교재 인제스천 (총 487개 심층 챕터 완비)**:
+    - 32대: `28_Mobile_Hacking/08_android_native_so_and_frida_unpinning_deepdive.md`
+    - 33대: `61_Firmware_Hacking/07_qemu_firmware_emulation_and_nvram_deepdive.md`
+    - 34대: `69_LLM_Security/07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md`
+    - `tools/sync_section_readmes.py` 전 섹션 동기화 완료 (75 up-to-date).
+  - **신규 3대 실습 랩 신설 (총 49개 실전 랩 완비)**:
+    - Lab 47 (`labs/47_ai_agent_mcp_security_lab/`, 포트 8047): 간접 프롬프트 주입(IPI) 및 MCP 도구 하이재킹 가드레일 실습, 6개 테스트 통과.
+    - Lab 48 (`labs/48_firmware_iot_rce_lab/`, 포트 8048): 임베디드 펌웨어 MIPS SquashFS 분리, libnvram.so QEMU 가상화, CGI RCE 실습, 5개 테스트 통과.
+    - Lab 49 (`labs/49_pqc_hybrid_tls_lab/`, 포트 8049): 고전 PKI HNDL 위협 감사 및 X25519+ML-KEM-768 하이브리드 TLS 1.3 실습, 5개 테스트 통과.
+    - `labs/solvers.py`: 47~49 랩 4단계 자동 PoC 익스플로잇 및 방어 솔버 연동.
+    - `tools/report_generator.py`: 49개 랩 전수 진단 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 맵핑 완비.
+  - **워게임 61번째 트랙 (`agentmcp`) 확장 및 2,135문제 마일스톤**:
+    - AI 에이전트 & MCP 보안 35개 문제 구축 (Tier 0: 2, Tier 1: 8, Tier 2: 12, Tier 3: 8, Tier 4: 5) -> 총 2,135제 달성.
+    - 17번째 인터랙티브 시뮬레이터 `🤖 AI Agent & MCP Inspector` 모달 구축.
+    - 4대 엄격 검증 스위트 All Green: `verify.js` (2,135제), `audit.js --strict` (305/305행 0결함), `leakscan.js` (0유출), `solve-derivable.js` (1,137/2,135 통과).
+  - **DX, 포털 및 패키징 자동화**:
+    - `portal/static/index.html` & `portal/tests/test_portal.py`: 49개 랩 전수 동기화 및 12개 테스트 All Green.
+    - `pyproject.toml`: `v2.3.0` (49 Labs, 2,135 Challenges) 버전 업그레이드 및 휠 빌드(`vibehacking-2.3.0-py3-none-any.whl`) 검증.
+    - `tools/bundle_offline.py`: 4대 하위 시스템 100% clean and offline-ready 통과.
+    - `vhack doctor`: 49개 실습 랩 주요 포트 충돌 검사 All Green.
 
 - **2026-10-18 (Platform-Wide Security Hardening & Bug Fixes, CTF XSS & Timing Attack Defense, Portal Host RCE Filter Upgrade, Wargame CAN DOM XSS & 0o600 Permission Isolation, Lab 09 Modern Lifespan, 519 Tests All Green, 커밋 `d571420`)**:
   - **CTF 서버 보안 취약점 감사 및 완제 (`ctf/server.py`)**:
