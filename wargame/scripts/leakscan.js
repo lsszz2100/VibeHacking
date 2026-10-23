@@ -481,6 +481,21 @@ const ALLOWLIST = new Map([
   ['t4_linuxhard_krsi_kernel_runtime_security_instrumentation -> t3_falco', 'KRSI runtime security complements Falco eBPF rules'],
   ['t4_linuxhard_krsi_kernel_runtime_security_instrumentation -> t2_auditd', 'KRSI replaces legacy auditd performance bottlenecks'],
   ['t4_linuxhard_seccomp_bpf_assembler_jit_spray_mitigation -> t2_ebpfjit', 'Seccomp and eBPF JIT compiler spray defense'],
+  // AI Agent & MCP Tool Hijacking domain terms
+  ['t0_agentmcp_indirect_prompt_injection_threat -> t2_delimiter', 'Delimiters separate instructions from untrusted data in LLM prompt engineering'],
+  ['t1_agentmcp_invisible_bidi_markdown_injection -> t2_markdown', 'Markdown injection and BiDi override analysis'],
+  ['t1_agentmcp_context_window_manipulation -> t2_sceviction', 'Context window eviction attack modeling'],
+  ['t2_agentmcp_ssrf_via_web_fetch_tool -> t3_imds', 'SSRF against cloud Instance Metadata Service (IMDS)'],
+  ['t2_agentmcp_ssrf_via_web_fetch_tool -> t0_loopback', 'SSRF targets internal loopback address'],
+  ['t2_agentmcp_command_execution_subshell_injection -> t3_firmwarecmdinj', 'Subshell command injection via tool parameters'],
+  ['t2_agentmcp_dynamic_code_eval_in_python_tools -> t4_gvisor', 'Sandboxing Python tool execution via gVisor'],
+  ['t2_agentmcp_dynamic_code_eval_in_python_tools -> t4_graphql', 'Agent GraphQL API query tool evaluation'],
+  ['t2_agentmcp_rogue_mcp_server_dns_rebinding -> t3_rebinding', 'DNS rebinding attack against local MCP servers'],
+  ['t2_agentmcp_insecure_deserialization_in_state -> t4_pickle', 'Python pickle deserialization vulnerabilities in agent state'],
+  ['t3_agentmcp_semantic_argument_anomaly_detection -> t1_embedding', 'Semantic vector embeddings for anomaly detection'],
+  ['t3_agentmcp_prompt_injection_canary_tokens -> t4_canary', 'Canary tokens to detect prompt injection exfiltration'],
+  ['t4_agentmcp_formal_verification_of_agent_actions -> t2_resmt', 'SMT solvers for formal verification of agent invariants'],
+  ['t4_agentmcp_zero_trust_agent_governance_framework -> t2_ztspiffe', 'SPIFFE/SPIRE workload identities for autonomous agents'],
 ]);
 
 function loadChallenges() {

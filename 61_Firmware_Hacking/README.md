@@ -14,6 +14,7 @@
 | [04_firmware_emulation.md](./04_firmware_emulation.md) | **펌웨어 에뮬레이션** — 실제 실행:          에뮬레이션: |
 | [05_firmware_exploitation.md](./05_firmware_exploitation.md) | **펌웨어 익스플로잇** — 일반 데스크탑/서버: |
 | [06_firmware_ctf_lab.md](./06_firmware_ctf_lab.md) | **펌웨어 CTF 실습 랩** — 펌웨어 보안 취약점을 CTF 형식으로 학습한다. 펌웨어 이미지 분석, 숨겨진 자격증명 추출, 파일시스템 언패킹, 업데이트 서명 우회 등 실제 임베디드 기기 공격 기법을 실습한다. |
+| [07_qemu_firmware_emulation_and_nvram_deepdive.md](./07_qemu_firmware_emulation_and_nvram_deepdive.md) | **제61장 펌웨어 해킹 심층: QEMU 임베디드 펌웨어 에뮬레이션 & NVRAM 가상화 분석 (Deep-dive)** — 공유기, IP 카메라, 스마트 허브 등 대다수 임베디드 IoT 디바이스는 MIPS 또는 ARM 아키텍처 기반의 리눅스 커널과 경량 웹 데몬(uHTTPd, BOA, GoAhead)을 탑... |
 
 ## 🎯 학습 목표
 

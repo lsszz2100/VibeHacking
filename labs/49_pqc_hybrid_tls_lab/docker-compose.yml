@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  pqctls-lab:
+    build: .
+    container_name: vibehacking-lab49-pqctls
+    ports:
+      - "127.0.0.1:8049:8049"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=49"

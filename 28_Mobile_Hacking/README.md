@@ -15,6 +15,7 @@
 | [05_mobile_app_security_testing.md](./05_mobile_app_security_testing.md) | **모바일 앱 보안 테스트 — 자동화 분석·런타임 후킹·API 감사** — 모바일 앱 보안 테스트는 앱의 설계부터 구현, 배포까지 전 과정에서 보안 취약점을 찾아내는 체계적인 평가 과정이다. OWASP Mobile Security Testing Guide(M... |
 | [06_mobile_ctf_lab.md](./06_mobile_ctf_lab.md) | **모바일 해킹 CTF 실습 랩** — pip install androguard frida-tools objection |
 | [07_frida_android_dynamic_analysis_deepdive.md](./07_frida_android_dynamic_analysis_deepdive.md) | **제28장 모바일 해킹 심층: 안드로이드 악성코드 분석 & Frida 동적 후킹 (Deep-dive)** — 현대 안드로이드 악성코드(Banker, Spyware, Ransomware)는 단순한 Java 코드 레벨의 악의적 행위를 넘어, 탐지 회피(Anti-Analysis), 난독화(Obfu... |
+| [08_android_native_so_and_frida_unpinning_deepdive.md](./08_android_native_so_and_frida_unpinning_deepdive.md) | **제28장 모바일 해킹 심층: 안드로이드 네이티브 SO 분석 & Frida SSL 언피닝 심층 분석 (Deep-dive)** — 최신 안드로이드 금융, 게임, 엔터프라이즈 앱은 역공학 및 동적 조작을 방어하기 위해 핵심 비즈니스 로직, 암호화 키 파생(KDF), 토큰 서명, 무결성 검증, 네트워크 보안 검사를 ... |
 
 ## 🎯 학습 목표
 

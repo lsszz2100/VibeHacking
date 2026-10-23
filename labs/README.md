@@ -76,6 +76,9 @@ docker-compose --version
 | 44 | [브라우저 확장 프로그램 보안 & Manifest V3 실전 랩](./44_browser_extension_security_lab/) | Manifest V3 권한 명세 & 백그라운드 서비스 워커 감사, WAR 토큰 유출, Content Script DOM innerHTML XSS & 패스워드 스니핑, DNR 마이그레이션 & CSP 하드닝 | ★★★★★ | [51장 브라우저 확장 프로그램](../51_Browser_Extension_Security/07_manifest_v3_message_passing_and_content_script_deepdive.md) | `extsec` / `web` |
 | 45 | [양자 내성 암호 & PQC 마이그레이션 실전 랩](./45_quantum_cryptography_pqc_lab/) | 고전 PKI 트래픽 HNDL 위협 & 쇼어 알고리즘 분석, TLS 1.3 하이브리드 KEM MitM 다운그레이드 공격, 격자 암호 다항식 연산 비상수 시간 타이밍 부채널/결함 감사, NIST FIPS 203/204 표준 하드닝 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqc` / `crypto` |
 | 46 | [리눅스 커널 하드닝 & 런타임 방어 실습](./46_linux_kernel_hardening_lab/) | Seccomp-BPF 시스템콜 필터링 및 아키텍처 고정, Landlock LSM 비특권 파일시스템 샌드박싱 격리, IMA/EVM 무결성 측정 분석 및 xattr 디지털 서명 검증, KSPP 커널 메모리 완화 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/07_linux_kernel_hardening_and_runtime_defense_deepdive.md) | `linuxhard` / `endpoint` |
+| 47 | [AI 에이전트 & MCP 보안 실전 랩](./47_ai_agent_mcp_security_lab/) | 간접 프롬프트 주입(IPI) 도구 가로채기, 악성 MCP 도구 섀도잉, Confused Deputy 방어, Dual LLM & Landlock 샌드박싱 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md) | `agentmcp` / `ai` |
+| 48 | [임베디드 펌웨어 & IoT RCE 실전 랩](./48_firmware_iot_rce_lab/) | Binwalk SquashFS 언패킹, QEMU MIPS libnvram.so 가상화 주입, 임베디드 웹 CGI RCE 익스플로잇, DM-Verity 시큐어 부트 | ★★★★★ | [61장 펌웨어 해킹](../61_Firmware_Hacking/07_qemu_firmware_emulation_and_nvram_deepdive.md) | `iot` / `hardware` |
+| 49 | [양자 내성 하이브리드 TLS 1.3 실습](./49_pqc_hybrid_tls_lab/) | 고전 TLS HNDL 위협 감사, X25519+ML-KEM-768 하이브리드 키 교환, ML-DSA-65 전자 서명 검증, 다운그레이드 방어 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqc` / `crypto` |
 
 ---
 

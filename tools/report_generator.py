@@ -485,6 +485,30 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A05:2021",
         "owasp_name": "Security Misconfiguration",
     },
+    "47": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "보안 시스템 및 서비스 개발 보안 (AI 에이전트 도구 검증 및 가드레일)",
+        "nist_csf_id": "PR.AT-01",
+        "nist_csf_name": "AI Risk Management / PR.AC-04 Access Control for Automated Agents",
+        "owasp_id": "LLM01:2025",
+        "owasp_name": "Prompt Injection & Insecure Tool Execution",
+    },
+    "48": {
+        "kisa_id": "2.8.2",
+        "kisa_name": "네트워크 및 IoT 기기 취약점 관리 (임베디드 펌웨어 보안)",
+        "nist_csf_id": "PR.IP-01",
+        "nist_csf_name": "Firmware Integrity & Hardware Root-of-Trust",
+        "owasp_id": "A03:2021",
+        "owasp_name": "Injection (Command Injection in Embedded CGI)",
+    },
+    "49": {
+        "kisa_id": "2.7.1",
+        "kisa_name": "암호 통제 (양자 내성 하이브리드 TLS 1.3 전환)",
+        "nist_csf_id": "PR.DS-02",
+        "nist_csf_name": "Post-Quantum Cryptographic Migration / FIPS 203 ML-KEM",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures (Harvest-Now-Decrypt-Later)",
+    },
 }
 
 @dataclass
@@ -1354,6 +1378,60 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Lack of Seccomp-BPF architecture-pinned syscall filtering permits malicious debug syscalls and memory tampering.",
                 "affected_component": "KernelGuard Worker Daemon (Port 8046)",
                 "remediation": "Deploy Seccomp-BPF filter pinning AUDIT_ARCH_X86_64, Landlock LSM filesystem confinement, and IMA appraisal."
+            }
+        ]
+    },
+    "47": {
+        "title": "47 AI Agent & MCP Tool Hijacking",
+        "category": "AI Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-4701",
+                "name": "Indirect Prompt Injection leading to Arbitrary Tool Invocation",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1059",
+                "mitre_technique": "Command and Scripting Interpreter",
+                "mitre_tactic": "Execution",
+                "impact": "Attacker poisons RAG context to force agent to execute database queries and exfiltrate secrets.",
+                "description": "Lack of input sanitization and tool invocation authorization allows indirect prompt injection attacks.",
+                "affected_component": "AgentGuard MCP Client (Port 8047)",
+                "remediation": "Deploy Dual LLM guardrail filters, HITL approval gates, and Landlock capability sandboxing."
+            }
+        ]
+    },
+    "48": {
+        "title": "48 Embedded Firmware & IoT RCE",
+        "category": "IoT & Hardware Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-4801",
+                "name": "Unauthenticated Remote Command Injection in Embedded Web CGI",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "mitre_id": "T1190",
+                "mitre_technique": "Exploit Public-Facing Application",
+                "mitre_tactic": "Initial Access",
+                "impact": "Unauthenticated attacker executes arbitrary shell commands on embedded IoT router.",
+                "description": "Improper input validation in /cgi-bin/ping.cgi allows shell metacharacter injection into system() call.",
+                "affected_component": "FirmwareGuard HTTP Daemon (Port 8048)",
+                "remediation": "Replace system() with execve() parameter arrays and enforce DM-Verity read-only rootfs."
+            }
+        ]
+    },
+    "49": {
+        "title": "49 Quantum-Safe Hybrid TLS 1.3 & Post-Quantum Cryptography",
+        "category": "Cryptography & Network Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-4901",
+                "name": "Harvest-Now-Decrypt-Later (HNDL) Threat in Classical TLS Key Exchange",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                "mitre_id": "T1040",
+                "mitre_technique": "Network Sniffing",
+                "mitre_tactic": "Credential Access",
+                "impact": "Adversary records encrypted sessions today to decrypt retroactively when cryptographically relevant quantum computers arrive.",
+                "description": "Classical ECDHE and RSA public key algorithms are vulnerable to Shor's algorithm.",
+                "affected_component": "PQCTLSGuard Service (Port 8049)",
+                "remediation": "Deploy X25519 + ML-KEM-768 hybrid key exchange and enforce strict FIPS 203 policy."
             }
         ]
     }

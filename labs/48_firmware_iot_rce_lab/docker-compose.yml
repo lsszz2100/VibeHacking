@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  firmware-lab:
+    build: .
+    container_name: vibehacking-lab48-firmware
+    ports:
+      - "127.0.0.1:8048:8048"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=48"

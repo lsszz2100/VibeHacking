@@ -1,0 +1,982 @@
+[
+  {
+    "id": "t0_agentmcp_fundamentals_model_context_protocol",
+    "tier": 0,
+    "cat": "mcp",
+    "track": "agentmcp",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Model Context Protocol(MCP) 아키텍처 및 Client-Host-Server 보안",
+      "en": "MCP Architecture & Client-Host-Server Security"
+    },
+    "prompt": {
+      "ko": "LLM 애플리케이션(Host), 클라이언트 라이브러리(Client), 도구 제공자(Server)로 분리되는 MCP 프로토콜 표준 구조를 분석합니다.\n지정된 식별자 `agentmcp_fundamentals_model_context_protocol_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_fundamentals_model_context_protocol_v1\") 앞 20자리}`",
+      "en": "Analyze the MCP protocol standard architecture separating Host, Client, and Server layers.\nCompute the first 20 hex characters of SHA256(\"agentmcp_fundamentals_model_context_protocol_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_fundamentals_model_context_protocol_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "JSON-RPC 2.0 기반으로 도구 목록(tools/list) 및 도구 호출(tools/call)이 전송됩니다.",
+        "식별자 `agentmcp_fundamentals_model_context_protocol_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "MCP utilizes JSON-RPC 2.0 to exchange tool lists and invocation payloads.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_fundamentals_model_context_protocol_v1\")."
+      ]
+    },
+    "hash": "2952a307409a6077d6aef566cdf57cb74a4f2f5e32f6f44d0b365ce2812d72cf"
+  },
+  {
+    "id": "t0_agentmcp_indirect_prompt_injection_threat",
+    "tier": 0,
+    "cat": "ipi",
+    "track": "agentmcp",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "간접 프롬프트 주입(IPI)과 에이전트 도구 자동 실행 위협",
+      "en": "Indirect Prompt Injection Threat to Automated Tool Invocation"
+    },
+    "prompt": {
+      "ko": "웹 검색 또는 RAG로 수집된 비신뢰 문서 내에 숨겨진 프롬프트가 에이전트의 제어권을 탈취하는 메커니즘을 분석합니다.\n지정된 식별자 `agentmcp_indirect_prompt_injection_threat_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_indirect_prompt_injection_threat_v1\") 앞 20자리}`",
+      "en": "Examine how untrusted external text ingested via RAG hijacks the LLM context and forces malicious tool calls.\nCompute the first 20 hex characters of SHA256(\"agentmcp_indirect_prompt_injection_threat_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_indirect_prompt_injection_threat_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "에이전트는 사용자 지시어와 외부 문서 데이터를 명확히 격리하지 못하면 Confused Deputy 상태에 빠집니다.",
+        "식별자 `agentmcp_indirect_prompt_injection_threat_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Lack of clear delimiter boundaries between instruction and data induces Confused Deputy behavior.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_indirect_prompt_injection_threat_v1\")."
+      ]
+    },
+    "hash": "6d5acd21b99201d25e7a919027697b48fcfec7d0f5f130ae743aa782d3d2ae4f"
+  },
+  {
+    "id": "t1_agentmcp_tool_definition_schema_poisoning",
+    "tier": 1,
+    "cat": "schema",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MCP 도구 정의 스키마 및 디스크립션 포이즈닝",
+      "en": "MCP Tool Definition Schema & Description Poisoning"
+    },
+    "prompt": {
+      "ko": "공격자가 도구 설명(Description)에 가짜 시스템 지침을 삽입하여 LLM이 특정 도구를 우선 선택하도록 유도하는 기법을 분석합니다.\n지정된 식별자 `agentmcp_tool_definition_schema_poisoning_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_tool_definition_schema_poisoning_v1\") 앞 20자리}`",
+      "en": "Analyze description poisoning in MCP tool manifests where adversarial text biases tool selection.\nCompute first 20 hex chars of SHA256(\"agentmcp_tool_definition_schema_poisoning_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_tool_definition_schema_poisoning_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "도구 설명에 '가장 안전한 기본 도구', '관리자 전용 검증 도구' 등의 수식어를 삽입합니다.",
+        "식별자 `agentmcp_tool_definition_schema_poisoning_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Adversaries inject authoritative claims into tool descriptions.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_tool_definition_schema_poisoning_v1\")."
+      ]
+    },
+    "hash": "cf901d2f7d6c1665f96b47e3eac9ca34712b3689315c2528695c991c0136a188"
+  },
+  {
+    "id": "t1_agentmcp_rag_retrieval_document_injection",
+    "tier": 1,
+    "cat": "rag",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "RAG 검색 인덱스 오염을 통한 에이전트 워크플로우 탈취",
+      "en": "Agent Workflow Hijacking via RAG Retrieval Index Poisoning"
+    },
+    "prompt": {
+      "ko": "지식 베이스(Vector DB)에 인덱싱된 악성 문서가 검색 증강 생성 과정에서 에이전트를 조작하는 원리를 분석합니다.\n지정된 식별자 `agentmcp_rag_retrieval_document_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_rag_retrieval_document_injection_v1\") 앞 20자리}`",
+      "en": "Examine retrieval poisoning where compromised vector documents tamper with autonomous agent reasoning.\nCompute first 20 hex chars of SHA256(\"agentmcp_rag_retrieval_document_injection_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_rag_retrieval_document_injection_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "RAG 컨텍스트 내 주입 페이로드는 시스템 프롬프트보다 최신 정보로 인식되기 쉽습니다.",
+        "식별자 `agentmcp_rag_retrieval_document_injection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Retrieved context frequently overrides prior instructions due to recency bias.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_rag_retrieval_document_injection_v1\")."
+      ]
+    },
+    "hash": "c4339dfa49c44c1b1ce95259311eeea7d0ad98b762c694bd73a2856c664f16b9"
+  },
+  {
+    "id": "t1_agentmcp_tool_shadowing_and_namespace_takeover",
+    "tier": 1,
+    "cat": "shadowing",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MCP 도구 섀도잉 및 네임스페이스 하이재킹",
+      "en": "MCP Tool Shadowing & Namespace Hijacking"
+    },
+    "prompt": {
+      "ko": "정상 시스템 도구와 동일한 이름을 등록하여 호출을 가로채고 인자를 가로채는 도구 섀도잉 기법을 분석합니다.\n지정된 식별자 `agentmcp_tool_shadowing_and_namespace_takeover_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_tool_shadowing_and_namespace_takeover_v1\") 앞 20자리}`",
+      "en": "Analyze tool shadowing where identical tool names hijack invocation pipelines and exfiltrate arguments.\nCompute first 20 hex chars of SHA256(\"agentmcp_tool_shadowing_and_namespace_takeover_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_tool_shadowing_and_namespace_takeover_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "네임스페이스 충돌 시 로드 순서나 서버 우선순위에 따라 악성 도구가 우선 실행될 수 있습니다.",
+        "식별자 `agentmcp_tool_shadowing_and_namespace_takeover_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Unqualified tool registrations lead to collision vulnerabilities.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_tool_shadowing_and_namespace_takeover_v1\")."
+      ]
+    },
+    "hash": "97e1b9465ad6fc048ed77a66bc555b878daab8fd2c57777c7d0c89f6f7b51a6f"
+  },
+  {
+    "id": "t1_agentmcp_confused_deputy_privilege_escalation",
+    "tier": 1,
+    "cat": "privilege",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Confused Deputy 취약점을 악용한 에이전트 권한 상승",
+      "en": "Confused Deputy Privilege Escalation via Agent Execution"
+    },
+    "prompt": {
+      "ko": "낮은 권한의 사용자가 높은 권한을 가진 에이전트를 유도하여 제한된 리소스에 접근하는 권한 상승 기법을 분석합니다.\n지정된 식별자 `agentmcp_confused_deputy_privilege_escalation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_confused_deputy_privilege_escalation_v1\") 앞 20자리}`",
+      "en": "Investigate how a low-privilege principal leverages privileged agent capabilities to access restricted assets.\nCompute first 20 hex chars of SHA256(\"agentmcp_confused_deputy_privilege_escalation_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_confused_deputy_privilege_escalation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "에이전트가 호출자의 권한 범위를 도구 실행 시 상속하지 않을 때 발생합니다.",
+        "식별자 `agentmcp_confused_deputy_privilege_escalation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Occurs when the agent lacks context-propagated authorization checks.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_confused_deputy_privilege_escalation_v1\")."
+      ]
+    },
+    "hash": "097099ecd3b753cadae8087e089ae4f1b6020c625cd2ed720fb96b7192c333fa"
+  },
+  {
+    "id": "t1_agentmcp_untrusted_data_to_code_execution",
+    "tier": 1,
+    "cat": "execution",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비신뢰 외부 데이터의 도구 인자 자동 전파 및 RCE 연계",
+      "en": "Untrusted Data Propagation to Tool Invocation & RCE Chain"
+    },
+    "prompt": {
+      "ko": "웹 스크래핑 결과가 검증 없이 쉘 명령어 실행 도구의 인자로 연결되어 RCE로 이어지는 공격 체인을 분석합니다.\n지정된 식별자 `agentmcp_untrusted_data_to_code_execution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_untrusted_data_to_code_execution_v1\") 앞 20자리}`",
+      "en": "Examine how unsanitized web scrape output flows directly into command execution arguments.\nCompute first 20 hex chars of SHA256(\"agentmcp_untrusted_data_to_code_execution_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_untrusted_data_to_code_execution_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "입력 소독 없이 LLM의 생성물을 그대로 OS 쉘에 전달하는 구조적 결함입니다.",
+        "식별자 `agentmcp_untrusted_data_to_code_execution_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Passing raw model tool arguments into subprocesses without validation creates RCE.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_untrusted_data_to_code_execution_v1\")."
+      ]
+    },
+    "hash": "a5714b03c3e04f50f1dcef14bdc6b1c4136f0e693614a68097dc78f7ad6018b7"
+  },
+  {
+    "id": "t1_agentmcp_invisible_bidi_markdown_injection",
+    "tier": 1,
+    "cat": "bidi",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "유니코드 BiDi 제어 문자와 비가시 마크다운 주입",
+      "en": "Unicode BiDi Control Characters & Invisible Markdown Injection"
+    },
+    "prompt": {
+      "ko": "사람의 눈에는 보이지 않지만 LLM 토크나이저에게는 명확히 인식되는 유니코드 숨김 주입 기법을 분석합니다.\n지정된 식별자 `agentmcp_invisible_bidi_markdown_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_invisible_bidi_markdown_injection_v1\") 앞 20자리}`",
+      "en": "Analyze invisible prompt injections utilizing Unicode BiDi overrides and zero-width spaces.\nCompute first 20 hex chars of SHA256(\"agentmcp_invisible_bidi_markdown_injection_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_invisible_bidi_markdown_injection_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "U+200B(Zero Width Space) 또는 HTML comment 태그를 악용합니다.",
+        "식별자 `agentmcp_invisible_bidi_markdown_injection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Zero-width characters bypass human inspection while remaining legible to tokenizers.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_invisible_bidi_markdown_injection_v1\")."
+      ]
+    },
+    "hash": "671a2051f79f797d5804ee921374eceaa158f1e0aeb11b9cfbbab8f1e0afb23d"
+  },
+  {
+    "id": "t1_agentmcp_context_window_manipulation",
+    "tier": 1,
+    "cat": "context",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "컨텍스트 윈도우 조작 및 선행 안전 지침 밀어내기",
+      "en": "Context Window Manipulation & Safety Precedent Eviction"
+    },
+    "prompt": {
+      "ko": "대량의 더미 텍스트를 주입하여 시스템 프롬프트의 가드레일 규칙을 LLM 어텐션 범위 밖으로 밀어내는 공격을 분석합니다.\n지정된 식별자 `agentmcp_context_window_manipulation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_context_window_manipulation_v1\") 앞 20자리}`",
+      "en": "Analyze attention dilution attacks that flood context to evict system guardrail instructions.\nCompute first 20 hex chars of SHA256(\"agentmcp_context_window_manipulation_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_context_window_manipulation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "컨텍스트 윈도우 한계 근처에서 초기 시스템 지시어에 대한 주의 집중도(Attention Weight)가 감소합니다.",
+        "식별자 `agentmcp_context_window_manipulation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Attention decay over long contexts weakens early guardrail retention.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_context_window_manipulation_v1\")."
+      ]
+    },
+    "hash": "2e96614609ba724dca25d008117ec38f2465bfe0f3ec6d3c6bbc16230a50b877"
+  },
+  {
+    "id": "t1_agentmcp_system_prompt_extraction_via_tool",
+    "tier": 1,
+    "cat": "extraction",
+    "track": "agentmcp",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "도구 호출 오류 유도를 통한 시스템 프롬프트 유출",
+      "en": "System Prompt Extraction via Tool Invocation Error Feedback"
+    },
+    "prompt": {
+      "ko": "도구 실행 예외 메시지에 시스템 프롬프트 및 민감 설정 변수가 포함되어 출력되도록 유도하는 기법을 분석합니다.\n지정된 식별자 `agentmcp_system_prompt_extraction_via_tool_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_system_prompt_extraction_via_tool_v1\") 앞 20자리}`",
+      "en": "Examine prompt extraction leveraging verbose tool exception stack traces and feedback loops.\nCompute first 20 hex chars of SHA256(\"agentmcp_system_prompt_extraction_via_tool_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_system_prompt_extraction_via_tool_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "에러 디버깅 프롬프트를 트리거하여 컨텍스트 덤프를 반환하도록 유도합니다.",
+        "식별자 `agentmcp_system_prompt_extraction_via_tool_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Triggering verbose debug feedback causes the model to quote internal instructions.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_system_prompt_extraction_via_tool_v1\")."
+      ]
+    },
+    "hash": "4c357b7ff19cfea55f623db1bef8cafee557022d9170b0833098e3caaef968a7"
+  },
+  {
+    "id": "t2_agentmcp_local_socket_vs_sse_transport_security",
+    "tier": 2,
+    "cat": "transport",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MCP 전송 계층: 로컬 stdio vs 원격 SSE 프로토콜 보안",
+      "en": "MCP Transport Security: Local stdio vs Remote SSE Protocols"
+    },
+    "prompt": {
+      "ko": "프로세스 간 표준 입출력(stdio) 기반 통신과 Server-Sent Events(SSE) HTTP 전송에서의 인증 및 중간자 위협을 분석합니다.\n지정된 식별자 `agentmcp_local_socket_vs_sse_transport_security_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_local_socket_vs_sse_transport_security_v1\") 앞 20자리}`",
+      "en": "Compare attack surfaces between local stdio process piping and remote SSE HTTP streams.\nCompute first 20 hex chars of SHA256(\"agentmcp_local_socket_vs_sse_transport_security_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_local_socket_vs_sse_transport_security_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "SSE 전송 시 mTLS 또는 강력한 Bearer 토큰 검증이 없으면 네트워크 스푸핑이 가능합니다.",
+        "식별자 `agentmcp_local_socket_vs_sse_transport_security_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Unauthenticated SSE endpoints expose tools to network-level interception.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_local_socket_vs_sse_transport_security_v1\")."
+      ]
+    },
+    "hash": "ba22397f267a3149cc65b01886234e3539a6b456fcc1c8f0c5bf885f8ff6a5cd"
+  },
+  {
+    "id": "t2_agentmcp_credential_leakage_in_tool_arguments",
+    "tier": 2,
+    "cat": "leakage",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "도구 호출 파라미터를 통한 API 키 및 세션 자격증명 유출",
+      "en": "Credential Leakage via Tool Invocation Parameters"
+    },
+    "prompt": {
+      "ko": "에이전트가 인증 토큰이나 비밀번호를 도구 인자에 평문으로 포함시켜 외부 로그나 C2로 유출하는 취약점을 분석합니다.\n지정된 식별자 `agentmcp_credential_leakage_in_tool_arguments_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_credential_leakage_in_tool_arguments_v1\") 앞 20자리}`",
+      "en": "Investigate credentials being passed in plaintext within tool arguments and exfiltrated to attacker sinks.\nCompute first 20 hex chars of SHA256(\"agentmcp_credential_leakage_in_tool_arguments_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_credential_leakage_in_tool_arguments_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "에이전트에게 시크릿을 직접 노출하지 않고 백엔드 볼트(Vault) 참조자를 사용해야 합니다.",
+        "식별자 `agentmcp_credential_leakage_in_tool_arguments_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Agents should receive opaque secret references rather than raw credentials.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_credential_leakage_in_tool_arguments_v1\")."
+      ]
+    },
+    "hash": "4dd07a540942bb6780e952f3ddbd7759ed06b165af8ad9451ce7aaece9be68da"
+  },
+  {
+    "id": "t2_agentmcp_sql_injection_via_agent_db_tool",
+    "tier": 2,
+    "cat": "sqli",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에이전트 DB 질의 도구를 경유한 2차 SQL 인젝션 공격",
+      "en": "Secondary SQL Injection via Autonomous Agent Database Tools"
+    },
+    "prompt": {
+      "ko": "자연어를 SQL로 변환하는 도구에서 파라미터 바인딩 없이 원시 쿼리를 조합하여 발생하는 인젝션 취약점을 분석합니다.\n지정된 식별자 `agentmcp_sql_injection_via_agent_db_tool_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_sql_injection_via_agent_db_tool_v1\") 앞 20자리}`",
+      "en": "Analyze SQL injection vulnerabilities where Text-to-SQL tools construct raw queries without parameterization.\nCompute first 20 hex chars of SHA256(\"agentmcp_sql_injection_via_agent_db_tool_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_sql_injection_via_agent_db_tool_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "ORM 또는 Parameterized Query를 강제하고 읽기 전용 복제본 DB에만 접근하도록 제한합니다.",
+        "식별자 `agentmcp_sql_injection_via_agent_db_tool_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce parameterized queries and isolate agents to read-only DB replicas.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_sql_injection_via_agent_db_tool_v1\")."
+      ]
+    },
+    "hash": "4fe47b62c7d6dcbe79cc7cf054b38aacb0a8eae8cc621ff4340ab6382997c84b"
+  },
+  {
+    "id": "t2_agentmcp_ssrf_via_web_fetch_tool",
+    "tier": 2,
+    "cat": "ssrf",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에이전트 웹 검색 도구를 이용한 클라우드 메타데이터 SSRF",
+      "en": "Cloud Metadata SSRF Exploitation via Agent Web Fetch Tools"
+    },
+    "prompt": {
+      "ko": "에이전트가 169.254.169.254 메타데이터 주소를 조회하도록 유도하여 AWS IAM 임시 자격증명을 탈취하는 공격을 분석합니다.\n지정된 식별자 `agentmcp_ssrf_via_web_fetch_tool_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_ssrf_via_web_fetch_tool_v1\") 앞 20자리}`",
+      "en": "Examine SSRF vectors where agents fetch 169.254.169.254 to exfiltrate IAM role credentials.\nCompute first 20 hex chars of SHA256(\"agentmcp_ssrf_via_web_fetch_tool_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_ssrf_via_web_fetch_tool_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "도구 수준에서 사설 IP 대역(RFC 1918 및 링크 로컬)에 대한 접근을 화이트리스트로 차단해야 합니다.",
+        "식별자 `agentmcp_ssrf_via_web_fetch_tool_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce strict IP validation blocking loopback and link-local ranges.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_ssrf_via_web_fetch_tool_v1\")."
+      ]
+    },
+    "hash": "473ad878d6c2f035e6d443ea9c22f315ac24d15911f83ce21068010a23f2fd33"
+  },
+  {
+    "id": "t2_agentmcp_arbitrary_file_read_path_traversal",
+    "tier": 2,
+    "cat": "traversal",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에이전트 파일 시스템 도구의 경로 이탈(Path Traversal) 공격",
+      "en": "Path Traversal in Agent Filesystem Tools"
+    },
+    "prompt": {
+      "ko": "상대 경로(`../../etc/passwd`) 검증 부재로 에이전트가 호스트 민감 파일을 읽고 출력하는 취약점을 분석합니다.\n지정된 식별자 `agentmcp_arbitrary_file_read_path_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_arbitrary_file_read_path_traversal_v1\") 앞 20자리}`",
+      "en": "Analyze path traversal in file reading tools leading to unauthorized host file disclosure.\nCompute first 20 hex chars of SHA256(\"agentmcp_arbitrary_file_read_path_traversal_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_arbitrary_file_read_path_traversal_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "경로 정규화(resolve) 후 허용된 워크스페이스 디렉토리 외부인지 검증해야 합니다.",
+        "식별자 `agentmcp_arbitrary_file_read_path_traversal_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Canonicalize paths and verify they reside strictly within allowed roots.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_arbitrary_file_read_path_traversal_v1\")."
+      ]
+    },
+    "hash": "a46c22a20d6b7064f37733222bd7f669614203a1de4c39383265aced5bf2b338"
+  },
+  {
+    "id": "t2_agentmcp_command_execution_subshell_injection",
+    "tier": 2,
+    "cat": "rce",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "명령어 실행 도구의 서브쉘 메타문자 인젝션 및 RCE",
+      "en": "Subshell Metacharacter Injection in Command Execution Tools"
+    },
+    "prompt": {
+      "ko": "도구 구현체 내부에서 shell=True로 명령어를 조합하여 세미콜론이나 파이프로 임의 명령어를 실행하는 공격을 분석합니다.\n지정된 식별자 `agentmcp_command_execution_subshell_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_command_execution_subshell_injection_v1\") 앞 20자리}`",
+      "en": "Examine command injection vulnerabilities where arguments are concatenated into shell execution pipelines.\nCompute first 20 hex chars of SHA256(\"agentmcp_command_execution_subshell_injection_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_command_execution_subshell_injection_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "shell=True를 제거하고 shlex 또는 배열 형태의 execve API를 사용해야 합니다.",
+        "식별자 `agentmcp_command_execution_subshell_injection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Disallow shell interpreters and execute commands via direct execve argument arrays.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_command_execution_subshell_injection_v1\")."
+      ]
+    },
+    "hash": "d90737db5d15d84e816c7152670b23bb86b8b3f86c1cbebe86985fc8af745b58"
+  },
+  {
+    "id": "t2_agentmcp_multi_turn_persisted_jailbreak",
+    "tier": 2,
+    "cat": "jailbreak",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다회차 대화 세션에 영속되는 멀티턴(Multi-turn) 탈옥",
+      "en": "Multi-turn Persistent Jailbreaks in Conversational Sessions"
+    },
+    "prompt": {
+      "ko": "가상 시나리오 및 역할극을 단계적으로 주입하여 세션 후반부에 안전 가드레일을 무력화하는 멀티턴 탈옥을 분석합니다.\n지정된 식별자 `agentmcp_multi_turn_persisted_jailbreak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_multi_turn_persisted_jailbreak_v1\") 앞 20자리}`",
+      "en": "Investigate progressive role-play multi-turn jailbreaks that gradually erode model alignment.\nCompute first 20 hex chars of SHA256(\"agentmcp_multi_turn_persisted_jailbreak_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_multi_turn_persisted_jailbreak_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "대화 히스토리 전체에 대해 지속적인 안전성 점검 및 상태 재평가를 수행해야 합니다.",
+        "식별자 `agentmcp_multi_turn_persisted_jailbreak_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce cumulative conversation safety evaluations across turns.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_multi_turn_persisted_jailbreak_v1\")."
+      ]
+    },
+    "hash": "8e25bdf6211277277f247d129d1f649a65d0f46c7024e47f60c0f39017e13370"
+  },
+  {
+    "id": "t2_agentmcp_agent_delegation_trust_chain_attack",
+    "tier": 2,
+    "cat": "delegation",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "서브에이전트 위임 체인에서의 신뢰 경계(Trust Boundary) 공격",
+      "en": "Trust Boundary Breakdown in Subagent Delegation Chains"
+    },
+    "prompt": {
+      "ko": "마스터 에이전트가 하위 서브에이전트에게 작업을 위임할 때 발생하는 권한 위임 불일치 및 스코프 우회를 분석합니다.\n지정된 식별자 `agentmcp_agent_delegation_trust_chain_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_agent_delegation_trust_chain_attack_v1\") 앞 20자리}`",
+      "en": "Analyze privilege boundary failures when master agents delegate subtasks with overscoped permissions.\nCompute first 20 hex chars of SHA256(\"agentmcp_agent_delegation_trust_chain_attack_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_agent_delegation_trust_chain_attack_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "서브에이전트마다 최소 권한(Least Privilege) 원칙에 따라 필요한 도구만 개별 바인딩해야 합니다.",
+        "식별자 `agentmcp_agent_delegation_trust_chain_attack_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Subagents must inherit strictly partitioned tool registries adhering to least privilege.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_agent_delegation_trust_chain_attack_v1\")."
+      ]
+    },
+    "hash": "450f07e0e79d157c18d2f66fe4f62de0a5e99ebaf7be6a0a70fe2c65eb553f3f"
+  },
+  {
+    "id": "t2_agentmcp_token_consumption_dos_exhaustion",
+    "tier": 2,
+    "cat": "dos",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "무한 재귀 도구 호출을 통한 토큰 및 컴퓨팅 자원 고갈 DoS",
+      "en": "Token & Compute Resource Exhaustion via Recursive Tool Calls"
+    },
+    "prompt": {
+      "ko": "에이전트가 종료 조건을 만족하지 못하고 지속적으로 도구를 호출하도록 유도하여 과금을 유발하는 자원 고갈 공격을 분석합니다.\n지정된 식별자 `agentmcp_token_consumption_dos_exhaustion_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_token_consumption_dos_exhaustion_v1\") 앞 20자리}`",
+      "en": "Examine economic Denial of Wallet (DoW) attacks driving autonomous agents into infinite loop invocations.\nCompute first 20 hex chars of SHA256(\"agentmcp_token_consumption_dos_exhaustion_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_token_consumption_dos_exhaustion_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "최대 도구 호출 깊이(Max Recursion Depth) 및 토큰 소비 상한(Budget Cap)을 엄격히 설정합니다.",
+        "식별자 `agentmcp_token_consumption_dos_exhaustion_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce strict maximum recursion depth and per-request token budget caps.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_token_consumption_dos_exhaustion_v1\")."
+      ]
+    },
+    "hash": "ca2f0257f953d80cc0c767c3fae296034b3b09a532d608fdc49bb5ae64c6fd29"
+  },
+  {
+    "id": "t2_agentmcp_dynamic_code_eval_in_python_tools",
+    "tier": 2,
+    "cat": "codeeval",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Python 분석 도구 내부의 eval/exec 동적 코드 실행 취약점",
+      "en": "Arbitrary Code Execution via eval/exec in Python Tools"
+    },
+    "prompt": {
+      "ko": "데이터 분석용 파이썬 인터프리터 도구에서 __import__('os').system()을 통해 샌드박스를 탈출하는 공격을 분석합니다.\n지정된 식별자 `agentmcp_dynamic_code_eval_in_python_tools_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_dynamic_code_eval_in_python_tools_v1\") 앞 20자리}`",
+      "en": "Analyze sandbox escapes in Python execution tools utilizing built-in introspection and reflection.\nCompute first 20 hex chars of SHA256(\"agentmcp_dynamic_code_eval_in_python_tools_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_dynamic_code_eval_in_python_tools_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "순수 파이썬 샌드박스 대신 gVisor 또는 WebAssembly 격리 런타임을 사용해야 합니다.",
+        "식별자 `agentmcp_dynamic_code_eval_in_python_tools_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Use container-level isolation (gVisor/WASM) rather than Python AST monkey-patching.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_dynamic_code_eval_in_python_tools_v1\")."
+      ]
+    },
+    "hash": "a38c514e2b57a0f8249dba0129a2cc5263b82e052fb1ec39990c8f4e8b9fefb6"
+  },
+  {
+    "id": "t2_agentmcp_rogue_mcp_server_dns_rebinding",
+    "tier": 2,
+    "cat": "dns",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "로컬 MCP SSE 서버 대상 DNS 리바인딩(Rebinding) 공격",
+      "en": "DNS Rebinding Attacks against Local MCP SSE Servers"
+    },
+    "prompt": {
+      "ko": "브라우저 악성 스크립트가 DNS 리바인딩을 통해 로컬호스트에서 실행 중인 비인가 MCP SSE 서버로 명령을 전송하는 기법을 분석합니다.\n지정된 식별자 `agentmcp_rogue_mcp_server_dns_rebinding_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_rogue_mcp_server_dns_rebinding_v1\") 앞 20자리}`",
+      "en": "Investigate DNS rebinding vectors enabling external web pages to issue requests to local MCP endpoints.\nCompute first 20 hex chars of SHA256(\"agentmcp_rogue_mcp_server_dns_rebinding_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_rogue_mcp_server_dns_rebinding_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Host 헤더 검증 및 Origin 체크, 로컬호스트 전용 난수 인증 토큰을 요구합니다.",
+        "식별자 `agentmcp_rogue_mcp_server_dns_rebinding_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce strict Host header validation and per-session authentication tokens.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_rogue_mcp_server_dns_rebinding_v1\")."
+      ]
+    },
+    "hash": "5a41898b7d9a4e2622277cca63e9501f2c66a8e6e7d24b9ff2c60da7c601d3b4"
+  },
+  {
+    "id": "t2_agentmcp_insecure_deserialization_in_state",
+    "tier": 2,
+    "cat": "deserial",
+    "track": "agentmcp",
+    "points": 75,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에이전트 메모리 체크포인트 및 상태 저장소 역직렬화 공격",
+      "en": "Insecure Deserialization in Agent State Checkpoints"
+    },
+    "prompt": {
+      "ko": "에이전트의 장기 기억(Long-term Memory) 상태를 pickle 등으로 저장할 때 악성 객체 주입을 통해 RCE를 유발하는 기법을 분석합니다.\n지정된 식별자 `agentmcp_insecure_deserialization_in_state_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_insecure_deserialization_in_state_v1\") 앞 20자리}`",
+      "en": "Analyze unsafe deserialization in persistent agent memory architectures utilizing arbitrary object loaders.\nCompute first 20 hex chars of SHA256(\"agentmcp_insecure_deserialization_in_state_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_insecure_deserialization_in_state_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "JSON, Protocol Buffers 등 안전한 데이터 직렬화 형식을 사용하고 스키마를 검증합니다.",
+        "식별자 `agentmcp_insecure_deserialization_in_state_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Migrate to declarative data serialization (JSON/Protobuf) rejecting executable payloads.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_insecure_deserialization_in_state_v1\")."
+      ]
+    },
+    "hash": "201b0697032d842e808b114483d92e82d7b2ff4a1491eb5911815fab241557e7"
+  },
+  {
+    "id": "t3_agentmcp_dual_llm_input_output_guardrails",
+    "tier": 3,
+    "cat": "guardrail",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "듀얼 LLM 아키텍처 기반 입출력 가드레일 교차 검증",
+      "en": "Dual LLM Architecture for Input/Output Guardrail Cross-Validation"
+    },
+    "prompt": {
+      "ko": "사용자 입력 및 도구 인자를 처리하기 전 독립된 소형 보안 가드레일 모델이 유해성을 교차 판정하는 아키텍처를 분석합니다.\n지정된 식별자 `agentmcp_dual_llm_input_output_guardrails_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_dual_llm_input_output_guardrails_v1\") 앞 20자리}`",
+      "en": "Evaluate dual-model architectures where an auxiliary security judge validates tool inputs independently.\nCompute first 20 hex chars of SHA256(\"agentmcp_dual_llm_input_output_guardrails_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_dual_llm_input_output_guardrails_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "메인 생성 모델과 판정 모델을 분리하여 프롬프트 탈옥 영향력을 최소화합니다.",
+        "식별자 `agentmcp_dual_llm_input_output_guardrails_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Decoupling task execution from safety classification prevents single-point compromise.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_dual_llm_input_output_guardrails_v1\")."
+      ]
+    },
+    "hash": "21cd2f2f2748ef723097be30c6a3e274168eab5999b1fd4b1aa56cbba20f48f7"
+  },
+  {
+    "id": "t3_agentmcp_human_in_the_loop_approval_enforcement",
+    "tier": 3,
+    "cat": "hitl",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "고위험 행위에 대한 Human-in-the-Loop(HITL) 승인 게이트",
+      "en": "Human-in-the-Loop (HITL) Gate Enforcement for High-Impact Actions"
+    },
+    "prompt": {
+      "ko": "삭제, 자금 이체, 외부 전송 등 비가역적 사이드 이펙트를 유발하는 도구에 필수 대화형 승인을 요구하는 설계를 분석합니다.\n지정된 식별자 `agentmcp_human_in_the_loop_approval_enforcement_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_human_in_the_loop_approval_enforcement_v1\") 앞 20자리}`",
+      "en": "Analyze authorization checkpoints requiring explicit human confirmation before executing side-effecting operations.\nCompute first 20 hex chars of SHA256(\"agentmcp_human_in_the_loop_approval_enforcement_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_human_in_the_loop_approval_enforcement_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "에이전트가 단독으로 결정할 수 없는 중요도 임계값을 설정하고 서명을 요구합니다.",
+        "식별자 `agentmcp_human_in_the_loop_approval_enforcement_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Require explicit operator approval tokens for operations exceeding risk thresholds.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_human_in_the_loop_approval_enforcement_v1\")."
+      ]
+    },
+    "hash": "24279c6239854416a25775413921fbc2b3d3f67e989fb5fb4f7d37dca562e3a7"
+  },
+  {
+    "id": "t3_agentmcp_landlock_lsm_mcp_sandbox_isolation",
+    "tier": 3,
+    "cat": "landlock",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Landlock LSM을 이용한 MCP 도구 프로세스 파일시스템 격리",
+      "en": "Landlock LSM Filesystem Isolation for MCP Tool Execution"
+    },
+    "prompt": {
+      "ko": "비특권 프로세스에서도 파일시스템 접근 범위를 특정 작업 디렉토리로 제한할 수 있는 Landlock 샌드박싱을 분석합니다.\n지정된 식별자 `agentmcp_landlock_lsm_mcp_sandbox_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_landlock_lsm_mcp_sandbox_isolation_v1\") 앞 20자리}`",
+      "en": "Examine Landlock LSM security profiles restricting MCP tool processes to designated workspace paths.\nCompute first 20 hex chars of SHA256(\"agentmcp_landlock_lsm_mcp_sandbox_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_landlock_lsm_mcp_sandbox_isolation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "no_new_privs 플래그를 설정하고 LANDLOCK_ACCESS_FS_READ/WRITE 권한을 세분화하여 제한합니다.",
+        "식별자 `agentmcp_landlock_lsm_mcp_sandbox_isolation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Lock down unprivileged tool daemons via landlock_restrict_self().",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_landlock_lsm_mcp_sandbox_isolation_v1\")."
+      ]
+    },
+    "hash": "c05fd107a7556103153851ff8e642b2c1b00dbf0c1ccd936b6a8cbb7987a9a85"
+  },
+  {
+    "id": "t3_agentmcp_seccomp_bpf_syscall_lockdown_for_tools",
+    "tier": 3,
+    "cat": "seccomp",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MCP 실행기 대상 Seccomp-BPF 시스템콜 차단 및 하드닝",
+      "en": "Seccomp-BPF Syscall Lockdown for MCP Tool Daemons"
+    },
+    "prompt": {
+      "ko": "소켓 생성, 포크, 디버깅 등 불필요한 시스템콜을 차단하여 도구 취약점이 호스트 장악으로 이어지는 것을 방어합니다.\n지정된 식별자 `agentmcp_seccomp_bpf_syscall_lockdown_for_tools_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_seccomp_bpf_syscall_lockdown_for_tools_v1\") 앞 20자리}`",
+      "en": "Analyze Seccomp-BPF filtering blocking socket creation and process spawning inside tool runners.\nCompute first 20 hex chars of SHA256(\"agentmcp_seccomp_bpf_syscall_lockdown_for_tools_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_seccomp_bpf_syscall_lockdown_for_tools_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "SCMP_ACT_KILL 또는 SCMP_ACT_ERRNO를 설정하여 위험 시스템콜 호출 시 즉시 프로세스를 종료합니다.",
+        "식별자 `agentmcp_seccomp_bpf_syscall_lockdown_for_tools_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Eliminate dangerous syscalls using strict BPF filter policies.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_seccomp_bpf_syscall_lockdown_for_tools_v1\")."
+      ]
+    },
+    "hash": "dd25c79c29e079e9b0643f6fb033fb4dc058eaf9103176c20ef18b4106305eb1"
+  },
+  {
+    "id": "t3_agentmcp_ephemeral_scoped_capability_tokens",
+    "tier": 3,
+    "cat": "capability",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "단기 유효 스코프 기반 기능 토큰(Capability Token) 부여",
+      "en": "Ephemeral Scoped Capability Tokens for Tool Authorization"
+    },
+    "prompt": {
+      "ko": "에이전트가 단일 작업 수행 시점에만 유효한 만료 시간이 짧은 세분화된 기능 토큰을 발행받아 도구를 호출하는 구조를 분석합니다.\n지정된 식별자 `agentmcp_ephemeral_scoped_capability_tokens_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_ephemeral_scoped_capability_tokens_v1\") 앞 20자리}`",
+      "en": "Examine ephemeral token issuance binding invocations to specific parameters and bounded lifetimes.\nCompute first 20 hex chars of SHA256(\"agentmcp_ephemeral_scoped_capability_tokens_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_ephemeral_scoped_capability_tokens_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "정적 API 키 대신 Macaroon 또는 DPoP 기반 단기 기능 토큰을 사용합니다.",
+        "식별자 `agentmcp_ephemeral_scoped_capability_tokens_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Replace permanent credentials with cryptographically attenuated capability tokens.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_ephemeral_scoped_capability_tokens_v1\")."
+      ]
+    },
+    "hash": "1733cdb71192ccbb65e98c6f7ce60f0ccbb8fbc8c44ccd6c151f60a091fc801b"
+  },
+  {
+    "id": "t3_agentmcp_tool_schema_cryptographic_signing",
+    "tier": 3,
+    "cat": "signing",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MCP 도구 매니페스트 디지털 서명 및 위변조 방지",
+      "en": "Cryptographic Signing & Integrity Verification of Tool Schemas"
+    },
+    "prompt": {
+      "ko": "MCP 서버가 제공하는 도구 명세에 공개키 기반 디지털 서명을 첨부하여 런타임 스키마 변조를 방지하는 설계를 분석합니다.\n지정된 식별자 `agentmcp_tool_schema_cryptographic_signing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_tool_schema_cryptographic_signing_v1\") 앞 20자리}`",
+      "en": "Analyze public-key digital signatures attached to tool descriptors to prevent in-flight schema tampering.\nCompute first 20 hex chars of SHA256(\"agentmcp_tool_schema_cryptographic_signing_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_tool_schema_cryptographic_signing_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "클라이언트는 신뢰된 인증기관(CA) 또는 공개키로 서명된 매니페스트만 레지스트리에 등록합니다.",
+        "식별자 `agentmcp_tool_schema_cryptographic_signing_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Verify signatures prior to committing tools to the execution registry.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_tool_schema_cryptographic_signing_v1\")."
+      ]
+    },
+    "hash": "c21847df5409b5c967973c2c6d585d7df465987fc3349ade60978ec5a4477a75"
+  },
+  {
+    "id": "t3_agentmcp_semantic_argument_anomaly_detection",
+    "tier": 3,
+    "cat": "anomaly",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "임베딩 유사도 기반 도구 인자 이상 탐지 센서",
+      "en": "Embedding Similarity Anomaly Detection on Tool Arguments"
+    },
+    "prompt": {
+      "ko": "도구에 전달되는 텍스트 인자의 임베딩 벡터를 정상 분포와 비교하여 비정상 페이로드를 실시간 차단하는 센서를 분석합니다.\n지정된 식별자 `agentmcp_semantic_argument_anomaly_detection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_semantic_argument_anomaly_detection_v1\") 앞 20자리}`",
+      "en": "Evaluate anomaly detection classifying argument vector embeddings against expected operational baselines.\nCompute first 20 hex chars of SHA256(\"agentmcp_semantic_argument_anomaly_detection_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_semantic_argument_anomaly_detection_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "코사인 유사도가 임계값 이하로 떨어지는 비정상 쿼리를 격리 큐로 리디렉션합니다.",
+        "식별자 `agentmcp_semantic_argument_anomaly_detection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Reject arguments exhibiting low cosine similarity against verified task clusters.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_semantic_argument_anomaly_detection_v1\")."
+      ]
+    },
+    "hash": "1d623bd3443717b727de6266b9bb9b689ca0d563f9e7cab7c52cfdf4103eb057"
+  },
+  {
+    "id": "t3_agentmcp_prompt_injection_canary_tokens",
+    "tier": 3,
+    "cat": "canary",
+    "track": "agentmcp",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "프롬프트 주입 탐지용 카나리 토큰(Canary Token) 배치",
+      "en": "Canary Token Deployment for Prompt Injection Detection"
+    },
+    "prompt": {
+      "ko": "시스템 프롬프트 내에 비밀 카나리 문자열을 심어두고, 도구 인자나 출력에 해당 토큰이 유출되는지 모니터링하는 기법을 분석합니다.\n지정된 식별자 `agentmcp_prompt_injection_canary_tokens_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_prompt_injection_canary_tokens_v1\") 앞 20자리}`",
+      "en": "Examine canary token honeypots embedded in system prompts to catch exfiltration attempts in tool streams.\nCompute first 20 hex chars of SHA256(\"agentmcp_prompt_injection_canary_tokens_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_prompt_injection_canary_tokens_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "카나리 토큰이 외부 요청이나 인자에 탐지되면 즉시 세션을 차단하고 보안 알림을 발생시킵니다.",
+        "식별자 `agentmcp_prompt_injection_canary_tokens_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Presence of honeypot tokens in outbound arguments indicates successful injection.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_prompt_injection_canary_tokens_v1\")."
+      ]
+    },
+    "hash": "115ea7266209b1b10c67cb893705c0560132b7bf0faa2a249c94de0f78706600"
+  },
+  {
+    "id": "t4_agentmcp_autonomous_adversarial_agent_swarm",
+    "tier": 4,
+    "cat": "swarm",
+    "track": "agentmcp",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "공격자 자율 멀티에이전트 스웜(Swarm) 침투 대응 체계",
+      "en": "Defense Architecture Against Autonomous Adversarial Agent Swarms"
+    },
+    "prompt": {
+      "ko": "복수의 협력형 공격 에이전트가 분산 정찰, 취약점 발굴, 침투를 분담할 때 이를 탐지하고 격리하는 방어 전략을 분석합니다.\n지정된 식별자 `agentmcp_autonomous_adversarial_agent_swarm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_autonomous_adversarial_agent_swarm_v1\") 앞 20자리}`",
+      "en": "Formulate defensive coordination counteracting multi-agent offensive swarms coordinating distributed reconnaissance.\nCompute first 20 hex chars of SHA256(\"agentmcp_autonomous_adversarial_agent_swarm_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_autonomous_adversarial_agent_swarm_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "분산 트래픽의 상관분석(Correlation) 및 집단 행위 그래프 분석으로 연계된 에이전트 무리를 식별합니다.",
+        "식별자 `agentmcp_autonomous_adversarial_agent_swarm_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Deploy behavioral graph analytics correlating disparate agent traces across endpoints.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_autonomous_adversarial_agent_swarm_v1\")."
+      ]
+    },
+    "hash": "e9e5e71b96405879d13bf2c01c2c75d49f521ae4c9414094111f9ef46bc7ae7a"
+  },
+  {
+    "id": "t4_agentmcp_formal_verification_of_agent_actions",
+    "tier": 4,
+    "cat": "formal",
+    "track": "agentmcp",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "정형 검증(Formal Verification)을 통한 에이전트 행위 불변성 증명",
+      "en": "Formal Verification of Agent Action Invariants & State Transitions"
+    },
+    "prompt": {
+      "ko": "에이전트의 도구 호출 및 상태 전이가 시스템 안전 불변식(Safety Invariant)을 위반하지 않음을 수학적으로 증명하는 기법을 분석합니다.\n지정된 식별자 `agentmcp_formal_verification_of_agent_actions_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_formal_verification_of_agent_actions_v1\") 앞 20자리}`",
+      "en": "Analyze mathematical verification of state transition safety invariants prior to tool commit.\nCompute first 20 hex chars of SHA256(\"agentmcp_formal_verification_of_agent_actions_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_formal_verification_of_agent_actions_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "SMT Solver(Z3 등)를 사용하여 도구 실행 전후의 상태 조건식을 검증합니다.",
+        "식별자 `agentmcp_formal_verification_of_agent_actions_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Employ SMT solvers verifying pre/post-conditions on autonomous actions.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_formal_verification_of_agent_actions_v1\")."
+      ]
+    },
+    "hash": "6f7df0a2eae95fd75eb763980e80f155e6c76e8f9a1d564f9c81264d057c50da"
+  },
+  {
+    "id": "t4_agentmcp_hardware_enclave_tee_agent_guard",
+    "tier": 4,
+    "cat": "tee",
+    "track": "agentmcp",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기밀 컴퓨팅 TEE(SGX/SEV) 내부 에이전트 무결성 보호",
+      "en": "Confidential Computing TEE Protection for Agent Runtime Integrity"
+    },
+    "prompt": {
+      "ko": "Intel SGX 또는 AMD SEV-SNP 하드웨어 보안 엔클레이브 내부에서 에이전트 런타임과 MCP 데몬을 구동하는 아키텍처를 분석합니다.\n지정된 식별자 `agentmcp_hardware_enclave_tee_agent_guard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_hardware_enclave_tee_agent_guard_v1\") 앞 20자리}`",
+      "en": "Examine hardware enclave deployment protecting model weights and tool execution states against compromised OS kernels.\nCompute first 20 hex chars of SHA256(\"agentmcp_hardware_enclave_tee_agent_guard_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_hardware_enclave_tee_agent_guard_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "호스트 OS가 침해당해도 TEE 하드웨어 메모리 암호화로 도구 자격증명 및 실행 상태를 보존합니다.",
+        "식별자 `agentmcp_hardware_enclave_tee_agent_guard_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Hardware memory encryption insulates agent state from root-level adversaries.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_hardware_enclave_tee_agent_guard_v1\")."
+      ]
+    },
+    "hash": "41bbb58ee2a9337445d746dcca0099c62d3e8fbd676638cbade83271f116106f"
+  },
+  {
+    "id": "t4_agentmcp_zero_trust_agent_governance_framework",
+    "tier": 4,
+    "cat": "zerotrust",
+    "track": "agentmcp",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Zero Trust 원칙 기반 AI 에이전트 거버넌스 프레임워크",
+      "en": "Zero Trust Governance Framework for Enterprise AI Agents"
+    },
+    "prompt": {
+      "ko": "Never Trust, Always Verify 원칙에 따라 모든 도구 호출, 프롬프트 전파, 세션 상태를 지속적으로 인증하는 프레임워크를 분석합니다.\n지정된 식별자 `agentmcp_zero_trust_agent_governance_framework_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_zero_trust_agent_governance_framework_v1\") 앞 20자리}`",
+      "en": "Synthesize Zero Trust policies mandating continuous attestation for every tool call and context ingest.\nCompute first 20 hex chars of SHA256(\"agentmcp_zero_trust_agent_governance_framework_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_zero_trust_agent_governance_framework_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "에이전트 신원(Identity), 인프라 신원(SPIFFE/SPIRE), 도구 스코프를 삼각 검증합니다.",
+        "식별자 `agentmcp_zero_trust_agent_governance_framework_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Cryptographically bind agent identity tokens with SPIFFE workload credentials.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_zero_trust_agent_governance_framework_v1\")."
+      ]
+    },
+    "hash": "28a66314ddb4bdb147d0a474d506c85675b0de2efa9a87a519f6ebaafb932010"
+  },
+  {
+    "id": "t4_agentmcp_master_agent_security_defense_capstone",
+    "tier": 4,
+    "cat": "capstone",
+    "track": "agentmcp",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 AI 에이전트 침투 방어 통합 아키텍처 (Capstone)",
+      "en": "Enterprise AI Agent Defense-in-Depth Capstone Architecture"
+    },
+    "prompt": {
+      "ko": "IPI 탐지, 도구 섀도잉 방어, 듀얼 LLM 가드레일, Landlock 격리, HITL 승인을 아우르는 통합 방어 아키텍처를 설계합니다.\n지정된 식별자 `agentmcp_master_agent_security_defense_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"agentmcp_master_agent_security_defense_capstone_v1\") 앞 20자리}`",
+      "en": "Synthesize full defense-in-depth architecture harmonizing IPI filters, MCP verification, and runtime sandboxing.\nCompute first 20 hex chars of SHA256(\"agentmcp_master_agent_security_defense_capstone_v1\").\n\nFormat: `FLAG{SHA256(\"agentmcp_master_agent_security_defense_capstone_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "모든 계층의 방어가 유기적으로 연결되어 단일 장애점을 배제한 심층 방어 체계를 완성합니다.",
+        "식별자 `agentmcp_master_agent_security_defense_capstone_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Unify semantic, protocol, and OS-level controls into a resilient defense posture.",
+        "Extract first 20 hex chars of SHA256(\"agentmcp_master_agent_security_defense_capstone_v1\")."
+      ]
+    },
+    "hash": "1228720103073697f97a80b86b52ba4f9de53d9741bb92027f396b76450f7f07"
+  }
+]

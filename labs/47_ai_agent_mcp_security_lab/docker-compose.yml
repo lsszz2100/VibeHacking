@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  agent-lab:
+    build: .
+    container_name: vibehacking-lab47-agent
+    ports:
+      - "127.0.0.1:8047:8047"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=47"

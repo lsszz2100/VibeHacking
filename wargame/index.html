@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2100</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2135</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -164,6 +164,7 @@
         <button class="pg-tab" data-tab="extsec">🧩 Browser Extension Security</button>
         <button class="pg-tab" data-tab="pqc">⚛️ Lattice KEM &amp; PQC Inspector</button>
         <button class="pg-tab" data-tab="kernel">🐧 Kernel Hardening &amp; Sandboxing Inspector</button>
+        <button class="pg-tab" data-tab="agentmcp">🤖 AI Agent &amp; MCP Inspector</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -891,6 +892,48 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="kernelVerdictBadge" class="token-tag token-inj">VERDICT: UNPROTECTED</span>
                 </div>
                 <div id="kernelVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Agent & MCP Tool Hijacking Inspector Panel -->
+        <div id="pgPanel-agentmcp" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Agent Attack Scenarios:</span>
+              <button class="pg-btn danger" data-agent-preset="ipi_tool_call">1. Indirect Prompt Injection (Untrusted Web/RAG)</button>
+              <button class="pg-btn danger" data-agent-preset="schema_poison">2. Tool Description / Schema Poisoning</button>
+              <button class="pg-btn danger" data-agent-preset="confused_deputy">3. Confused Deputy &amp; Tool Shadowing</button>
+              <button class="pg-btn" data-agent-preset="dual_guard_sandbox">4. 🛡️ Dual-LLM Guardrail + Landlock Sandbox</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <span class="dim" style="font-size:11px;">Agent Workload / MCP Client:</span>
+              <input id="agentTargetInput" class="bgp-asn-input" style="width:230px;" value="Autonomous DevSecOps Agent (PID: 4096)" />
+              <span class="dim" style="font-size:11px;">MCP Security Policy:</span>
+              <select id="agentPolicySelect" class="bgp-select" style="width:250px;">
+                <option value="unprotected">Unprotected (Direct Execution, No Guardrail)</option>
+                <option value="dual_llm">Dual LLM Input/Output Guardrail (Filter IPI)</option>
+                <option value="hitl_gate">Human-In-The-Loop Approval Gate (Block High-Risk Calls)</option>
+                <option value="landlock_jail">Landlock LSM &amp; Seccomp Sandbox (FS/Net Isolation)</option>
+                <option value="full_defense">Full Zero Trust Agent Shield (Dual LLM + HITL + Landlock)</option>
+              </select>
+              <button id="agentRunBtn" class="pg-btn">Simulate MCP Security Inspection</button>
+            </div>
+            <div class="dbshield-grid" style="margin-top:8px;">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🤖 MCP JSON-RPC Packet Trace &amp; Tool Invocation</span>
+                  <span id="agentTraceBadge" class="token-tag token-inj">STATUS: UNTRIAGED</span>
+                </div>
+                <div id="agentTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ Defense Verdict &amp; Agent Policy Enforcement</span>
+                  <span id="agentVerdictBadge" class="token-tag token-inj">VERDICT: UNPROTECTED</span>
+                </div>
+                <div id="agentVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>

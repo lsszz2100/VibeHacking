@@ -519,6 +519,30 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [26, 1, 3],
     },
+    "47": {
+        "name": "AI 에이전트 & MCP 보안 실전 실습",
+        "dir":  "47_ai_agent_mcp_security_lab",
+        "desc": "AgentGuard: 간접 프롬프트 주입(IPI) 도구 호출 가로채기 · 악성 MCP 도구 섀도잉 및 토큰 유출 차단 · Confused Deputy 파라미터 변조 권한 상승 방어 · Dual LLM 가드레일 및 Landlock 샌드박싱 강제",
+        "url":  "웹 콘솔 & AI 에이전트 대시보드: http://localhost:8047",
+        "difficulty": "★★★★★",
+        "related": [69, 11, 56],
+    },
+    "48": {
+        "name": "임베디드 펌웨어 & IoT RCE 실전 실습",
+        "dir":  "48_firmware_iot_rce_lab",
+        "desc": "FirmwareGuard: Binwalk MIPS SquashFS 언패킹 · QEMU 유저 모드 libnvram.so 가상화 주입 (LD_PRELOAD) · 임베디드 웹 CGI 원격 명령 실행(RCE) 익스플로잇 · DM-Verity 및 시큐어 부트 커널 무결성 잠금",
+        "url":  "웹 콘솔 & 펌웨어 에뮬레이터: http://localhost:8048",
+        "difficulty": "★★★★★",
+        "related": [61, 27, 34],
+    },
+    "49": {
+        "name": "양자 내성 하이브리드 TLS 1.3 실습",
+        "dir":  "49_pqc_hybrid_tls_lab",
+        "desc": "PQCTLSGuard: 고전 TLS 1.3 암호 세션 HNDL 위협 감사 · X25519 + ML-KEM-768(Kyber) 하이브리드 키 교환 세션 수립 · ML-DSA-65(Dilithium) 격자 기반 전자 서명 검증 · 다운그레이드 공격 차단 및 비양자 폴백 금지 정책",
+        "url":  "웹 콘솔 & PQC TLS 대시보드: http://localhost:8049",
+        "difficulty": "★★★★★",
+        "related": [57, 16, 39],
+    },
 }
 
 
@@ -1542,6 +1566,9 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8044, "Lab 44 (ExtensionGuard Browser Extension Security Lab)"),
         (8045, "Lab 45 (PQCShield Quantum Cryptography Lab)"),
         (8046, "Lab 46 (KernelGuard Linux Kernel Hardening Lab)"),
+        (8047, "Lab 47 (AgentMCPGuard AI Agent & MCP Security Lab)"),
+        (8048, "Lab 48 (FirmwareIoTGuard Firmware & IoT Emulation Lab)"),
+        (8049, "Lab 49 (PQCTLSGuard Post-Quantum Hybrid TLS Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2135,7 +2162,7 @@ def cmd_report(args: argparse.Namespace) -> None:
     if cmd == "summary":
         gen = SecurityReportGenerator()
         stats = gen.get_summary_stats()
-        print(bold(cyan("\n🛡️ VibeHacking 46개 랩 취약점 진단 요약 (Executive Summary)")))
+        print(bold(cyan(f"\n🛡️ VibeHacking {stats['total_labs']}개 랩 취약점 진단 요약 (Executive Summary)")))
         print(f"  • 진단 대상 랩: {bold(str(stats['total_labs']))}개 랩")
         print(f"  • 식별된 취약점: {bold(str(stats['total_findings']))}건")
         print(f"  • 평균 CVSS 3.1 스코어: {bold(str(stats['average_cvss']))} / 10.0")

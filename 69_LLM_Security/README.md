@@ -13,6 +13,7 @@
 | [04_adversarial_attacks_on_llm.md](./04_adversarial_attacks_on_llm.md) | **LLM 적대적 공격** — pip install transformers torch   # 대상 모델 + perplexity 측정 |
 | [05_llm_security_defense.md](./05_llm_security_defense.md) | **LLM 보안 방어 전략** — pip install llm-guard            # 입력 검증·출력 필터 등 다계층 가드레일 |
 | [06_llm_security_ctf_lab.md](./06_llm_security_ctf_lab.md) | **LLM 보안 CTF 실습 랩** — 이 랩은 실제 LLM API 없이 로컬에서 LLM 보안 공격 기법을 실습한다. llm_ctf.py 스크립트가 챌린지 로직을 시뮬레이션하며, 플래그를 발견하면 SHA-256 해시로 검증한다. |
+| [07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md](./07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md) | **제69장 LLM 보안 심층: AI 에이전트 & MCP 툴 포이즈닝·탈취 및 샌드박싱 방어 (Deep-dive)** — 2026년 현재 Claude Opus 4, GPT-4o, 오픈소스 에이전트 프레임워크는 단순 질의응답을 넘어 Model Context Protocol (MCP) 및 Function C... |
 
 ## 🎯 학습 목표
 
