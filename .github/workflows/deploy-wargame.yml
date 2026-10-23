@@ -73,7 +73,7 @@ jobs:
 
       - name: Configure Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
         with:
           # Auto-enable Pages with the GitHub Actions source if not already enabled.
           enablement: true
