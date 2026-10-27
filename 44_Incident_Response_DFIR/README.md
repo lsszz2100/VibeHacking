@@ -17,6 +17,7 @@
 | [07_soc_siem_threat_hunting_deepdive.md](./07_soc_siem_threat_hunting_deepdive.md) | **차세대 SOC 관제 및 SIEM 실전 위협 헌팅 심층 가이드 (Modern SOC & SIEM Threat Hunting Deep-Dive)** — 엔터프라이즈 보안관제(SOC)는 단순 경보 알림(Alert-driven) 방식에서 가설 기반의 능동적 위협 헌팅(Hypothesis-driven Threat Hunting)으로 진화했... |
 | [08_enterprise_incident_response_playbook_deepdive.md](./08_enterprise_incident_response_playbook_deepdive.md) | **엔터프라이즈 침해사고 대응 플레이북 및 DFIR 거버넌스 심층 가이드 (Enterprise Incident Response Playbook & DFIR Governance Deep-Dive)** — 현대 엔터프라이즈 환경에서 보안 침해사고 대응은 단순한 "악성 프로세스 강제 종료"를 넘어, 기업 비즈니스 영속성(BCP), 법적 책임(Regulatory Liability), 브랜드... |
 | [09_live_triage_memory_timeline_and_anti_forensics_deepdive.md](./09_live_triage_memory_timeline_and_anti_forensics_deepdive.md) | **엔터프라이즈 라이브 트리아지, 메모리 VAD 구조 분석 및 NTFS 타임라인 안티포렌식 무력화 심층 가이드 (Enterprise Live Triage, Memory VAD Forensics & Anti-Forensics Neutralization Deep-Dive)** — 침해사고가 발생했을 때 초기 1시간(Golden Hour) 내의 대응 품질이 전사 피해 규모를 결정합니다. 현대 공격자들은 디스크에 흔적을 남기지 않는 파일리스(Fileless) 기법... |
+| [10_sans_dfir_enterprise_artifact_hunting_deepdive.md](./10_sans_dfir_enterprise_artifact_hunting_deepdive.md) | **SANS FOR508/FOR572 기반 엔터프라이즈 침해사고 아티팩트 헌팅 및 슈퍼타임라인 분석 심층 가이드 (SANS FOR508/572 Enterprise Artifact Hunting & Supertimeline Analysis Deep-Dive)** — 현대 엔터프라이즈 침해사고는 지능형 지속 위협(APT)과 랜섬웨어 카르텔에 의해 주도되며, 디스크에 단일 흔적만을 남기지 않고 메모리 인젝션, LOLBIN(Living-off-the-... |
 
 ## 🎯 학습 목표
 

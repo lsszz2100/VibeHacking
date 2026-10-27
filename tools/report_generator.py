@@ -509,6 +509,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A02:2021",
         "owasp_name": "Cryptographic Failures (Harvest-Now-Decrypt-Later)",
     },
+    "50": {
+        "kisa_id": "2.12.1",
+        "kisa_name": "사고 탐지 및 분석 (SANS DFIR 아티팩트 트리아지 & 침해사고 대응)",
+        "nist_csf_id": "DE.AE-02",
+        "nist_csf_name": "Adverse Events Analysis & Supertimeline Correlation",
+        "owasp_id": "A09:2021",
+        "owasp_name": "Security Logging and Monitoring Failures",
+    },
 }
 
 @dataclass
@@ -1432,6 +1440,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Classical ECDHE and RSA public key algorithms are vulnerable to Shor's algorithm.",
                 "affected_component": "PQCTLSGuard Service (Port 8049)",
                 "remediation": "Deploy X25519 + ML-KEM-768 hybrid key exchange and enforce strict FIPS 203 policy."
+            }
+        ]
+    },
+    "50": {
+        "title": "50 SANS DFIR Enterprise Threat Hunting & Artifact Analysis",
+        "category": "Incident Response & Forensics",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5001",
+                "name": "Undetected Fileless Memory Injection via DKOM and Reflective RWX Stager",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1055.001",
+                "mitre_technique": "Process Injection: Dynamic-link Library Injection",
+                "mitre_tactic": "Defense Evasion",
+                "impact": "Adversary achieves persistent in-memory execution unlinked from process hierarchy, evading traditional antivirus scanning.",
+                "description": "Infected workstation harbors reflective DLL injection in private RWX VAD tree and unlinked EPROCESS ActiveProcessLinks.",
+                "affected_component": "ArtifactHunter Triage Engine (Port 8050)",
+                "remediation": "Implement Volatility 3/Rekall psscan automation, LSA PPL enforcement, and SOAR supertimeline network containment."
             }
         ]
     }

@@ -26,8 +26,8 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 60
-    assert len(challenges) == 2100
+    assert len(tracks) == 62
+    assert len(challenges) == 2170
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
     assert any(t["id"] == "sochunt" for t in tracks)
@@ -51,6 +51,8 @@ def test_load_wargame_db():
     assert any(t["id"] == "extsec" for t in tracks)
     assert any(t["id"] == "pqc" for t in tracks)
     assert any(t["id"] == "linuxhard" for t in tracks)
+    assert any(t["id"] == "agentmcp" for t in tracks)
+    assert any(t["id"] == "sansdfir" for t in tracks)
 
 
 def test_verify_flag_logic():
@@ -97,6 +99,13 @@ def test_verify_flag_logic():
     h20_sbom = hashlib.sha256(ident_sbom.encode("utf-8")).hexdigest()[:20]
     flag_sbom = f"FLAG{{{h20_sbom}}}"
     assert verify_flag(ch_sbom, flag_sbom) is True
+
+    # Test sansdfir first challenge
+    ch_dfir = next(c for c in challenges if c["id"] == "t0_sansdfir_fundamentals_evidence_of_execution")
+    ident_dfir = "sansdfir_fundamentals_evidence_of_execution_v1"
+    h20_dfir = hashlib.sha256(ident_dfir.encode("utf-8")).hexdigest()[:20]
+    flag_dfir = f"FLAG{{{h20_dfir}}}"
+    assert verify_flag(ch_dfir, flag_dfir) is True
 
     assert verify_flag(ch, "") is False
 

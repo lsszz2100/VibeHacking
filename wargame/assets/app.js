@@ -905,6 +905,7 @@
     renderPQC("shor_audit");
     renderKernel("seccomp_bpf");
     renderAgentMCP("ipi_tool_call");
+    renderSANSDFIR("prefetch_exec");
   }
 
   function hidePlayground(){
@@ -915,7 +916,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -3481,6 +3482,153 @@
     verdictOut.textContent = verdictText;
   }
 
+  /* ===== 18. SANS DFIR Artifact & Supertimeline Inspector ===== */
+  let currentDFIRScenario = "prefetch_exec";
+
+  function renderSANSDFIR(scenario){
+    const targetEl = document.getElementById("dfirTargetInput");
+    const toolEl = document.getElementById("dfirToolSelect");
+    const traceBadge = document.getElementById("dfirTraceBadge");
+    const verdictBadge = document.getElementById("dfirVerdictBadge");
+    const traceOut = document.getElementById("dfirTraceOutput");
+    const verdictOut = document.getElementById("dfirVerdictOutput");
+
+    if (!targetEl || !toolEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario){
+      currentDFIRScenario = scenario;
+      if (scenario === "prefetch_exec"){
+        targetEl.value = "WORKSTATION-CORP-042 (C:\\Windows\\Prefetch)";
+        toolEl.value = "pecmd";
+      } else if (scenario === "mft_carve"){
+        targetEl.value = "WORKSTATION-CORP-042 (C:\\$MFT & $LogFile)";
+        toolEl.value = "mftecmd";
+      } else if (scenario === "vad_inject"){
+        targetEl.value = "WORKSTATION-CORP-042 (Physical Memory Dump)";
+        toolEl.value = "volatility";
+      } else if (scenario === "supertimeline_isolate"){
+        targetEl.value = "ENTERPRISE-NETWORK-SOC (10.0.12.88)";
+        toolEl.value = "plaso";
+      }
+    } else {
+      if (toolEl.value === "pecmd") currentDFIRScenario = "prefetch_exec";
+      else if (toolEl.value === "mftecmd") currentDFIRScenario = "mft_carve";
+      else if (toolEl.value === "volatility") currentDFIRScenario = "vad_inject";
+      else if (toolEl.value === "tshark" || toolEl.value === "plaso") currentDFIRScenario = "supertimeline_isolate";
+    }
+
+    const mode = currentDFIRScenario;
+    let traceText = "";
+    let verdictText = "";
+
+    if (mode === "prefetch_exec"){
+      traceText =
+        "[PECmd.exe Prefetch & ShimCache Execution Carving]:\n" +
+        "  Target: " + targetEl.value + "\n" +
+        "  Source File: C:\\Windows\\Prefetch\\REVIL_RANSOMWARE.EXE-A4B8C19D.pf\n" +
+        "  Executable: REVIL_RANSOMWARE.EXE (Hash: 0x9e8a71b2)\n" +
+        "  Run Count: 1 | Volume Serial: 4A82-C91E | Total Directories: 4\n" +
+        "  Last Execution Time: 2026-10-24 14:22:08 UTC (Win32 FileTime: 133425709280000000)\n" +
+        "  Loaded DLL References Carved:\n" +
+        "    > C:\\Windows\\System32\\ntdll.dll\n" +
+        "    > C:\\Windows\\System32\\kernel32.dll\n" +
+        "    > C:\\Users\\Administrator\\AppData\\Local\\Temp\\mimilib.dll (Suspicious Unsigned Module!)\n" +
+        "  ShimCache / AppCompatCache Corroboration:\n" +
+        "    Path: C:\\Users\\victim\\Downloads\\payload.exe | ExecFlag: TRUE | LastModified: 2026-10-24 14:21:55 UTC";
+      verdictText =
+        "[SANS FOR508 Evidence of Execution Assessment]:\n" +
+        "  - Artifact Findings: Execution confirmed via Prefetch (.pf) header v30 (Win10/11 LZNT1 decompressed)\n" +
+        "  - Lateral Movement / Staging: Dropper unpacked malicious DLL into temp directory\n" +
+        "  - Anti-Forensics: Execution timestamp predates user logon session by 3 minutes\n" +
+        "Verdict: 🚨 UNTRUSTED EXECUTION CONFIRMED (Host Compromised via Malicious Binary)";
+      traceBadge.textContent = "EXEC: CONFIRMED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: COMPROMISED";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "mft_carve"){
+      traceText =
+        "[MFTECmd.exe NTFS Master File Table & USN Journal Analysis]:\n" +
+        "  Target: " + targetEl.value + "\n" +
+        "  Record Number: 84920 | Sequence: 3 | In-Use: TRUE | Directory: FALSE\n" +
+        "  Attributes Analyzed: $STANDARD_INFORMATION (0x10) vs $FILE_NAME (0x30)\n" +
+        "  Timestamp Delta (Timestomping Anomaly Detected):\n" +
+        "    $STANDARD_INFORMATION Created: 2021-03-15 08:12:00 UTC (Manipulated to spoof legitimate system file)\n" +
+        "    $FILE_NAME Created:            2026-10-24 14:21:49 UTC (True NTFS metadata creation)\n" +
+        "    Discrepancy Delta:             1,987 days (Classic Timestomping Artifact)\n" +
+        "  $DATA Attribute (0x80) Non-Resident Runlist:\n" +
+        "    Run 0: Starting Cluster LCN 0x3E800, Length: 48 Clusters (Carved Payload: Encrypted C2 Beacon)\n" +
+        "  USN Journal ($Extend\\$UsnJrnl:$J) Corroboration:\n" +
+        "    Reason: USN_REASON_FILE_CREATE | USN_REASON_DATA_EXTEND | USN_REASON_BASIC_INFO_CHANGE (At 14:21:50 UTC)";
+      verdictText =
+        "[NTFS Artifact & Anti-Forensics Analysis]:\n" +
+        "  - Technique: Defense Evasion: Timestomping (MITRE ATT&CK T1070.006)\n" +
+        "  - Evidence: $STANDARD_INFORMATION altered while $FILE_NAME preserved kernel timestamp\n" +
+        "  - Data Run Recovery: Malicious binary carved from unallocated clusters via NTFS Runlist\n" +
+        "Verdict: ⚠️ ANOMALOUS TIMESTOMP DETECTED (MFT Carving Recovered Staged Dropper)";
+      traceBadge.textContent = "MFT: TIMESTOMPED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: TAMPERED";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else if (mode === "vad_inject"){
+      traceText =
+        "[Volatility 3 Memory Forensic Triage (Kernel Pool & VAD Carving)]:\n" +
+        "  Target: " + targetEl.value + "\n" +
+        "  Command: python3 vol.py -f MemoryDump.raw windows.psscan windows.malfind\n" +
+        "  1. Process Scan (psscan - ActiveProcessLinks vs Pool Tag):\n" +
+        "    Process: svchost.exe | PID: 4920 | PPID: 1044 (ActiveProcessLinks DKOM Unlinked!)\n" +
+        "    Hidden Process Detected: Unlinked from EPROCESS doubly-linked list\n" +
+        "  2. Memory Descriptor List (malfind - RWX VAD Carving):\n" +
+        "    PID 4920 | VAD Start: 0x0000021b0000 | End: 0x0000021b0fff | Tag: VadS\n" +
+        "    Protection: PAGE_EXECUTE_READWRITE (RWX) | Private Memory: TRUE\n" +
+        "    Hex Dump:\n" +
+        "      0000021b0000  4d 5a 90 00 03 00 00 00  04 00 00 00 ff ff 00 00  MZ..............\n" +
+        "      0000021b0010  b8 00 00 00 00 00 00 00  40 00 00 00 00 00 00 00  ........@.......\n" +
+        "    Carved Artifact: Reflective DLL Injection / Metasploit Stager Shellcode (0xe8 0x00 0x00...)";
+      verdictText =
+        "[Memory Root Cause Analysis & Injection Verdict]:\n" +
+        "  - Technique: Process Injection: Reflective DLL / Memory Injection (MITRE ATT&CK T1055)\n" +
+        "  - DKOM Evasion: Adversary unlinked EPROCESS to evade standard taskmgr/Tasklist queries\n" +
+        "  - Injection Signature: MZ header resident in unbacked RWX virtual memory segment\n" +
+        "Verdict: 🚨 CRITICAL: REFLECTIVE DLL INJECTION IN SVCHOST.EXE (Process Hijack)";
+      traceBadge.textContent = "VAD: RWX_INJECTED";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: CRITICAL";
+      verdictBadge.className = "token-tag token-inj";
+
+    } else { // supertimeline_isolate
+      traceText =
+        "[Plaso log2timeline Unified Supertimeline & Network Carving]:\n" +
+        "  Host Scope: " + targetEl.value + "\n" +
+        "  Combined Sources: MFT + USN + Prefetch + Event Logs + Memory Dump + FOR572 PCAP\n" +
+        "  Correlated Timeline Chain:\n" +
+        "    [14:18:22 UTC] T1566: Phishing link clicked in Outlook (outlook.exe -> msedge.exe)\n" +
+        "    [14:19:04 UTC] T1204: Document macro dropped initial stage (vba_macro -> payload.exe)\n" +
+        "    [14:21:49 UTC] T1070: $MFT record created; timestomping applied to $STANDARD_INFO\n" +
+        "    [14:22:08 UTC] T1059: PECmd confirms REVIL_RANSOMWARE.EXE execution\n" +
+        "    [14:23:15 UTC] T1055: Volatility detects svchost.exe (PID 4920) memory injection\n" +
+        "    [14:24:02 UTC] T1071: tshark carvings detect DNS base64 tunneling to evil-c2.net\n" +
+        "  SOAR Automated Incident Response Actions:\n" +
+        "    ✓ Host Containment: WORKSTATION-CORP-042 isolated from 802.1X VLAN\n" +
+        "    ✓ Firewall Blacklist: Malicious C2 domain & IP null-routed across edge firewalls\n" +
+        "    ✓ Memory & Forensic Triage Dump: Immutable forensic evidence preserved for court";
+      verdictText =
+        "[Enterprise DFIR Unified Incident Response Summary]:\n" +
+        "  - Supertimeline Reconstruction: 100% full attack lifecycle mapped across host & network\n" +
+        "  - Dwell Time: Less than 7 minutes between initial access and automated containment\n" +
+        "  - Compliance: SANS IR Steps (Identification -> Containment -> Eradication) Complete\n" +
+        "Verdict: 🛡️ INCIDENT CONTAINED (Host Isolated, Supertimeline Evidence Preserved)";
+      traceBadge.textContent = "SOAR: CONTAINED";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "VERDICT: REMEDIATED";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -3770,6 +3918,8 @@
         openPlayground("kernel"); break;
       case "agentmcp": case "mcp": case "agent": case "ipi": case "promptinjection":
         openPlayground("agentmcp"); break;
+      case "sansdfir": case "artifact": case "supertimeline": case "for508": case "for572":
+        openPlayground("sansdfir"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -4385,6 +4535,22 @@
       sLaser();
       const p = btn.getAttribute("data-agent-preset");
       renderAgentMCP(p);
+    });
+  });
+
+  // SANS DFIR Artifact & Supertimeline Inspector Controls
+  const dfirRunBtn = document.getElementById("dfirRunBtn");
+  if (dfirRunBtn) dfirRunBtn.addEventListener("click", () => { audio(); sLaser(); renderSANSDFIR(); });
+  const dfirTargetInput = document.getElementById("dfirTargetInput");
+  if (dfirTargetInput) dfirTargetInput.addEventListener("input", () => renderSANSDFIR());
+  const dfirToolSelect = document.getElementById("dfirToolSelect");
+  if (dfirToolSelect) dfirToolSelect.addEventListener("change", () => renderSANSDFIR());
+  document.querySelectorAll("[data-dfir-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-dfir-preset");
+      renderSANSDFIR(p);
     });
   });
 

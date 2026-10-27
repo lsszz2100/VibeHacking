@@ -1376,6 +1376,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🔒 Quantum-Safe Downgrade Attack Defense Active! -> FLAG{quantum_safe_tls13_downgrade_prevented_8049}"
             }
         ]
+    },
+    "50": {
+        "title": "SANS DFIR 침해사고 헌팅 랩 (ArtifactHunter)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "실행 흔적(Evidence of Execution) 분석 (PECmd & ShimCache)",
+                "target": "POST /api/stage1/analyze_execution (artifact_type, target_evidence)",
+                "poc_explanation": "PECmd 및 ShimCache 파서를 통해 침해 시스템에 잔존하는 악성 도구(MIMIKATZ) 실행 증거, 실행 횟수, 타임스탬프를 역산합니다.",
+                "exploit_payload": '{"artifact_type": "prefetch", "target_evidence": "MIMIKATZ.EXE-B7A21F8C.pf"}',
+                "defense": "AppLocker / WDAC(Windows Defender Application Control) 정책 적용 및 프로세스 생성 EID 4688 감사.",
+                "sample_output": "✓ Evidence of execution confirmed through PECmd parser! -> FLAG{SANS_DFIR_EXEC_PREFETCH_SHIMCACHE_8821}"
+            },
+            {
+                "step": 2,
+                "name": "NTFS $MFT Data Run 및 USN Journal 파일 삭제 흔적 카빙",
+                "target": "POST /api/stage2/carve_filesystem (mft_record_number, usn_reason_flag)",
+                "poc_explanation": "$MFT 논레지던트 Data Run을 역추적하여 삭제된 악성 DLL 클러스터를 카빙하고 USN Journal 시간차를 분석합니다.",
+                "exploit_payload": '{"mft_record_number": 41289, "usn_reason_flag": "USN_REASON_FILE_DELETE"}',
+                "defense": "NTFS 볼륨 섀도 복사본(VSS) 보존 및 Sysmon EID 23/26 파일 삭제 감시.",
+                "sample_output": "✓ $MFT Data Run and USN Journal file deletion carved successfully! -> FLAG{SANS_DFIR_MFT_USN_JOURNAL_CARVED_9932}"
+            },
+            {
+                "step": 3,
+                "name": "메모리 인젝션 & DKOM 은닉 프로세스 트리아지",
+                "target": "POST /api/stage3/triage_memory_injection (target_pid, vad_protection, unhook_dkom)",
+                "poc_explanation": "psscan 플러그인으로 ActiveProcessLinks에서 언링크된 DKOM 프로세스를 찾고 PAGE_EXECUTE_READWRITE VAD를 덤프합니다.",
+                "exploit_payload": '{"target_pid": 2840, "vad_protection": "PAGE_EXECUTE_READWRITE", "unhook_dkom": true}',
+                "defense": "LSA RunAsPPL(Protected Process Light) 및 커널 eBPF / EDR Call Stack 검증.",
+                "sample_output": "✓ Unlinked DKOM process and RWX VAD injection beacon triangulated! -> FLAG{SANS_DFIR_MEMORY_VAD_INJECTION_DKOM_7743}"
+            },
+            {
+                "step": 4,
+                "name": "SANS FOR572 네트워크 카빙 & Supertimeline 자동 격리",
+                "target": "POST /api/stage4/supertimeline_isolate (tshark_display_filter, isolate_host)",
+                "poc_explanation": "tshark DNS C2 터널링 패킷과 Plaso supertimeline을 상관분석하여 전체 침투 체인을 규명하고 SOAR로 호스트를 격리합니다.",
+                "exploit_payload": '{"tshark_display_filter": "dns.qry.name contains c2", "isolate_host": true}',
+                "defense": "EDR 호스트 네트워크 자동 격리 및 차세대 NIDS/SIEM 상관분석 룰셋 적용.",
+                "sample_output": "🔒 SANS DFIR Supertimeline correlation complete and infected host isolated! -> FLAG{SANS_DFIR_SUPETIMELINE_RECON_ISOLATED_6612}"
+            }
+        ]
     }
 }
 

@@ -33,11 +33,11 @@ def check_textbook():
     return True, f"{len(sections)} sections, {total_md} chapters"
 
 def check_labs():
-    print("[2/5] Checking 49 Hands-on Labs...")
+    print("[2/5] Checking 50 Hands-on Labs...")
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
-    if len(lab_dirs) != 49:
-        return False, f"Expected 49 labs, found {len(lab_dirs)}"
+    if len(lab_dirs) != 50:
+        return False, f"Expected 50 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,10 +62,10 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 2135:
-        return False, f"Expected 2,135 challenges in challenges.js, found {id_count}"
+    if id_count != 2170:
+        return False, f"Expected 2,170 challenges in challenges.js, found {id_count}"
     
-    print(f"  ✓ Wargame database verified: {id_count} challenges across 61 tracks.")
+    print(f"  ✓ Wargame database verified: {id_count} challenges across 62 tracks.")
     return True, f"{id_count} challenges verified"
 
 def check_offline_assets():
@@ -131,7 +131,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print(" VibeHacking 2.3.0 Offline Release & Audit Pipeline")
+    print(" VibeHacking 2.4.0 Offline Release & Audit Pipeline")
     print("==================================================")
     
     checks = [check_textbook(), check_labs(), check_wargame(), check_offline_assets()]

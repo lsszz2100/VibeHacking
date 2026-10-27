@@ -543,6 +543,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [57, 16, 39],
     },
+    "50": {
+        "name": "SANS DFIR 침해사고 헌팅 랩",
+        "dir":  "50_sans_dfir_hunting_lab",
+        "desc": "ArtifactHunter: SANS FOR508/572 · PECmd/ShimCache 실행 흔적 분석 · NTFS $MFT Data Run 및 USN Journal 파일 삭제 카빙 · Volatility 3 DKOM 은닉 프로세스 & RWX VAD 인젝션 트리아지 · SANS FOR572 tshark 네트워크 카빙 & Supertimeline 자동 격리",
+        "url":  "웹 콘솔 & SANS DFIR 대시보드: http://localhost:8050",
+        "difficulty": "★★★★★",
+        "related": [44, 7, 13, 16, 40],
+    },
 }
 
 
@@ -1569,6 +1577,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8047, "Lab 47 (AgentMCPGuard AI Agent & MCP Security Lab)"),
         (8048, "Lab 48 (FirmwareIoTGuard Firmware & IoT Emulation Lab)"),
         (8049, "Lab 49 (PQCTLSGuard Post-Quantum Hybrid TLS Lab)"),
+        (8050, "Lab 50 (ArtifactHunter SANS DFIR Threat Hunting Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2135</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2170</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -165,6 +165,7 @@
         <button class="pg-tab" data-tab="pqc">⚛️ Lattice KEM &amp; PQC Inspector</button>
         <button class="pg-tab" data-tab="kernel">🐧 Kernel Hardening &amp; Sandboxing Inspector</button>
         <button class="pg-tab" data-tab="agentmcp">🤖 AI Agent &amp; MCP Inspector</button>
+        <button class="pg-tab" data-tab="sansdfir">🔍 SANS DFIR &amp; Supertimeline</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -934,6 +935,48 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="agentVerdictBadge" class="token-tag token-inj">VERDICT: UNPROTECTED</span>
                 </div>
                 <div id="agentVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SANS DFIR Artifact & Supertimeline Inspector Panel -->
+        <div id="pgPanel-sansdfir" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">SANS FOR508/572 Triage Scenarios:</span>
+              <button class="pg-btn danger" data-dfir-preset="prefetch_exec">1. Evidence of Execution (PECmd / ShimCache)</button>
+              <button class="pg-btn danger" data-dfir-preset="mft_carve">2. $MFT Data Run &amp; USN Journal Timestomp</button>
+              <button class="pg-btn danger" data-dfir-preset="vad_inject">3. Volatility 3 DKOM &amp; RWX VAD Injection</button>
+              <button class="pg-btn" data-dfir-preset="supertimeline_isolate">4. 🔒 Supertimeline Plaso + SOAR Host Containment</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <span class="dim" style="font-size:11px;">Forensic Target / Host:</span>
+              <input id="dfirTargetInput" class="bgp-asn-input" style="width:230px;" value="WORKSTATION-CORP-042 (10.0.12.88)" />
+              <span class="dim" style="font-size:11px;">Triage Filter / Tool:</span>
+              <select id="dfirToolSelect" class="bgp-select" style="width:250px;">
+                <option value="pecmd">PECmd.exe (Prefetch Last Run &amp; DLL Carving)</option>
+                <option value="mftecmd">MFTECmd.exe ($MFT Non-Resident Data Runs)</option>
+                <option value="volatility">Volatility 3 (psscan + malfind RWX VAD)</option>
+                <option value="tshark">tshark FOR572 (DNS C2 Tunneling Exfil)</option>
+                <option value="plaso">Plaso log2timeline (Unified Supertimeline &amp; SOAR)</option>
+              </select>
+              <button id="dfirRunBtn" class="pg-btn">Simulate Forensic Investigation</button>
+            </div>
+            <div class="dbshield-grid" style="margin-top:8px;">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🔍 Artifact Carving &amp; Telemetry Stream</span>
+                  <span id="dfirTraceBadge" class="token-tag token-inj">STATUS: UNTRIAGED</span>
+                </div>
+                <div id="dfirTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ Root Cause Analysis (RCA) &amp; Containment</span>
+                  <span id="dfirVerdictBadge" class="token-tag token-inj">STATUS: COMPROMISED</span>
+                </div>
+                <div id="dfirVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>
