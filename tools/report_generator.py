@@ -517,6 +517,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A09:2021",
         "owasp_name": "Security Logging and Monitoring Failures",
     },
+    "51": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "보안 시스템 운영 (클라우드 네이티브 커널 런타임 보안 & eBPF LSM 통제)",
+        "nist_csf_id": "DE.CM-01",
+        "nist_csf_name": "Network and Host Runtime Event Detection (eBPF Kernel Probing & Tetragon)",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration (Container Namespace Escape & Unchecked Privileges)",
+    },
 }
 
 @dataclass
@@ -1458,6 +1466,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Infected workstation harbors reflective DLL injection in private RWX VAD tree and unlinked EPROCESS ActiveProcessLinks.",
                 "affected_component": "ArtifactHunter Triage Engine (Port 8050)",
                 "remediation": "Implement Volatility 3/Rekall psscan automation, LSA PPL enforcement, and SOAR supertimeline network containment."
+            }
+        ]
+    },
+    "51": {
+        "title": "51 eBPFRuntimeGuard Cloud Native Kernel Observability & Runtime Security",
+        "category": "Linux & Cloud Native Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5101",
+                "name": "Host Namespace Breakout and Arbitrary Credential Access via Unrestricted Privileged Container",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1611",
+                "mitre_technique": "Escape to Host",
+                "mitre_tactic": "Privilege Escalation",
+                "impact": "Attacker escapes container containment into host kernel space and accesses host credentials.",
+                "description": "Container with CAP_SYS_ADMIN escapes mount namespace to access /etc/shadow directly on host VFS.",
+                "affected_component": "eBPFRuntimeGuard Engine (Port 8051)",
+                "remediation": "Deploy Cilium Tetragon eBPF LSM synchronous SIGKILL enforcement and drop CAP_SYS_ADMIN capabilities."
             }
         ]
     }

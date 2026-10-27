@@ -80,6 +80,7 @@ docker-compose --version
 | 48 | [임베디드 펌웨어 & IoT RCE 실전 랩](./48_firmware_iot_rce_lab/) | Binwalk SquashFS 언패킹, QEMU MIPS libnvram.so 가상화 주입, 임베디드 웹 CGI RCE 익스플로잇, DM-Verity 시큐어 부트 | ★★★★★ | [61장 펌웨어 해킹](../61_Firmware_Hacking/07_qemu_firmware_emulation_and_nvram_deepdive.md) | `iot` / `hardware` |
 | 49 | [양자 내성 하이브리드 TLS 1.3 실습](./49_pqc_hybrid_tls_lab/) | 고전 TLS HNDL 위협 감사, X25519+ML-KEM-768 하이브리드 키 교환, ML-DSA-65 전자 서명 검증, 다운그레이드 방어 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqc` / `crypto` |
 | 50 | [SANS DFIR 엔터프라이즈 아티팩트 헌팅 랩](./50_sans_dfir_hunting_lab/) | PECmd 프리패치 & ShimCache 실행 증거 추출, $MFT 비상주 데이터런 카빙 & 타임스톰프 규명, Volatility 3 DKOM & RWX VAD 인젝션 분석, Plaso 슈퍼타임라인 & SOAR 격리 | ★★★★★ | [44장 침해 대응](../44_Incident_Response_DFIR/10_sans_dfir_enterprise_artifact_hunting_deepdive.md) | `sansdfir` / `dfir` |
+| 51 | [클라우드 네이티브 eBPF 런타임 보안 랩](./51_ebpf_runtime_security_lab/) | Cilium Tetragon & Falco eBPF 커널 옵저버빌리티, kprobe:sys_execve 비인가 셸 탐지, bpf_lsm_file_open 네임스페이스 탈출 차단, TracingPolicy 실시간 SIGKILL, Shadow BPF Rootkit 무결성 감사 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/08_ebpf_runtime_observability_and_tetragon_deepdive.md) | `ebpfruntime` / `endpoint` |
 
 ---
 

@@ -1417,6 +1417,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🔒 SANS DFIR Supertimeline correlation complete and infected host isolated! -> FLAG{SANS_DFIR_SUPETIMELINE_RECON_ISOLATED_6612}"
             }
         ]
+    },
+    "51": {
+        "title": "클라우드 네이티브 eBPF 런타임 보안 랩 (eBPFRuntimeGuard)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "커널 시스템콜 추적 & 비인가 실행 탐지 (kprobe:sys_execve)",
+                "target": "POST /api/stage1/trace_syscall (probe_type, target_syscall, filter_expression)",
+                "poc_explanation": "eBPF kprobe/tracepoint를 sys_enter_execve에 부착하여 컨테이너 내부 비인가 리버스 셸 스폰 프로세스 트리를 실시간 캡처합니다.",
+                "exploit_payload": '{"probe_type": "kprobe", "target_syscall": "sys_enter_execve", "filter_expression": "comm == \'sh\' || filename == \'/bin/sh\'"}',
+                "defense": "eBPF 프로세스 네임스페이스 격리 감사 및 최소 권한 컨테이너(Drop ALL Capabilities) 강제.",
+                "sample_output": "✓ eBPF kprobe reverse shell telemetry intercepted! -> FLAG{EBPF_KPROBE_EXECVE_TELEMETRY_9182}"
+            },
+            {
+                "step": 2,
+                "name": "eBPF LSM 기반 네임스페이스 탈출 차단 (bpf_lsm_file_open)",
+                "target": "POST /api/stage2/enforce_lsm_hook (lsm_hook, target_path, action)",
+                "poc_explanation": "LSM 커널 훅(bpf_lsm_file_open)을 활성화하여 특권 컨테이너 탈출 후 호스트 /etc/shadow 접근을 VFS 계층에서 -EPERM으로 즉시 차단합니다.",
+                "exploit_payload": '{"lsm_hook": "bpf_lsm_file_open", "target_path": "/etc/shadow", "action": "BLOCK_EPERM"}',
+                "defense": "Linux Security Modules (LSM BPF) 런타임 활성화 및 AppArmor/SELinux 중첩 프로파일 통제.",
+                "sample_output": "🛡️ eBPF LSM hook file_open access blocked with -EPERM! -> FLAG{EBPF_LSM_FILE_OPEN_BLOCK_ESCAPED_7231}"
+            },
+            {
+                "step": 3,
+                "name": "Cilium Tetragon TracingPolicy 실시간 SIGKILL 차단",
+                "target": "POST /api/stage3/apply_tracing_policy (policy_name, kprobe_symbol, enforcement_action, namespace_selector)",
+                "poc_explanation": "Kubernetes CRD Tetragon TracingPolicy 매니페스트를 적용하여 commit_creds 권한상승 시도 프로세스를 인커널에서 동기식 SIGKILL로 강제 종료합니다.",
+                "exploit_payload": '{"policy_name": "block-priv-esc", "kprobe_symbol": "commit_creds", "enforcement_action": "Sigkill", "namespace_selector": "default"}',
+                "defense": "Cilium Tetragon In-Kernel Enforcement 엔진 배포 및 PodSecurity Admission (Restricted) 적용.",
+                "sample_output": "⚡ Tetragon TracingPolicy active: Privilege escalation terminated with Sigkill! -> FLAG{EBPF_TETRAGON_TRACING_POLICY_SIGKILL_5549}"
+            },
+            {
+                "step": 4,
+                "name": "eBPF 맵 변조 & Shadow Rootkit 무결성 감사",
+                "target": "POST /api/stage4/audit_bpf_rootkit (audit_command, target_hooked_syscall, remediation_action)",
+                "poc_explanation": "bpftool dump를 통해 sys_enter_getdents64 디렉터리 은닉 Shadow Rootkit BPF 프로그램을 적출하고 BPF 맵을 언핀하여 커널 무결성을 복원합니다.",
+                "exploit_payload": '{"audit_command": "bpftool prog dump", "target_hooked_syscall": "sys_enter_getdents64", "remediation_action": "DETACH_PROG_UNPIN_MAP"}',
+                "defense": "커널 Lockdown 모드 활성화, bpf() 시스템콜 비특권 접근 차단(kernel.unprivileged_bpf_disabled=1) 및 eBPF 서명 검증.",
+                "sample_output": "🔍 Shadow BPF Rootkit carved and kernel integrity restored! -> FLAG{EBPF_SHADOW_ROOTKIT_CARVED_VERIFIED_3310}"
+            }
+        ]
     }
 }
 

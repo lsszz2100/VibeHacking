@@ -1298,6 +1298,246 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "kcfi_enforce, init_on_alloc, slab_nomerge, kpti를 일괄 활성화하여 KSPP 하드닝을 완료하세요."}
                 ],
             },
+            "LAB47_IPI_LEAK": {
+                "id": "LAB47_IPI_LEAK",
+                "title": "AgentGuard: Indirect Prompt Injection Tool Leakage",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{mcp_indirect_prompt_injection_tool_leaked_8047}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "외부 데이터에 은닉된 비가시적 프롬프트 인젝션 지시문을 파싱하여 MCP 도구 호출 토큰을 추출하세요."}
+                ],
+            },
+            "LAB47_SSRF_PREVENT": {
+                "id": "LAB47_SSRF_PREVENT",
+                "title": "AgentGuard: SSRF Token Exfiltration Prevention",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{mcp_ssrf_token_exfiltration_prevented_8047}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "클라우드 메타데이터 169.254.169.254 및 내부 루프백 주소 SSRF를 도구 인자 수준에서 차단하세요."}
+                ],
+            },
+            "LAB47_GVISOR_BLOCK": {
+                "id": "LAB47_GVISOR_BLOCK",
+                "title": "AgentGuard: Python Eval Sandbox Boundary Defense",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{mcp_sandbox_escape_gvisor_blocked_8047}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "gVisor ptrace/KVM 샌드박스 경계를 활성화하여 동적 코드 실행 도구의 탈출을 방어하세요."}
+                ],
+            },
+            "LAB47_SPIFFE_GOVERN": {
+                "id": "LAB47_SPIFFE_GOVERN",
+                "title": "AgentGuard: Autonomous Agent SPIFFE Zero Trust Governance",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{mcp_autonomous_governance_spiffe_enforced_8047}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "SPIFFE/SPIRE 워크로드 신원 검증과 HITL(Human-in-the-Loop) 승인 메커니즘을 배포하세요."}
+                ],
+            },
+            "LAB48_SQUASHFS": {
+                "id": "LAB48_SQUASHFS",
+                "title": "FirmwareGuard: SquashFS Filesystem Backdoor Extraction",
+                "category": "hardware",
+                "initial_points": 500,
+                "flag": "FLAG{firmware_squashfs_backdoor_extracted_8048}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "binwalk로 펌웨어 이미지를 언팩하여 SquashFS 파일시스템 내부의 은닉 백도어 스크립트를 추출하세요."}
+                ],
+            },
+            "LAB48_NVRAM": {
+                "id": "LAB48_NVRAM",
+                "title": "FirmwareGuard: Firmadyne NVRAM Emulation & Hooking Bypass",
+                "category": "hardware",
+                "initial_points": 500,
+                "flag": "FLAG{firmware_nvram_emulation_bypassed_8048}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Firmadyne 가상 NVRAM 변수 인터셉트 후 하드코딩된 인증 우회 플래그를 추출하세요."}
+                ],
+            },
+            "LAB48_CMDINJ": {
+                "id": "LAB48_CMDINJ",
+                "title": "FirmwareGuard: Embedded Web Command Injection RCE",
+                "category": "hardware",
+                "initial_points": 500,
+                "flag": "FLAG{firmware_cmd_injection_root_shell_8048}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "웹 관리 인터페이스 진단 도구 파라미터의 서브셸 인젝션을 익스플로잇하여 루트 셸을 획득하세요."}
+                ],
+            },
+            "LAB48_SECUREBOOT": {
+                "id": "LAB48_SECUREBOOT",
+                "title": "FirmwareGuard: Hardware RoT Cryptographic Secure Boot Signing",
+                "category": "hardware",
+                "initial_points": 500,
+                "flag": "FLAG{firmware_secure_boot_crypto_signed_8048}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "RSA-4096 / Ed25519 디지털 서명을 검증하고 하드웨어 신뢰점(RoT) 기반 Secure Boot 체인을 잠그세요."}
+                ],
+            },
+            "LAB49_SHOR": {
+                "id": "LAB49_SHOR",
+                "title": "QuantumShield: Shor Algorithm RSA/ECC Discrete Log Factoring",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{quantum_shor_discrete_log_factored_8049}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "양자 위상 추정(QPE) 및 주기 발견(Period Finding) 알고리즘으로 합성수 소인수분해를 수행하세요."}
+                ],
+            },
+            "LAB49_HYBRID_KEM": {
+                "id": "LAB49_HYBRID_KEM",
+                "title": "QuantumShield: Hybrid KEM ML-KEM-768 Key Encapsulation",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{quantum_hybrid_kem_kyber768_exchanged_8049}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "X25519와 ML-KEM-768 하이브리드 키 교환을 수행하고 공유 비밀(Shared Secret)을 도출하세요."}
+                ],
+            },
+            "LAB49_LATTICE_FAULT": {
+                "id": "LAB49_LATTICE_FAULT",
+                "title": "QuantumShield: Lattice NTT Side-Channel Fault Injection",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{quantum_lattice_fault_sidechannel_analyzed_8049}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "격자 기반 암호 NTT 연산의 비트 반전 결함 주입 차분 분석을 방어하기 위해 상수 시간 연산을 강제하세요."}
+                ],
+            },
+            "LAB49_DOWNGRADE_DEFENSE": {
+                "id": "LAB49_DOWNGRADE_DEFENSE",
+                "title": "QuantumShield: Quantum-Safe TLS 1.3 Downgrade Attack Defense",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{quantum_safe_tls13_downgrade_prevented_8049}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "TLS 1.3 핸드셰이크에서 PQC 전용 사이퍼스위트를 고정하고 레거시 다운그레이드를 전면 차단하세요."}
+                ],
+            },
+            "LAB50_EXEC_PREFETCH": {
+                "id": "LAB50_EXEC_PREFETCH",
+                "title": "ArtifactHunter: PECmd & ShimCache Evidence of Execution",
+                "category": "forensics",
+                "initial_points": 500,
+                "flag": "FLAG{SANS_DFIR_EXEC_PREFETCH_SHIMCACHE_8821}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "PECmd.exe 파서로 프리패치(.pf) 파일 및 AppCompatCache를 파싱하여 악성 실행 증거를 규명하세요."}
+                ],
+            },
+            "LAB50_MFT_USN": {
+                "id": "LAB50_MFT_USN",
+                "title": "ArtifactHunter: NTFS $MFT Data Run & USN Journal Carving",
+                "category": "forensics",
+                "initial_points": 500,
+                "flag": "FLAG{SANS_DFIR_MFT_USN_JOURNAL_CARVED_9932}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "NTFS $MFT 논레지던트 Data Run을 역추적하고 USN Journal 시간차를 분석하여 은닉 파일을 카빙하세요."}
+                ],
+            },
+            "LAB50_VAD_INJECT": {
+                "id": "LAB50_VAD_INJECT",
+                "title": "ArtifactHunter: Volatility 3 DKOM & RWX VAD Injection Triage",
+                "category": "forensics",
+                "initial_points": 500,
+                "flag": "FLAG{SANS_DFIR_MEMORY_VAD_INJECTION_DKOM_7743}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "psscan 플러그인으로 언링크된 DKOM 프로세스를 추적하고 PAGE_EXECUTE_READWRITE 메모리 VAD를 덤프하세요."}
+                ],
+            },
+            "LAB50_SUPETIMELINE": {
+                "id": "LAB50_SUPETIMELINE",
+                "title": "ArtifactHunter: SANS FOR572 Supertimeline & Automated Host Isolation",
+                "category": "forensics",
+                "initial_points": 500,
+                "flag": "FLAG{SANS_DFIR_SUPETIMELINE_RECON_ISOLATED_6612}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Plaso log2timeline 슈퍼타임라인과 tshark DNS C2 터널링 패킷을 상관분석하고 SOAR로 호스트를 격리하세요."}
+                ],
+            },
+            "LAB51_KPROBE_TRACE": {
+                "id": "LAB51_KPROBE_TRACE",
+                "title": "eBPFRuntimeGuard: Kernel Syscall Kprobe & Tracepoint Telemetry",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{EBPF_KPROBE_EXECVE_TELEMETRY_9182}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "sys_enter_execve에 kprobe를 연결하고 bpf_ringbuf_output으로 리버스 셸 실행 이벤트를 가로채세요."}
+                ],
+            },
+            "LAB51_LSM_ESCAPE": {
+                "id": "LAB51_LSM_ESCAPE",
+                "title": "eBPFRuntimeGuard: eBPF LSM Container Escape & File Open Block",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{EBPF_LSM_FILE_OPEN_BLOCK_ESCAPED_7231}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "bpf_lsm_file_open 훅을 배포하여 컨테이너 네임스페이스 탈출 후 호스트 민감 파일(/etc/shadow) 접근을 -EPERM으로 차단하세요."}
+                ],
+            },
+            "LAB51_TETRAGON_SIGKILL": {
+                "id": "LAB51_TETRAGON_SIGKILL",
+                "title": "eBPFRuntimeGuard: Cilium Tetragon TracingPolicy In-Kernel Sigkill",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{EBPF_TETRAGON_TRACING_POLICY_SIGKILL_5549}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Tetragon TracingPolicy 매니페스트로 commit_creds 권한상승 프로세스를 인커널에서 Sigkill로 즉시 격퇴하세요."}
+                ],
+            },
+            "LAB51_ROOTKIT_CARVE": {
+                "id": "LAB51_ROOTKIT_CARVE",
+                "title": "eBPFRuntimeGuard: Shadow BPF Rootkit Carving & Map Restoration",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{EBPF_SHADOW_ROOTKIT_CARVED_VERIFIED_3310}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "bpftool dump로 sys_enter_getdents64 디렉터리 은닉 Shadow Rootkit을 적출하고 언핀된 BPF 맵을 소멸시켜 무결성을 복원하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1341,6 +1581,11 @@ class CTFState:
             ["LAB44_MANIFEST_V3_AUDIT", "LAB44_WAR_CONTEXT_LEAK", "LAB44_CONTENT_SCRIPT_DOM_XSS", "LAB44_DNR_CSP_HARDENING"],
             ["LAB45_HNDL_SHOR_AUDIT", "LAB45_HYBRID_KEM_DOWNGRADE", "LAB45_LATTICE_FAULT_TRIAGE", "LAB45_FIPS203_204_HARDEN"],
             ["LAB46_SECCOMP_FILTER", "LAB46_LANDLOCK_SANDBOX", "LAB46_IMA_APPRAISAL", "LAB46_KSPP_MITIGATION"],
+            ["LAB47_IPI_LEAK", "LAB47_SSRF_PREVENT", "LAB47_GVISOR_BLOCK", "LAB47_SPIFFE_GOVERN"],
+            ["LAB48_SQUASHFS", "LAB48_NVRAM", "LAB48_CMDINJ", "LAB48_SECUREBOOT"],
+            ["LAB49_SHOR", "LAB49_HYBRID_KEM", "LAB49_LATTICE_FAULT", "LAB49_DOWNGRADE_DEFENSE"],
+            ["LAB50_EXEC_PREFETCH", "LAB50_MFT_USN", "LAB50_VAD_INJECT", "LAB50_SUPETIMELINE"],
+            ["LAB51_KPROBE_TRACE", "LAB51_LSM_ESCAPE", "LAB51_TETRAGON_SIGKILL", "LAB51_ROOTKIT_CARVE"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

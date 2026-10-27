@@ -11,6 +11,7 @@
 | [05_linux_hardening_automation.md](./05_linux_hardening_automation.md) | **Linux 보안 강화 자동화 — CIS 벤치마크·Ansible·감사 스크립트** — 새로 설치된 Linux 서버는 기본 설정으로는 보안에 취약합니다. 불필요한 서비스 실행, 약한 패스워드 정책, 넓은 파일 권한 등이 문제입니다. 보안 강화는 이를 체계적으로 개선하는 ... |
 | [06_linux_hardening_ctf_lab.md](./06_linux_hardening_ctf_lab.md) | **Linux 하드닝 CTF 실습 랩** — version: "3.9" |
 | [07_linux_kernel_hardening_and_runtime_defense_deepdive.md](./07_linux_kernel_hardening_and_runtime_defense_deepdive.md) | **리눅스 커널 하드닝 & 런타임 방어 심층 분석** — Seccomp-BPF 시스템콜 필터링, Landlock 비특권 샌드박싱, IMA/EVM 무결성 측정, KSPP 커널 자체 보호 완화 기법 |
+| [08_ebpf_runtime_observability_and_tetragon_deepdive.md](./08_ebpf_runtime_observability_and_tetragon_deepdive.md) | **클라우드 네이티브 eBPF 런타임 보안 & 커널 옵저버빌리티 심층 분석: Cilium Tetragon, Falco eBPF LSM, TracingPolicy 및 Shadow Rootkit 무결성 감사** — 전통적인 호스트 보안 에이전트(Auditd, Syslog, ptrace 기반 디버거)는 고부하 클라우드 네이티브 워크로드에서 치명적인 I/O 병목을 유발하거나, 사용자 공간(User ... |
 
 ## 학습 목표
 

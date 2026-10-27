@@ -551,6 +551,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [44, 7, 13, 16, 40],
     },
+    "51": {
+        "name": "클라우드 네이티브 eBPF 런타임 보안 랩",
+        "dir":  "51_ebpf_runtime_security_lab",
+        "desc": "eBPFRuntimeGuard: Cilium Tetragon & Falco eBPF 커널 옵저버빌리티 · kprobe:sys_execve 시스템콜 텔레메트리 비인가 셸 탐지 · bpf_lsm_file_open 커널 훅 기반 네임스페이스 탈출 차단 · Tetragon TracingPolicy 실시간 SIGKILL 차단 · Shadow BPF Rootkit 무결성 감사",
+        "url":  "웹 콘솔 & eBPF 텔레메트리 대시보드: http://localhost:8051",
+        "difficulty": "★★★★★",
+        "related": [18, 35, 26, 44],
+    },
 }
 
 
@@ -1578,6 +1586,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8048, "Lab 48 (FirmwareIoTGuard Firmware & IoT Emulation Lab)"),
         (8049, "Lab 49 (PQCTLSGuard Post-Quantum Hybrid TLS Lab)"),
         (8050, "Lab 50 (ArtifactHunter SANS DFIR Threat Hunting Lab)"),
+        (8051, "Lab 51 (eBPFRuntimeGuard Cloud Native eBPF Kernel Security Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

@@ -1,6 +1,6 @@
 * 🏠 [홈](README.md)
-* 🔬 [실습 랩 (1~46)](labs/README.md)
-* 🎮 [워게임 (2,170제)](wargame/index.html)
+* 🔬 [실습 랩 (1~51)](labs/README.md)
+* 🎮 [워게임 (2,205제)](wargame/index.html)
 * 📖 [CLI 가이드](USAGE.md)
 * ⚖️ [면책조항](DISCLAIMER.md)
 * 🛡️ [보안 정책](SECURITY.md)

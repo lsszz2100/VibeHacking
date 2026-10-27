@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ebpf_runtime_lab:
+    build: .
+    container_name: vhack_lab_51
+    ports:
+      - "127.0.0.1:8051:8051"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2170</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2205</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -166,6 +166,7 @@
         <button class="pg-tab" data-tab="kernel">🐧 Kernel Hardening &amp; Sandboxing Inspector</button>
         <button class="pg-tab" data-tab="agentmcp">🤖 AI Agent &amp; MCP Inspector</button>
         <button class="pg-tab" data-tab="sansdfir">🔍 SANS DFIR &amp; Supertimeline</button>
+        <button class="pg-tab" data-tab="ebpfruntime">🐝 eBPF &amp; Tetragon Inspector</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -977,6 +978,47 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="dfirVerdictBadge" class="token-tag token-inj">STATUS: COMPROMISED</span>
                 </div>
                 <div id="dfirVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- eBPF Kernel Observability & Tetragon Inspector Panel -->
+        <div id="pgPanel-ebpfruntime" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">eBPF Runtime Scenarios:</span>
+              <button class="pg-btn danger" data-ebpf-preset="kprobe_exec">1. Kprobe &amp; Tracepoint Syscall Tap (sys_execve)</button>
+              <button class="pg-btn danger" data-ebpf-preset="lsm_isolate">2. eBPF LSM Namespace Escape Block (bpf_lsm_file_open)</button>
+              <button class="pg-btn danger" data-ebpf-preset="tetragon_sigkill">3. Tetragon TracingPolicy In-Kernel Sigkill (commit_creds)</button>
+              <button class="pg-btn" data-ebpf-preset="rootkit_carve">4. 🔒 Shadow Rootkit Hunter &amp; Map Carve (getdents64)</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <span class="dim" style="font-size:11px;">Target Hook / Syscall:</span>
+              <input id="ebpfTargetInput" class="bgp-asn-input" style="width:230px;" value="kprobe:sys_execve (PID: 4912 / bash)" />
+              <span class="dim" style="font-size:11px;">Sensor Engine:</span>
+              <select id="ebpfEngineSelect" class="bgp-select" style="width:250px;">
+                <option value="kprobe">Kprobe &amp; Tracepoint (sys_execve ringbuf stream)</option>
+                <option value="lsm">eBPF LSM (bpf_lsm_file_open -EPERM container sandbox)</option>
+                <option value="tetragon">Cilium Tetragon (TracingPolicy in-kernel Sigkill)</option>
+                <option value="rootkit">Rootkit Hunter (getdents64 sys_enter map unpin)</option>
+              </select>
+              <button id="ebpfRunBtn" class="pg-btn">Simulate Kernel Sensor Execution</button>
+            </div>
+            <div class="dbshield-grid" style="margin-top:8px;">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🐝 Kernel BPF Bytecode &amp; Tracepoint Events</span>
+                  <span id="ebpfTraceBadge" class="token-tag token-inj">STATUS: STANDBY</span>
+                </div>
+                <div id="ebpfTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ Tetragon In-Kernel Enforcement &amp; LSM Verdict</span>
+                  <span id="ebpfVerdictBadge" class="token-tag token-lit">STATUS: MONITORING</span>
+                </div>
+                <div id="ebpfVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>

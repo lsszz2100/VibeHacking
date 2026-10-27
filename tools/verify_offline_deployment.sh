@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# VibeHacking v2.4.0 Offline Deployment Verification & Smoke Test
+# VibeHacking v2.5.0 Offline Deployment Verification & Smoke Test
 # ==============================================================================
 set -euo pipefail
 
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "=================================================================="
-echo " VibeHacking v2.4.0 Offline Deployment Verification & Smoke Test"
+echo " VibeHacking v2.5.0 Offline Deployment Verification & Smoke Test"
 echo "=================================================================="
 echo "[+] Target Root: ${ROOT_DIR}"
 
@@ -79,5 +79,5 @@ echo "  ✓ CLI smoke test passed."
 
 echo ""
 echo "=================================================================="
-echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.4.0 is 100% Offline Ready!"
+echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.5.0 is 100% Offline Ready!"
 echo "=================================================================="
