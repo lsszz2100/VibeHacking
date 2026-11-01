@@ -112,7 +112,7 @@
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
   - `vhack solve`: 53개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
   - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8053 가용성 등 시스템 진단
-  - `vhack lab test [--all | <lab_id>]`: 53개 실습 랩 자동 무결성 검증 (전체 619개 Pytest All Green)
+  - `vhack lab test [--all | <lab_id>]`: 53개 실습 랩 자동 무결성 검증 (전체 620개 Pytest All Green)
   - `vhack lab status`: 53개 랩 종합 상태 대시보드
   - `vhack report summary`: 53개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
   - `vhack disclaimer` / `vhack legal`: 법적 고지, 정보통신망법/CFAA 처벌 법령, AS-IS 면책 안내
@@ -283,13 +283,16 @@ node wargame/scripts/solve-derivable.js
     - 38대: `54_Active_Directory_Attacks/08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md`
     - `tools/sync_section_readmes.py`: 75개 전 섹션 README 동기화 완료.
   - **오프라인 릴리스 배포 파이프라인 무결성 검증 (v2.7.0)**:
-    - `pyproject.toml` 버전 2.7.0 갱신 및 `release/vibehacking-v2.7.0.tar.gz` (8.23 MB) 패키징.
-    - `release/SHA256SUMS` 해시(`cf6b787ff309899dd5aa94d9b377c6c8b3f406a818342f0c9688bba7988d1f11`) 갱신.
+    - `pyproject.toml` 버전 2.7.0 갱신 및 `release/vibehacking-v2.7.0.tar.gz` (8.24 MB) 패키징.
+    - `release/SHA256SUMS` 해시(`748bfa2af354a9b1e87074bd1441eb9fcd8627cd86e9ab5a95451f6792e7fdae`) 갱신.
     - `bash tools/verify_offline_deployment.sh`: 7단계 완전 오프라인 배포 무결성 전수 검사 통과.
-  - **전방위 기능 점검 및 보안 심층 감사 (Comprehensive Functional & Security Audit)**:
-    - `vhack doctor`: Python 3.12, Git 2.43, Node v24, 의존성 9종, 포트 8000~8053 충돌 0건 종합 진단 완료.
-    - 무유출 검증 (Zero Secret Leaks): Wargame 65개 트랙 2,275제 및 소스코드 내 하드코딩된 실제 민감 크리덴셜 0건 확인.
-    - 전체 Pytest 619제 All Green 달성 (`pytest -q`: 619 passed).
+  - **기능/보안 점검, 알고리즘 최적화 및 소스 리팩터링 (Comprehensive Audit & Refactoring)**:
+    - BFS 알고리즘 최적화: `parent_edge` 해시 룩업 대신 `(current, path)` 직접 튜플 체이닝 방식으로 리팩토링.
+    - Pydantic 입력값 경계값 강화: `data_types: max_length=16`, `prune_edges: max_length=32`를 통해 메모리 고갈 DoS 차단.
+    - 독성 ACE 조치 엄격화: 비유효/더미 엣지 제출 시 잔존 공격 경로를 검출하여 `HTTP 409 Conflict` 반환.
+    - 시뮬레이터 21 DX 개선: 사용자 입력 Cypher 패턴 동적 감지, 커스텀 AST 인스펙션 모드, Enter 키 핸들러 탑재.
+    - 신규 엣지 케이스 테스트 추가: 409 Conflict 및 404 Not Found 검증 (전체 Pytest 619제 -> **620 passed** All Green).
+    - Git 커밋 `db76f1f`, `581fb8c` 및 태그 `v2.7.0` 동기화 완료.
 
 - **2026-11-01 (v2.6.0 CLI DX Integration & Full Security Audit: Telemetry Dashboard, Benchmark Engine, Dynamic Wargame CLI, 613 Tests All Green, Offline Distribution v2.6.0)**:
   - **CLI 개발자 경험(DX) 및 시스템 텔레메트리 고도화**:
