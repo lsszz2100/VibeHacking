@@ -109,7 +109,7 @@
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
   - `vhack solve`: 52개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
   - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8052 가용성 등 시스템 진단
-  - `vhack lab test [--all | <lab_id>]`: 52개 실습 랩 자동 무결성 검증 (606개 테스트 All Green)
+  - `vhack lab test [--all | <lab_id>]`: 52개 실습 랩 자동 무결성 검증 (전체 613개 Pytest All Green)
   - `vhack lab status`: 52개 랩 종합 상태 대시보드
   - `vhack report summary`: 52개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
   - `vhack disclaimer` / `vhack legal`: 법적 고지, 정보통신망법/CFAA 처벌 법령, AS-IS 면책 안내
@@ -257,6 +257,22 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-11-01 (v2.6.0 CLI DX Integration & Full Security Audit: Telemetry Dashboard, Benchmark Engine, Dynamic Wargame CLI, 613 Tests All Green, Offline Distribution v2.6.0)**:
+  - **CLI 개발자 경험(DX) 및 시스템 텔레메트리 고도화**:
+    - `vhack dashboard` (`status`, `stats`, `--json`): 호스트 자원(CPU, RAM, Swap, Disk), 52개 실습 랩 실시간 가동 상태, 64개 트랙 2,240제 워게임 요원 진행도 HUD(`~/.vhack_wargame_progress.json`), 다계층 보안/컴플라이언스 준수 지표를 종합 시각화하는 ANSI 터미널 관제 대시보드 탑재.
+    - `vhack benchmark`: 52개 실습 랩 대상 compose 구문 검증, 솔버 합성 지연시간, 헬스체크 HTTP/포트 응답 지연 및 프로세스 메모리 점유율을 실시간 측정·보고하는 고성능 벤치마크 엔진(`--all`, `--lab-id`, `--dry-run`/`--mock`, `-n`, `-o`, `--json`) 완비.
+    - `labs/tests/test_benchmark_dashboard.py`: 신규 벤치마크 및 대시보드 단위/모의 테스트 7종 구축 및 전수 통과 (전체 Pytest 606제 -> **613 passed** All Green 달성).
+  - **터미널 워게임 CLI 동적 스케일링 리팩토링 (`wargame/cli.py`)**:
+    - 레거시 하드코딩 `35개 트랙` 문자열을 `len(tracks)` 기반 동적 계산으로 리팩토링하여 현재 64개 트랙(2,240문제) 및 향후 트랙 확장 시 자동으로 UI에 반영되도록 구조 개선 (`pytest wargame/tests/test_cli.py` 통과, 커밋 `9c91ae8`).
+  - **오프라인 릴리스 배포 파이프라인 무결성 검증**:
+    - `release/vibehacking-v2.6.0.tar.gz` (8.19 MB) 정합성 확인 및 `release/SHA256SUMS` 해시(`97ff47926715fbc8110b9f1d0637b830d67e7810755d5bb96fcff4fcba13c9e9`) 갱신.
+    - `bash tools/verify_offline_deployment.sh`: 체크섬 무결성, 오프라인 벤더 에셋, 파이썬 컴파일, 워게임 JS 구문, 번들 무결성, 워게임 검증, CLI 스모크 7단계 완전 오프라인 테스트 100% 통과.
+  - **전방위 기능 점검 및 보안 심층 감사 (Comprehensive Functional & Security Audit)**:
+    - `vhack doctor`: Python 3.12, Git 2.43, Node v24, 의존성 9종, 포트 8000~8052 충돌 0건 종합 진단 완료.
+    - 무유출 검증 (Zero Secret Leaks): Wargame 64개 트랙 2,240제 및 소스코드 내 하드코딩된 실제 민감 크리덴셜 0건 확인 (Lab 12 및 보안 교재 내 교육용 예시 플레이스홀더만 검출).
+    - 웹/포털 보안 감사: 127.0.0.1 루프백 기본 바인딩 격리, `is_relative_to(LABS_DIR)` Path Traversal 원천 방어, `is_dangerous_command()` 8대 위험 셸 명령어 차단 필터, `secrets.compare_digest()` 상시 시간차 공격 방어, 사용자 진행도 파일 `0o600` 권한 격리 확인.
+    - Git 로컬 커밋(`93c0b4b`, `34c9a31`, `9c91ae8`) 및 태그 `v2.6.0` 무결성 동기화 완료.
 
 - **2026-11-01 (v2.6.0 Mega Milestone: Golden 52nd Lab C2TunnelGuard, 64 Wargame Tracks / 2,240 Challenges, 37 Deepdives / 490 Chapters, 20 Simulators, C2 Tunneling & Lateral Pivoting Ingestion, 4/4 Quality Gates All Green, Offline Bundle v2.6.0)**:
   - **골든 52대 실습 랩 완성 (Lab 52 C2TunnelGuard, 포트 8052)**:
