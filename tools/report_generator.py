@@ -533,6 +533,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A01:2021",
         "owasp_name": "Broken Access Control (Unauthorized Reverse Proxy & SOCKS5 Pivoting)",
     },
+    "53": {
+        "kisa_id": "2.5.1",
+        "kisa_name": "사용자 식별 및 인증 (AD 권한 관리 & 비특권 계정 ACL 남용 방어)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Access Control & Permissions Management (BloodHound AD Attack Path Mitigation)",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control (Active Directory DACL/ACE Privilege Escalation)",
+    },
 }
 
 @dataclass
@@ -1510,6 +1518,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Perimeter network permits unrestricted recursive DNS queries and external reverse SSH/Chisel SOCKS5 egress without DPI or entropy analysis.",
                 "affected_component": "C2TunnelGuard Gateway (Port 8052)",
                 "remediation": "Deploy recursive DNS Shannon entropy filtering, enforce egress firewall whitelisting, and activate Suricata/Zeek inline DPI drop rules."
+            }
+        ]
+    },
+    "53": {
+        "title": "53 ADGraphMaster Active Directory BloodHound Attack Graph & ACL Exploitation",
+        "category": "Active Directory & Red Teaming",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5301",
+                "name": "Active Directory Domain Privilege Escalation via Abusable Object DACLs and Transitive Permissions",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1484.001",
+                "mitre_technique": "Group Policy and Domain Object Modification",
+                "mitre_tactic": "Privilege Escalation",
+                "impact": "Low-privileged domain users compromise Tier 0 Domain Admins through transitive GenericAll and WriteDacl permission chains.",
+                "description": "Active Directory schema contains misconfigured access control entries (ACEs) granting unprivileged groups full control or password reset permissions on higher-tier accounts.",
+                "affected_component": "ADGraphMaster Domain Controller (Port 8053)",
+                "remediation": "Audit and prune abusable ACEs using BloodHound, enroll administrative identities into the Protected Users security group, and enforce Microsoft 3-Tier Administration."
             }
         ]
     }

@@ -1586,6 +1586,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "Suricata Flowbits 상태 추적 룰셋을 주입하고 악성 C2 터널 트래픽에 대해 INLINE_DROP 조치를 발령하여 데이터 스트림을 차단하세요."}
                 ],
             },
+            "LAB53_INGEST": {
+                "id": "LAB53_INGEST",
+                "title": "ADGraphMaster: SharpHound / bloodhound-python Domain Telemetry Ingestion",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{BLOODHOUND_INGESTION_GRAPH_GENERATED_3914}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "SharpHound 또는 bloodhound-python을 통해 users, groups, computers, acls 스키마를 수집하여 Neo4j 그래프에 인제스천하세요."}
+                ],
+            },
+            "LAB53_SHORTEST_PATH": {
+                "id": "LAB53_SHORTEST_PATH",
+                "title": "ADGraphMaster: Cypher Shortest Attack Path to Domain Admins",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{CYPHER_SHORTEST_PATH_TO_DA_TRAVERSED_8205}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "MATCH p=shortestPath() Cypher 쿼리를 통해 JAPNEET 계정에서 DOMAIN ADMINS 그룹까지의 4-hop 최단 경로를 탐색하세요."}
+                ],
+            },
+            "LAB53_ACL_PWN": {
+                "id": "LAB53_ACL_PWN",
+                "title": "ADGraphMaster: Misconfigured Active Directory Object DACL Exploitation",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{ACL_GENERICALL_WRITEDACL_EXPLOITED_7142}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "IT SUPPORTS 그룹이 GEET 계정에 가진 GenericAll 권한을 악용하여 패스워드를 리셋하고 관리자 세션을 탈취하세요."}
+                ],
+            },
+            "LAB53_REMEDIATION": {
+                "id": "LAB53_REMEDIATION",
+                "title": "ADGraphMaster: Blue Team Toxic ACE Pruning & Protected Users Hardening",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{TIERED_ADMIN_ACL_REMEDIATION_HARDENED_6038}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "IT SUPPORTS 그룹의 과도 권한 ACE를 제거하고 관리자들을 Protected Users 그룹에 격리하여 공격 경로를 단절하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1635,6 +1683,7 @@ class CTFState:
             ["LAB50_EXEC_PREFETCH", "LAB50_MFT_USN", "LAB50_VAD_INJECT", "LAB50_SUPETIMELINE"],
             ["LAB51_KPROBE_TRACE", "LAB51_LSM_ESCAPE", "LAB51_TETRAGON_SIGKILL", "LAB51_ROOTKIT_CARVE"],
             ["LAB52_DNS_ENTROPY", "LAB52_SOCKS_PIVOT", "LAB52_C2_JITTER", "LAB52_INLINE_DPI"],
+            ["LAB53_INGEST", "LAB53_SHORTEST_PATH", "LAB53_ACL_PWN", "LAB53_REMEDIATION"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

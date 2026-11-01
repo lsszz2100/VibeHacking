@@ -119,6 +119,13 @@ start_lab() {
         "44_browser_extension_security_lab"
         "45_quantum_cryptography_pqc_lab"
         "46_linux_kernel_hardening_lab"
+        "47_ai_agent_mcp_security_lab"
+        "48_firmware_iot_rce_lab"
+        "49_pqc_hybrid_tls_lab"
+        "50_sans_dfir_hunting_lab"
+        "51_ebpf_runtime_security_lab"
+        "52_c2_tunneling_and_exfiltration_lab"
+        "53_ad_bloodhound_lab"
     )
 
     local lab_names=(
@@ -169,6 +176,13 @@ start_lab() {
         "브라우저 확장 프로그램 보안 & Manifest V3 실전 랩"
         "양자 내성 암호 & PQC 마이그레이션 실전 랩"
         "리눅스 커널 하드닝 & 런타임 방어 실습"
+        "AI 에이전트 & MCP 보안 실전 랩"
+        "임베디드 펌웨어 & IoT RCE 실전 랩"
+        "양자 내성 하이브리드 TLS 1.3 실습"
+        "SANS DFIR 엔터프라이즈 아티팩트 헌팅 랩"
+        "클라우드 네이티브 eBPF 런타임 보안 랩"
+        "C2 네트워크 터널링 & 은닉 채널 방어 랩"
+        "AD BloodHound 공격 그래프 & ACL 익스플로잇 랩"
     )
 
     local lab_ports=(
@@ -219,10 +233,17 @@ start_lab() {
         "웹 콘솔 & 확장 프로그램 보안 대시보드: http://localhost:8044"
         "웹 콘솔 & PQC 보안 대시보드: http://localhost:8045"
         "웹 콘솔 & 커널 보안 대시보드: http://localhost:8046"
+        "웹 콘솔 & 에이전트 보안 대시보드: http://localhost:8047"
+        "웹 콘솔 & IoT 펌웨어 보안 대시보드: http://localhost:8048"
+        "웹 콘솔 & PQC TLS 대시보드: http://localhost:8049"
+        "웹 콘솔 & SANS DFIR 대시보드: http://localhost:8050"
+        "웹 콘솔 & eBPF 런타임 보안 대시보드: http://localhost:8051"
+        "웹 콘솔 & C2 터널 방어 콘솔: http://localhost:8052"
+        "웹 콘솔 & AD 그래프 콘솔: http://localhost:8053"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 46 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~46 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 53 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~53 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

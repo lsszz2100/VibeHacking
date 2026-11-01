@@ -15,6 +15,7 @@
 | [05_ad_defense_and_detection.md](./05_ad_defense_and_detection.md) | **Active Directory 방어 및 탐지** — AD = 기업 IT 인프라의 핵심: |
 | [06_ad_ctf_lab.md](./06_ad_ctf_lab.md) | **Active Directory CTF 실습 랩** — Kerberoasting, Pass-the-Hash, BloodHound 분석, DCSync 공격을 실습하는 CTF 환경입니다. |
 | [07_adcs_esc_and_kerberos_delegation_deepdive.md](./07_adcs_esc_and_kerberos_delegation_deepdive.md) | **AD CS 취약점 분석 및 Kerberos 위임 심층 분석 (ESC1 ~ ESC14 & PKINIT / RBCD)** — 현대 Windows 기업 도메인 환경에서 가장 치명적인 권한 상승(Privilege Escalation) 및 도메인 장악(Domain Dominance) 벡터 중 하나는 Active ... |
+| [08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md](./08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md) | **Active Directory BloodHound 공격 그래프 이론 및 ACL 오설정 심층 분석 (Graph Theory, Cypher Queries & DACL Abuse)** — 현대 기업의 대규모 Active Directory(AD) 환경은 수천 대의 컴퓨터, 수만 명의 사용자, 수백 개의 조직 단위(OU)와 보안 그룹(Security Group)이 복잡하게... |
 
 ## 🎯 학습 목표
 

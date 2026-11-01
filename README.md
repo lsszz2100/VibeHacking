@@ -21,9 +21,9 @@
 
 <br/>
 
-[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·2240 문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
+[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·2275 문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 2240 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 75개 섹션 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
+> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 2275 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 75개 섹션 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
 
 <br/>
 
@@ -151,7 +151,7 @@ python3 vhack.py alias remove           # alias 제거
 
 # 대시보드 & 벤치마크
 python3 vhack.py dashboard              # 시스템/랩/워게임 통합 관제 대시보드 (alias: status, stats)
-python3 vhack.py benchmark --all        # 전체 52개 랩 성능 및 지연시간 벤치마크 진단
+python3 vhack.py benchmark --all        # 전체 53개 랩 성능 및 지연시간 벤치마크 진단
 
 # 업데이트
 python3 vhack.py update                 # git pull
@@ -161,7 +161,7 @@ python3 vhack.py update                 # git pull
 
 | 명령어 | 설명 |
 |--------|------|
-| `vhack dashboard` | 시스템 리소스, 52개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
+| `vhack dashboard` | 시스템 리소스, 53개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
 | `vhack benchmark` | 실습 랩 기동 지연시간, 헬스체크 및 성능 벤치마크 (`--all`, `--dry-run`, `-o`) |
 | `vhack list` | 전체 75개 섹션 목록 |
 | `vhack list --search <키워드>` | 섹션명 필터링 |

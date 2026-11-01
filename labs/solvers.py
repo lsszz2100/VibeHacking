@@ -1499,6 +1499,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🔍 Inline DPI policy enforced and covert tunnel dropped! -> FLAG{INLINE_SURICATA_ZEEK_FLOWBITS_DROPPED_7730}"
             }
         ]
+    },
+    "53": {
+        "title": "ADGraphMaster: Active Directory BloodHound 공격 그래프 탐색 및 ACL 익스플로잇",
+        "steps": [
+            {
+                "step": 1,
+                "name": "SharpHound / bloodhound-python 도메인 데이터 인제스천 및 그래프 토폴로지 구축",
+                "target": "POST /api/stage1/ingest (collector_tool, collection_method, domain, data_types)",
+                "poc_explanation": "Active Directory 도메인(CORP.LOCAL)에서 SharpHound / bloodhound-python 수집기를 통해 사용자, 그룹, 컴퓨터, ACL, 세션 JSON/CSV 텔레메트리를 Neo4j 그래프 데이터베이스로 인제스천합니다.",
+                "exploit_payload": '{"collector_tool": "sharphound", "collection_method": "All", "domain": "corp.local", "data_types": ["users", "groups", "computers", "acls", "sessions"]}',
+                "defense": "LDAP/SAMR 쿼리 과도 요청 모니터링, NetCease를 통한 NetSessionEnum 원격 세션 열람 제한 및 엔드포인트 방어.",
+                "sample_output": "🩸 Domain telemetry successfully ingested into Neo4j graph database! -> FLAG{BLOODHOUND_INGESTION_GRAPH_GENERATED_3914}"
+            },
+            {
+                "step": 2,
+                "name": "Neo4j Cypher 최단 공격 경로(Shortest Path to Domain Admin) 탐색",
+                "target": "POST /api/stage2/shortest_path (source_node, target_node, cypher_query)",
+                "poc_explanation": "Neo4j Cypher shortestPath() 쿼리를 수행하여 비특권 헬프데스크 계정(JAPNEET)에서 최상위 도메인 관리자(DOMAIN ADMINS)까지 이어지는 최단 권한 상승 체인(MemberOf -> GenericAll -> AdminTo -> HasSession -> MemberOf)을 식별합니다.",
+                "exploit_payload": '{"source_node": "JAPNEET@CORP.LOCAL", "target_node": "DOMAIN ADMINS@CORP.LOCAL", "cypher_query": "MATCH p=shortestPath((u:User {name: \'JAPNEET@CORP.LOCAL\'})-[r*1..5]->(g:Group {name: \'DOMAIN ADMINS@CORP.LOCAL\'})) RETURN p"}',
+                "defense": "정기적인 BloodHound 그래프 감사, 섀도우 어드민(Shadow Admin) 은닉 경로 탐지 및 순환/전이적 권한 제거.",
+                "sample_output": "🔍 Shortest attack path identified with 4 hops! -> FLAG{CYPHER_SHORTEST_PATH_TO_DA_TRAVERSED_8205}"
+            },
+            {
+                "step": 3,
+                "name": "오설정된 AD ACL(GenericAll / WriteDacl) 악용 및 권한 상승 체인 완성",
+                "target": "POST /api/stage3/exploit_acl (principal, target_object, ace_right, exploit_action)",
+                "poc_explanation": "IT SUPPORTS 그룹의 GEET 계정에 대한 GenericAll 과도 권한을 악용하여 패스워드를 초기화(ResetPassword)하고 파일 서버 로컬 관리자(AdminTo) 및 상주 세션 토큰을 탈취합니다.",
+                "exploit_payload": '{"principal": "JAPNEET@CORP.LOCAL", "target_object": "GEET@CORP.LOCAL", "ace_right": "GenericAll", "exploit_action": "ResetPassword"}',
+                "defense": "DACL 감사 활성화(이벤트 ID 4662, 5136), 비특권 사용자/그룹에 대한 GenericAll, WriteDacl, WriteOwner ACE 부여 원천 차단.",
+                "sample_output": "⚡ Exploited GenericAll on GEET@CORP.LOCAL! Password reset achieved -> FLAG{ACL_GENERICALL_WRITEDACL_EXPLOITED_7142}"
+            },
+            {
+                "step": 4,
+                "name": "블루팀 과도 권한 ACE 정화, Protected Users 적용 및 공격 경로 단절",
+                "target": "POST /api/stage4/remediate_acl (prune_edges, enable_protected_users, enforce_tiered_admin)",
+                "poc_explanation": "공격 경로를 형성하는 비인가 GenericAll/WriteDacl ACE를 완전 제거하고, Tier 0/1 관리자를 Protected Users 보안 그룹에 격리하여 NTLM/위임 자격증명 노출을 원천 차단합니다.",
+                "exploit_payload": '{"prune_edges": ["IT SUPPORTS@CORP.LOCAL->GEET@CORP.LOCAL", "IT SUPPORTS@CORP.LOCAL->SERVER OPERATORS@CORP.LOCAL"], "enable_protected_users": true, "enforce_tiered_admin": true}',
+                "defense": "Microsoft 3계층 관리 모델(Tier 0/1/2) 강제, PAW(Privileged Access Workstation) 전용 접속 정책 및 LAPS 적용.",
+                "sample_output": "🛡️ Remediation successful! Toxic ACEs pruned and attack path completely severed -> FLAG{TIERED_ADMIN_ACL_REMEDIATION_HARDENED_6038}"
+            }
+        ]
     }
 }
 

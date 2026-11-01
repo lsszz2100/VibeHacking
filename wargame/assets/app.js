@@ -918,7 +918,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -929,6 +929,7 @@
     if (tabName === "canbus") startCanSimulation();
     else stopCanSimulation();
     if (tabName === "c2tunnel") renderC2Tunnel();
+    if (tabName === "adgraph") renderAdGraph();
   }
 
   // --- 1. CAN Bus Simulator ---
@@ -4206,6 +4207,8 @@
         openPlayground("ebpfruntime"); break;
       case "c2tunnel": case "tunnel": case "chisel": case "dnscat": case "jitter":
         openPlayground("c2tunnel"); break;
+      case "adgraph": case "bloodhound": case "cypher": case "acl":
+        openPlayground("adgraph"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -4869,6 +4872,186 @@
       sLaser();
       const p = btn.getAttribute("data-c2tunnel-preset");
       renderC2Tunnel(p);
+    });
+  });
+
+
+  // --- 21. AD Attack Graph Traversal & Cypher Inspector ---
+  let currentAdGraphScenario = "shortest_path";
+
+  function renderAdGraph(scenario){
+    const cypherInput = document.getElementById("adgraphCypherInput");
+    const statusBadge = document.getElementById("adgraphStatusBadge");
+    const riskBadge = document.getElementById("adgraphRiskBadge");
+    const canvas = document.getElementById("adgraphCanvas");
+    const output = document.getElementById("adgraphOutput");
+
+    if (!cypherInput || !statusBadge || !riskBadge || !canvas || !output) return;
+
+    if (scenario) currentAdGraphScenario = scenario;
+    const mode = currentAdGraphScenario;
+
+    let canvasText = "";
+    let telemetryText = "";
+
+    if (mode === "shortest_path"){
+      cypherInput.value = "MATCH p = shortestPath((u:User {name:'JAPNEET'})-[*1..5]->(g:Group {name:'DOMAIN ADMINS'})) RETURN p";
+      statusBadge.textContent = "PATH ACTIVE: 4 HOPS";
+      statusBadge.style.background = "#dc2626";
+      riskBadge.textContent = "TIER 0 AT RISK";
+      riskBadge.style.background = "#b91c1c";
+
+      canvasText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║           Active Directory BloodHound Attack Graph Topology        ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "  [User: Japneet (Tier 2)]\n" +
+        "        │\n" +
+        "        │ (MemberOf)\n" +
+        "        ▼\n" +
+        "  [Group: IT_Supports]\n" +
+        "        │\n" +
+        "        │ (GenericAll)   <-- [TOXIC ACE CHOKE POINT]\n" +
+        "        ▼\n" +
+        "  [User: Geet]\n" +
+        "        │\n" +
+        "        │ (AdminTo)\n" +
+        "        ▼\n" +
+        "  [Computer: FileSrv01] <─────── (HasSession) ─────── [User: Alice_Admin]\n" +
+        "                                                              │\n" +
+        "                                                              │ (MemberOf)\n" +
+        "                                                              ▼\n" +
+        "                                                    [Group: Domain Admins]\n" +
+        "                                                              │\n" +
+        "                                                              ▼\n" +
+        "                                                    [DC: DC01 (Tier 0)]";
+
+      telemetryText =
+        "[Neo4j Cypher Traversal Engine Results]:\n" +
+        "  Query: " + cypherInput.value + "\n" +
+        "  Execution Plan: ShortestPathBFS (Dijkstra algorithm, unweighted)\n" +
+        "  Nodes Visited: 6 | Relationships Evaluated: 8\n" +
+        "  Path Identified: 4 hops (Risk Level: CRITICAL)\n\n" +
+        "  Hop Breakdown:\n" +
+        "    Hop 1: (Japneet:User)-[:MemberOf]->(IT_Supports:Group)\n" +
+        "    Hop 2: (IT_Supports:Group)-[:GenericAll]->(Geet:User)\n" +
+        "           => Allows User-Force-Change-Password / full credential takeover\n" +
+        "    Hop 3: (Geet:User)-[:AdminTo]->(FileSrv01:Computer)\n" +
+        "           => Allows remote SYSTEM code execution via PsExec / WinRM\n" +
+        "    Hop 4: (Alice_Admin:User)-[:HasSession]->(FileSrv01:Computer)\n" +
+        "           => High-privilege session token present in LSASS memory\n\n" +
+        "  Impact Assessment:\n" +
+        "    Alice_Admin is MemberOf DOMAIN ADMINS. Attacker dumps LSASS on FileSrv01,\n" +
+        "    impersonates Alice_Admin, and achieves full Tier 0 domain takeover.";
+    }
+    else if (mode === "genericall"){
+      cypherInput.value = "MATCH (g:Group {name:'IT_SUPPORTS'})-[r:GenericAll]->(u:User {name:'GEET'}) RETURN g, r, u";
+      statusBadge.textContent = "ACE EXPLOITED: PWN";
+      statusBadge.style.background = "#e11d48";
+      riskBadge.textContent = "CREDENTIAL FORCED";
+      riskBadge.style.background = "#9f1239";
+
+      canvasText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             GenericAll Object Misconfiguration Exploitation        ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "  [Group: IT_Supports] ═══════> [User: Geet]\n" +
+        "         Active ACE: GenericAll (Full Object Control)\n" +
+        "         AccessMask: 0x000F01FF (STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL)\n\n" +
+        "  Exploitation Payload:\n" +
+        "    Invoke-AtomicGenericAll -TargetIdentity 'CN=Geet,OU=Staff,DC=vibe,DC=corp'\n" +
+        "    -Action 'ForcePasswordReset' -NewPassword 'CompromisedPass2026!'\n\n" +
+        "  Result: Password overwritten in Active Directory NTDS.dit.\n" +
+        "          Attacker now authenticates as Geet without old credential.";
+
+      telemetryText =
+        "[ACL Security Descriptor Telemetry]:\n" +
+        "  Object: CN=Geet,CN=Users,DC=vibe,DC=corp\n" +
+        "  DACL Count: 14 ACEs\n" +
+        "  Toxic ACE: Trustee = S-1-5-21-2026-IT_Supports (Type: ACCESS_ALLOWED)\n" +
+        "  Rights: GENERIC_ALL, WRITE_DACL, WRITE_OWNER, USER_FORCE_CHANGE_PASSWORD\n\n" +
+        "  Active Threat Indicator:\n" +
+        "    EventID 4724 (An attempt was made to reset an account's password)\n" +
+        "    SubjectUserName: Japneet\n" +
+        "    TargetUserName: Geet\n" +
+        "    Status: 0x0 (Success) - Privilege escalation confirmed.";
+    }
+    else if (mode === "writedacl"){
+      cypherInput.value = "MATCH (u:User {name:'GEET'})-[r:WriteDacl]->(g:Group {name:'DOMAIN ADMINS'}) RETURN u, r, g";
+      statusBadge.textContent = "DACL MODIFIED";
+      statusBadge.style.background = "#ea580c";
+      riskBadge.textContent = "PERMISSIONS POISONED";
+      riskBadge.style.background = "#c2410c";
+
+      canvasText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║                 WriteDacl Direct Permission Injection              ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "  [User: Geet] ════(WriteDacl)════> [Group: Domain Admins]\n\n" +
+        "  Step 1: Geet opens Domain Admins Security Descriptor with WRITE_DAC\n" +
+        "  Step 2: Appends new ACE: Grant Japneet GenericAll (FullControl)\n" +
+        "  Step 3: Japneet calls Add-ADGroupMember -Identity 'Domain Admins'\n" +
+        "  Result: Japneet is now a direct member of Domain Admins!";
+
+      telemetryText =
+        "[Security Descriptor Modification Audit]:\n" +
+        "  Target Object: CN=Domain Admins,CN=Users,DC=vibe,DC=corp\n" +
+        "  DACL Status: Tampered\n" +
+        "  Injected ACE: Trustee: Japneet | Mask: 0x10000000 (GENERIC_ALL)\n\n" +
+        "  Mitigation Requirement:\n" +
+        "    Re-enforce AdminSDHolder SDProp mechanism to overwrite poisoned DACL.\n" +
+        "    Revoke non-standard WriteDacl delegations on sensitive containers.";
+    }
+    else if (mode === "remediate"){
+      cypherInput.value = "MATCH (g:Group {name:'IT_SUPPORTS'})-[r:GenericAll]->(u:User) DELETE r; MATCH (u:User {name:'ALICE_ADMIN'}) SET u.protectedUsers = true";
+      statusBadge.textContent = "GRAPH SEVERED: 0 PATHS";
+      statusBadge.style.background = "#16a34a";
+      riskBadge.textContent = "TIER 0 PROTECTED";
+      riskBadge.style.background = "#15803d";
+
+      canvasText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Active Directory Graph Remediated & Hardened            ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "  [User: Japneet] ──(MemberOf)──> [Group: IT_Supports]\n" +
+        "                                        ░\n" +
+        "                                  - - - ✕ - - - (GenericAll ACE Revoked!)\n" +
+        "                                        ░\n" +
+        "  [User: Geet] ──(AdminTo)──> [Computer: FileSrv01]\n" +
+        "                                        ░\n" +
+        "                                  - - - ✕ - - - (Protected Users: No LSASS caching!)\n" +
+        "                                        ░\n" +
+        "  [User: Alice_Admin] ──(MemberOf)──> [Group: Domain Admins] ──> [DC01]\n" +
+        "    [🛡️ PROTECTED USERS] (NTLM Disabled, DES/RC4 Blocked, PAW Enforced)";
+
+      telemetryText =
+        "[Remediation Verification & Defense-in-Depth]:\n" +
+        "  1. Toxic ACE Severance: Removed GenericAll from IT_Supports over Geet.\n" +
+        "  2. Administrative Tiering (ESAE): Alice_Admin added to 'Protected Users' group.\n" +
+        "     - Credential delegation blocked.\n" +
+        "     - NTLM hash caching disabled on member computers.\n" +
+        "     - Kerberos ticket lifetime restricted to 4 hours.\n" +
+        "  3. Graph Cut Verification:\n" +
+        "     Dijkstra Shortest Path to Tier 0: NONE (Cost: Infinity)\n" +
+        "     KISA 2.5.1 & NIST CSF PR.AC-04 Compliance: 100% VERIFIED.";
+    }
+
+    canvas.textContent = canvasText;
+    output.textContent = telemetryText;
+  }
+
+
+  // AD Graph & Cypher Inspector Controls
+  const adgraphExecuteBtn = document.getElementById("adgraphExecuteBtn");
+  if (adgraphExecuteBtn) adgraphExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderAdGraph(); });
+  const adgraphResetBtn = document.getElementById("adgraphResetBtn");
+  if (adgraphResetBtn) adgraphResetBtn.addEventListener("click", () => { audio(); renderAdGraph("shortest_path"); });
+  document.querySelectorAll("[data-adgraph-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-adgraph-preset");
+      renderAdGraph(p);
     });
   });
 

@@ -100,6 +100,18 @@ LAB_DIRS=(
     "39_modern_cryptography_lab"
     "40_enterprise_dfir_ir_lab"
     "41_supply_chain_security_lab"
+    "42_serverless_security_lab"
+    "43_cloud_incident_response_lab"
+    "44_browser_extension_security_lab"
+    "45_quantum_cryptography_pqc_lab"
+    "46_linux_kernel_hardening_lab"
+    "47_ai_agent_mcp_security_lab"
+    "48_firmware_iot_rce_lab"
+    "49_pqc_hybrid_tls_lab"
+    "50_sans_dfir_hunting_lab"
+    "51_ebpf_runtime_security_lab"
+    "52_c2_tunneling_and_exfiltration_lab"
+    "53_ad_bloodhound_lab"
 )
 
 LAB_NAMES=(
@@ -144,6 +156,18 @@ LAB_NAMES=(
     "현대 응용 암호학 & 암호 분석 실전 랩"
     "엔터프라이즈 침해사고 대응 & DFIR 실전 랩"
     "소프트웨어 공급망 보안 & SBOM 실전 랩"
+    "서버리스 클라우드 보안 & 이벤트 인젝션 랩"
+    "클라우드 사고 대응 & 위협 헌팅 랩"
+    "브라우저 확장 프로그램 보안 & Manifest V3 실전 랩"
+    "양자 내성 암호 & PQC 마이그레이션 실전 랩"
+    "리눅스 커널 하드닝 & 런타임 방어 실습"
+    "AI 에이전트 & MCP 보안 실전 랩"
+    "임베디드 펌웨어 & IoT RCE 실전 랩"
+    "양자 내성 하이브리드 TLS 1.3 실습"
+    "SANS DFIR 엔터프라이즈 아티팩트 헌팅 랩"
+    "클라우드 네이티브 eBPF 런타임 보안 랩"
+    "C2 네트워크 터널링 & 은닉 채널 방어 랩"
+    "AD BloodHound 공격 그래프 & ACL 익스플로잇 랩"
 )
 
 

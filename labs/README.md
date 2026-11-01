@@ -82,6 +82,7 @@ docker-compose --version
 | 50 | [SANS DFIR 엔터프라이즈 아티팩트 헌팅 랩](./50_sans_dfir_hunting_lab/) | PECmd 프리패치 & ShimCache 실행 증거 추출, $MFT 비상주 데이터런 카빙 & 타임스톰프 규명, Volatility 3 DKOM & RWX VAD 인젝션 분석, Plaso 슈퍼타임라인 & SOAR 격리 | ★★★★★ | [44장 침해 대응](../44_Incident_Response_DFIR/10_sans_dfir_enterprise_artifact_hunting_deepdive.md) | `sansdfir` / `dfir` |
 | 51 | [클라우드 네이티브 eBPF 런타임 보안 랩](./51_ebpf_runtime_security_lab/) | Cilium Tetragon & Falco eBPF 커널 옵저버빌리티, kprobe:sys_execve 비인가 셸 탐지, bpf_lsm_file_open 네임스페이스 탈출 차단, TracingPolicy 실시간 SIGKILL, Shadow BPF Rootkit 무결성 감사 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/08_ebpf_runtime_observability_and_tetragon_deepdive.md) | `ebpfruntime` / `endpoint` |
 | 52 | [C2 네트워크 터널링 & 은닉 채널 방어 랩](./52_c2_tunneling_and_exfiltration_lab/) | DNS 터널링 Shannon 엔트로피 분석(H >= 3.8), Chisel/SSH 역방향 SOCKS5 피보팅 차단, Malleable C2 지터 비콘 분산 프로필 핑거프린팅, Zeek/Suricata Flowbits 인라인 DPI 실시간 차단 | ★★★★★ | [02장 네트워크 해킹](../02_Network_Hacking/08_c2_tunneling_and_covert_channels_deepdive.md) | `c2tunnel` / `network` |
+| 53 | [AD BloodHound & ACL 익스플로잇 실습](./53_ad_bloodhound_lab/) | SharpHound 도메인 수집, Cypher 최단 공격 경로 탐색, GenericAll/WriteDacl DACL 악용, Protected Users 하드닝 | ★★★★★ | [54장 Active Directory](../54_Active_Directory_Attacks/08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md) | `adgraph` / `activedirectory` |
 
 ---
 
@@ -450,6 +451,15 @@ docker-compose --version
 - **교재 챕터 연계**: [16장 암호학 심층 딥다이브](../16_Cryptography/07_practical_padding_oracle_and_elliptic_curve_deepdive.md)
 - **워게임 트랙**: `crypto` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 39` (웹 콘솔 & 암호 분석 대시보드: `http://localhost:8039`)
+
+### 53. Active Directory BloodHound & ACL 익스플로잇 랩 (ADGraphMaster)
+- SharpHound / bloodhound-python 도메인 텔레메트리(JSON/CSV) 수집 및 Neo4j 그래프 토폴로지 구축
+- Neo4j Cypher shortestPath() 쿼리를 통한 도메인 관리자(Tier 0) 최단 공격 경로 탐색
+- GenericAll, WriteDacl, ForceChangePassword 오설정 DACL/ACE 권한 상승 체인 악용
+- 블루팀 과도 권한 ACE 정화, Protected Users 그룹 격리 및 Tiered Administration 하드닝
+- **교재 챕터 연계**: [54장 Active Directory 공격 심층 딥다이브](../54_Active_Directory_Attacks/08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md)
+- **워게임 트랙**: `adgraph` / `activedirectory` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 53` (웹 콘솔 & AD 그래프 대시보드: `http://localhost:8053`)
 
 ---
 

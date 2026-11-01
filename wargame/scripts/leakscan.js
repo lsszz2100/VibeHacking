@@ -531,6 +531,24 @@ const ALLOWLIST = new Map([
   ['t4_c2tunnel_advanced_statistical_beacon_unmasking -> t4_jitter', 'Advanced statistical beacon analysis evaluates beacon jitter'],
   ['t4_c2tunnel_inline_stateful_dpi_orchestration -> t4_scadadpi', 'Inline stateful DPI orchestration discusses Deep Packet Inspection'],
   ['t4_c2tunnel_capstone_full_spectrum_c2_covert_defense -> t3_rtchisel', 'Covert defense capstone investigates Chisel tunnel artifacts'],
+  // 65th Track: adgraph (Active Directory Attack Graph & BloodHound)
+  ['t1_adgraph_ldap_filter_ad_object_discovery -> t3_adadminsdholder', 'LDAP filter AD object discovery discusses AdminSDHolder protected accounts'],
+  ['t1_adgraph_adminto_local_admin_right_edges -> t2_adpsexec', 'Local admin rights edge analysis discusses PsExec remote execution'],
+  ['t1_adgraph_kerberoastable_spn_identification -> t1_adkerberoast', 'SPN identification discusses Kerberoasting attack target extraction'],
+  ['t2_adgraph_genericall_full_object_takeover -> t2_membership', 'GenericAll full object takeover discusses group membership alteration'],
+  ['t2_adgraph_allextendedrights_privilege_abuse -> t2_addcsync', 'AllExtendedRights privilege abuse discusses DCSync replication rights'],
+  ['t2_adgraph_bloodhound_open_cypher_custom_queries -> t4_adlaps', 'BloodHound custom queries hunt for LAPS password attribute exposure'],
+  ['t2_adgraph_bloodhound_open_cypher_custom_queries -> t2_adkerbdeleg', 'BloodHound custom queries map Kerberos delegation attack paths'],
+  ['t2_adgraph_unconstrained_delegation_computer_nodes -> t2_adkerbdeleg', 'Unconstrained delegation computer analysis discusses Kerberos delegation'],
+  ['t2_adgraph_resource_based_constrained_delegation -> t3_adrbcd', 'Resource-based constrained delegation discusses RBCD attribute injection'],
+  ['t3_adgraph_dcsync_replication_permission_pair -> t2_addcsync', 'DCSync replication permission pair discusses DCSync replication rights'],
+  ['t3_adgraph_dcsync_replication_permission_pair -> t1_adntds', 'DCSync technique discusses NTDS.dit directory extraction'],
+  ['t3_adgraph_shadow_credentials_keycredentiallink -> t3_adshadowcreds', 'Shadow credentials exploitation discusses Shadow Credentials technique'],
+  ['t3_adgraph_adminsdholder_sdprop_acl_propagation -> t3_adadminsdholder', 'AdminSDHolder DACL poisoning discusses AdminSDHolder container ACLs'],
+  ['t3_adgraph_certificate_template_esc1_esc8_edges -> t3_adesc1', 'Certificate template graph edges discuss ESC1 enrollment abuse'],
+  ['t3_adgraph_laps_password_attribute_read_rights -> t4_adlaps', 'LAPS password attribute read rights discuss LAPS credential harvesting'],
+  ['t3_adgraph_protected_users_security_group_controls -> t2_membership', 'Protected Users group controls discuss security group membership'],
+  ['t4_adgraph_autonomous_bloodhound_pipeline_remediation -> t1_iac', 'Autonomous pipeline remediation discusses infrastructure-as-code automation'],
 ]);
 
 function loadChallenges() {

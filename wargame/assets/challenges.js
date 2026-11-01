@@ -565,6 +565,14 @@ const TRACKS = [
     "en": "C2 Tunneling & Covert Channels",
     "desc_ko": "DNS 터널링 Shannon 엔트로피 분석·Chisel/SSH 역방향 SOCKS5 피보팅·Malleable C2 지터 비콘 핑거프린팅·Zeek/Suricata Flowbits 인라인 DPI 방어.",
     "desc_en": "DNS tunneling Shannon entropy analysis, Chisel/SSH reverse SOCKS5 dynamic pivoting, Malleable C2 jitter beacon fingerprinting, and Zeek/Suricata flowbits inline DPI defense."
+  },
+  {
+    "id": "adgraph",
+    "icon": "🩸",
+    "ko": "AD BloodHound & 공격 그래프",
+    "en": "AD BloodHound & Attack Graph",
+    "desc_ko": "BloodHound/SharpHound Active Directory 수집 분석·Neo4j Cypher 최단 공격 경로 질의·GenericAll/WriteDacl/MemberOf 복합 ACL 악용·보호된 사용자 및 티어링 보안 통제.",
+    "desc_en": "BloodHound/SharpHound AD data collection analysis, Neo4j Cypher shortest attack path queries, compound ACL exploitation (GenericAll/WriteDacl/MemberOf), and Protected Users tiered access remediation."
   }
 ];
 
@@ -63344,5 +63352,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "3e2ac48ea417166abde27984a48fa224270ccb35e81f8f76530915d8a5210a4e"
-  }
+  },
+{
+  "id": "t0_adgraph_fundamentals_attack_graph_theory",
+  "tier": 0,
+  "cat": "graph",
+  "track": "adgraph",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AD 공격 그래프 이론과 유향 그래프 모델링 기초",
+    "en": "Active Directory Attack Graph Theory & Directed Graph Modeling"
+  },
+  "prompt": {
+    "ko": "Active Directory의 방대한 도메인 구성 요소(사용자, 컴퓨터, 그룹, GPO, OU)를 정점(Vertices, V)으로, 보안 그룹 멤버십과 객체 간 DACL/ACE 접근 통제 항목 및 로그온 세션을 방향성 간선(Edges, E)으로 추상화하는 유향 공격 그래프 G=(V, E)의 이론적 기초를 학습합니다.\n지정된 식별자 `adgraph_fundamentals_attack_graph_theory_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_fundamentals_attack_graph_theory_v1\") 앞 20자리}`",
+    "en": "Examine the graph-theoretical modeling of Active Directory security architectures, representing AD entities (users, computers, groups, GPOs, OUs) as vertices V and relationships (group memberships, ACL ACEs, logon sessions) as directed edges E in an attack graph G=(V, E).\nCompute the first 20 hex characters of SHA256(\"adgraph_fundamentals_attack_graph_theory_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_fundamentals_attack_graph_theory_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Active Directory 도메인 환경은 수만 개의 보안 객체 간 관계가 얽혀 있는 전형적인 유향 그래프(Directed Graph) 구조를 가집니다.",
+      "식별자 `adgraph_fundamentals_attack_graph_theory_v1`의 SHA-256 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Active Directory environments represent complex directed graphs where vertices are security principals and edges are privileges or sessions.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_fundamentals_attack_graph_theory_v1\")."
+    ]
+  },
+  "hash": "3e68e33f37e8df416591f26d664ff4763c4a7bde8fe32bc14e934171df308b90"
+},
+{
+  "id": "t0_adgraph_sharphound_collector_mechanisms",
+  "tier": 0,
+  "cat": "recon",
+  "track": "adgraph",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SharpHound 수집기 작동 원리와 AD 열거 메커니즘",
+    "en": "SharpHound Collector Mechanisms & AD Enumeration Internals"
+  },
+  "prompt": {
+    "ko": "Active Directory 도메인 컨트롤러로부터 공격 경로 데이터를 수집하기 위해 SharpHound가 사용하는 LDAP 쿼리, SAMR RPC 세션 열거(NetSessionEnum), 로컬 관리자 그룹 쿼리, 서비스 주체 이름(SPN) 수집 메커니즘을 분석합니다.\n지정된 식별자 `adgraph_sharphound_collector_mechanisms_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_sharphound_collector_mechanisms_v1\") 앞 20자리}`",
+    "en": "Analyze SharpHound collector internals, utilizing LDAP queries, SAMR RPC session enumeration (NetSessionEnum), local administrator enumeration, and Service Principal Name (SPN) harvesting to map AD attack surfaces.\nCompute the first 20 hex characters of SHA256(\"adgraph_sharphound_collector_mechanisms_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_sharphound_collector_mechanisms_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SharpHound는 LDAP 프로토콜(포트 389/636)을 통해 디렉터리 객체를 대량 조회하고, SMB(포트 445)를 통해 실시간 활성 세션을 열거합니다.",
+      "식별자 `adgraph_sharphound_collector_mechanisms_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "SharpHound queries directory objects via LDAP (ports 389/636) and enumerates active user sessions via SMB (port 445).",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_sharphound_collector_mechanisms_v1\")."
+    ]
+  },
+  "hash": "0872d19b7dc6b627d33e87469851f996efd5f2035ea5b359edbccabf17816d30"
+},
+{
+  "id": "t1_adgraph_ldap_filter_ad_object_discovery",
+  "tier": 1,
+  "cat": "ad",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "고위험 AD 객체 식별을 위한 LDAP 필터 구문 분석",
+    "en": "LDAP Search Filter Construction for High-Value AD Object Discovery"
+  },
+  "prompt": {
+    "ko": "Active Directory 환경에서 adminCount=1 속성을 보유한 보호 대상 계정과 민감 그룹을 신속하게 식별하기 위한 LDAP 검색 필터 구문과 페이징 검색 기법을 분석합니다.\n지정된 식별자 `adgraph_ldap_filter_ad_object_discovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_ldap_filter_ad_object_discovery_v1\") 앞 20자리}`",
+    "en": "Examine LDAP search filter syntax and paged query mechanisms to discover high-value directory objects possessing adminCount=1 attributes and sensitive group assignments.\nCompute the first 20 hex characters of SHA256(\"adgraph_ldap_filter_ad_object_discovery_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_ldap_filter_ad_object_discovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "adminCount=1 속성은 SDProp 프로세스에 의해 AdminSDHolder의 보호를 받는 고권한 계정에 자동 부여됩니다.",
+      "식별자 `adgraph_ldap_filter_ad_object_discovery_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "The adminCount=1 attribute is automatically assigned by SDProp to privileged accounts protected by AdminSDHolder.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_ldap_filter_ad_object_discovery_v1\")."
+    ]
+  },
+  "hash": "a01c8792eb338c5b026a5d7c8a5dafc591dce6bfe72373620b053528a10fbd6b"
+},
+{
+  "id": "t1_adgraph_netsessionenum_session_enumeration",
+  "tier": 1,
+  "cat": "network",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SMB RPC NetSessionEnum 기반 원격 활성 세션 열거",
+    "en": "Remote Active Session Enumeration via SMB RPC NetSessionEnum"
+  },
+  "prompt": {
+    "ko": "워크스테이션과 서버에 로그온한 고권한 도메인 관리자의 세션 토큰을 탈취하기 위해 NetSessionEnum API를 호출하여 원격 호스트의 세션을 수집하는 원리를 탐구합니다.\n지정된 식별자 `adgraph_netsessionenum_session_enumeration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_netsessionenum_session_enumeration_v1\") 앞 20자리}`",
+    "en": "Investigate the mechanics of invoking the NetSessionEnum API over SMB RPC (srvsvc pipe) to enumerate active domain administrator sessions on remote target machines.\nCompute the first 20 hex characters of SHA256(\"adgraph_netsessionenum_session_enumeration_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_netsessionenum_session_enumeration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "NetSessionEnum 호출은 원격 대상의 srvsvc Named Pipe에 연결하여 현재 유효한 SMB 세션 테이블을 반환받습니다.",
+      "식별자 `adgraph_netsessionenum_session_enumeration_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "NetSessionEnum connects to the remote srvsvc named pipe over port 445 to retrieve active network sessions.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_netsessionenum_session_enumeration_v1\")."
+    ]
+  },
+  "hash": "743706363d1c042d573d8e385df9ae0af85a9682be2ad351d0ecf456b0fca0d0"
+},
+{
+  "id": "t1_adgraph_neo4j_cypher_syntax_fundamentals",
+  "tier": 1,
+  "cat": "graph",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Neo4j Cypher 쿼리 언어 기초와 패턴 매칭 원리",
+    "en": "Neo4j Cypher Query Language Fundamentals & Pattern Matching"
+  },
+  "prompt": {
+    "ko": "BloodHound의 백엔드 데이터베이스인 Neo4j에서 노드와 간선의 관계를 질의하기 위한 선언형 Cypher 언어(MATCH, WHERE, RETURN) 구문 구조를 분석합니다.\n지정된 식별자 `adgraph_neo4j_cypher_syntax_fundamentals_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_neo4j_cypher_syntax_fundamentals_v1\") 앞 20자리}`",
+    "en": "Analyze the declarative Cypher query language (MATCH, WHERE, RETURN) utilized by Neo4j to query nodes, relationships, and traversal properties in BloodHound datasets.\nCompute the first 20 hex characters of SHA256(\"adgraph_neo4j_cypher_syntax_fundamentals_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_neo4j_cypher_syntax_fundamentals_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Cypher는 아스키 아트를 활용하여 노드를 `(n:User)`로, 방향성 관계를 `-[r:MemberOf]->`로 직관적으로 표현합니다.",
+      "식별자 `adgraph_neo4j_cypher_syntax_fundamentals_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Cypher uses ASCII-art style syntax representing nodes as `(n:User)` and directed relations as `-[r:MemberOf]->`.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_neo4j_cypher_syntax_fundamentals_v1\")."
+    ]
+  },
+  "hash": "cd43a61a5341c8bcf98e6e60f959ee386e755846297f67149caa106ba5dca2b2"
+},
+{
+  "id": "t1_adgraph_memberof_nested_group_expansion",
+  "tier": 1,
+  "cat": "ad",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "중첩 보안 그룹의 전이적 폐포(Transitive Closure) 분석",
+    "en": "Nested Security Group Transitive Closure & MemberOf Expansion"
+  },
+  "prompt": {
+    "ko": "사용자가 하위 보안 그룹에 가입되고 해당 그룹이 다시 상위 관리자 그룹에 중첩 가입되는 관계에서 발생하는 전이적 권한 상속 메커니즘을 그래프 탐색 관점에서 분석합니다.\n지정된 식별자 `adgraph_memberof_nested_group_expansion_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_memberof_nested_group_expansion_v1\") 앞 20자리}`",
+    "en": "Examine the transitive privilege inheritance mechanisms resulting from nested security group hierarchies using graph closure traversal algorithms.\nCompute the first 20 hex characters of SHA256(\"adgraph_memberof_nested_group_expansion_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_memberof_nested_group_expansion_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Cypher에서 가변 길이 간선 매칭 구문 `[:MemberOf*1..]`을 사용하면 모든 중첩 그룹 상속 관계를 한 번에 전개할 수 있습니다.",
+      "식별자 `adgraph_memberof_nested_group_expansion_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Variable-length relationship expansion `[:MemberOf*1..]` unfolds all nested parent groups recursively in a single query.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_memberof_nested_group_expansion_v1\")."
+    ]
+  },
+  "hash": "fdb07c3f2fda8abfca74d5011cdcf8340f230232101bc783eb7edb58e607287c"
+},
+{
+  "id": "t1_adgraph_adminto_local_admin_right_edges",
+  "tier": 1,
+  "cat": "acl",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "로컬 관리자 권한 간선(AdminTo) 인제스천 및 감사",
+    "en": "Local Administrator Privilege Edge (AdminTo) Ingestion & Auditing"
+  },
+  "prompt": {
+    "ko": "호스트의 로컬 SAM 데이터베이스 및 Administrators 그룹에 도메인 사용자나 그룹이 포함됨으로써 생성되는 AdminTo 간선의 수집 및 위험도를 평가합니다.\n지정된 식별자 `adgraph_adminto_local_admin_right_edges_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_adminto_local_admin_right_edges_v1\") 앞 20자리}`",
+    "en": "Evaluate the security risks and ingestion mechanics of AdminTo edges created when domain principals are assigned local Administrators privileges on workstations and member servers.\nCompute the first 20 hex characters of SHA256(\"adgraph_adminto_local_admin_right_edges_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_adminto_local_admin_right_edges_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "AdminTo 관계가 성립되면 공격자는 PsExec, WMI, WinRM 등을 통해 해당 시스템에서 NT AUTHORITY\\SYSTEM 권한으로 원격 코드를 실행할 수 있습니다.",
+      "식별자 `adgraph_adminto_local_admin_right_edges_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "An AdminTo relationship enables remote code execution with NT AUTHORITY\\SYSTEM via PsExec, WMI, or WinRM.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_adminto_local_admin_right_edges_v1\")."
+    ]
+  },
+  "hash": "4077b9f9cb4d5bb55d6f9331583cb70618b75376bffdebc181f7cf006fb411dd"
+},
+{
+  "id": "t1_adgraph_hassession_token_theft_correlations",
+  "tier": 1,
+  "cat": "lateral",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "HasSession 간선과 LSASS 메모리 토큰 탈취 연계",
+    "en": "HasSession Edge Correlation & LSASS Memory Token Theft Pivoting"
+  },
+  "prompt": {
+    "ko": "도메인 관리자가 일반 워크스테이션에 대화형 또는 네트워크 로그온을 수행했을 때 발생하는 HasSession 간선과 Mimikatz 기반 크레덴셜 덤핑 간의 연계 위험을 분석합니다.\n지정된 식별자 `adgraph_hassession_token_theft_correlations_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_hassession_token_theft_correlations_v1\") 앞 20자리}`",
+    "en": "Analyze the security implications of HasSession edges denoting active domain admin sessions on compromised endpoints, enabling LSASS credential dumping and token impersonation.\nCompute the first 20 hex characters of SHA256(\"adgraph_hassession_token_theft_correlations_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_hassession_token_theft_correlations_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "공격자가 AdminTo 권한을 가진 호스트에 도메인 관리자의 세션이 존재하면(HasSession) LSASS 메모리에서 NTLM 해시 또는 Kerberos 티켓을 추출할 수 있습니다.",
+      "식별자 `adgraph_hassession_token_theft_correlations_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "When an attacker has local administrative access to a host where a Domain Admin is logged in, LSASS dumping compromises the entire domain.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_hassession_token_theft_correlations_v1\")."
+    ]
+  },
+  "hash": "92b1fb0009df9599fd435eb7ecd50a4148ef03b7bd7219723a6b37106bf2b3b6"
+},
+{
+  "id": "t1_adgraph_bloodhound_zip_json_schema_validation",
+  "tier": 1,
+  "cat": "tool",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BloodHound v4/v5 JSON 스키마 구조와 데이터 무결성 검증",
+    "en": "BloodHound v4/v5 JSON Schema Architecture & Data Integrity Validation"
+  },
+  "prompt": {
+    "ko": "SharpHound 수집기가 생성하는 압축 파일 내부의 JSON 파일군(users.json, computers.json, groups.json, domains.json)의 스키마 구조와 메타데이터 무결성 검증 기법을 학습합니다.\n지정된 식별자 `adgraph_bloodhound_zip_json_schema_validation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_bloodhound_zip_json_schema_validation_v1\") 앞 20자리}`",
+    "en": "Explore the JSON schema specifications (users.json, computers.json, groups.json, domains.json) output by SharpHound and validate their cryptographic integrity and parsing rules.\nCompute the first 20 hex characters of SHA256(\"adgraph_bloodhound_zip_json_schema_validation_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_bloodhound_zip_json_schema_validation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "BloodHound v4 이후 스키마는 각 JSON 파일의 최상단에 `count`, `type`, `data` 필드를 포함하며 엄격한 버전 식별자를 명시합니다.",
+      "식별자 `adgraph_bloodhound_zip_json_schema_validation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Modern BloodHound schemas enforce standardized metadata blocks containing count, type, and data payloads.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_bloodhound_zip_json_schema_validation_v1\")."
+    ]
+  },
+  "hash": "efd05c709d1e74c0028507970e1adeedc62e7dface3370b75d5fbd9ba47014c8"
+},
+{
+  "id": "t1_adgraph_kerberoastable_spn_identification",
+  "tier": 1,
+  "cat": "kerberos",
+  "track": "adgraph",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "공격 그래프 내 Kerberoastable 서비스 계정 노드 탐색",
+    "en": "Identifying Kerberoastable Service Account Nodes in AD Graphs"
+  },
+  "prompt": {
+    "ko": "사용자 계정 노드 중 ServicePrincipalName(SPN)이 등록되어 있어 TGS 티켓 요청 및 오프라인 해시 크랙이 가능한 계정을 Cypher 질의로 추출하는 기법을 학습합니다.\n지정된 식별자 `adgraph_kerberoastable_spn_identification_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_kerberoastable_spn_identification_v1\") 앞 20자리}`",
+    "en": "Master the Cypher queries used to pinpoint Kerberoastable user accounts possessing registered SPNs, permitting unprivileged attackers to request RC4/AES TGS tickets for offline cracking.\nCompute the first 20 hex characters of SHA256(\"adgraph_kerberoastable_spn_identification_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_kerberoastable_spn_identification_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "`MATCH (u:User {hasspn: true}) RETURN u.name, u.serviceprincipalnames` 질의를 통해 손쉽게 Kerberoasting 대상 계정을 식별할 수 있습니다.",
+      "식별자 `adgraph_kerberoastable_spn_identification_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Querying for `hasspn: true` immediately reveals domain user accounts susceptible to Kerberoasting attacks.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_kerberoastable_spn_identification_v1\")."
+    ]
+  },
+  "hash": "ebb330299b7541a59f051d09c335070fb7181a7a380e643071d85c03ad1e142c"
+},
+{
+  "id": "t2_adgraph_genericall_full_object_takeover",
+  "tier": 2,
+  "cat": "acl",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "GenericAll 권한을 악용한 AD 객체 완전 장악",
+    "en": "GenericAll Permission Abuse for Complete Object Takeover"
+  },
+  "prompt": {
+    "ko": "타깃 객체에 대해 GenericAll ACE를 보유한 공격자가 비밀번호 강제 재설정(ForceChangePassword) 또는 그룹 멤버십 직접 조작을 통해 계정을 탈취하는 원리를 분석합니다.\n지정된 식별자 `adgraph_genericall_full_object_takeover_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_genericall_full_object_takeover_v1\") 앞 20자리}`",
+    "en": "Analyze how an attacker holding GenericAll rights over an Active Directory security principal forces a password reset or manipulates group membership to take full ownership.\nCompute the first 20 hex characters of SHA256(\"adgraph_genericall_full_object_takeover_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_genericall_full_object_takeover_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "GenericAll 권한은 표준 및 확장 접근 권한을 모두 포함하여 타깃 객체에 대한 무제한의 수정 권한을 부여합니다.",
+      "식별자 `adgraph_genericall_full_object_takeover_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "GenericAll grants full administrative control over the object, including modifying all attributes and resetting passwords.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_genericall_full_object_takeover_v1\")."
+    ]
+  },
+  "hash": "7a1365d4c0bf5306d1f8ae8fec80ff5a2c7ecb42c3b9379402e2679d2f5f4fe1"
+},
+{
+  "id": "t2_adgraph_writedacl_permission_modification",
+  "tier": 2,
+  "cat": "acl",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WriteDacl 권한 변조를 통한 임의 ACE 삽입 기법",
+    "en": "WriteDacl Permission Tampering for Arbitrary ACE Injection"
+  },
+  "prompt": {
+    "ko": "객체의 보안 디스크립터(Security Descriptor) 내 DACL을 직접 수정할 수 있는 WriteDacl 권한을 이용하여 자신에게 FullControl ACE를 주입하는 2단계 권한 상승 공격을 학습합니다.\n지정된 식별자 `adgraph_writedacl_permission_modification_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_writedacl_permission_modification_v1\") 앞 20자리}`",
+    "en": "Examine the two-stage privilege escalation mechanism where WriteDacl permissions are leveraged to modify DACLs, injecting a FullControl ACE for the attacker principal.\nCompute the first 20 hex characters of SHA256(\"adgraph_writedacl_permission_modification_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_writedacl_permission_modification_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "WriteDacl 권한을 가진 공격자는 타깃 객체의 보안 설명자에 임의의 Allow ACE를 삽입하여 즉각적인 GenericAll 권한을 획득할 수 있습니다.",
+      "식별자 `adgraph_writedacl_permission_modification_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "WriteDacl grants permission to rewrite the object's discretionary access control list, adding full control for any security identifier.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_writedacl_permission_modification_v1\")."
+    ]
+  },
+  "hash": "0fceb1947915e99eab4dea0e05adfbdbca86e8b77119b4b845e6548a923b8250"
+},
+{
+  "id": "t2_adgraph_writeowner_object_ownership_hijacking",
+  "tier": 2,
+  "cat": "acl",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WriteOwner 권한 악용과 보안 설명자 소유권 탈취",
+    "en": "WriteOwner Permission Abuse & Security Descriptor Ownership Takeover"
+  },
+  "prompt": {
+    "ko": "타깃 객체의 소유자(Owner) 필드를 변경할 수 있는 WriteOwner 권한을 악용하여 소유권을 획득한 후, 소유자의 고유 권한인 DACL 재작성을 통해 제어권을 탈취하는 과정을 분석합니다.\n지정된 식별자 `adgraph_writeowner_object_ownership_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_writeowner_object_ownership_hijacking_v1\") 앞 20자리}`",
+    "en": "Analyze the exploitation path of WriteOwner rights, allowing an attacker to overwrite the Owner SID and subsequently modify DACL permissions as the legitimate object owner.\nCompute the first 20 hex characters of SHA256(\"adgraph_writeowner_object_ownership_hijacking_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_writeowner_object_ownership_hijacking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Windows 보안 모델에서 객체의 소유자는 DACL 설정과 무관하게 언제나 자신의 객체에 대해 WriteDacl 권한을 행사할 수 있습니다.",
+      "식별자 `adgraph_writeowner_object_ownership_hijacking_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "In the Windows security architecture, the object owner always maintains the implicit right to modify the DACL.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_writeowner_object_ownership_hijacking_v1\")."
+    ]
+  },
+  "hash": "c1b26b0b372be1d9cd8ff68e5c5ab755ec470ac25b7d4f6f27e9941b7fd18a2d"
+},
+{
+  "id": "t2_adgraph_forcechangepassword_direct_reset",
+  "tier": 2,
+  "cat": "lateral",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ForceChangePassword 권한을 통한 계정 무단 초기화",
+    "en": "Unauthorized Password Reset via User-Force-Change-Password Right"
+  },
+  "prompt": {
+    "ko": "Active Directory의 User-Force-Change-Password 확장 권한을 보유한 계정이 기존 비밀번호를 모르는 상태에서도 타깃 도메인 계정의 비밀번호를 즉시 변경하는 과정을 실습합니다.\n지정된 식별자 `adgraph_forcechangepassword_direct_reset_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_forcechangepassword_direct_reset_v1\") 앞 20자리}`",
+    "en": "Explore how the User-Force-Change-Password extended right allows an unprivileged actor to overwrite a target domain user's password without knowing their current credential.\nCompute the first 20 hex characters of SHA256(\"adgraph_forcechangepassword_direct_reset_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_forcechangepassword_direct_reset_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "이 권한은 헬프데스크 계정에 흔히 위임되지만, 상위 권한 계정에 위임될 경우 치명적인 침해 경로가 됩니다.",
+      "식별자 `adgraph_forcechangepassword_direct_reset_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "Often delegated to helpdesk staff, this privilege creates high-risk escalation pathways when granted over privileged targets.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_forcechangepassword_direct_reset_v1\")."
+    ]
+  },
+  "hash": "7dd7885bbe20e0820a7923f567a2b17f09fc68b1fbb737a3499eaf1e4ba67b5f"
+},
+{
+  "id": "t2_adgraph_allextendedrights_privilege_abuse",
+  "tier": 2,
+  "cat": "acl",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AllExtendedRights 권한 남용과 복합 권한 전파 분석",
+    "en": "AllExtendedRights Permission Abuse & Compound Privilege Propagation"
+  },
+  "prompt": {
+    "ko": "모든 확장 권한(AllExtendedRights)이 부여되었을 때 발생하는 복합적인 영향(ForceChangePassword, SendAs, ReceiveAs 등)과 공격 그래프 상의 위험도를 측정합니다.\n지정된 식별자 `adgraph_allextendedrights_privilege_abuse_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_allextendedrights_privilege_abuse_v1\") 앞 20자리}`",
+    "en": "Examine the compound security impact of AllExtendedRights ACEs, which blanket-grant all registered extended attributes including password resets and mail rights.\nCompute the first 20 hex characters of SHA256(\"adgraph_allextendedrights_privilege_abuse_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_allextendedrights_privilege_abuse_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "AllExtendedRights는 도메인 루트 객체에 설정될 경우 DCSync 공격 권한까지 포함하게 됩니다.",
+      "식별자 `adgraph_allextendedrights_privilege_abuse_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "When applied at the domain root level, AllExtendedRights grants DCSync replication privileges as well.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_allextendedrights_privilege_abuse_v1\")."
+    ]
+  },
+  "hash": "cbede6c710437b587197bdf9c2e9e5dbb7c0511d6fbf52b66211594e7bf21e82"
+},
+{
+  "id": "t2_adgraph_addmember_security_group_tampering",
+  "tier": 2,
+  "cat": "lateral",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "보안 그룹 대상 AddMember 권한 남용 및 불법 가입",
+    "en": "AddMember Permission Abuse & Unauthorized Security Group Tampering"
+  },
+  "prompt": {
+    "ko": "보안 그룹의 `member` 속성에 대한 쓰기 권한(AddMember/WriteProperty)을 획득한 공격자가 자신이 제어하는 계정을 고권한 그룹에 무단 등록하는 기법을 분석합니다.\n지정된 식별자 `adgraph_addmember_security_group_tampering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_addmember_security_group_tampering_v1\") 앞 20자리}`",
+    "en": "Investigate the exploitation of AddMember rights on domain security groups, enabling attackers to inject arbitrary principals into privileged administrative groups.\nCompute the first 20 hex characters of SHA256(\"adgraph_addmember_security_group_tampering_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_addmember_security_group_tampering_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "관리 그룹의 member 속성에 WriteProperty 권한이 설정되어 있으면 그룹 관리자가 아니더라도 신규 멤버를 등록할 수 있습니다.",
+      "식별자 `adgraph_addmember_security_group_tampering_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "WriteProperty permission on the member attribute allows inserting principals into administrative groups directly.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_addmember_security_group_tampering_v1\")."
+    ]
+  },
+  "hash": "706833f7f2c331bb539bd3b2fa1e86418b765a62a5a874bf94447916ccaf383c"
+},
+{
+  "id": "t2_adgraph_cypher_dijkstra_shortest_path",
+  "tier": 2,
+  "cat": "graph",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cypher 최단 경로 알고리즘과 Dijkstra 기반 공격 경로 탐색",
+    "en": "Cypher Shortest Path Algorithm & Dijkstra Attack Path Discovery"
+  },
+  "prompt": {
+    "ko": "Neo4j의 `shortestPath` 내장 함수를 활용하여 장악된 일반 계정으로부터 Domain Admins 또는 Tier 0 도메인 컨트롤러에 도달하는 최단 홉(Hop) 경로를 계산하는 원리를 탐구합니다.\n지정된 식별자 `adgraph_cypher_dijkstra_shortest_path_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_cypher_dijkstra_shortest_path_v1\") 앞 20자리}`",
+    "en": "Explore how Neo4j's shortestPath algorithm executes breadth-first or Dijkstra traversals to map the minimal privilege escalation chain to Domain Admins.\nCompute the first 20 hex characters of SHA256(\"adgraph_cypher_dijkstra_shortest_path_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_cypher_dijkstra_shortest_path_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "`MATCH p = shortestPath((u:User {name:'TARGET'})-[*1..15]->(g:Group {name:'DOMAIN ADMINS'})) RETURN p` 구문으로 최단 경로를 탐색합니다.",
+      "식별자 `adgraph_cypher_dijkstra_shortest_path_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "The shortestPath function discovers the minimal sequence of hops required to compromise the target administrative group.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_cypher_dijkstra_shortest_path_v1\")."
+    ]
+  },
+  "hash": "b5006b62f9675ac37a7a0eaac5827cd05242d99d41321d3a524fa24d1536e929"
+},
+{
+  "id": "t2_adgraph_gpo_immediate_task_scheduled_pwn",
+  "tier": 2,
+  "cat": "persist",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "GPO GenericWrite 권한 악용과 즉시 예약된 작업(Scheduled Task) 주입",
+    "en": "GPO GenericWrite Abuse & Immediate Scheduled Task Injection"
+  },
+  "prompt": {
+    "ko": "그룹 정책 객체(GPO)에 대한 GenericWrite 또는 WriteProperty 권한을 보유한 공격자가 Scheduled Tasks XML 정책을 변조하여 도메인 머신 전체에 악성 코드를 배포하는 기법을 분석합니다.\n지정된 식별자 `adgraph_gpo_immediate_task_scheduled_pwn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_gpo_immediate_task_scheduled_pwn_v1\") 앞 20자리}`",
+    "en": "Analyze how GenericWrite permissions over Group Policy Objects permit attackers to push Immediate Scheduled Tasks across linked Organizational Units with SYSTEM rights.\nCompute the first 20 hex characters of SHA256(\"adgraph_gpo_immediate_task_scheduled_pwn_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_gpo_immediate_task_scheduled_pwn_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SYSVOL 내 ScheduledTasks.xml 파일을 수정하면 정책을 상속받는 모든 컴퓨터에서 다음 정책 갱신(gpupdate) 시 즉시 페이로드가 실행됩니다.",
+      "식별자 `adgraph_gpo_immediate_task_scheduled_pwn_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Modifying ScheduledTasks.xml in SYSVOL pushes remote code execution across all joined workstations and servers.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_gpo_immediate_task_scheduled_pwn_v1\")."
+    ]
+  },
+  "hash": "4de4003abd0c3f99294cb311bd15759cbb38e97c73de090865223096fa679159"
+},
+{
+  "id": "t2_adgraph_bloodhound_open_cypher_custom_queries",
+  "tier": 2,
+  "cat": "tool",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BloodHound customqueries.json 구성을 통한 사용자 정의 질의 자동화",
+    "en": "Automating AD Threat Hunting via BloodHound customqueries.json"
+  },
+  "prompt": {
+    "ko": "BloodHound UI 환경에서 복합 위협(예: LAPS 패스워드 열람 가능한 일반 계정, 비보호 관리자 세션 등)을 한 번의 클릭으로 시각화하기 위한 customqueries.json 작성법을 학습합니다.\n지정된 식별자 `adgraph_bloodhound_open_cypher_custom_queries_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_bloodhound_open_cypher_custom_queries_v1\") 앞 20자리}`",
+    "en": "Learn how to construct customqueries.json for BloodHound GUI to hunt for high-impact composite threat models like unconstrained delegation paths in a single click.\nCompute the first 20 hex characters of SHA256(\"adgraph_bloodhound_open_cypher_custom_queries_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_bloodhound_open_cypher_custom_queries_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "customqueries.json 파일은 카테고리별 쿼리 제목과 Cypher 문장 목록을 JSON 배열 형태로 정의합니다.",
+      "식별자 `adgraph_bloodhound_open_cypher_custom_queries_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "customqueries.json allows security teams to persist reusable Cypher threat hunting queries inside the BloodHound interface.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_bloodhound_open_cypher_custom_queries_v1\")."
+    ]
+  },
+  "hash": "1250362d288bb0dbcb4e66a39a85c9be95701b792f0e7b1c24331f72cfe1c8d3"
+},
+{
+  "id": "t2_adgraph_unconstrained_delegation_computer_nodes",
+  "tier": 2,
+  "cat": "kerberos",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "무제한 Kerberos 위임 컴퓨터 노드와 TGT 수확 공격",
+    "en": "Unconstrained Kerberos Delegation Nodes & TGT Harvesting Risk"
+  },
+  "prompt": {
+    "ko": "userAccountControl 플래그에 TRUSTED_FOR_DELEGATION이 활성화된 컴퓨터 노드에 도메인 관리자가 접근할 때 메모리에 캐싱되는 TGT 티켓을 탈취하는 메커니즘을 분석합니다.\n지정된 식별자 `adgraph_unconstrained_delegation_computer_nodes_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_unconstrained_delegation_computer_nodes_v1\") 앞 20자리}`",
+    "en": "Analyze how unconstrained delegation enabled computers (TRUSTED_FOR_DELEGATION) cache inbound TGTs in LSASS, permitting full domain takeover upon administrator connection.\nCompute the first 20 hex characters of SHA256(\"adgraph_unconstrained_delegation_computer_nodes_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_unconstrained_delegation_computer_nodes_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SpoolSample(MS-RPRN Print Spooler RPC) 기법을 사용하면 도메인 컨트롤러 머신 계정이 무제한 위임 서버로 인증하도록 강제할 수 있습니다.",
+      "식별자 `adgraph_unconstrained_delegation_computer_nodes_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "Coercing incoming authentications from Domain Controllers to unconstrained servers yields DC machine TGTs in memory.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_unconstrained_delegation_computer_nodes_v1\")."
+    ]
+  },
+  "hash": "31eaf5215926a54a5e4b36318586f6816ab1d9497129a2d8384ca2663f13cc47"
+},
+{
+  "id": "t2_adgraph_constrained_delegation_protocol_transition",
+  "tier": 2,
+  "cat": "kerberos",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "제한된 위임(Constrained Delegation)과 S4U2Self/S4U2Proxy 악용",
+    "en": "Constrained Delegation Abuse via S4U2Self & S4U2Proxy Protocols"
+  },
+  "prompt": {
+    "ko": "`msDS-AllowedToDelegateTo` 속성이 설정된 계정에서 Kerberos 확장 프로토콜 S4U(Service-for-User)를 악용하여 임의의 관리자로 가장한 서비스 티켓을 발급받는 공격을 분석합니다.\n지정된 식별자 `adgraph_constrained_delegation_protocol_transition_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_constrained_delegation_protocol_transition_v1\") 앞 20자리}`",
+    "en": "Examine how Kerberos Service-for-User extensions (S4U2Self and S4U2Proxy) allow compromised constrained delegation accounts to forge tickets as any domain administrator.\nCompute the first 20 hex characters of SHA256(\"adgraph_constrained_delegation_protocol_transition_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_constrained_delegation_protocol_transition_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "S4U2Self는 임의 사용자로 가장하여 자신에 대한 TGS를 획득하고, S4U2Proxy는 이를 위임 허용된 대상 서비스 티켓으로 교환합니다.",
+      "식별자 `adgraph_constrained_delegation_protocol_transition_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "S4U2Self requests a forwardable service ticket on behalf of a user, which S4U2Proxy exchanges for the target service ticket.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_constrained_delegation_protocol_transition_v1\")."
+    ]
+  },
+  "hash": "eaa7cf01dd60ca818ea5176c77e6c559b9ef9f2cd8deadb1b339b3c9aadaf510"
+},
+{
+  "id": "t2_adgraph_resource_based_constrained_delegation",
+  "tier": 2,
+  "cat": "lateral",
+  "track": "adgraph",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "자원 기반 제한된 위임(RBCD) 속성 주입과 호스트 장악",
+    "en": "Resource-Based Constrained Delegation (RBCD) Attribute Injection"
+  },
+  "prompt": {
+    "ko": "타깃 컴퓨터 객체에 대해 GenericWrite 또는 WriteProperty 권한을 가진 공격자가 `msDS-AllowedToActOnBehalfOfOtherIdentity` 속성에 공격자 제어 계정을 등록하여 원격 장악하는 원리를 학습합니다.\n지정된 식별자 `adgraph_resource_based_constrained_delegation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_resource_based_constrained_delegation_v1\") 앞 20자리}`",
+    "en": "Understand how modifying the `msDS-AllowedToActOnBehalfOfOtherIdentity` security descriptor on a target computer account grants RBCD rights to compromise the host.\nCompute the first 20 hex characters of SHA256(\"adgraph_resource_based_constrained_delegation_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_resource_based_constrained_delegation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RBCD는 도메인 관리자 권한 없이도 머신 계정 소유자 권한만으로 임의의 위임 관계를 자원 측에 직접 정의할 수 있습니다.",
+      "식별자 `adgraph_resource_based_constrained_delegation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "RBCD shifts delegation control to the target resource, allowing anyone with write access to the computer object to configure delegation.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_resource_based_constrained_delegation_v1\")."
+    ]
+  },
+  "hash": "d07308b34cf5477078561c04f233b049ccd9e766b43f402c43c04a7b0a49c1ed"
+},
+{
+  "id": "t3_adgraph_dcsync_replication_permission_pair",
+  "tier": 3,
+  "cat": "kerberos",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DCSync 공격 복제 권한 쌍(DS-Replication) 감지와 악용 원리",
+    "en": "DCSync Replication Right Pair (DS-Replication) Detection & Abuse"
+  },
+  "prompt": {
+    "ko": "도메인 루트 노드에서 `DS-Replication-Get-Changes`와 `DS-Replication-Get-Changes-All` 권한을 보유한 계정이 DRSUAPI를 호출하여 krbtgt 해시를 비롯한 전체 NTDS.dit을 복제하는 메커니즘을 분석합니다.\n지정된 식별자 `adgraph_dcsync_replication_permission_pair_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_dcsync_replication_permission_pair_v1\") 앞 20자리}`",
+    "en": "Analyze the mechanics of the DCSync technique via DRSUAPI RPC calls, requiring DS-Replication-Get-Changes and DS-Replication-Get-Changes-All ACEs on the domain root.\nCompute the first 20 hex characters of SHA256(\"adgraph_dcsync_replication_permission_pair_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_dcsync_replication_permission_pair_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DCSync는 도메인 컨트롤러에 직접 대화형 로그온하거나 파일을 덤프하지 않고도 정규 디렉터리 동기화 프로토콜을 모방합니다.",
+      "식별자 `adgraph_dcsync_replication_permission_pair_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "DCSync simulates domain controller directory synchronization over DRSUAPI to retrieve password hashes remotely.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_dcsync_replication_permission_pair_v1\")."
+    ]
+  },
+  "hash": "276d3a418b7ae737730cc1f9fbd1999921d4fb655c4ecdf67c439cfe86814781"
+},
+{
+  "id": "t3_adgraph_shadow_credentials_keycredentiallink",
+  "tier": 3,
+  "cat": "ad",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "그림자 크레덴셜(Shadow Credentials)과 msDS-KeyCredentialLink 변조",
+    "en": "Shadow Credentials Exploitation via msDS-KeyCredentialLink Injection"
+  },
+  "prompt": {
+    "ko": "타깃 계정의 `msDS-KeyCredentialLink` 속성에 비대칭 공개키 데이터를 주입한 후 PKINIT Kerberos 확장을 통해 패스워드 변경 없이 TGT를 발급받는 공격을 분석합니다.\n지정된 식별자 `adgraph_shadow_credentials_keycredentiallink_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_shadow_credentials_keycredentiallink_v1\") 앞 20자리}`",
+    "en": "Examine the Shadow Credentials persistence and escalation technique, injecting raw X.509 public keys into msDS-KeyCredentialLink for PKINIT TGT acquisition.\nCompute the first 20 hex characters of SHA256(\"adgraph_shadow_credentials_keycredentiallink_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_shadow_credentials_keycredentiallink_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Whiskey 및 pywhiskey 도구는 자체 서명 인증서를 생성하여 KeyCredentialLink 바이너리 구조체로 인코딩한 후 LDAP으로 업데이트합니다.",
+      "식별자 `adgraph_shadow_credentials_keycredentiallink_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Injecting public keys into msDS-KeyCredentialLink allows requesting TGTs via PKINIT without altering account passwords or logging events.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_shadow_credentials_keycredentiallink_v1\")."
+    ]
+  },
+  "hash": "b93723c0b68a2bb1d1726e370ec975376eedb379078de14e685ff5b30f91e1e1"
+},
+{
+  "id": "t3_adgraph_adminsdholder_sdprop_acl_propagation",
+  "tier": 3,
+  "cat": "acl",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AdminSDHolder 컨테이너 DACL 오염과 SDProp 자동 복제",
+    "en": "AdminSDHolder DACL Poisoning & 60-Minute SDProp Propagation Mechanics"
+  },
+  "prompt": {
+    "ko": "Active Directory 시스템 컨테이너 내부의 AdminSDHolder 객체 DACL을 조작하여 매 60분마다 실행되는 SDProp 프로세스가 모든 보호 대상 관리 그룹에 악성 ACE를 자동 덮어쓰도록 유도하는 기법을 분석합니다.\n지정된 식별자 `adgraph_adminsdholder_sdprop_acl_propagation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_adminsdholder_sdprop_acl_propagation_v1\") 앞 20자리}`",
+    "en": "Analyze how poisoning the AdminSDHolder object DACL triggers the SDProp thread to propagate malicious ACEs to all protected domain administrative principals every 60 minutes.\nCompute the first 20 hex characters of SHA256(\"adgraph_adminsdholder_sdprop_acl_propagation_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_adminsdholder_sdprop_acl_propagation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SDProp(Security Descriptor Propagator)은 Domain Admins, Enterprise Admins 등 고권한 객체의 ACL을 AdminSDHolder와 강제 동기화합니다.",
+      "식별자 `adgraph_adminsdholder_sdprop_acl_propagation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "SDProp enforces the AdminSDHolder DACL on all protected administrative objects, overwriting local ACL changes hourly.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_adminsdholder_sdprop_acl_propagation_v1\")."
+    ]
+  },
+  "hash": "35e26f27711e090a1646a60e0d737118a5c8ea2a294991eef75b7a08f0355192"
+},
+{
+  "id": "t3_adgraph_certificate_template_esc1_esc8_edges",
+  "tier": 3,
+  "cat": "ad",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BloodHound AD CS 인증서 템플릿 취약 간선(ESC1~ESC8) 분석",
+    "en": "BloodHound AD CS Certificate Template Attack Edges (ESC1-ESC8)"
+  },
+  "prompt": {
+    "ko": "Active Directory Certificate Services(AD CS) 환경에서 `EnrolleeSuppliesSubject` 플래그와 클라이언트 인증 EKU가 결합된 ESC1 취약 템플릿을 공격 그래프 간선으로 추적하는 기법을 학습합니다.\n지정된 식별자 `adgraph_certificate_template_esc1_esc8_edges_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_certificate_template_esc1_esc8_edges_v1\") 앞 20자리}`",
+    "en": "Master the AD CS graph extensions in BloodHound mapping enrollment rights over vulnerable certificate templates (ESC1-ESC8) allowing arbitrary domain admin SAN enrollment.\nCompute the first 20 hex characters of SHA256(\"adgraph_certificate_template_esc1_esc8_edges_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_certificate_template_esc1_esc8_edges_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ESC1 템플릿은 일반 사용자에게 등록 권한이 있고 요청자가 인증서의 SAN(주체 대체 이름)을 임의 지정할 수 있어 도메인 관리자로 서명받을 수 있습니다.",
+      "식별자 `adgraph_certificate_template_esc1_esc8_edges_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "ESC1 allows unprivileged enrolled users to specify an arbitrary Subject Alternative Name (SAN) such as the domain administrator.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_certificate_template_esc1_esc8_edges_v1\")."
+    ]
+  },
+  "hash": "7ff2b88f37e605a6d1141247709db629c4c7d47abf9946f1a375664432fbd3ed"
+},
+{
+  "id": "t3_adgraph_laps_password_attribute_read_rights",
+  "tier": 3,
+  "cat": "lateral",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LAPS 암호 속성 열람 권한 노출과 로컬 관리자 패스워드 추출",
+    "en": "LAPS Password Attribute Read Rights & Plaintext Admin Extraction"
+  },
+  "prompt": {
+    "ko": "Active Directory 컴퓨터 객체의 `ms-Mcs-AdmPwd` 또는 Windows LAPS `msLAPS-Password` 속성에 대한 읽기 권한을 보유한 일반 사용자가 엔드포인트 로컬 관리자 암호를 탈취하는 메커니즘을 분석합니다.\n지정된 식별자 `adgraph_laps_password_attribute_read_rights_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_laps_password_attribute_read_rights_v1\") 앞 20자리}`",
+    "en": "Analyze the exposure of ms-Mcs-AdmPwd and msLAPS-Password attributes allowing unauthorized domain users with AllExtendedRights or read rights to harvest local admin credentials.\nCompute the first 20 hex characters of SHA256(\"adgraph_laps_password_attribute_read_rights_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_laps_password_attribute_read_rights_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "LAPS 속성은 기본적으로 관리자만 열람할 수 있어야 하나, 상위 OU의 ACL 상속 오류로 인해 일반 도메인 유저에게 노출되는 경우가 많습니다.",
+      "식별자 `adgraph_laps_password_attribute_read_rights_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Improper ACL inheritance on organizational units frequently exposes plaintext LAPS passwords to unprivileged authenticated domain users.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_laps_password_attribute_read_rights_v1\")."
+    ]
+  },
+  "hash": "ca3c32eb664e5a28b25352a23fe232e7d22fdcc1e61661fa2219f6d394dac28f"
+},
+{
+  "id": "t3_adgraph_toxic_ace_graph_cut_mitigation",
+  "tier": 3,
+  "cat": "defense",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "최소 그래프 컷(Min-Cut) 알고리즘 기반 악성 ACE 식별 및 제거",
+    "en": "Toxic ACE Identification & Elimination via Minimum Graph Cut Algorithms"
+  },
+  "prompt": {
+    "ko": "공격 그래프 상에서 고위험 Tier 0 도메인 관리자에 도달하는 모든 침해 경로를 단절시키기 위해 최소한의 간선을 찾아 제거하는 그래프 컷(Min-Cut) 완화 전략을 실습합니다.\n지정된 식별자 `adgraph_toxic_ace_graph_cut_mitigation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_toxic_ace_graph_cut_mitigation_v1\") 앞 20자리}`",
+    "en": "Apply network flow and minimum cut algorithms to identify and sever the minimal subset of toxic ACEs required to disrupt all paths from unprivileged users to Tier 0 assets.\nCompute the first 20 hex characters of SHA256(\"adgraph_toxic_ace_graph_cut_mitigation_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_toxic_ace_graph_cut_mitigation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "단 하나의 치명적인 ACE(예: IT 지원 그룹의 도메인 관리자 GenericAll)만 제거해도 수십 개의 공격 경로가 동시에 무력화됩니다.",
+      "식별자 `adgraph_toxic_ace_graph_cut_mitigation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Pruning a single choke-point ACE (e.g., GenericAll over a parent group) severs dozens of transitive attack paths simultaneously.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_toxic_ace_graph_cut_mitigation_v1\")."
+    ]
+  },
+  "hash": "9710c75de24eba402f2aaedc5eaaac3980419bc2a1b55cbd20967af315c5b571"
+},
+{
+  "id": "t3_adgraph_protected_users_security_group_controls",
+  "tier": 3,
+  "cat": "defense",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Protected Users 보안 그룹 정책 강제와 크레덴셜 캐싱 차단",
+    "en": "Protected Users Security Group Enforcement & Credential Caching Defense"
+  },
+  "prompt": {
+    "ko": "Active Directory의 'Protected Users' 보안 그룹 가입을 통해 NTLM 인증 비활성화, Kerberos DES/RC4 암호화 차단, 자격 증명 위임 차단, LSASS 평문 캐싱 방지 원리를 분석합니다.\n지정된 식별자 `adgraph_protected_users_security_group_controls_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_protected_users_security_group_controls_v1\") 앞 20자리}`",
+    "en": "Analyze the security guarantees of the Active Directory Protected Users group, blocking NTLM authentication, DES/RC4 Kerberos ciphers, credential delegation, and LSASS caching.\nCompute the first 20 hex characters of SHA256(\"adgraph_protected_users_security_group_controls_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_protected_users_security_group_controls_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Protected Users에 속한 계정은 일반 워크스테이션에 로그인하더라도 LSASS에 평문 암호나 NTLM 해시가 보관되지 않습니다.",
+      "식별자 `adgraph_protected_users_security_group_controls_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "Protected Users membership forces strict Kerberos AES authentication and completely eliminates LSASS plaintext credential caching on endpoints.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_protected_users_security_group_controls_v1\")."
+    ]
+  },
+  "hash": "ab866adc905fbc0406ff57fa9ca9bf44ee8c8d9d6b448bba291e217e58d6c717"
+},
+{
+  "id": "t3_adgraph_tiered_administrative_architecture_esa",
+  "tier": 3,
+  "cat": "defense",
+  "track": "adgraph",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "마이크로소프트 ESAE/PAW 기반 엔터프라이즈 행정 티어링 모델",
+    "en": "Microsoft ESAE / PAW Enterprise Administrative Tiering Architecture"
+  },
+  "prompt": {
+    "ko": "Tier 0(도메인 컨트롤러 및 아이덴티티), Tier 1(엔터프라이즈 서버), Tier 2(사용자 워크스테이션) 간의 세션 격리 및 권한 있는 액세스 워크스테이션(PAW) 방어 모델을 분석합니다.\n지정된 식별자 `adgraph_tiered_administrative_architecture_esa_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_tiered_administrative_architecture_esa_v1\") 앞 20자리}`",
+    "en": "Examine the Microsoft ESAE and Privileged Access Workstation (PAW) tiered architecture, enforcing strict credential isolation across Tier 0, Tier 1, and Tier 2 boundary tiers.\nCompute the first 20 hex characters of SHA256(\"adgraph_tiered_administrative_architecture_esa_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_tiered_administrative_architecture_esa_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "티어링 모델의 핵심 규칙은 고권한 티어(Tier 0)의 자격 증명이 하위 티어(Tier 2)의 워크스테이션에 절대 노출되지 않도록 GPO 로그온 제한을 강제하는 것입니다.",
+      "식별자 `adgraph_tiered_administrative_architecture_esa_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "The cardinal rule of tiering mandates that Tier 0 administrator credentials must never be entered or cached on Tier 2 client endpoints.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_tiered_administrative_architecture_esa_v1\")."
+    ]
+  },
+  "hash": "7bffa0fb7a3f9b4a1bdec7c3aadcdefddadf8a3426309277fdded83ab53b046a"
+},
+{
+  "id": "t4_adgraph_enterprise_ad_attack_path_containment",
+  "tier": 4,
+  "cat": "defense",
+  "track": "adgraph",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 대규모 AD 공격 경로 완전 봉쇄 및 지속 모니터링",
+    "en": "Enterprise-Scale AD Attack Path Containment & Continuous Monitoring"
+  },
+  "prompt": {
+    "ko": "수천 개의 사용자 및 컴퓨터 객체로 구성된 대규모 엔터프라이즈 환경에서 그래프 탐색 알고리즘을 활용하여 모든 다중 홉(Multi-Hop) 권한 상승 경로를 자동으로 탐지하고 봉쇄하는 파이프라인을 구축합니다.\n지정된 식별자 `adgraph_enterprise_ad_attack_path_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_enterprise_ad_attack_path_containment_v1\") 앞 20자리}`",
+    "en": "Design and evaluate an automated pipeline traversing enterprise-scale AD graphs to detect and remediate all multi-hop privilege escalation pathways to identity store assets.\nCompute the first 20 hex characters of SHA256(\"adgraph_enterprise_ad_attack_path_containment_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_enterprise_ad_attack_path_containment_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "대규모 기업에서는 주기적으로 SharpHound 수집 데이터를 ingestion하여 새로운 공격 경로 생성 여부를 회귀 감사해야 합니다.",
+      "식별자 `adgraph_enterprise_ad_attack_path_containment_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Continuous graph ingestion regression testing catches unintended toxic ACL grants before attackers can weaponize them.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_enterprise_ad_attack_path_containment_v1\")."
+    ]
+  },
+  "hash": "4abd766991f6a96c08d75172b269637fe803697052000039a6784f4b47d54fc4"
+},
+{
+  "id": "t4_adgraph_autonomous_bloodhound_pipeline_remediation",
+  "tier": 4,
+  "cat": "pipeline",
+  "track": "adgraph",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "자율형 BloodHound CI/CD 감사 파이프라인과 이상 권한 자동 격리",
+    "en": "Autonomous BloodHound CI/CD Auditing Pipeline & Privilege Isolation"
+  },
+  "prompt": {
+    "ko": "Terraform/Ansible로 관리되는 AD 인프라 코드(IaC) 변경 시 CI/CD 단계에서 신규 커밋된 DACL 정책의 BloodHound 공격 경로 유발 여부를 자동 시뮬레이션하고 차단하는 아키텍처를 분석합니다.\n지정된 식별자 `adgraph_autonomous_bloodhound_pipeline_remediation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_autonomous_bloodhound_pipeline_remediation_v1\") 앞 20자리}`",
+    "en": "Construct an autonomous CI/CD security gate analyzing infrastructure-as-code ACL changes against BloodHound attack graph models to proactively block dangerous permissions.\nCompute the first 20 hex characters of SHA256(\"adgraph_autonomous_bloodhound_pipeline_remediation_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_autonomous_bloodhound_pipeline_remediation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "신규 보안 그룹 추가 시 Neo4j에 임시 브랜치 그래프를 구성하여 shortestPath 길이가 단축되는지 사전 검증합니다.",
+      "식별자 `adgraph_autonomous_bloodhound_pipeline_remediation_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "Graph CI gates simulate pending ACL changes in Neo4j staging branches to ensure shortest path lengths to Tier 0 do not decrease.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_autonomous_bloodhound_pipeline_remediation_v1\")."
+    ]
+  },
+  "hash": "6d1529eaa6c4b5cc6c6e6f5eae74f1dac8c3aebeb0d702303f8284360b8719f9"
+},
+{
+  "id": "t4_adgraph_hybrid_azure_ad_cross_tenant_graph_traversal",
+  "tier": 4,
+  "cat": "cloud",
+  "track": "adgraph",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "하이브리드 Azure AD Connect 연동 공격 그래프와 교차 테넌트 장악",
+    "en": "Hybrid Azure AD Connect Attack Graph Traversal & Cross-Tenant Takeover"
+  },
+  "prompt": {
+    "ko": "온프레미스 Active Directory와 Microsoft Entra ID(Azure AD) 간 동기화 서비스 계정(MSOL_/ADSync)의 비밀번호 재설정 권한을 이용하여 클라우드 글로벌 관리자까지 권한을 상승시키는 복합 그래프 경로를 분석합니다.\n지정된 식별자 `adgraph_hybrid_azure_ad_cross_tenant_graph_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_hybrid_azure_ad_cross_tenant_graph_traversal_v1\") 앞 20자리}`",
+    "en": "Analyze hybrid identity attack graphs bridging on-premise AD and Microsoft Entra ID (Azure AD), abusing ADSync/MSOL service account privileges to attain Cloud Global Administrator.\nCompute the first 20 hex characters of SHA256(\"adgraph_hybrid_azure_ad_cross_tenant_graph_traversal_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_hybrid_azure_ad_cross_tenant_graph_traversal_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Azure AD Connect 동기화 계정은 패스워드 해시 동기화(PHS)를 위해 온프레미스 도메인에 대한 Replicating Directory Changes 권한을 보유합니다.",
+      "식별자 `adgraph_hybrid_azure_ad_cross_tenant_graph_traversal_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Azure AD Connect sync accounts possess elevated on-prem directory replication rights, turning on-prem compromise into cloud tenant takeover.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_hybrid_azure_ad_cross_tenant_graph_traversal_v1\")."
+    ]
+  },
+  "hash": "8973d68bd97bfe6882b8c7547832e2f8c272694e059651580afa941b2a84ba65"
+},
+{
+  "id": "t4_adgraph_ad_cs_pki_graph_escalation_chain_defense",
+  "tier": 4,
+  "cat": "defense",
+  "track": "adgraph",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "전사 PKI 인증 기관(AD CS) 그래프 에스컬레이션 체인 종합 방어",
+    "en": "Enterprise PKI CA (AD CS) Attack Graph Escalation Chain Hardening"
+  },
+  "prompt": {
+    "ko": "BloodHound로 매핑된 전사 인증 기관(CA) 및 인증서 템플릿의 ESC1~ESC13 취약 경로를 완전히 차단하기 위한 템플릿 ACL 정비 및 강력한 매핑(Strong Certificate Binding, KB5014754) 강제 정책을 수립합니다.\n지정된 식별자 `adgraph_ad_cs_pki_graph_escalation_chain_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_ad_cs_pki_graph_escalation_chain_defense_v1\") 앞 20자리}`",
+    "en": "Harden enterprise certificate authorities against BloodHound-mapped ESC1-ESC13 escalation chains by auditing template ACLs and enforcing strong certificate binding (KB5014754).\nCompute the first 20 hex characters of SHA256(\"adgraph_ad_cs_pki_graph_escalation_chain_defense_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_ad_cs_pki_graph_escalation_chain_defense_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "KB5014754 패치는 인증서의 SAN 기반 매핑 대신 SID 확장을 강제하여 인증서 위조 기반 권한 상승을 근본적으로 차단합니다.",
+      "식별자 `adgraph_ad_cs_pki_graph_escalation_chain_defense_v1`의 해시 앞 20자리를 확인하세요."
+    ],
+    "en": [
+      "Strong certificate mapping binds client certificates directly to object SIDs, neutralizing SAN forgery vulnerabilities.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_ad_cs_pki_graph_escalation_chain_defense_v1\")."
+    ]
+  },
+  "hash": "248219412926bf30d49e2db743c496f0620e5c0e6bb5fa716d8171be8a5969fd"
+},
+{
+  "id": "t4_adgraph_capstone_full_spectrum_ad_graph_defense",
+  "tier": 4,
+  "cat": "capstone",
+  "track": "adgraph",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "통합 캡스톤: Active Directory 공격 그래프 분석 및 전이적 위험 차단",
+    "en": "Capstone: Full-Spectrum Active Directory Graph Auditing & Zero-Trust Defense"
+  },
+  "prompt": {
+    "ko": "SharpHound 수집, Cypher 최단 공격 경로 추출, GenericAll/WriteDacl ACE 악용, 최소 컷 기반 유해 권한 제거, Protected Users 및 PAW 티어링 아키텍처 구축을 망라하는 엔드투엔드 AD 방어 체계를 종합 구현합니다.\n지정된 식별자 `adgraph_capstone_full_spectrum_ad_graph_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adgraph_capstone_full_spectrum_ad_graph_defense_v1\") 앞 20자리}`",
+    "en": "Synthesize the complete Active Directory defense lifecycle: SharpHound data collection, Cypher shortest-path discovery, toxic ACE remediation, Protected Users policy enforcement, and PAW tiering.\nCompute the first 20 hex characters of SHA256(\"adgraph_capstone_full_spectrum_ad_graph_defense_v1\") to submit the flag.\n\nFormat: `FLAG{SHA256(\"adgraph_capstone_full_spectrum_ad_graph_defense_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "공격 그래프 이론을 기반으로 한 지속적 ACL 관리와 계층화된 접근 통제는 현대 엔터프라이즈 AD 환경의 핵심 방어 기둥입니다.",
+      "식별자 `adgraph_capstone_full_spectrum_ad_graph_defense_v1`의 해시 앞 20자리를 계산하세요."
+    ],
+    "en": [
+      "Continuous attack graph analysis combined with strict administrative tiering forms the bedrock of modern enterprise AD resilience.",
+      "Extract the first 20 hex characters of SHA256(\"adgraph_capstone_full_spectrum_ad_graph_defense_v1\")."
+    ]
+  },
+  "hash": "2fee6cbf88166658d7144606605bf8d3932ee8cbe0d5c2523fdfafe3586516c1"
+}
 ];

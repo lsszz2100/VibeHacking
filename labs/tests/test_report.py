@@ -62,14 +62,14 @@ class TestCVSS31Calculator:
 
 
 class TestLabCatalogCoverage:
-    """52개 전 실습 랩의 취약점 데이터베이스 완전성 검증"""
+    """53개 전 실습 랩의 취약점 데이터베이스 완전성 검증"""
 
-    def test_all_52_labs_present(self):
-        expected_ids = {str(i).zfill(2) for i in range(1, 53)}
+    def test_all_53_labs_present(self):
+        expected_ids = {str(i).zfill(2) for i in range(1, 54)}
         catalog_ids = set(LAB_CATALOG.keys())
         missing = expected_ids - catalog_ids
         assert not missing, f"Missing labs in report catalog: {missing}"
-        assert len(catalog_ids) == 52
+        assert len(catalog_ids) == 53
 
     def test_finding_fields_integrity(self):
         for lid, lab in LAB_CATALOG.items():
@@ -95,7 +95,7 @@ class TestReportGeneratorRendering:
     def test_full_catalog_summary(self):
         gen = SecurityReportGenerator()
         stats = gen.get_summary_stats()
-        assert stats["total_labs"] == 52
+        assert stats["total_labs"] == 53
         assert stats["total_findings"] >= 45
         assert stats["average_cvss"] >= 7.0
         assert stats["severity_counts"]["Critical"] > 0
@@ -219,7 +219,7 @@ class TestVhackCLIReportIntegration:
         cmd = [sys.executable, str(self.REPO_ROOT / "vhack.py"), "report", "summary"]
         proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.REPO_ROOT))
         assert proc.returncode == 0
-        assert "52개 랩 취약점 진단 요약" in proc.stdout
+        assert "53개 랩 취약점 진단 요약" in proc.stdout
         assert "Critical" in proc.stdout
         assert "High" in proc.stdout
         assert "KISA ISMS-P" in proc.stdout

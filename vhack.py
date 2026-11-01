@@ -567,7 +567,17 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [2, 17, 44, 49],
     },
+    "53": {
+        "name": "AD BloodHound 공격 그래프 & ACL 익스플로잇 랩",
+        "dir":  "53_ad_bloodhound_lab",
+        "desc": "ADGraphMaster: SharpHound / bloodhound-python 도메인 데이터 인제스천 · Neo4j Cypher shortestPath 최단 공격 경로 탐색 · GenericAll / WriteDacl DACL 권한 상승 체인 악용 · 블루팀 과도 권한 ACE 정화 & Protected Users 계층형 방어",
+        "url":  "웹 콘솔 & AD 공격 그래프 대시보드: http://localhost:8053",
+        "difficulty": "★★★★★",
+        "related": [11, 29, 54, 10],
+    },
 }
+
+LABS_METADATA = LABS
 
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
@@ -1596,6 +1606,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8050, "Lab 50 (ArtifactHunter SANS DFIR Threat Hunting Lab)"),
         (8051, "Lab 51 (eBPFRuntimeGuard Cloud Native eBPF Kernel Security Lab)"),
         (8052, "Lab 52 (C2TunnelGuard C2 Network Tunneling & Covert Channel Defense Lab)"),
+        (8053, "Lab 53 (ADGraphMaster Active Directory BloodHound & ACL Exploitation Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
