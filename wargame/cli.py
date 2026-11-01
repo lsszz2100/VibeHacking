@@ -129,12 +129,12 @@ def submit_flag_cli(chal_id: str, flag: str, lang: str = "ko") -> Tuple[bool, st
 
 
 def print_tracks_summary() -> None:
-    """35개 전체 트랙 목록 및 사용자 진행도 출력"""
+    """전체 트랙 목록 및 사용자 진행도 출력"""
     tiers, tracks, challenges = load_wargame_db()
     progress = load_user_progress()
     solved_set = set(progress.get("solved", []))
 
-    print(bold(cyan("\n🎮 VibeHacking Wargame — 35개 트랙 로드맵\n")))
+    print(bold(cyan(f"\n🎮 VibeHacking Wargame — {len(tracks)}개 트랙 로드맵\n")))
     print(f"  {bold('ID'):<14} {bold('트랙 명칭'):<32} {bold('진행도'):<15} {bold('배점')}")
     print("  " + "─" * 70)
 
@@ -223,13 +223,13 @@ def interactive_play() -> None:
     tracks_by_num = {f"{i+1}": t for i, t in enumerate(tracks)}
 
     print(bold(cyan("\n🕹️  VibeHacking 터미널 워게임 아레나 (CLI Mode)")))
-    print(dim(f"  35개 트랙 · {len(challenges)}개 암호/해킹 챌린지 · 오프라인 진행도 자동 저장\n"))
+    print(dim(f"  {len(tracks)}개 트랙 · {len(challenges)}개 암호/해킹 챌린지 · 오프라인 진행도 자동 저장\n"))
 
     while True:
         try:
             print(f"\n{bold('[메뉴]')}")
-            print(f"  {cyan('1~35')} : 트랙 선택 및 문제 풀이")
-            print(f"  {cyan('list')} : 35개 트랙 진행도 종합 요약표")
+            print(f"  {cyan(f'1~{len(tracks)}')} : 트랙 선택 및 문제 풀이")
+            print(f"  {cyan('list')} : {len(tracks)}개 트랙 진행도 종합 요약표")
             print(f"  {cyan('find <단어>')} : 키워드로 문제 검색")
             print(f"  {cyan('q')} : 종료\n")
 
