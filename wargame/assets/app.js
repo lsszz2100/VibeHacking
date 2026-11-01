@@ -4888,14 +4888,30 @@
 
     if (!cypherInput || !statusBadge || !riskBadge || !canvas || !output) return;
 
-    if (scenario) currentAdGraphScenario = scenario;
+    if (scenario) {
+      currentAdGraphScenario = scenario;
+    } else {
+      // Dynamic query inspection based on user input
+      const userQuery = (cypherInput.value || "").trim().toLowerCase();
+      if (userQuery.includes("genericall") || userQuery.includes("forcechange") || userQuery.includes("resetpassword")) {
+        currentAdGraphScenario = "genericall";
+      } else if (userQuery.includes("writedacl") || userQuery.includes("addprincipal") || userQuery.includes("add-adgroupmember")) {
+        currentAdGraphScenario = "writedacl";
+      } else if (userQuery.includes("delete") || userQuery.includes("protectedusers") || userQuery.includes("remediate") || userQuery.includes("prune")) {
+        currentAdGraphScenario = "remediate";
+      } else if (userQuery.includes("shortestpath") || userQuery.includes("domain admins")) {
+        currentAdGraphScenario = "shortest_path";
+      } else if (userQuery.length > 0) {
+        currentAdGraphScenario = "custom";
+      }
+    }
     const mode = currentAdGraphScenario;
 
     let canvasText = "";
     let telemetryText = "";
 
     if (mode === "shortest_path"){
-      cypherInput.value = "MATCH p = shortestPath((u:User {name:'JAPNEET'})-[*1..5]->(g:Group {name:'DOMAIN ADMINS'})) RETURN p";
+      if (scenario) cypherInput.value = "MATCH p = shortestPath((u:User {name:'JAPNEET'})-[*1..5]->(g:Group {name:'DOMAIN ADMINS'})) RETURN p";
       statusBadge.textContent = "PATH ACTIVE: 4 HOPS";
       statusBadge.style.background = "#dc2626";
       riskBadge.textContent = "TIER 0 AT RISK";
@@ -4945,7 +4961,7 @@
         "    impersonates Alice_Admin, and achieves full Tier 0 domain takeover.";
     }
     else if (mode === "genericall"){
-      cypherInput.value = "MATCH (g:Group {name:'IT_SUPPORTS'})-[r:GenericAll]->(u:User {name:'GEET'}) RETURN g, r, u";
+      if (scenario) cypherInput.value = "MATCH (g:Group {name:'IT_SUPPORTS'})-[r:GenericAll]->(u:User {name:'GEET'}) RETURN g, r, u";
       statusBadge.textContent = "ACE EXPLOITED: PWN";
       statusBadge.style.background = "#e11d48";
       riskBadge.textContent = "CREDENTIAL FORCED";
@@ -4977,7 +4993,7 @@
         "    Status: 0x0 (Success) - Privilege escalation confirmed.";
     }
     else if (mode === "writedacl"){
-      cypherInput.value = "MATCH (u:User {name:'GEET'})-[r:WriteDacl]->(g:Group {name:'DOMAIN ADMINS'}) RETURN u, r, g";
+      if (scenario) cypherInput.value = "MATCH (u:User {name:'GEET'})-[r:WriteDacl]->(g:Group {name:'DOMAIN ADMINS'}) RETURN u, r, g";
       statusBadge.textContent = "DACL MODIFIED";
       statusBadge.style.background = "#ea580c";
       riskBadge.textContent = "PERMISSIONS POISONED";
@@ -5003,7 +5019,7 @@
         "    Revoke non-standard WriteDacl delegations on sensitive containers.";
     }
     else if (mode === "remediate"){
-      cypherInput.value = "MATCH (g:Group {name:'IT_SUPPORTS'})-[r:GenericAll]->(u:User) DELETE r; MATCH (u:User {name:'ALICE_ADMIN'}) SET u.protectedUsers = true";
+      if (scenario) cypherInput.value = "MATCH (g:Group {name:'IT_SUPPORTS'})-[r:GenericAll]->(u:User) DELETE r; MATCH (u:User {name:'ALICE_ADMIN'}) SET u.protectedUsers = true";
       statusBadge.textContent = "GRAPH SEVERED: 0 PATHS";
       statusBadge.style.background = "#16a34a";
       riskBadge.textContent = "TIER 0 PROTECTED";
@@ -5035,6 +5051,39 @@
         "     Dijkstra Shortest Path to Tier 0: NONE (Cost: Infinity)\n" +
         "     KISA 2.5.1 & NIST CSF PR.AC-04 Compliance: 100% VERIFIED.";
     }
+    else {
+      // Dynamic Custom Cypher Query Execution
+      statusBadge.textContent = "QUERY EVALUATED";
+      statusBadge.style.background = "#2563eb";
+      riskBadge.textContent = "INSPECTION ACTIVE";
+      riskBadge.style.background = "#1d4ed8";
+
+      const queryPreview = cypherInput.value.length > 70 ? cypherInput.value.substring(0, 70) + "..." : cypherInput.value;
+      canvasText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║           Active Directory BloodHound Custom Graph Inspection      ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "  Target Active Directory Database: CORP.LOCAL (Neo4j Property Graph)\n" +
+        "  Total Principals Indexed: 12 Nodes (Users: 5, Groups: 4, Computers: 3)\n" +
+        "  Total Directed Relationships: 8 Edges (MemberOf, GenericAll, WriteDacl, AdminTo, HasSession)\n\n" +
+        "  Active Filter: " + queryPreview + "\n\n" +
+        "  [Topology Preview]:\n" +
+        "    (Japneet:User) -> [:MemberOf] -> (IT_Supports:Group)\n" +
+        "    (IT_Supports:Group) -> [:GenericAll] -> (Geet:User)\n" +
+        "    (Geet:User) -> [:AdminTo] -> (FileSrv01:Computer)\n" +
+        "    (FileSrv01:Computer) <- [:HasSession] - (Alice_Admin:User)\n" +
+        "    (Alice_Admin:User) -> [:MemberOf] -> (Domain Admins:Group)";
+
+      telemetryText =
+        "[Neo4j Cypher Custom Query Engine]:\n" +
+        "  Query: " + cypherInput.value + "\n" +
+        "  Planner: COST (Greedy Subgraph Isomorphism)\n" +
+        "  Tokens Parsed: AST validated successfully (0 syntax errors)\n" +
+        "  Matching Records: 5 nodes, 4 transitive hops evaluated\n" +
+        "  Graph Security Evaluation:\n" +
+        "    Potential shadow administrative escalation path identified.\n" +
+        "    Recommended actions: Run BloodHound shortestPath query to DA or apply Toxic ACE Remediation.";
+    }
 
     canvas.textContent = canvasText;
     output.textContent = telemetryText;
@@ -5046,6 +5095,16 @@
   if (adgraphExecuteBtn) adgraphExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderAdGraph(); });
   const adgraphResetBtn = document.getElementById("adgraphResetBtn");
   if (adgraphResetBtn) adgraphResetBtn.addEventListener("click", () => { audio(); renderAdGraph("shortest_path"); });
+  const adgraphCypherInput = document.getElementById("adgraphCypherInput");
+  if (adgraphCypherInput) {
+    adgraphCypherInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        audio();
+        sLaser();
+        renderAdGraph();
+      }
+    });
+  }
   document.querySelectorAll("[data-adgraph-preset]").forEach(btn => {
     btn.addEventListener("click", () => {
       audio();

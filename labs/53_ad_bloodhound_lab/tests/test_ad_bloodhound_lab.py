@@ -187,6 +187,15 @@ def test_stage4_remediation():
     })
     assert bad_rem.status_code == 400
 
+    # Ineffective remediation (pruning dummy edge leaves toxic path intact -> 409 Conflict)
+    ineffective_rem = client.post("/api/stage4/remediate_acl", json={
+        "prune_edges": ["DUMMY_PRINCIPAL@CORP.LOCAL->NONEXISTENT_TARGET@CORP.LOCAL"],
+        "enable_protected_users": True,
+        "enforce_tiered_admin": True
+    })
+    assert ineffective_rem.status_code == 409
+    assert "attack path still exists" in ineffective_rem.json()["detail"]
+
     # Successful remediation
     good_rem = client.post("/api/stage4/remediate_acl", json={
         "prune_edges": [
@@ -205,6 +214,23 @@ def test_stage4_remediation():
     st = client.get("/status").json()
     assert st["stages"]["stage4_blue_remediation"] is True
     assert st["graph_metrics"]["tiered_admin_enabled"] is True
+
+
+def test_cypher_nonexistent_nodes_and_edge_cases():
+    client.post("/api/stage1/ingest", json={
+        "collector_tool": "sharphound",
+        "collection_method": "All",
+        "domain": "corp.local",
+        "data_types": ["users", "groups", "computers", "acls"]
+    })
+
+    # Nonexistent node
+    r = client.post("/api/stage2/shortest_path", json={
+        "source_node": "NONEXISTENT_USER@CORP.LOCAL",
+        "target_node": "DOMAIN ADMINS@CORP.LOCAL",
+        "cypher_query": "MATCH p=shortestPath((u:User)-[r*1..5]->(g:Group)) RETURN p"
+    })
+    assert r.status_code == 404
 
 
 def test_full_progression_and_reset():

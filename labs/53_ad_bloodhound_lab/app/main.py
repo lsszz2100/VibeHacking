@@ -94,43 +94,36 @@ def init_default_ad_graph() -> None:
 
 
 def find_shortest_attack_path(start: str, target: str) -> Optional[List[Dict[str, str]]]:
-    """BFS traversal over AD attack graph."""
-    start_u = start.upper()
-    target_u = target.upper()
+    """BFS traversal over AD attack graph with direct edge tuple chaining."""
+    start_u = start.strip().upper()
+    target_u = target.strip().upper()
 
     if start_u not in state.nodes or target_u not in state.nodes:
         return None
 
-    queue: deque = deque([[start_u]])
+    if start_u == target_u:
+        return []
+
+    # Queue contains tuples of: (current_node_name, path_of_edges)
+    queue: deque = deque([(start_u, [])])
     visited: Set[str] = {start_u}
-    parent_edge: Dict[str, GraphEdge] = {}
 
     while queue:
-        path = queue.popleft()
-        current = path[-1]
+        current, path = queue.popleft()
 
         if current == target_u:
-            # Reconstruct edge path
-            result_path = []
-            for i in range(len(path) - 1):
-                s_node = path[i]
-                t_node = path[i + 1]
-                edge = parent_edge.get(f"{s_node}->{t_node}")
-                result_path.append({
-                    "from": s_node,
-                    "to": t_node,
-                    "relationship": edge.relationship if edge else "TRANSITIVE"
-                })
-            return result_path
+            return path
 
-        # Find outgoing edges
+        # Find outgoing edges from current node
         for edge in state.edges:
             if edge.source == current and edge.target not in visited:
                 visited.add(edge.target)
-                parent_edge[f"{current}->{edge.target}"] = edge
-                new_path = list(path)
-                new_path.append(edge.target)
-                queue.append(new_path)
+                edge_dict = {
+                    "from": edge.source,
+                    "to": edge.target,
+                    "relationship": edge.relationship
+                }
+                queue.append((edge.target, path + [edge_dict]))
 
     return None
 
@@ -139,7 +132,7 @@ class IngestionRequest(BaseModel):
     collector_tool: str = Field(..., min_length=2, max_length=32, description="sharphound, bloodhound-python, invoke-bloodhound")
     collection_method: str = Field(..., min_length=2, max_length=32, description="All, DCOnly, Session, Group")
     domain: str = Field(..., min_length=3, max_length=64, description="Target domain FQDN (e.g. corp.local)")
-    data_types: List[str] = Field(..., min_length=1, description="Uploaded data schemas: users, groups, computers, acls, sessions")
+    data_types: List[str] = Field(..., min_length=1, max_length=16, description="Uploaded data schemas: users, groups, computers, acls, sessions")
 
 
 class CypherQueryRequest(BaseModel):
@@ -156,7 +149,7 @@ class ACLExploitRequest(BaseModel):
 
 
 class RemediationRequest(BaseModel):
-    prune_edges: List[str] = Field(..., min_length=1, description="List of source->target edges to remove e.g. ['IT SUPPORTS@CORP.LOCAL->GEET@CORP.LOCAL']")
+    prune_edges: List[str] = Field(..., min_length=1, max_length=32, description="List of source->target edges to remove e.g. ['IT SUPPORTS@CORP.LOCAL->GEET@CORP.LOCAL']")
     enable_protected_users: bool = Field(..., description="Enroll Tier 0 and Tier 1 admins into Protected Users security group")
     enforce_tiered_admin: bool = Field(..., description="Enforce strict PAW/Tier 0 segregation")
 
@@ -341,6 +334,8 @@ async def stage3_exploit_acl(req: ACLExploitRequest):
                     if p_edge.source == principal_u and p_edge.target == edge.source and p_edge.relationship == "MEMBEROF":
                         abusable_edge = edge
                         break
+                if abusable_edge:
+                    break
 
     if not abusable_edge or abusable_edge.relationship != ace_u:
         raise HTTPException(
@@ -384,14 +379,14 @@ async def stage4_remediate_acl(req: RemediationRequest):
             detail="Remediation mandates enabling Protected Users security group and enforcing Tiered Administration."
         )
 
-    # Prune toxic ACE edges
+    # Prune toxic ACE edges explicitly specified in remediation plan
     pruned_count = 0
     new_edges = []
     edges_to_prune_parsed = {p.strip().upper() for p in req.prune_edges}
 
     for edge in state.edges:
         edge_key = f"{edge.source}->{edge.target}"
-        if edge_key in edges_to_prune_parsed or edge.relationship in {"GENERICALL", "WRITEDACL"}:
+        if edge_key in edges_to_prune_parsed:
             pruned_count += 1
         else:
             new_edges.append(edge)
