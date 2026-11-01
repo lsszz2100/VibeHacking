@@ -149,6 +149,10 @@ python3 vhack.py alias install          # 셸 자동 감지 → RC 파일에 등
 python3 vhack.py alias status           # 설치 현황 확인
 python3 vhack.py alias remove           # alias 제거
 
+# 대시보드 & 벤치마크
+python3 vhack.py dashboard              # 시스템/랩/워게임 통합 관제 대시보드 (alias: status, stats)
+python3 vhack.py benchmark --all        # 전체 52개 랩 성능 및 지연시간 벤치마크 진단
+
 # 업데이트
 python3 vhack.py update                 # git pull
 ```
@@ -157,6 +161,8 @@ python3 vhack.py update                 # git pull
 
 | 명령어 | 설명 |
 |--------|------|
+| `vhack dashboard` | 시스템 리소스, 52개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
+| `vhack benchmark` | 실습 랩 기동 지연시간, 헬스체크 및 성능 벤치마크 (`--all`, `--dry-run`, `-o`) |
 | `vhack list` | 전체 75개 섹션 목록 |
 | `vhack list --search <키워드>` | 섹션명 필터링 |
 | `vhack study <번호>` | 섹션 파일 목록 |

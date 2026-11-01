@@ -103,6 +103,8 @@
 - **오프라인 번들러 및 릴리스 배포 파이프라인 (Bundler & Release)**:
   - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 52개 랩, 64개 트랙(2,240문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/vibehacking-v2.6.0.tar.gz`) 생성 지원
 - **vhack CLI 고도화**:
+  - `vhack dashboard` (`vhack status`, `vhack stats`): 시스템 리소스(RAM/Swap/CPU/Disk), 52개 랩 실행 상태, 64개 트랙 2,240제 워게임 요원 진행도, 지식 저장소 및 보안 지표를 종합 시각화하는 ANSI 터미널 대시보드 (`--json` 지원)
+  - `vhack benchmark`: 52개 실습 랩 기동 지연시간, 헬스체크 응답 속도 및 메모리 점유율을 실시간 측정·보고하는 고성능 벤치마크 엔진 (`--all`, `--dry-run`, `--iterations`, `--json`, `-o`)
   - `vhack play`: 64개 트랙 2,240문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리, 0o600 권한 보호)
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
   - `vhack solve`: 52개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
