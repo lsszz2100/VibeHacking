@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VibeHacking Wargame">
 <meta property="og:title" content="VibeHacking Wargame — 브라우저 터미널 실전 사이버보안 침투 CTF">
-<meta property="og:description" content="브라우저에서 가짜 셸로 표적 vibe.corp의 5대 보안 계층을 침투하는 56개 트랙 1,960개 단계별 사이버보안 워게임.">
+<meta property="og:description" content="브라우저에서 가짜 셸로 표적 vibe.corp의 5대 보안 계층을 침투하는 64개 트랙 2,240개 단계별 사이버보안 워게임.">
 <meta property="og:url" content="https://lsszz2100.github.io/VibeHacking/wargame/">
 <meta property="og:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
 <!-- Twitter / X Cards -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="VibeHacking Wargame — 브라우저 터미널 사이버보안 침투 CTF">
-<meta name="twitter:description" content="브라우저에서 즐기는 단계별 56개 트랙 1,960개 사이버보안 침투 챌린지. 실시간 터미널 & 12대 취약점 시뮬레이터 탑재.">
+<meta name="twitter:description" content="브라우저에서 즐기는 단계별 64개 트랙 2,240개 사이버보안 침투 챌린지. 실시간 터미널 & 20대 취약점 시뮬레이터 탑재.">
 <meta name="twitter:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 
 <!-- Schema.org Structured Data -->
@@ -34,7 +34,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "VibeHacking Wargame",
-  "description": "A browser-based terminal simulation wargame with 56 tracks and 1,960 progressive cybersecurity infiltration challenges.",
+  "description": "A browser-based terminal simulation wargame with 64 tracks and 2,240 progressive cybersecurity infiltration challenges.",
   "applicationCategory": "EducationalApplication, GameApplication",
   "operatingSystem": "All modern browsers",
   "offers": {
@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2205</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2240</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -167,6 +167,7 @@
         <button class="pg-tab" data-tab="agentmcp">🤖 AI Agent &amp; MCP Inspector</button>
         <button class="pg-tab" data-tab="sansdfir">🔍 SANS DFIR &amp; Supertimeline</button>
         <button class="pg-tab" data-tab="ebpfruntime">🐝 eBPF &amp; Tetragon Inspector</button>
+        <button class="pg-tab" data-tab="c2tunnel">📡 C2 Malleable &amp; Tunneling Inspector</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -1019,6 +1020,47 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="ebpfVerdictBadge" class="token-tag token-lit">STATUS: MONITORING</span>
                 </div>
                 <div id="ebpfVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C2 Malleable & Traffic Tunneling Inspector Panel -->
+        <div id="pgPanel-c2tunnel" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">C2 Tunneling Scenarios:</span>
+              <button class="pg-btn danger" data-c2tunnel-preset="dns_entropy">1. DNS Shannon Entropy Exfiltration (dnscat2 / TXT chunks)</button>
+              <button class="pg-btn danger" data-c2tunnel-preset="socks_pivot">2. Multi-hop Chisel SOCKS5 Reverse Pivot (Port 8052)</button>
+              <button class="pg-btn danger" data-c2tunnel-preset="jitter_beacon">3. Malleable C2 Beaconing (Jitter Variance &amp; Sleep Mask)</button>
+              <button class="pg-btn" data-c2tunnel-preset="inline_dpi">4. 🔒 Inline Zeek/Suricata DPI &amp; TCP RST Drop</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <span class="dim" style="font-size:11px;">Egress Channel / Payload:</span>
+              <input id="c2tunnelTargetInput" class="bgp-asn-input" style="width:230px;" value="tunnel.corp.internal (DNS TXT / High Entropy)" />
+              <span class="dim" style="font-size:11px;">Inspection Engine:</span>
+              <select id="c2tunnelEngineSelect" class="bgp-select" style="width:250px;">
+                <option value="dns">DNS Entropy Analyzer (Shannon Entropy &gt; 4.2 H(X))</option>
+                <option value="socks">Chisel SOCKS5 Pivoting Tap (Reverse Stream Multiplex)</option>
+                <option value="jitter">Malleable C2 Jitter Detector (Delta Inter-arrival Variance)</option>
+                <option value="dpi">Suricata/Zeek DPI (Flowbits &amp; TCP Reset Drop)</option>
+              </select>
+              <button id="c2tunnelRunBtn" class="pg-btn">Simulate C2 Traffic Analysis</button>
+            </div>
+            <div class="dbshield-grid" style="margin-top:8px;">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>📡 Egress Packet Stream &amp; Covert Beacon Payload</span>
+                  <span id="c2tunnelStreamBadge" class="token-tag token-inj">STATUS: STANDBY</span>
+                </div>
+                <div id="c2tunnelStreamOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ Zeek / Suricata Inline DPI Verdict &amp; Mitigation</span>
+                  <span id="c2tunnelVerdictBadge" class="token-tag token-lit">STATUS: MONITORING</span>
+                </div>
+                <div id="c2tunnelVerdictOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>

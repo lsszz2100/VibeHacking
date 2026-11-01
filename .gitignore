@@ -88,5 +88,11 @@ build/
 .venv/
 venv/
 
+# Node
+node_modules/
+.npm-cache/
+package.json
+package-lock.json
+
 # Infra DB HA & Backup Runtime Data
 infra/db_ha_backup/data/

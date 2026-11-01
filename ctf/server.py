@@ -1538,6 +1538,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "bpftool dump로 sys_enter_getdents64 디렉터리 은닉 Shadow Rootkit을 적출하고 언핀된 BPF 맵을 소멸시켜 무결성을 복원하세요."}
                 ],
             },
+            "LAB52_DNS_ENTROPY": {
+                "id": "LAB52_DNS_ENTROPY",
+                "title": "C2TunnelGuard: DNS Tunneling Shannon Entropy & Chunk Exfiltration Analysis",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{DNS_TUNNEL_SHANNON_ENTROPY_EXFIL_8841}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "DNS 쿼리 FQDN 서브도메인의 Shannon 엔트로피(H >= 3.8)를 계산하여 Base32/Base64 은닉 데이터 유출 채널을 식별하세요."}
+                ],
+            },
+            "LAB52_SOCKS_PIVOT": {
+                "id": "LAB52_SOCKS_PIVOT",
+                "title": "C2TunnelGuard: Chisel & SSH Reverse Dynamic SOCKS5 Pivoting Defense",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{SOCKS5_CHISEL_REVERSE_PIVOT_BLOCKED_4129}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "역방향 Chisel/SSH 프록시 세션에 EGRESS_FIREWALL_DROP 정책을 적용하여 1080 SOCKS5 내부망 피보팅을 차단하세요."}
+                ],
+            },
+            "LAB52_C2_JITTER": {
+                "id": "LAB52_C2_JITTER",
+                "title": "C2TunnelGuard: Malleable C2 Beacon Jitter & Profile Fingerprinting",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{C2_MALLEABLE_JITTER_BEACON_NEUTRALIZED_9502}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "패킷 간격 도착 시간(IAT) 분산 통계와 HTTP 헤더 워터마크(0xcafe)를 매칭하여 위장된 Malleable C2 비콘 프로필을 역추적하세요."}
+                ],
+            },
+            "LAB52_INLINE_DPI": {
+                "id": "LAB52_INLINE_DPI",
+                "title": "C2TunnelGuard: Zeek & Suricata Flowbits Stateful Inline DPI Defense",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{INLINE_SURICATA_ZEEK_FLOWBITS_DROPPED_7730}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Suricata Flowbits 상태 추적 룰셋을 주입하고 악성 C2 터널 트래픽에 대해 INLINE_DROP 조치를 발령하여 데이터 스트림을 차단하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1586,6 +1634,7 @@ class CTFState:
             ["LAB49_SHOR", "LAB49_HYBRID_KEM", "LAB49_LATTICE_FAULT", "LAB49_DOWNGRADE_DEFENSE"],
             ["LAB50_EXEC_PREFETCH", "LAB50_MFT_USN", "LAB50_VAD_INJECT", "LAB50_SUPETIMELINE"],
             ["LAB51_KPROBE_TRACE", "LAB51_LSM_ESCAPE", "LAB51_TETRAGON_SIGKILL", "LAB51_ROOTKIT_CARVE"],
+            ["LAB52_DNS_ENTROPY", "LAB52_SOCKS_PIVOT", "LAB52_C2_JITTER", "LAB52_INLINE_DPI"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

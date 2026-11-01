@@ -525,6 +525,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A05:2021",
         "owasp_name": "Security Misconfiguration (Container Namespace Escape & Unchecked Privileges)",
     },
+    "52": {
+        "kisa_id": "2.10.2",
+        "kisa_name": "네트워크 보안 관리 (C2 은닉 통신 및 비인가 터널링 유출 차단)",
+        "nist_csf_id": "PR.AC-05",
+        "nist_csf_name": "Network Integrity & Covert Channel Protections (DPI & DNS Entropy)",
+        "owasp_id": "A01:2021",
+        "owasp_name": "Broken Access Control (Unauthorized Reverse Proxy & SOCKS5 Pivoting)",
+    },
 }
 
 @dataclass
@@ -1484,6 +1492,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Container with CAP_SYS_ADMIN escapes mount namespace to access /etc/shadow directly on host VFS.",
                 "affected_component": "eBPFRuntimeGuard Engine (Port 8051)",
                 "remediation": "Deploy Cilium Tetragon eBPF LSM synchronous SIGKILL enforcement and drop CAP_SYS_ADMIN capabilities."
+            }
+        ]
+    },
+    "52": {
+        "title": "52 C2TunnelGuard C2 Network Tunneling & Covert Channel Defense",
+        "category": "Network Security & Red Teaming",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5201",
+                "name": "Covert Data Exfiltration and Lateral Pivoting via Unrestricted DNS/SOCKS5 Tunneling",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N",
+                "mitre_id": "T1071.004",
+                "mitre_technique": "DNS Protocol Tunneling",
+                "mitre_tactic": "Command and Control",
+                "impact": "Exfiltration of sensitive enterprise secrets through high-entropy DNS queries and dynamic lateral movement across internal subnets.",
+                "description": "Perimeter network permits unrestricted recursive DNS queries and external reverse SSH/Chisel SOCKS5 egress without DPI or entropy analysis.",
+                "affected_component": "C2TunnelGuard Gateway (Port 8052)",
+                "remediation": "Deploy recursive DNS Shannon entropy filtering, enforce egress firewall whitelisting, and activate Suricata/Zeek inline DPI drop rules."
             }
         ]
     }

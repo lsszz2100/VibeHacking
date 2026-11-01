@@ -907,6 +907,7 @@
     renderAgentMCP("ipi_tool_call");
     renderSANSDFIR("prefetch_exec");
     renderEBPFRuntime("kprobe_exec");
+    renderC2Tunnel("dns_entropy");
   }
 
   function hidePlayground(){
@@ -917,7 +918,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -927,6 +928,7 @@
     });
     if (tabName === "canbus") startCanSimulation();
     else stopCanSimulation();
+    if (tabName === "c2tunnel") renderC2Tunnel();
   }
 
   // --- 1. CAN Bus Simulator ---
@@ -3768,6 +3770,147 @@
     verdictOut.textContent = verdictText;
   }
 
+  /* ===== 20. C2 Malleable & Traffic Tunneling Inspector ===== */
+  let currentC2TunnelScenario = "dns_entropy";
+
+  function renderC2Tunnel(scenario){
+    const targetEl = document.getElementById("c2tunnelTargetInput");
+    const engineEl = document.getElementById("c2tunnelEngineSelect");
+    const streamBadge = document.getElementById("c2tunnelStreamBadge");
+    const verdictBadge = document.getElementById("c2tunnelVerdictBadge");
+    const streamOut = document.getElementById("c2tunnelStreamOutput");
+    const verdictOut = document.getElementById("c2tunnelVerdictOutput");
+
+    if (!targetEl || !engineEl || !streamBadge || !verdictBadge || !streamOut || !verdictOut) return;
+
+    if (scenario){
+      currentC2TunnelScenario = scenario;
+      if (scenario === "dns_entropy"){
+        targetEl.value = "tunnel.corp.internal (DNS TXT / High Entropy: 4.85 H(X))";
+        engineEl.value = "dns";
+      } else if (scenario === "socks_pivot"){
+        targetEl.value = "10.0.50.10:8052 (Chisel SOCKS5 Reverse Pivot)";
+        engineEl.value = "socks";
+      } else if (scenario === "jitter_beacon"){
+        targetEl.value = "api.cloud-sync-relay.com (Malleable C2 Beacon / Jitter: 30%)";
+        engineEl.value = "jitter";
+      } else if (scenario === "inline_dpi"){
+        targetEl.value = "Inline Suricata / Zeek DPI (Flowbits Rule 209014)";
+        engineEl.value = "dpi";
+      }
+    } else {
+      if (engineEl.value === "dns") currentC2TunnelScenario = "dns_entropy";
+      else if (engineEl.value === "socks") currentC2TunnelScenario = "socks_pivot";
+      else if (engineEl.value === "jitter") currentC2TunnelScenario = "jitter_beacon";
+      else if (engineEl.value === "dpi") currentC2TunnelScenario = "inline_dpi";
+    }
+
+    const mode = currentC2TunnelScenario;
+    let streamText = "";
+    let verdictText = "";
+
+    if (mode === "dns_entropy"){
+      streamText =
+        "[Covert DNS Tunneling & Shannon Entropy Telemetry]:\n" +
+        "  Target Domain: " + targetEl.value + "\n" +
+        "  Observed Query Stream: v8a7c2f019b883d1e4.exfil.tunnel.corp.internal (TXT Record)\n" +
+        "  Subdomain Payload Characteristics:\n" +
+        "    > Label Length: 52 characters (RFC 1035 compliant chunking)\n" +
+        "    > Symbol Diversity: Base32 / Base64url alphabet (high distribution randomness)\n" +
+        "    > Calculated Shannon Entropy: H(X) = 4.85 bits/char (Legitimate Baseline: 2.1 - 2.8)\n" +
+        "    > Query Volume: 840 queries/min to authoritative NS (203.0.113.88)\n" +
+        "  Tunneling Mechanism:\n" +
+        "    ✓ Bi-directional covert channel established over recursive DNS resolver\n" +
+        "    ✓ Total exfiltrated payload chunk volume: ~4.2 MB encrypted binary data";
+      verdictText =
+        "[Zeek Network Telemetry & DNS Entropy Verdict]:\n" +
+        "  - Detection Heuristic: Shannon Entropy H(X) > 4.2 threshold exceeded\n" +
+        "  - Anomaly Rule: High-frequency unique subdomain requests without NXDOMAIN rate\n" +
+        "  - Egress Containment: DNS firewall policy drops outbound queries to rogue NS\n" +
+        "  - MITRE ATT&CK: T1071.004 (Covert DNS Tunnel) & T1048.003 (Exfiltration Over DNS)\n" +
+        "Verdict: 🚨 COVERT DNS EXFILTRATION DETECTED (High Entropy Subdomain Stream Terminated)";
+      streamBadge.textContent = "ENTROPY: 4.85 H(X)";
+      streamBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: DROPPED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else if (mode === "socks_pivot"){
+      streamText =
+        "[Multiplexed Reverse SOCKS5 Pivoting Stream]:\n" +
+        "  Endpoint: " + targetEl.value + "\n" +
+        "  Reverse Tunnel Session: 10.0.50.10:8052 -> 198.51.100.24:443 (HTTP/2 Yamux Multiplex)\n" +
+        "  Internal Pivoting Path:\n" +
+        "    > Pivot Gateway: 10.0.50.10 (Dual-homed DMZ jump server)\n" +
+        "    > Target Internal Subnet: 172.16.100.0/24 (Isolated Banking Core Segment)\n" +
+        "    > Tunnel Client: Chisel reverse proxy streaming over outbound TLS\n" +
+        "  Telemetry Inspection:\n" +
+        "    ✓ Protocol: HTTP/2 Yamux stream encapsulation (16 virtual TCP channels in 1 socket)\n" +
+        "    ✓ Firewall Evasion: Outbound TCP 443 permitted by stateful perimeter firewall";
+      verdictText =
+        "[Perimeter Egress & Reverse Pivot Defense Summary]:\n" +
+        "  - Detection Signature: Suricata Yamux multiplex stream framing signature (sid: 2049102)\n" +
+        "  - Flow Anomaly: Long-lived persistent TLS connection with symmetric bidirectional bursts\n" +
+        "  - Containment: Inline TCP RST packet injected to sever reverse tunnel session\n" +
+        "  - MITRE ATT&CK: T1572 (Protocol Tunneling) & T1090.002 (Reverse External Proxy)\n" +
+        "Verdict: 🛡️ REVERSE PIVOT SEVERED (Yamux Stream Multiplex Identified, TCP RST Injected)";
+      streamBadge.textContent = "SOCKS5: REVERSE PIVOT";
+      streamBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: SEVERED (TCP RST)";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else if (mode === "jitter_beacon"){
+      streamText =
+        "[Malleable C2 HTTP Beacon & Inter-Arrival Analysis]:\n" +
+        "  Listener URL: " + targetEl.value + "\n" +
+        "  Profile Telemetry (Cobalt Strike / Havoc Malleable C2 Engine):\n" +
+        "    > Nominal Sleep: 60.0s | Configured Jitter: 30% (Random Window: 42.0s - 78.0s)\n" +
+        "    > HTTP Method: GET /api/v2/telemetry | Header: User-Agent, Accept-Encoding\n" +
+        "    > Payload Hiding: Injected metadata token inside Cookie: __cf_bm=\n" +
+        "  Delta Inter-Arrival Timing (Delta-T Samples):\n" +
+        "    [48.2s, 71.5s, 53.9s, 64.1s, 76.8s, 43.5s, 69.2s]\n" +
+        "    Mean Delta: 61.02s | Standard Deviation: 12.44s | Coefficient of Variation: 0.20";
+      verdictText =
+        "[Statistical Inter-Arrival Beaconing Detection]:\n" +
+        "  - Detection Engine: Zeek c2_jitter analysis & inter-arrival clustering\n" +
+        "  - Statistical Finding: Fixed mean with uniform jitter distribution (unnatural for human web traffic)\n" +
+        "  - EDR Co-relation: Memory scan on host 10.0.50.25 detected sleep mask hook in unbacked memory\n" +
+        "  - MITRE ATT&CK: T1071.001 (Web Protocols) & T1027.005 (Indicator Removal from Tools)\n" +
+        "Verdict: ⚡ MALLEABLE C2 BEACON IDENTIFIED (Inter-arrival Variance Clustered, Host Quarantined)";
+      streamBadge.textContent = "BEACON: JITTER (30%)";
+      streamBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: CLUSTERED";
+      verdictBadge.className = "token-tag token-lit";
+
+    } else { // inline_dpi
+      streamText =
+        "[Suricata / Zeek Inline DPI & Flowbits Policy Enforcement]:\n" +
+        "  Active Signature: " + targetEl.value + "\n" +
+        "  Stateful Rule Evaluation:\n" +
+        "    alert tcp any any -> any [80,443,8080,8052] (\n" +
+        "      msg:\"MALWARE-CNC CobaltStrike/Havoc Malleable C2 HTTP Checkin\";\n" +
+        "      flow:established,to_server; flowbits:set,c2.candidate;\n" +
+        "      content:\"POST\"; http_method;\n" +
+        "      content:\"/api/v2/telemetry\"; http_uri;\n" +
+        "      pcre:\"/Cookie:\\s*__cf_bm=[A-Za-z0-9_-]{48,}/i\";\n" +
+        "      sid:209014; rev:3;)\n" +
+        "  Stateful Match: Flowbit c2.candidate matched on TCP flow 10.0.50.25:52140 <-> 198.51.100.24:443";
+      verdictText =
+        "[IPS Inline Drop & Threat Neutralization Summary]:\n" +
+        "  - Inline Action: drop (Packet dropped at kernel NFQueue before reaching egress NIC)\n" +
+        "  - Automated SOAR Playbook: Host 10.0.50.25 isolated via 802.1X quarantine VLAN\n" +
+        "  - Forensic Artifacts: PCAP stream with full HTTP headers exported to DFIR vault\n" +
+        "  - MITRE ATT&CK: T1001.003 (Protocol Impersonation) & T1573 (Encrypted Channel)\n" +
+        "Verdict: 🔒 INLINE DPI DROP ENFORCED (C2 Session Terminated, Host Isolated)";
+      streamBadge.textContent = "FLOWBITS: MATCH";
+      streamBadge.className = "token-tag token-inj";
+      verdictBadge.textContent = "VERDICT: INLINE DROP";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    streamOut.textContent = streamText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -4061,6 +4204,8 @@
         openPlayground("sansdfir"); break;
       case "ebpfruntime": case "ebpf": case "tetragon": case "tracingpolicy": case "bpf":
         openPlayground("ebpfruntime"); break;
+      case "c2tunnel": case "tunnel": case "chisel": case "dnscat": case "jitter":
+        openPlayground("c2tunnel"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -4708,6 +4853,22 @@
       sLaser();
       const p = btn.getAttribute("data-ebpf-preset");
       renderEBPFRuntime(p);
+    });
+  });
+
+  // C2 Malleable & Traffic Tunneling Inspector Controls
+  const c2tunnelRunBtn = document.getElementById("c2tunnelRunBtn");
+  if (c2tunnelRunBtn) c2tunnelRunBtn.addEventListener("click", () => { audio(); sLaser(); renderC2Tunnel(); });
+  const c2tunnelTargetInput = document.getElementById("c2tunnelTargetInput");
+  if (c2tunnelTargetInput) c2tunnelTargetInput.addEventListener("input", () => renderC2Tunnel());
+  const c2tunnelEngineSelect = document.getElementById("c2tunnelEngineSelect");
+  if (c2tunnelEngineSelect) c2tunnelEngineSelect.addEventListener("change", () => renderC2Tunnel());
+  document.querySelectorAll("[data-c2tunnel-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-c2tunnel-preset");
+      renderC2Tunnel(p);
     });
   });
 

@@ -4,7 +4,7 @@
 
 A browser-based, **terminal-style infiltration wargame**. You drive a fake shell to breach 5 security layers of `vibe.corp` — perimeter → web server → internal → vault → core. 100% client-side, no backend.
 
-🔗 **플레이 / Play:** `https://lsszz2205.github.io/VibeHacking/`
+🔗 **플레이 / Play:** `https://lsszz2240.github.io/VibeHacking/`
 *(GitHub Pages 활성화 후 접속 가능 / available once GitHub Pages is enabled — see below)*
 
 ---
@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 221 | 40% |
-| `webserver` 웹서버 | **1** | 400 | 60% |
-| `internal` 내부망 | **2** | 532 | 60% |
-| `vault` 금고 | **3** | 542 | 58% |
-| `core` 코어 | **4** | 510 | 71% |
+| `perimeter` 외곽 | **0** | 223 | 40% |
+| `webserver` 웹서버 | **1** | 408 | 60% |
+| `internal` 내부망 | **2** | 544 | 60% |
+| `vault` 금고 | **3** | 550 | 58% |
+| `core` 코어 | **4** | 515 | 71% |
 
 
 <details>
@@ -144,6 +144,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `agentmcp` 🤖 AI 에이전트 & MCP 보안 (2) | 컨텍스트 중재 프로토콜 구조 설계 · 비인가 지시문 삽입 공격 모델 / context mediation protocol architecture, and covert instruction diversion mechanics |
 | `sansdfir` 🔍 SANS DFIR 아티팩트 헌팅 (2) | 실행 흔적 조사 원리 · 포렌식 시간선 통합 체계 / evidence of execution assessment, and forensic timeline consolidation |
 | `ebpfruntime` 🐝 eBPF 런타임 보안 (2) | 커널 가상머신 구조 원리 · 정적 검사 안전성 모델 / kernel virtual machine fundamentals and bytecode validation engine safety model |
+| `c2tunnel` 📡 C2 터널링 & 은닉 채널 (2) | 통신 은닉 채널 원리 · 경계 방화벽 외향 통제 우회 매커니즘 / covert communication principles and perimeter outbound control evasion |
 
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
@@ -213,6 +214,8 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `agentmcp` 🤖 AI 에이전트 & MCP 보안 (8) | 기능 명세 메타데이터 왜곡 · 지식베이스 문서 주입 변조 · 함수 식별자 은닉 충돌 유도 · 대리 권한 오남용 승격 · 비신뢰 입력 인터프리터 악용 · 양방향 제어문자 은닉 기법 · 문맥 기억 조작 · 시스템 지시문 외부 추출 / capability metadata distortion, knowledge base retrieval tampering, function identifier collisions, confused caller privilege escalation, untrusted input interpreter hazards, bidirectional character masking, conversation memory manipulation, and system directive extraction via functions |
 | `sansdfir` 🔍 SANS DFIR 아티팩트 헌팅 (8) | 실행 기록 분석 도구 · 호환성 캐시 경로 복원 · 실행 파일 해시 추출 · 그래픽 환경 실행 기록 · 마스터 파일 테이블 구조 · 변경 저널 삭제 추적 · 폴더 탐색 기록 분석 · 최근 항목 바로가기 추출 / execution log parser, compatibility cache path assessment, executable hash extraction, interactive session execution traces, file record layout, change journal deletion records, directory browsing tracking, and recent shortcut link parsing |
 | `ebpfruntime` 🐝 eBPF 런타임 보안 (8) | 동적 함수 추적 계측 · 정적 계측점 텔레메트리 · 트램펄린 고속 분기 · 커널 데이터 구조체 연동 · 순환 버퍼 스트리밍 · 보안 모듈 후크 제어 · 드라이버 레벨 패킷 처리 · 트래픽 스케줄링 패킷 통제 / dynamic function tracing, static instrumentation points telemetry, trampoline branch mechanics, kernel map structures, ring buffer streaming, security module hooks, driver-level packet processing, and traffic scheduling control |
+| `c2tunnel` 📡 C2 터널링 & 은닉 채널 (8) | 패킷 간격 통계적 이상 탐지 · 클라이언트 핸드셰이크 식별 · 기본 차단 외향 정책 수립 · 내부 전달자 인증 인가 강화 · 서비스 메시 상호 암호화 격리 · 프로필 고유 표식 위협 귀속 · 보안 오케스트레이션 자동 격리 · 공격 매트릭스 다계층 매핑 / inter-arrival statistical anomaly detection, client handshake profiling, default-deny outbound policy establishment, internal forwarder authentication hardening, service mesh mutual encryption isolation, profile unique marker threat attribution, security orchestration automated isolation, and attack matrix tactical mapping |
+| `c2tunnel` 📡 C2 터널링 & 은닉 채널 (8) | 재귀 질의 경로 악용 · 응답 레코드 데이터 분할 · 오픈소스 도구 내부 구조 · 동적 포트 전달 · 암호화 스트림 다중화 · 에코 페이로드 캡슐화 · 청크 분할 전송 인코딩 · 외향 연결 역방향 진입점 / recursive query route misuse, response record data chunking, open source utility internals, dynamic port forwarding, encrypted stream multiplexing, echo payload encapsulation, chunked transfer encoding, and reverse inbound entrypoints |
 
 
 #### `internal` 내부망 — 티어 2 / tier 2
@@ -282,6 +285,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `agentmcp` 🤖 AI 에이전트 & MCP 보안 (12) | 표준입출력 및 스트리밍 전송 채널 · 매개변수 비밀정보 누출 · 데이터베이스 연동 2차 질의 삽입 · 웹 요청 기능 내부망 접근 · 파일 접근 경로 조작 · 하위 쉘 특수문자 삽입 · 다회차 대화 세션 탈옥 · 하위 에이전트 연쇄 위임 공격 · 토큰 과소비 자원 고갈 · 동적 평가 함수 실행 위험 · 불량 서버 도메인 전환 기법 · 직렬화 객체 복원 취약점 / standard IO and streaming transport security, parameter credential leakage, secondary query manipulation, internal network traversal via web tools, path manipulation, subshell metacharacter hazards, multi-turn persisted escapes, subagent delegation chain abuse, token resource exhaustion, dynamic evaluation execution hazards, rogue server address redirection, and insecure object restoration |
 | `sansdfir` 🔍 SANS DFIR 아티팩트 헌팅 (12) | 시간 조작 나노초 판정 · 비상주 데이터 런 해석 · 트랜잭션 변경 복구 · 리소스 사용량 추적 · 백그라운드 활성 기록 · 은닉 프로세스 구조체 탐지 · 가상 메모리 보호 속성 분석 · 인젝션 헤더 식별 · 잔여 네트워크 소켓 복원 · 쿼리 터널 패킷 추출 · 보안 통신 지문 식별 · 통합 타임라인 생성 / timestomping precision analysis, non-resident data run decoding, transaction rollback analysis, system resource telemetry, background activity timestamps, unlinked process detection, anonymous memory protection inspection, reflective header identification, remnant network socket scanning, query tunnel packet filtering, encrypted session fingerprinting, and unified supertimeline generation |
 | `ebpfruntime` 🐝 eBPF 런타임 보안 (12) | 규칙 엔진 이벤트 처리 · 인커널 정책 집행 구조 · 사용자 정의 리소스 명세 · 강제 종료 시그널 전달 · 파일 오픈 접근 통제 · 격리 공간 이탈 방지 · 실행 계통 비정상 감지 · 자격증명 변조 방어 · 이식성 타입 메타데이터 · 적재 프로그램 디스어셈블리 · 맵 데이터 추출 분석 · 계층적 컨테이너 구속 / rule engine event processing, in-kernel policy enforcement, custom resource definitions, termination signal delivery, file access controls, isolation boundary escape prevention, lineage anomaly detection, credential tampering mitigation, portable type metadata, loaded program disassembly, map entry extraction, and hierarchical container confinement |
+| `c2tunnel` 📡 C2 터널링 & 은닉 채널 (12) | 정보 무작위도 계산 판정 · 대소문자 비구분 인코딩 식별 · 역방향 체이닝 아키텍처 · 가상 인터페이스 라우팅 · 요청 헤더 메타데이터 변조 · 수면 변동폭 통계 모델링 · 외향 식별자 불일치 기법 · 네트워크 연결 텔레메트리 분석 · 커널 소켓 이벤트 계측 · 상태 태그 기반 흐름 추적 · 이벤트 후킹 스크립트 · 인라인 세션 강제 차단 / information randomness evaluation, case-insensitive encoding identification, reverse chaining architecture, virtual interface routing, request header metadata alteration, sleep fluctuation statistical modeling, outbound identifier discrepancy, network connection telemetry analysis, kernel socket event instrumentation, stateful flow tracking, event hooking scripts, and inline session termination |
 
 
 #### `vault` 금고 — 티어 3 / tier 3
@@ -420,12 +424,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `agentmcp` 🤖 AI 에이전트 & MCP 보안 (5) | 자율 군집 에이전트 대응 · 정형 기법 상태 불변성 증명 · 기밀 연산 보호 구역 격리 · 제로 트러스트 자율 정책 거버넌스 · 엔터프라이즈 에이전트 침투 방어 통합 아키텍처 / autonomous adversarial swarm defense, formal verification of action invariants, confidential computing protected enclave, zero trust autonomous governance, and enterprise autonomous agent defense architecture |
 | `sansdfir` 🔍 SANS DFIR 아티팩트 헌팅 (5) | 인메모리 바이너리 재구성 · 저널 순서 충돌 정밀 검증 · 메모리 풀 태그 교차 분석 · 대규모 타임라인 원인 자동 판별 · 엔터프라이즈 침해사고 전면 대응 캡스톤 / in-memory binary section reassembly, journal sequence collision verification, memory pool tag cross-validation, automated incident root cause analysis, and enterprise incident response capstone |
 | `ebpfruntime` 🐝 eBPF 런타임 보안 (5) | 은닉 바이트코드 복원 파이프라인 · 커널 기반 제로트러스트 메시 · 검증 서브시스템 연산 결함 우회 분석 · 자율 커널 위협 헌팅 에이전트 · 엔터프라이즈 런타임 전면 방어 캡스톤 / hidden bytecode reconstruction pipeline, kernel-level zero trust mesh, validation subsystem arithmetic defect assessment, autonomous threat hunting agent, and enterprise runtime defense capstone |
+| `c2tunnel` 📡 C2 터널링 & 은닉 채널 (5) | 고무작위 청크 분석 파이프라인 · 다중 홉 역방향 전달 전면 차단 · 패킷 간격 분산 분석 신호 언마스킹 · 인라인 심층 패킷 검사 오케스트레이션 · 전사 은닉 통신 방어 캡스톤 / high-randomness chunk analysis pipeline, multi-hop reverse forwarder containment, inter-arrival variance signal unmasking, inline deep packet inspection orchestration, and enterprise covert communication defense capstone |
 
 </details>
 
-총 **2205문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35 · 안드로이드 리버싱·후킹 35 · 윈도우 클라이언트·커널 익스플로잇 35 · 차량 보안·CAN Bus·UDS 35 · API 보안·REST·GraphQL·JWT 35 · SOC 위협 헌팅·SIEM·IR 35 · 퍼징·취약점 발굴·ASAN 35 · AI 레드팀·탈옥·가드레일 35 · 악성코드 분석·자동화 샌드박스 35 · 무선 네트워크·WPA3 보안 35 · 네트워크 인프라·Cisco 스위치 보안 35 · ADCS 인증서 침투·Kerberos 위임 35 · Ghidra 역공학·난독화 해제 35 · OAuth 2.0·OIDC SSO 취약점 35 · BGP 라우팅·RPKI 보안 35 · KISA 기반시설 취약점 평가·하드닝 35 · OSINT 공격 표면 정찰·섀도우 IT 35 · 클라우드 IAM 권한 상승·거버넌스 35 · 엔터프라이즈 DB 침투·하드닝 35 · 블루투스 저에너지 & SDR RF 해킹 35 · EDR 회피·메모리 패치 35 · 현대 응용 암호학 & PQC 35 · 엔터프라이즈 침해사고 대응 & DFIR 35 · SBOM & 소프트웨어 공급망 보안 35 · 서버리스 클라우드 보안 & 이벤트 인젝션 35 · 클라우드 사고 대응 & 침해 위협 헌팅 35 · 브라우저 확장 프로그램 보안 & Manifest V3 35 · 양자 내성 암호 & PQC 마이그레이션 35 · 리눅스 커널 하드닝 & 런타임 방어 35 · AI 에이전트 & MCP 보안 35 · SANS DFIR 아티팩트 헌팅 35 · eBPF 런타임 보안 & 옵저버빌리티 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **2240문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35 · 안드로이드 리버싱·후킹 35 · 윈도우 클라이언트·커널 익스플로잇 35 · 차량 보안·CAN Bus·UDS 35 · API 보안·REST·GraphQL·JWT 35 · SOC 위협 헌팅·SIEM·IR 35 · 퍼징·취약점 발굴·ASAN 35 · AI 레드팀·탈옥·가드레일 35 · 악성코드 분석·자동화 샌드박스 35 · 무선 네트워크·WPA3 보안 35 · 네트워크 인프라·Cisco 스위치 보안 35 · ADCS 인증서 침투·Kerberos 위임 35 · Ghidra 역공학·난독화 해제 35 · OAuth 2.0·OIDC SSO 취약점 35 · BGP 라우팅·RPKI 보안 35 · KISA 기반시설 취약점 평가·하드닝 35 · OSINT 공격 표면 정찰·섀도우 IT 35 · 클라우드 IAM 권한 상승·거버넌스 35 · 엔터프라이즈 DB 침투·하드닝 35 · 블루투스 저에너지 & SDR RF 해킹 35 · EDR 회피·메모리 패치 35 · 현대 응용 암호학 & PQC 35 · 엔터프라이즈 침해사고 대응 & DFIR 35 · SBOM & 소프트웨어 공급망 보안 35 · 서버리스 클라우드 보안 & 이벤트 인젝션 35 · 클라우드 사고 대응 & 침해 위협 헌팅 35 · 브라우저 확장 프로그램 보안 & Manifest V3 35 · 양자 내성 암호 & PQC 마이그레이션 35 · 리눅스 커널 하드닝 & 런타임 방어 35 · AI 에이전트 & MCP 보안 35 · SANS DFIR 아티팩트 헌팅 35 · eBPF 런타임 보안 & 옵저버빌리티 35 · C2 터널링 & 은닉 채널 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **2205 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35 · Android reversing & Frida 35 · Windows client & kernel exploits 35 · Automotive security & CAN bus 35 · API security & modern auth 35 · SOC threat hunting & SIEM 35 · Fuzzing & vulnerability research 35 · AI red teaming & jailbreak 35 · Malware analysis & sandbox 35 · Wireless & Wi-Fi security 35 · Network infrastructure & Cisco security 35 · AD CS PKI & Kerberos delegation 35 · OAuth 2.0 & OIDC SSO Exploitation 35 · BGP Routing & RPKI Security 35 · KISA Infrastructure Audit & Hardening 35 · OSINT Surface Recon & Shadow IT 35 · Cloud IAM Privilege Escalation & Governance 35 · Enterprise DB Security & Hardening 35 · Bluetooth LE & SDR RF hacking 35 · EDR evasion & memory patching 35 · Modern cryptanalysis & PQC 35 · Enterprise incident response & DFIR 35 · SBOM & software supply chain 35 · Serverless security & cloud event injection 35 · Cloud incident response & threat hunting 35 · Browser extension security & Manifest V3 35 · Post-Quantum Cryptography & PQC Migration 35 · Linux kernel hardening & runtime defense 35 · AI agent & MCP tool security 35 · SANS DFIR artifact hunting 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **2240 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35 · Android reversing & Frida 35 · Windows client & kernel exploits 35 · Automotive security & CAN bus 35 · API security & modern auth 35 · SOC threat hunting & SIEM 35 · Fuzzing & vulnerability research 35 · AI red teaming & jailbreak 35 · Malware analysis & sandbox 35 · Wireless & Wi-Fi security 35 · Network infrastructure & Cisco security 35 · AD CS PKI & Kerberos delegation 35 · OAuth 2.0 & OIDC SSO Exploitation 35 · BGP Routing & RPKI Security 35 · KISA Infrastructure Audit & Hardening 35 · OSINT Surface Recon & Shadow IT 35 · Cloud IAM Privilege Escalation & Governance 35 · Enterprise DB Security & Hardening 35 · Bluetooth LE & SDR RF hacking 35 · EDR evasion & memory patching 35 · Modern cryptanalysis & PQC 35 · Enterprise incident response & DFIR 35 · SBOM & software supply chain 35 · Serverless security & cloud event injection 35 · Cloud incident response & threat hunting 35 · Browser extension security & Manifest V3 35 · Post-Quantum Cryptography & PQC Migration 35 · Linux kernel hardening & runtime defense 35 · AI agent & MCP tool security 35 · SANS DFIR artifact hunting 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 
@@ -477,7 +482,7 @@ The first three are static; the last one plays the game. A challenge where follo
 **최초 1회 설정** (저장소 소유자):
 1. 저장소 **Settings → Pages → Build and deployment → Source** 를 **"GitHub Actions"** 로 설정.
 2. (워크플로의 `configure-pages` 가 자동 활성화를 시도하므로 보통 위 단계도 자동 처리됩니다.)
-3. `Actions` 탭에서 **Deploy Wargame** 워크플로가 성공하면 `https://lsszz2205.github.io/VibeHacking/` 에서 플레이 가능.
+3. `Actions` 탭에서 **Deploy Wargame** 워크플로가 성공하면 `https://lsszz2240.github.io/VibeHacking/` 에서 플레이 가능.
 
 ---
 

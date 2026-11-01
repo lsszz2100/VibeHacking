@@ -1458,6 +1458,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🔍 Shadow BPF Rootkit carved and kernel integrity restored! -> FLAG{EBPF_SHADOW_ROOTKIT_CARVED_VERIFIED_3310}"
             }
         ]
+    },
+    "52": {
+        "title": "C2TunnelGuard: C2 네트워크 터널링 & 은닉 채널 방어",
+        "steps": [
+            {
+                "step": 1,
+                "name": "DNS 터널링 Shannon 엔트로피 분석 (TXT/A FQDN 청킹)",
+                "target": "POST /api/stage1/analyze_dns_entropy (fqdn_query, record_type, entropy_threshold)",
+                "poc_explanation": "DNS 서브도메인에 인코딩되어 유출되는 데이터 청크의 Shannon 엔트로피(H >= 3.8)를 계산하여 비인가 은닉 DNS 채널을 식별합니다.",
+                "exploit_payload": '{"fqdn_query": "7f8b9c1d2e3a4b5c6d7e8f90a1b2c3d4.tunnel.attacker.com", "record_type": "TXT", "entropy_threshold": 3.8}',
+                "defense": "재귀 DNS 방화벽 엔트로피 분석 엔진 활성화 및 외부 임의 도메인 DNS 쿼리 인그레스 격리.",
+                "sample_output": "📡 DNS Tunneling exfiltration channel identified! -> FLAG{DNS_TUNNEL_SHANNON_ENTROPY_EXFIL_8841}"
+            },
+            {
+                "step": 2,
+                "name": "Chisel/SSH 역방향 SOCKS5 다이나믹 피보팅 차단",
+                "target": "POST /api/stage2/block_reverse_socks (tunnel_tool, remote_host, dynamic_socks_port, isolation_policy)",
+                "poc_explanation": "공격자의 Chisel/SSH 역방향 프록시 세션을 탐지하고 내부 1080 SOCKS5 포트 바인딩 및 아웃바운드 이그레스 방화벽 정책(EGRESS_FIREWALL_DROP)을 적용하여 내부망 측면 이동을 차단합니다.",
+                "exploit_payload": '{"tunnel_tool": "chisel", "remote_host": "198.51.100.42:8443", "dynamic_socks_port": 1080, "isolation_policy": "EGRESS_FIREWALL_DROP"}',
+                "defense": "아웃바운드 이그레스 필터링(Egress Whitelisting), SOCKS5 프록시 인증 의무화 및 TLS 인터셉션.",
+                "sample_output": "🛡️ Reverse chisel tunnel blocked and dynamic egress severed! -> FLAG{SOCKS5_CHISEL_REVERSE_PIVOT_BLOCKED_4129}"
+            },
+            {
+                "step": 3,
+                "name": "Malleable C2 비콘 지터(Jitter) 분산 분석 & 프로필 핑거프린팅",
+                "target": "POST /api/stage3/fingerprint_c2_jitter (c2_framework, mean_sleep_sec, jitter_percentage, header_watermark)",
+                "poc_explanation": "Cobalt Strike / Sliver Malleable C2 HTTP 트래픽의 수면 시간 분산(Sleep Jitter) 통계 및 헤더 워터마크 시그니처를 대조하여 위장된 비콘 통신을 역추적합니다.",
+                "exploit_payload": '{"c2_framework": "cobalt_strike", "mean_sleep_sec": 30, "jitter_percentage": 25, "header_watermark": "0xcafe_malleable_http"}',
+                "defense": "통계적 패킷 도착 시간 간격(IAT) 이상 탐지 및 HTTP 헤더 위장 식별 룰셋 적용.",
+                "sample_output": "⚡ cobalt_strike Malleable C2 beacon profile unmasked! -> FLAG{C2_MALLEABLE_JITTER_BEACON_NEUTRALIZED_9502}"
+            },
+            {
+                "step": 4,
+                "name": "Zeek/Suricata Flowbits 상태 기반 인라인 DPI 실시간 차단",
+                "target": "POST /api/stage4/enforce_inline_dpi (sensor_engine, rule_signature, flowbits_tag, verdict_action)",
+                "poc_explanation": "Suricata/Zeek NIDS에 상태 추적 Flowbits 룰셋을 주입하고 악성 C2 터널 트래픽에 대해 인라인 즉시 드롭(INLINE_DROP) 조치를 발령합니다.",
+                "exploit_payload": '{"sensor_engine": "suricata", "rule_signature": "drop tcp any any -> any any (msg:\'C2 Covert Tunnel Drop\'; flowbits:set,c2_tunnel_detected; drop;)", "flowbits_tag": "c2_tunnel_detected", "verdict_action": "INLINE_DROP"}',
+                "defense": "인라인 침입 방지 시스템(IPS) 모드 운영, Stateful Flow Inspection 및 비인가 터널 프로토콜 강제 종료.",
+                "sample_output": "🔍 Inline DPI policy enforced and covert tunnel dropped! -> FLAG{INLINE_SURICATA_ZEEK_FLOWBITS_DROPPED_7730}"
+            }
+        ]
     }
 }
 

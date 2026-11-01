@@ -559,6 +559,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [18, 35, 26, 44],
     },
+    "52": {
+        "name": "C2 네트워크 터널링 & 은닉 채널 방어 랩",
+        "dir":  "52_c2_tunneling_and_exfiltration_lab",
+        "desc": "C2TunnelGuard: DNS 터널링 Shannon 엔트로피 분석(H >= 3.8) · Chisel/SSH 역방향 SOCKS5 피보팅 차단 · Malleable C2 지터 비콘 분산 프로필 핑거프린팅 · Zeek/Suricata Flowbits 상태 기반 인라인 DPI 실시간 차단",
+        "url":  "웹 콘솔 & C2 방어 모니터링 대시보드: http://localhost:8052",
+        "difficulty": "★★★★★",
+        "related": [2, 17, 44, 49],
+    },
 }
 
 
@@ -1587,6 +1595,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8049, "Lab 49 (PQCTLSGuard Post-Quantum Hybrid TLS Lab)"),
         (8050, "Lab 50 (ArtifactHunter SANS DFIR Threat Hunting Lab)"),
         (8051, "Lab 51 (eBPFRuntimeGuard Cloud Native eBPF Kernel Security Lab)"),
+        (8052, "Lab 52 (C2TunnelGuard C2 Network Tunneling & Covert Channel Defense Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

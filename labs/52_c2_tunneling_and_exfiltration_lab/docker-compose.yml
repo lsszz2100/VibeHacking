@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  c2_tunneling_lab:
+    build: .
+    container_name: vhack_lab_52
+    ports:
+      - "127.0.0.1:8052:8052"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

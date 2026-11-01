@@ -11,6 +11,7 @@
 | [05_network_exploitation_techniques.md](./05_network_exploitation_techniques.md) | **고급 네트워크 익스플로잇 기법** — 네트워크 서비스는 공격자에게 가장 직접적인 진입점이다. SMB, RDP, VNC, FTP 같은 서비스는 오랜 역사를 가진 만큼 알려진 취약점도 많다. |
 | [06_network_ctf_lab.md](./06_network_ctf_lab.md) | **CTF 스타일 네트워크 해킹 실습** — 아래 docker-compose.yml을 사용해 실습 환경을 구성한다. |
 | [07_practical_packet_analysis_deepdive.md](./07_practical_packet_analysis_deepdive.md) | **실전 패킷 분석 심화 — 와이어샤크 프로토콜 해부 및 패킷 포렌식** — 실전 패킷 분석은 네트워크 케이블과 무선 전파를 오가는 바이트 스트림을 직접 캡처하고, 프로토콜 사양(RFC)에 따라 비트 단위로 해체(Dissection)하여 이상 징후, 데이터 유... |
+| [08_c2_tunneling_and_covert_channels_deepdive.md](./08_c2_tunneling_and_covert_channels_deepdive.md) | **C2 네트워크 터널링, 프록시 피보팅 및 은닉 채널 심층 방어 (C2 Tunneling & Covert Channels Deepdive)** — 공격자가 기업 내부망에 침투한 후, 내부 호스트를 원격 제어하거나 탈취한 기밀 데이터를 외부로 반출(Exfiltration)하려면 지속적인 통신 채널이 필요합니다. 그러나 일반적인 기... |
 
 ## 학습 목표
 - TCP/IP 프로토콜 스택 완전 이해

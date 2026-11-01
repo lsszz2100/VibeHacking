@@ -81,6 +81,7 @@ docker-compose --version
 | 49 | [양자 내성 하이브리드 TLS 1.3 실습](./49_pqc_hybrid_tls_lab/) | 고전 TLS HNDL 위협 감사, X25519+ML-KEM-768 하이브리드 키 교환, ML-DSA-65 전자 서명 검증, 다운그레이드 방어 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqc` / `crypto` |
 | 50 | [SANS DFIR 엔터프라이즈 아티팩트 헌팅 랩](./50_sans_dfir_hunting_lab/) | PECmd 프리패치 & ShimCache 실행 증거 추출, $MFT 비상주 데이터런 카빙 & 타임스톰프 규명, Volatility 3 DKOM & RWX VAD 인젝션 분석, Plaso 슈퍼타임라인 & SOAR 격리 | ★★★★★ | [44장 침해 대응](../44_Incident_Response_DFIR/10_sans_dfir_enterprise_artifact_hunting_deepdive.md) | `sansdfir` / `dfir` |
 | 51 | [클라우드 네이티브 eBPF 런타임 보안 랩](./51_ebpf_runtime_security_lab/) | Cilium Tetragon & Falco eBPF 커널 옵저버빌리티, kprobe:sys_execve 비인가 셸 탐지, bpf_lsm_file_open 네임스페이스 탈출 차단, TracingPolicy 실시간 SIGKILL, Shadow BPF Rootkit 무결성 감사 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/08_ebpf_runtime_observability_and_tetragon_deepdive.md) | `ebpfruntime` / `endpoint` |
+| 52 | [C2 네트워크 터널링 & 은닉 채널 방어 랩](./52_c2_tunneling_and_exfiltration_lab/) | DNS 터널링 Shannon 엔트로피 분석(H >= 3.8), Chisel/SSH 역방향 SOCKS5 피보팅 차단, Malleable C2 지터 비콘 분산 프로필 핑거프린팅, Zeek/Suricata Flowbits 인라인 DPI 실시간 차단 | ★★★★★ | [02장 네트워크 해킹](../02_Network_Hacking/08_c2_tunneling_and_covert_channels_deepdive.md) | `c2tunnel` / `network` |
 
 ---
 
