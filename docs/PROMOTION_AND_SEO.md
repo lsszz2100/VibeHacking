@@ -23,8 +23,8 @@ flowchart TD
 
 ### 1) 구조화 데이터 & 메타데이터 주입
 - **루트 Docsify 포털 (`index.html`)**:
-  - `Title`: 실전 사이버보안 완전 정복 바이블 (75개 섹션 · 38개 랩 · 1,820개 워게임)
-  - `Description`: 75개 이론/실무 섹션, 38개 핸즈온 실습 랩, 52개 트랙 1,820개 브라우저 터미널 워게임, 8대 취약점 시뮬레이터
+  - `Title`: 실전 사이버보안 완전 정복 바이블 (75개 섹션 · 54개 랩 · 2,310개 워게임)
+  - `Description`: 75개 이론/실무 섹션, 54개 핸즈온 실습 랩, 66개 트랙 2,310개 브라우저 터미널 워게임, 22대 취약점 시뮬레이터
   - `Schema.org JSON-LD`: `Course`, `LearningResource` (강좌명, 교육 수준, 커리큘럼 세부 분야 구조화)
   - `Canonical URL`: `https://lsszz2100.github.io/VibeHacking/`
 - **워게임 터미널 (`wargame/index.html`)**:
@@ -34,7 +34,7 @@ flowchart TD
 ### 2) 사이트맵 & 크롤러 규칙
 - **`sitemap.xml` / `wargame/sitemap.xml`**:
   - sitemaps.org 0.9 표준 준수
-  - 메인 포털, 워게임, 75개 교재 섹션, 38개 실습 랩 URL 전수 포함 (우선순위 0.75 ~ 1.0, 갱신주기 매핑)
+  - 메인 포털, 워게임, 75개 교재 섹션, 54개 실습 랩 URL 전수 포함 (우선순위 0.75 ~ 1.0, 갱신주기 매핑)
   - `tools/generate_sitemap.py`로 언제든 원클릭 재색인 생성 가능
 - **`robots.txt` / `wargame/robots.txt`**:
   - 모든 검색엔진 로봇(`User-agent: *`) 전체 수집 허용(`Allow: /`)
