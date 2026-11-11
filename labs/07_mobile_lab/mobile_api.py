@@ -10,9 +10,12 @@ import json
 import jwt  # PyJWT
 from flask import Flask, jsonify, request
 
+import os
+
 app = Flask(__name__)
 
-HARDCODED_API_KEY = "sk-mobile-dev-key-2024-insecure"
+# Educational CTF Lab Fixture — Mock API key
+HARDCODED_API_KEY = os.getenv("MOBILE_API_KEY", "mobile-dev-key-2024-insecure-dummy")
 FLAG_1 = "CTF{hardcoded_api_key_in_apk}"
 FLAG_2 = "CTF{jwt_alg_none_bypass}"
 

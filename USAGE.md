@@ -273,7 +273,7 @@ vhack lab start 01
 | **Lab 04 — 클라우드** | http://localhost:8040 (SSRF) · http://localhost:8443 (K8s) · http://localhost:5000 (Registry) | — |
 | **Lab 05 — 통합** | http://localhost:8888 | admin / admin123 |
 | **Lab 06 — 펌웨어** | http://localhost:8062 (웹 패널) · `docker exec -it firmware_analyzer bash` (binwalk 분석) | admin / firmware_admin_2024 |
-| **Lab 07 — 모바일** | http://localhost:8072 (취약 API) · `docker exec -it apk_analyzer bash` (jadx·frida) | API 키: sk-mobile-dev-key-2024-insecure |
+| **Lab 07 — 모바일** | http://localhost:8072 (취약 API) · `docker exec -it apk_analyzer bash` (jadx·frida) | API 키: mobile-dev-key-2024-insecure-dummy |
 | **Lab 08 — AI/LLM** | http://localhost:8088 | — |
 | **Lab 09 — ICS/SCADA** | http://localhost:8089 (HMI 패널) · Modbus TCP localhost:5020 | — |
 | **Lab 10 — K8s** | http://localhost:8090 | — |

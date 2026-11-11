@@ -45,7 +45,7 @@ VAULT_SECRETS = {
     "AWS_ACCESS_KEY_ID": "AKIAOCTOPROD8823419",
     "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYOCTOKEY",
     "DOCKER_REGISTRY_TOKEN": "dckr_pat_prod_release_8829102",
-    "PROD_DEPLOY_KEY": "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA09kOctoProdKey...\n-----END RSA PRIVATE KEY-----",
+    "PROD_DEPLOY_KEY": "-----BEGIN MOCK RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA09kOctoProdKey...\n-----END MOCK RSA PRIVATE KEY-----",  # mock-secret: educational-fixture
 }
 
 # In-Memory State

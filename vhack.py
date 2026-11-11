@@ -1823,7 +1823,8 @@ def cmd_setup_docker(args: argparse.Namespace) -> None:
 
     for desc, cmd in install_cmds:
         print(bold(f"  ▶ {desc}..."))
-        ret = subprocess.run(cmd, shell=True)
+        shell_bin = "/bin/bash" if os.path.exists("/bin/bash") else "/bin/sh"
+        ret = subprocess.run([shell_bin, "-c", cmd], shell=False)
         if ret.returncode != 0:
             print(red(f"  ✗ 단계 실패: {cmd}"))
             print(yellow("  수동으로 명령어를 확인하고 다시 시도하세요.\n"))
@@ -1831,7 +1832,8 @@ def cmd_setup_docker(args: argparse.Namespace) -> None:
 
     for desc, cmd in post_cmds:
         print(bold(f"  ▶ {desc}..."))
-        subprocess.run(cmd, shell=True)
+        shell_bin = "/bin/bash" if os.path.exists("/bin/bash") else "/bin/sh"
+        subprocess.run([shell_bin, "-c", cmd], shell=False)
 
     print(bold(green("\n  ✓ Docker 설치 작업이 완료되었습니다!")))
     print(bold(yellow("\n  [중요] 권한 적용을 위한 후속 조치:")))

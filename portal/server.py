@@ -371,7 +371,13 @@ def exec_in_lab(lab_id: str, req: ExecRequest):
         }
     
     try:
-        proc = subprocess.run(cmd_str, shell=True, cwd=str(target_dir), capture_output=True, text=True, timeout=10)
+        import shlex
+        if any(op in cmd_str for op in ["|", ">", "<", "&&", ";"]):
+            shell_bin = "/bin/bash" if os.path.exists("/bin/bash") else "/bin/sh"
+            cmd_args = [shell_bin, "-c", cmd_str]
+        else:
+            cmd_args = shlex.split(cmd_str)
+        proc = subprocess.run(cmd_args, shell=False, cwd=str(target_dir), capture_output=True, text=True, timeout=10)
         output = proc.stdout + (("\n[STDERR]\n" + proc.stderr) if proc.stderr else "")
         return {
             "status": "success",

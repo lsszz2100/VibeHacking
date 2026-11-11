@@ -42,7 +42,7 @@ def get_initial_tmp_files():
             "aws_access_key_id": "ASIA2XSERVERLESS9988",
             "aws_secret_access_key": "vibeHackingSecretKeyServerlessWarmLeak2026",
             "aws_session_token": "AQoDYXdzEJr111111111111111111111111111111111111111111111111111111",
-            "db_dsn": "postgres://lambda_worker:P@ssw0rd9988@prod-db.internal:5432/corp_finances"
+            "db_dsn": "mock-postgres://lambda_worker:P@ssw0rd9988@prod-db.internal:5432/corp_finances"  # mock-secret: educational-fixture
         },
         "/tmp/event_history.log": {
             "entries": [
