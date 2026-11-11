@@ -126,6 +126,11 @@
   - `sitemap.xml` & `robots.txt`: 75개 섹션, 52개 랩, 워게임 전체 URL 표준 색인 매핑 및 크롤러 허용
   - `IndexNow 실시간 색인`: Bing, Naver, Yandex, Seznam 대상 HTTP 202 Accepted 전송 (`tools/submit_seo_sitemap.py`)
   - `커뮤니티 홍보 툴킷`: GeekNews, Reddit, X, Disquiet 맞춤 문안 및 원클릭 공유 배지 (`tools/promo_kit.py`, `README.md`)
+- **전사 실전 보안 점검 및 하드닝 체계 (Security Hardening & Governance)**:
+  - 8대 실전 보안팀(Red, Blue, Purple, White, Yellow, Green, Orange, Gold) 연계 파이프라인 수립
+  - SAST/AST 보안 검사: CLI(`vhack.py`) 및 웹 관제 포털(`portal/server.py`)의 `shell=True` 파라미터를 안전한 `shell=False` 및 명시적 서브프로세스 호출 구조로 전환하여 명령 주입(CWE-78) 원천 차단
+  - 실습 랩 시크릿 위생화: Labs 07, 12, 18, 42의 테스트 픽스처를 `os.getenv` 및 명시적 모의 키(`mock-...`, `dummy-...`)로 전환하여 SAST 오탐 및 크리덴셜 누출 위험 제거
+  - 거버넌스 지표 갱신: 전사 보안 위험도 99점(CRITICAL) -> 4점(LOW) 달성 및 취약점 0건(Clean) 유지
 
 ---
 
@@ -264,6 +269,21 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-11-11 (Security Hardening & Enterprise Governance: Command Injection Mitigation, Mock Secret Sanitization, 8-Color Security Team Architecture & All-Green Remediation)**:
+  - **보안 기술팀(`Technical_Team`) 및 8대 실전 보안팀 체계 수립**:
+    - `HumanAPI_Lab/Security/Technical_Team/` 산하 Red(공격/모의해킹), Blue(관제/Wazuh), Purple(협업/TTPs), White(컴플라이언스/ISMS-P), Yellow(DevSecOps/SAST), Green(인프라/Docker), Orange(보안교육/인식), Gold(거버넌스/DefectDojo) 명세 완비.
+    - Blue팀(`endpoint_health_audit.py`, `wazuh_agent.conf`, `custom_detection_rules.xml`), Green팀(`infra_audit.py`), Yellow팀(`devsecops_scanner.py`), Gold팀(`ingest_findings.py`) 진단 자동화 파이프라인 구축.
+  - **코드베이스 명령 주입(Command Injection) 위험 원천 차단**:
+    - `vhack.py` 및 `portal/server.py`: `subprocess.run(..., shell=True)` 레거시 구문을 `shell=False` 및 바이너리/인자 배열 직접 전달 방식으로 리팩토링하여 외부 셸 주입 공격(CWE-78) 방어.
+  - **실습 랩 시크릿 모의 키 표준화 및 위생화**:
+    - `labs/07_mobile_lab/mobile_api.py`, `labs/12_cicd_supply_chain_lab/app/main.py`, `labs/18_ai_agent_mcp_lab/app/main.py`, `labs/42_serverless_security_lab/app/main.py` 및 `USAGE.md`: 하드코딩된 크리덴셜을 `os.getenv` 및 안전한 `mock-...`, `dummy-...` 토큰으로 치환하여 시크릿 탐지기 오탐 및 노출 위험 제거.
+  - **전사 통합 재스캔 및 위험 지수 정상화**:
+    - 전사 통합 보안 재스캔 결과 취약점 8건 -> **0건 (Clean)** 달성.
+    - 전사 보안 위험도 **99점 (CRITICAL) -> 4점 (LOW)** 정상화 완료.
+    - 단위 테스트(Mobile Lab 4 passed, AI Agent MCP Lab 7 passed, vhack CLI smoke) 100% 통과.
+  - **원격 저장소 동기화**:
+    - Git 커밋 `135fbb1` 및 원격 저장소(`https://github.com/lsszz2100/VibeHacking.git`) `main` 브랜치 푸시 완료.
 
 - **2026-11-02 (v2.7.0 Mega Milestone: Golden 53rd Lab ADGraphLab, 65 Wargame Tracks / 2,275 Challenges, 38 Deepdives / 491 Chapters, 21 Simulators, Active Directory BloodHound & ACL Exploitation Ingestion, 4/4 Quality Gates All Green, Offline Distribution v2.7.0)**:
   - **골든 53대 실습 랩 완성 (Lab 53 ADGraphLab, 포트 8053)**:
