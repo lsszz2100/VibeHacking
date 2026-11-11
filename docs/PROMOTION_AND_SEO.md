@@ -66,17 +66,22 @@ python3 tools/submit_seo_sitemap.py
 ## 4. 커뮤니티 자동 홍보 툴킷 (`tools/promo_kit.py`)
 
 ### 1) 원클릭 소셜 공유 링크
+- **Product Hunt**: 원클릭 신규 제품 런칭 작성 창 자동 열림
+- **Reddit**: r/netsec, r/cybersecurity, r/SideProject 맞춤 등록 창 자동 열림
 - **X (Twitter)**: 클릭 시 트윗 작성 창 자동 열림
-- **Reddit**: r/netsec, r/cybersecurity 등록 창 자동 열림
-- **LinkedIn**: 링크드인 피드 공유 창 자동 열림
+- **LinkedIn / Facebook**: 피드 공유 창 자동 열림
 
 ### 2) CLI 명령어
 ```bash
 # 전체 소셜 공유 링크 및 커뮤니티 포스팅 문안 출력
 python3 tools/promo_kit.py
 
-# 특정 플랫폼 맞춤 문안 출력 (geeknews, reddit, twitter, disquiet)
+# 플랫폼별 맞춤 문안 출력
+python3 tools/promo_kit.py --platform producthunt
+python3 tools/promo_kit.py --platform reddit
 python3 tools/promo_kit.py --platform geeknews
+python3 tools/promo_kit.py --platform twitter
+python3 tools/promo_kit.py --platform disquiet
 
 # Discord 보안 채널 웹훅 자동 브로드캐스트 (환경변수 설정 시)
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..." python3 tools/promo_kit.py --broadcast

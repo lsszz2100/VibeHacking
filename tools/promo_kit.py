@@ -32,6 +32,26 @@ PROMO_TEMPLATES = {
 
 설치 없이 브라우저에서 바로 즐길 수 있는 터미널 워게임과 실전 보안 교재를 무료로 이용하실 수 있습니다."""
     },
+    "producthunt": {
+        "name": "VibeHacking 2.0",
+        "tagline": "Open-source cybersecurity bible & 1,820-challenge browser wargame",
+        "url": SITE_URL,
+        "topics": "Developer Tools, Open Source, Education, Security",
+        "description": """VibeHacking is an all-in-one open-source offensive & defensive cybersecurity mastery platform.
+
+Features:
+• 75 In-Depth Sections: Binary exploitation, reverse engineering, kernel internals, EDR telemetry evasion, cloud/Kubernetes security, AI red teaming, and Zero Trust architectures.
+• 38 Reproducible Docker Labs: Ready-to-deploy hands-on testing environments with automated validation.
+• In-Browser Terminal Wargame: 52 tracks with 1,820 progressive challenges and 8 interactive security architecture simulators (BGP, OAuth2, DBShield, TLS, Cache, K8s, CAN Bus, EDRShield).
+• 100% Free & Open Source under MIT License. No installation required to play.""",
+        "maker_comment": """Hey Product Hunt community! 👋
+
+We built VibeHacking to solve a major pain point in learning cybersecurity: the friction of heavy virtual machines, outdated tutorials, and disconnected theory.
+
+With VibeHacking, you can open your browser, enter an authentic simulated Linux terminal, and immediately start solving progressive penetration testing challenges across 52 specialized tracks. Coupled with 75 complete textbook sections and 38 Docker labs, it bridges the gap from zero knowledge to industry-grade offensive & defensive security.
+
+We'd love to hear your feedback, bug reports, and challenge suggestions! Let us know what you think! 🚀"""
+    },
     "reddit_netsec": {
         "title": "VibeHacking: Open-source cybersecurity bible (75 sections, 38 labs) & browser-based terminal wargame with 1,820 challenges",
         "url": REPO_URL,
@@ -44,6 +64,42 @@ Key Highlights:
 * Live Portal: https://lsszz2100.github.io/VibeHacking/
 * Interactive Wargame: https://lsszz2100.github.io/VibeHacking/wargame/
 * GitHub Repository: https://github.com/lsszz2100/VibeHacking"""
+    },
+    "reddit_cybersecurity": {
+        "title": "A free, open-source 75-chapter cybersecurity curriculum & interactive browser terminal wargame (1,820 challenges)",
+        "url": SITE_URL,
+        "body": """Hey r/cybersecurity,
+
+Wanted to share an open-source cybersecurity education and training resource we've built: VibeHacking.
+
+Everything is completely free and browser-accessible without needing to spin up heavy VMs just to get started:
+1. Complete Curriculum (75 Sections): Covers foundations, network protocols, system internals, binary analysis, web vulnerabilities, Active Directory, cloud security, and modern AI red teaming.
+2. 38 Reproducible Docker Labs: Practical vulnerable targets with automated testing scripts.
+3. Interactive Browser Terminal Wargame: 52 tracks and 1,820 progressive challenges simulating real shell environments (`connect`, `cat`, `submit`, privilege escalation).
+4. Interactive Architecture Simulators: 8 real-time visualizers for OAuth2 flows, TLS handshakes, BGP hijacking, and EDR detection bypass.
+
+* Website & Wargame: https://lsszz2100.github.io/VibeHacking/
+* GitHub (MIT): https://github.com/lsszz2100/VibeHacking
+
+Feedback and contributions are always welcome!"""
+    },
+    "reddit_sideproject": {
+        "title": "I built an open-source terminal wargame with 1,820 challenges and a 75-chapter cybersecurity guide",
+        "url": SITE_URL,
+        "body": """Hey r/SideProject,
+
+I spent months building VibeHacking, an open-source cybersecurity learning portal with a fully functional browser-based terminal wargame.
+
+What you can do:
+- Solve 1,820 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
+- Study 75 full chapters ranging from reverse engineering to AI security.
+- Explore 8 interactive security architecture simulators (OAuth 2.0, TLS, K8s, EDR).
+- Run 38 Docker hands-on labs locally.
+
+Check it out live: https://lsszz2100.github.io/VibeHacking/
+Source Code: https://github.com/lsszz2100/VibeHacking
+
+Would love to get your thoughts and feedback!"""
     },
     "twitter": {
         "text": """🔥 실전 사이버보안 오픈소스 바이블 & 워게임 [VibeHacking 2.0]
@@ -70,8 +126,16 @@ def get_share_intents() -> Dict[str, str]:
     tw_text = urllib.parse.quote(PROMO_TEMPLATES["twitter"]["text"])
     tw_url = f"https://twitter.com/intent/tweet?text={tw_text}"
 
-    reddit_title = urllib.parse.quote(PROMO_TEMPLATES["reddit_netsec"]["title"])
-    reddit_url = f"https://www.reddit.com/submit?url={urllib.parse.quote(REPO_URL)}&title={reddit_title}"
+    reddit_netsec_title = urllib.parse.quote(PROMO_TEMPLATES["reddit_netsec"]["title"])
+    reddit_netsec_url = f"https://www.reddit.com/r/netsec/submit?url={urllib.parse.quote(REPO_URL)}&title={reddit_netsec_title}"
+
+    reddit_cyber_title = urllib.parse.quote(PROMO_TEMPLATES["reddit_cybersecurity"]["title"])
+    reddit_cyber_url = f"https://www.reddit.com/r/cybersecurity/submit?url={urllib.parse.quote(SITE_URL)}&title={reddit_cyber_title}"
+
+    reddit_side_title = urllib.parse.quote(PROMO_TEMPLATES["reddit_sideproject"]["title"])
+    reddit_side_url = f"https://www.reddit.com/r/SideProject/submit?url={urllib.parse.quote(SITE_URL)}&title={reddit_side_title}"
+
+    ph_url = "https://www.producthunt.com/posts/new"
 
     linkedin_url = f"https://www.linkedin.com/sharing/share-offsite/?url={urllib.parse.quote(SITE_URL)}"
 
@@ -79,7 +143,10 @@ def get_share_intents() -> Dict[str, str]:
 
     return {
         "Twitter / X": tw_url,
-        "Reddit": reddit_url,
+        "Reddit (r/netsec)": reddit_netsec_url,
+        "Reddit (r/cybersecurity)": reddit_cyber_url,
+        "Reddit (r/SideProject)": reddit_side_url,
+        "Product Hunt New Launch": ph_url,
         "LinkedIn": linkedin_url,
         "Facebook": fb_url,
     }
@@ -121,7 +188,7 @@ def broadcast_discord_webhook(webhook_url: str) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="VibeHacking Social Promotion & Broadcast Toolkit")
-    parser.add_argument("--platform", choices=["all", "geeknews", "reddit", "twitter", "disquiet"], default="all")
+    parser.add_argument("--platform", choices=["all", "producthunt", "reddit", "geeknews", "twitter", "disquiet"], default="all")
     parser.add_argument("--broadcast", action="store_true", help="Broadcast to Discord webhook if DISCORD_WEBHOOK_URL env is set.")
     parser.add_argument("--print-links", action="store_true", help="Print one-click social share links.")
     args = parser.parse_args()
@@ -133,19 +200,39 @@ def main():
     intents = get_share_intents()
     print("\n[★] 원클릭 소셜 공유 URL (클릭 시 브라우저에서 즉시 공유 화면 오픈):")
     for plat, link in intents.items():
-        print(f"  - {plat.ljust(12)}: {link}")
+        print(f"  - {plat.ljust(25)}: {link}")
+
+    if args.platform in ("all", "producthunt"):
+        print("\n" + "=" * 30 + " Product Hunt Launch Kit " + "=" * 30)
+        ph = PROMO_TEMPLATES["producthunt"]
+        print(f"Product Name: {ph['name']}")
+        print(f"Tagline:      {ph['tagline']}")
+        print(f"Website URL:  {ph['url']}")
+        print(f"Topics:       {ph['topics']}")
+        print(f"\n[Description]\n{ph['description']}")
+        print(f"\n[Maker First Comment]\n{ph['maker_comment']}")
+
+    if args.platform in ("all", "reddit"):
+        print("\n" + "=" * 30 + " Reddit r/netsec 포스팅 문안 " + "=" * 30)
+        print(f"Title: {PROMO_TEMPLATES['reddit_netsec']['title']}")
+        print(f"URL:   {PROMO_TEMPLATES['reddit_netsec']['url']}")
+        print(f"\n{PROMO_TEMPLATES['reddit_netsec']['body']}")
+
+        print("\n" + "=" * 30 + " Reddit r/cybersecurity 포스팅 문안 " + "=" * 30)
+        print(f"Title: {PROMO_TEMPLATES['reddit_cybersecurity']['title']}")
+        print(f"URL:   {PROMO_TEMPLATES['reddit_cybersecurity']['url']}")
+        print(f"\n{PROMO_TEMPLATES['reddit_cybersecurity']['body']}")
+
+        print("\n" + "=" * 30 + " Reddit r/SideProject 포스팅 문안 " + "=" * 30)
+        print(f"Title: {PROMO_TEMPLATES['reddit_sideproject']['title']}")
+        print(f"URL:   {PROMO_TEMPLATES['reddit_sideproject']['url']}")
+        print(f"\n{PROMO_TEMPLATES['reddit_sideproject']['body']}")
 
     if args.platform in ("all", "geeknews"):
         print("\n" + "=" * 30 + " GeekNews 등록 문안 " + "=" * 30)
         print(f"제목: {PROMO_TEMPLATES['geeknews']['title']}")
         print(f"URL:  {PROMO_TEMPLATES['geeknews']['url']}")
         print(f"\n{PROMO_TEMPLATES['geeknews']['body']}")
-
-    if args.platform in ("all", "reddit"):
-        print("\n" + "=" * 30 + " Reddit r/netsec 등록 문안 " + "=" * 30)
-        print(f"Title: {PROMO_TEMPLATES['reddit_netsec']['title']}")
-        print(f"URL:   {PROMO_TEMPLATES['reddit_netsec']['url']}")
-        print(f"\n{PROMO_TEMPLATES['reddit_netsec']['body']}")
 
     if args.platform in ("all", "twitter"):
         print("\n" + "=" * 30 + " X / Twitter 홍보 트윗 " + "=" * 30)
