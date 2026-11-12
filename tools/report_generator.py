@@ -549,6 +549,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM01:2025",
         "owasp_name": "Prompt Injection & Tool Hijacking (AI Agent MCP Sandbox Escape)",
     },
+    "55": {
+        "kisa_id": "2.8.1",
+        "kisa_name": "암호통제 (NIST FIPS 203 ML-KEM-768 격자 KEM & SNDL 방어)",
+        "nist_csf_id": "PR.DS-02",
+        "nist_csf_name": "Data in Transit Cryptographic Protection (Post-Quantum Hybrid TLS 1.3)",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures (Store-Now-Decrypt-Later & Quantum Vulnerable Primitives)",
+    },
 }
 
 @dataclass
@@ -1562,6 +1570,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Autonomous agents executing Model Context Protocol lack kernel-enforced sandboxing, allowing malicious prompts to shadow legitimate tools and invoke arbitrary host system calls.",
                 "affected_component": "AgentSandboxGuard Execution Engine (Port 8054)",
                 "remediation": "Enforce Linux Landlock LSM unprivileged filesystem sandboxing (restricting access to /workspace/safe) and integrate eBPF Dual-LLM runtime syscall filters with real-time SIGKILL actions."
+            }
+        ]
+    },
+    "55": {
+        "title": "55 PQCMigrationGuard Post-Quantum Cryptography Migration & Anti-Downgrade Defense",
+        "category": "Applied Cryptography & Post-Quantum Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5501",
+                "name": "Store-Now-Decrypt-Later (SNDL) Exposure via Classical Public-Key Cryptography and Forced TLS Downgrade Vulnerability",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N",
+                "mitre_id": "T1557",
+                "mitre_technique": "Adversary-in-the-Middle",
+                "mitre_tactic": "Credential Access / Collection",
+                "impact": "Passive adversaries harvest classical ciphertexts for future retroactive Shor decryption, or active middleboxes strip PQC extensions to force weak cipher negotiation.",
+                "description": "Legacy TLS and key exchange implementations rely strictly on RSA or non-hybrid ECDH, leaving communications permanently vulnerable to retroactive quantum cryptanalysis and active downgrade tampering.",
+                "affected_component": "PQCMigrationGuard Gateway (Port 8055)",
+                "remediation": "Deploy NIST FIPS 203 ML-KEM-768 hybrid key exchange (X25519Kyber768Draft00) with strict anti-downgrade policies and Constant-Time implicit rejection decapsulation."
             }
         ]
     }

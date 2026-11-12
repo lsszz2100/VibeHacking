@@ -918,7 +918,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -931,6 +931,7 @@
     if (tabName === "c2tunnel") renderC2Tunnel();
     if (tabName === "adgraph") renderAdGraph();
     if (tabName === "agentsandbox") renderAgentSandbox();
+    if (tabName === "pqcmigrate") renderPqcMigrate();
   }
 
   // --- 1. CAN Bus Simulator ---
@@ -4212,6 +4213,8 @@
         openPlayground("adgraph"); break;
       case "agentsandbox": case "mcpjail": case "landlock": case "dualguard": case "sandboxguard":
         openPlayground("agentsandbox"); break;
+      case "pqcmigrate": case "kyber": case "mldsa": case "mlkem": case "fips203": case "pqcdefense":
+        openPlayground("pqcmigrate"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -5373,6 +5376,271 @@
       sLaser();
       const p = btn.getAttribute("data-agentsandbox-preset");
       renderAgentSandbox(p);
+    });
+  });
+
+  // --- 23. PQC Migration & Lattice KEM Simulator ---
+  let currentPqcScenario = "hybrid_tls";
+
+  function renderPqcMigrate(scenario){
+    const suiteSelect = document.getElementById("pqcmigrateSuiteSelect");
+    const mitmSelect = document.getElementById("pqcmigrateMitmSelect");
+    const wireBadge = document.getElementById("pqcmigrateWireBadge");
+    const auditBadge = document.getElementById("pqcmigrateAuditBadge");
+    const wireView = document.getElementById("pqcmigrateWireView");
+    const auditView = document.getElementById("pqcmigrateAuditView");
+
+    if (!suiteSelect || !mitmSelect || !wireBadge || !auditBadge || !wireView || !auditView) return;
+
+    if (scenario) {
+      currentPqcScenario = scenario;
+      if (scenario === "rsa_sndl") {
+        suiteSelect.value = "rsa2048";
+        mitmSelect.value = "clean";
+      } else if (scenario === "pure_mlkem") {
+        suiteSelect.value = "mlkem768";
+        mitmSelect.value = "clean";
+      } else if (scenario === "hybrid_tls") {
+        suiteSelect.value = "hybrid";
+        mitmSelect.value = "clean";
+      } else if (scenario === "downgrade_mitm") {
+        suiteSelect.value = "hybrid";
+        mitmSelect.value = "strip_pqc";
+      }
+    }
+
+    const suite = suiteSelect.value;
+    const mitm = mitmSelect.value;
+
+    let wireText = "";
+    let auditText = "";
+
+    if (mitm === "strip_pqc") {
+      wireBadge.textContent = "WIRE: MITM TAMPERED (STRIP)";
+      wireBadge.style.background = "#dc2626";
+      auditBadge.textContent = "DOWNGRADE ATTEMPT: BLOCKED";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             TLS 1.3 Handshake Transcript Trace (MitM Intercept)    ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client -> Network] ClientHello (v1.3)\n" +
+        "  - supported_groups: [X25519Kyber768 (0x11ec), X25519 (0x001d)]\n" +
+        "  - key_share: [0x11ec (1216 bytes: 32B X25519 + 1184B ML-KEM-768)]\n\n" +
+        "[🔥 MitM Middlebox Intercept & Strip]\n" +
+        "  - Attacker removes 0x11ec from supported_groups\n" +
+        "  - Forwarded ClientHello offers ONLY legacy [X25519]\n\n" +
+        "[Server -> Client] ServerHello (Downgraded Suite Response)\n" +
+        "  - selected_group: 0x001d (X25519)\n" +
+        "  - key_share: 32 bytes public share\n\n" +
+        "[Client Enforcement Check]\n" +
+        "  - Strict PQC Policy: ENABLED (RequireQuantumResilience = true)\n" +
+        "  - Evaluation: Server returned classical 0x001d despite client offering 0x11ec\n" +
+        "  - Action: FATAL ALERT 71 (illegal_parameter) sent. Connection terminated!";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║               Quantum Security & Cryptanalysis Audit               ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK VECTOR: Active Middlebox Forced Fallback (Downgrade Attack)\n" +
+        "  - Objective: Strip lattice KEM to force classical ECDH for SNDL harvesting\n" +
+        "  - MitM Insertion: Inline proxy stripping supported_groups extension\n\n" +
+        "■ DEFENSE MECHANISMS:\n" +
+        "  1. Minimum Security Policy: Rejects negotiation below Category 3 PQC\n" +
+        "  2. Transcript Hash Invariant: H(ClientHello || ServerHello) verification\n" +
+        "  3. Finished MAC Signature: Discrepancy triggers Decrypt Error / Alert 51\n\n" +
+        "■ POSTURE AUDIT:\n" +
+        "  - Status: THREAT NEUTRALIZED\n" +
+        "  - Eavesdrop Risk: 0% (Connection aborted before session secret derived)\n" +
+        "  - Compliance: NIST SP 800-208 & KISA ISMS-P Crypto Policy compliant";
+
+    } else if (mitm === "corrupt_ct") {
+      wireBadge.textContent = "WIRE: CIPHERTEXT MUTATED";
+      wireBadge.style.background = "#d97706";
+      auditBadge.textContent = "IND-CCA2: IMPLICIT REJECT";
+      auditBadge.style.background = "#2563eb";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             Lattice Ciphertext Manipulation & Decapsulation        ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client -> Server] ML-KEM-768 Encapsulation Packet\n" +
+        "  - Encapsulated Ciphertext c: 1088 bytes (polynomial vectors u, v)\n" +
+        "  - [⚡ Injected Fault]: Bitflip in vector u coefficient [idx=142, mask=0x80]\n\n" +
+        "[Server Decapsulation Execution (FIPS 203 §7.3)]\n" +
+        "  - Decrypt: m' = Decode(v - s^T * u)\n" +
+        "  - Re-encrypt: (K', c') = Encaps(pk, m')\n" +
+        "  - FO Invariant Check: Verify c == c'\n" +
+        "  - Result: c != c' (Lattice Error Vector Mismatch detected!)\n" +
+        "  - Implicit Rejection: K = PRF(z, c) [Pseudorandom secret output]\n" +
+        "  - Error Oracle Leakage: NONE (Constant-time dummy key derivation)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║               Quantum Security & Cryptanalysis Audit               ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK VECTOR: Adaptive Chosen-Ciphertext Attack (IND-CCA2 Probe)\n" +
+        "  - Objective: Exploit decapsulation failure feedback to recover private key s\n" +
+        "  - Technique: Injecting crafted error polynomials into ciphertext vector\n\n" +
+        "■ FO TRANSFORM VALIDATION:\n" +
+        "  - Explicit Error Alert: DISABLED (Prevents timing and error oracles)\n" +
+        "  - Implicit Rejection: Derives pseudorandom key from secret seed z\n" +
+        "  - Downstream Consequence: Finished verify_data mismatch terminates TLS session\n\n" +
+        "■ AUDIT VERDICT: SECURE AGAINST CHOSEN CIPHERTEXT ATTACKS (IND-CCA2 Validated)";
+
+    } else if (suite === "rsa2048") {
+      wireBadge.textContent = "WIRE: CLASSICAL RSA-2048";
+      wireBadge.style.background = "#dc2626";
+      auditBadge.textContent = "SNDL RISK: CRITICAL";
+      auditBadge.style.background = "#dc2626";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             TLS 1.2/1.3 Classical RSA-2048 Handshake Wire          ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client -> Server] ClientHello\n" +
+        "  - CipherSuite: TLS_RSA_WITH_AES_256_GCM_SHA384 (Legacy)\n" +
+        "  - Key Exchange: RSA PKCS#1 v1.5 Key Encipherment\n" +
+        "[Server -> Client] ServerCertificate\n" +
+        "  - RSA 2048-bit Modulus N = 0xda2f7c... (256 bytes)\n" +
+        "[Client -> Server] ClientKeyExchange\n" +
+        "  - Encrypted Pre-Master Secret: 256 bytes (RSA encrypted with N, e)\n" +
+        "[Passive Adversary Wiretap Active]\n" +
+        "  - Eavesdropped 256-byte Pre-Master Secret stored in long-term archive DB";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║               Quantum Security & Cryptanalysis Audit               ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ALGORITHM EVALUATION: RSA-2048 (Classical Public Key)\n" +
+        "  - Classical Hardness: Factoring N = p * q (~112 bits of security)\n" +
+        "  - Quantum Hardness (Shor): 0 BITS (Polynomial time O(log^3 N))\n" +
+        "  - Physical Qubits Required: ~4,098 logical qubits (Gidney-Ekerå 2021)\n\n" +
+        "■ STORE-NOW-DECRYPT-LATER (SNDL) RISK:\n" +
+        "  - Risk Tier: EXTREME / IMMEDIATE MIGRATION MANDATORY\n" +
+        "  - Eavesdropped sessions recorded today will be fully decrypted in the future!\n" +
+        "  - Forward Secrecy (PFS): NONE (Leaked private key decrypts all historic traffic)";
+
+    } else if (suite === "x25519") {
+      wireBadge.textContent = "WIRE: ECDH X25519 ONLY";
+      wireBadge.style.background = "#d97706";
+      auditBadge.textContent = "SNDL RISK: HIGH";
+      auditBadge.style.background = "#d97706";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             TLS 1.3 ECDHE (X25519) Handshake Wire                  ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client -> Server] ClientHello\n" +
+        "  - supported_groups: [x25519 (0x001d)]\n" +
+        "  - key_share: [0x001d: 32 bytes public curve point]\n" +
+        "[Server -> Client] ServerHello\n" +
+        "  - selected_group: 0x001d\n" +
+        "  - key_share: [0x001d: 32 bytes public curve point]\n" +
+        "[Session Key Derivation]\n" +
+        "  - Shared Secret: ECDH(pk_srv, sk_cli) = 32 bytes\n" +
+        "  - Handshake Overhead: 64 bytes total key shares (Extremely light)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║               Quantum Security & Cryptanalysis Audit               ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ALGORITHM EVALUATION: X25519 (Curve25519 ECDH)\n" +
+        "  - Classical Hardness: Discrete Logarithm on Montgomery curve (128 bits)\n" +
+        "  - Quantum Hardness (Shor): 0 BITS (Shor algorithm solves ECDLP in hours)\n" +
+        "  - Forward Secrecy: YES against classical attackers, NO against quantum\n\n" +
+        "■ STORE-NOW-DECRYPT-LATER (SNDL) RISK:\n" +
+        "  - Risk Tier: HIGH (Vulnerable to quantum capture and retroactive recovery)\n" +
+        "  - Recommendation: Upgrade to Hybrid X25519 + ML-KEM-768";
+
+    } else if (suite === "mlkem768") {
+      wireBadge.textContent = "WIRE: PURE ML-KEM-768";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "VERDICT: FIPS 203 SECURE";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             NIST FIPS 203 Pure ML-KEM-768 Handshake Wire           ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client -> Server] ClientHello (Lattice KEM Key Share)\n" +
+        "  - supported_groups: [ML-KEM-768 (FIPS 203 Cat 3)]\n" +
+        "  - key_share: [1184 bytes: Public Key Vector (A * s + e mod q)]\n" +
+        "[Server -> Client] ServerHello\n" +
+        "  - selected_group: ML-KEM-768\n" +
+        "  - key_share: [1088 bytes: Ciphertext Vector (u, v)]\n" +
+        "[Decapsulation & Shared Secret derivation]\n" +
+        "  - Shared Secret K: 32 bytes (256-bit entropy)\n" +
+        "  - Wire Overhead: 2,272 bytes total (Requires MTU segmentation tuning)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║               Quantum Security & Cryptanalysis Audit               ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ALGORITHM EVALUATION: NIST FIPS 203 ML-KEM-768 (Lattice KEM)\n" +
+        "  - Underlying Hardness: Module Learning with Errors (M-LWE, k=3, q=3329)\n" +
+        "  - Classical Hardness: ~192 bits security\n" +
+        "  - Quantum Hardness (Shor/Grover): Immune to Shor; ~192 bits post-quantum\n" +
+        "  - IND-CCA2 Security: Enforced via Fujisaki-Okamoto transform\n\n" +
+        "■ AUDIT VERDICT: FULL QUANTUM RESILIENCE (Zero SNDL Exposure)";
+
+    } else { // hybrid (default)
+      wireBadge.textContent = "WIRE: HYBRID (X25519+ML-KEM)";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "DUAL RESILIENT: GOLD STANDARD";
+      auditBadge.style.background = "#2563eb";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║         TLS 1.3 Hybrid Key Exchange (X25519 + ML-KEM-768)          ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client -> Server] ClientHello\n" +
+        "  - supported_groups: [X25519Kyber768Draft00 (0x11ec)]\n" +
+        "  - key_share: [0x11ec: 1,216 bytes]\n" +
+        "      ├─ X25519 Share: 32 bytes\n" +
+        "      └─ ML-KEM-768 Share: 1,184 bytes\n" +
+        "[Server -> Client] ServerHello\n" +
+        "  - selected_group: 0x11ec\n" +
+        "  - key_share: [1,120 bytes: 32B X25519 + 1,088B ML-KEM Ciphertext]\n" +
+        "[Dual Shared Secret Binding (RFC 9180 HKDF)]\n" +
+        "  - SS_classic = ECDH(X25519) [32 bytes]\n" +
+        "  - SS_pqc     = Decaps(ML-KEM-768) [32 bytes]\n" +
+        "  - IKM        = SS_classic || SS_pqc [64 bytes]\n" +
+        "  - MasterSecret = HKDF-Extract(Salt=0, IKM)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║               Quantum Security & Cryptanalysis Audit               ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ARCHITECTURE: Hybrid Dual-Key Exchange (IETF RFC Draft Standard)\n" +
+        "  - Security Property: Safe if EITHER ECDLP OR M-LWE remains unbroken\n" +
+        "  - SNDL Protection: 100% immune to quantum storage eavesdropping\n" +
+        "  - Regulatory Status: Approved by ANSSI, BSI, NIST, and KISA guidelines\n\n" +
+        "■ CRYPTO-AGILITY CAPABILITY:\n" +
+        "  - Dynamic fallback/upgrade supported via TLS supported_groups\n" +
+        "  - Zero service disruption during protocol version transitions\n" +
+        "  - AUDIT VERDICT: HIGHEST RESILIENCE RATING (RECOMMENDED ENTERPRISE SSOT)";
+    }
+
+    wireView.textContent = wireText;
+    auditView.textContent = auditText;
+  }
+
+  const pqcmigrateExecuteBtn = document.getElementById("pqcmigrateExecuteBtn");
+  if (pqcmigrateExecuteBtn) pqcmigrateExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderPqcMigrate(); });
+  const pqcmigrateResetBtn = document.getElementById("pqcmigrateResetBtn");
+  if (pqcmigrateResetBtn) pqcmigrateResetBtn.addEventListener("click", () => { audio(); renderPqcMigrate("hybrid_tls"); });
+  const pqcmigrateSuiteSelect = document.getElementById("pqcmigrateSuiteSelect");
+  if (pqcmigrateSuiteSelect) pqcmigrateSuiteSelect.addEventListener("change", () => { audio(); renderPqcMigrate(); });
+  const pqcmigrateMitmSelect = document.getElementById("pqcmigrateMitmSelect");
+  if (pqcmigrateMitmSelect) pqcmigrateMitmSelect.addEventListener("change", () => { audio(); renderPqcMigrate(); });
+  document.querySelectorAll("[data-pqcmigrate-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-pqcmigrate-preset");
+      renderPqcMigrate(p);
     });
   });
 

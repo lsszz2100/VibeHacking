@@ -559,6 +559,17 @@ const ALLOWLIST = new Map([
   ['t2_agentsandbox_spiffe_spire_agent_attestation -> t4_ztsvid', 'SPIRE issues SVID credentials to agent workloads'],
   ['t2_agentsandbox_spiffe_spire_agent_attestation -> t3_ebpfcgroup', 'SPIRE attestation inspects cgroup and namespaces'],
   ['t4_agentsandbox_landlock_lsm_hardened_runtime_sandbox -> t4_gvisor', 'Multi-tier sandboxing combining gVisor and Landlock LSM'],
+  // 67th Track: pqcmigrate (PQC Migration & FIPS 203/204)
+  ['t2_pqcmigrate_mtu_fragmentation_hazard -> t0_mtu', 'MTU fragmentation hazard discusses MTU limits'],
+  ['t2_pqcmigrate_ipsec_ikev2_pqc_extension -> t2_ipsec', 'IPsec IKEv2 PQC extension discusses IPsec'],
+  ['t2_pqcmigrate_hsm_kms_pqc_key_custody -> t4_hsm', 'HSM KMS PQC key custody discusses Hardware Security Modules'],
+  ['t2_pqcmigrate_code_signing_secure_boot_pqc -> t3_firmwaresecureboot', 'Secure boot code signing discusses secure boot verification'],
+  ['t3_pqcmigrate_tls13_pq_sni_esni_ech_protection -> t2_sni', 'ECH protection discusses SNI encryption'],
+  ['t3_pqcmigrate_tls13_pq_sni_esni_ech_protection -> t4_rtech', 'Encrypted Client Hello discussions mention ECH abbreviation'],
+  ['t3_pqcmigrate_pqc_canbus_v2x_latency_budget -> t4_hsm', 'Automotive V2X hardware acceleration references HSM engines'],
+  ['t3_pqcmigrate_crypto_asset_inventory_cbom -> t3_sccyclonedx', 'CBOM asset inventory utilizes CycloneDX format'],
+  ['t3_pqcmigrate_quantum_random_number_generator_qrng -> t4_prng', 'QRNG entropy comparison analyzes pseudo-random generators'],
+  ['t3_pqcmigrate_quantum_random_number_generator_qrng -> t3_freshness', 'QRNG seed entropy discusses seed freshness'],
 ]);
 
 function loadChallenges() {

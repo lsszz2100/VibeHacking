@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  pqc_migration_lab:
+    build: .
+    container_name: vhack_lab_55
+    ports:
+      - "127.0.0.1:8055:8055"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

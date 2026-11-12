@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2310</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2345</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -170,6 +170,7 @@
         <button class="pg-tab" data-tab="c2tunnel">📡 C2 Malleable &amp; Tunneling Inspector</button>
         <button class="pg-tab" data-tab="adgraph">🩸 AD Graph &amp; Cypher</button>
         <button class="pg-tab" data-tab="agentsandbox">🤖 Agent Sandbox &amp; Landlock</button>
+        <button class="pg-tab" data-tab="pqcmigrate">⚛️ PQC Migration &amp; FIPS 203</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -1143,6 +1144,55 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="agentsandboxVerdictBadge" class="token-tag" style="background:#16a34a;color:#fff;">LSM: ACTIVE</span>
                 </div>
                 <div id="agentsandboxPolicyView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- PQC Migration & Lattice KEM Inspector Panel -->
+        <div id="pgPanel-pqcmigrate" class="pg-panel">
+          <div class="pqcmigrate-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn danger" data-pqcmigrate-preset="rsa_sndl">1. Classical RSA-2048 (SNDL Harvest Risk)</button>
+              <button class="pg-btn success" data-pqcmigrate-preset="pure_mlkem">2. NIST FIPS 203 Pure ML-KEM-768</button>
+              <button class="pg-btn success" data-pqcmigrate-preset="hybrid_tls">3. Hybrid X25519 + ML-KEM-768 Handshake</button>
+              <button class="pg-btn danger" data-pqcmigrate-preset="downgrade_mitm">4. Active MitM Downgrade Tamper Attack</button>
+            </div>
+            <div class="pqcmigrate-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="pqcmigrate-ctrl-group">
+                <label class="dim" style="font-size:11px;">Negotiated Cipher/KEM:</label>
+                <select id="pqcmigrateSuiteSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="rsa2048">RSA-2048-PKCS1v15 (Classical / Broken by Shor)</option>
+                  <option value="x25519">TLS_AES_128_GCM_SHA256 (ECDH X25519 Only)</option>
+                  <option value="mlkem768">FIPS203_ML_KEM_768 (Lattice KEM Standalone)</option>
+                  <option value="hybrid" selected>X25519Kyber768Draft00 (Hybrid PQC Defense)</option>
+                </select>
+              </div>
+              <div class="pqcmigrate-ctrl-group">
+                <label class="dim" style="font-size:11px;">MitM Tamper Injection:</label>
+                <select id="pqcmigrateMitmSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="clean" selected>None (Clean Wire Transmission)</option>
+                  <option value="strip_pqc">Strip PQC Supported Groups (Force Classical Fallback)</option>
+                  <option value="corrupt_ct">Tamper Lattice Ciphertext Vector (IND-CCA2 Test)</option>
+                </select>
+              </div>
+              <button id="pqcmigrateExecuteBtn" class="pg-btn">Simulate Handshake</button>
+              <button id="pqcmigrateResetBtn" class="pg-btn dim">Reset Simulation</button>
+            </div>
+            <div class="pqcmigrate-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="pqcmigrate-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>⚛️ TLS 1.3 Key Share &amp; Wire Telemetry</span>
+                  <span id="pqcmigrateWireBadge" class="token-tag token-lit" style="background:#16a34a;color:#fff;">WIRE: HYBRID</span>
+                </div>
+                <div id="pqcmigrateWireView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="pqcmigrate-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🛡️ Shor Attack Complexity &amp; Anti-Downgrade Audit</span>
+                  <span id="pqcmigrateAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: QUANTUM SAFE</span>
+                </div>
+                <div id="pqcmigrateAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
               </div>
             </div>
           </div>

@@ -583,6 +583,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [18, 25, 47, 51, 69],
     },
+    "55": {
+        "name": "양자 내성 암호(PQC) FIPS 203/204 마이그레이션 랩",
+        "dir":  "55_pqc_migration_lab",
+        "desc": "PQCMigrationGuard: NIST FIPS 203 ML-KEM-768 격자 KEM 캡슐화 · FIPS 204 ML-DSA-65 전자서명 검증 · X25519 + ML-KEM 하이브리드 키 교환 · SNDL 및 양자 다운그레이드 방어",
+        "url":  "웹 콘솔 & PQC 마이그레이션 대시보드: http://localhost:8055",
+        "difficulty": "★★★★☆",
+        "related": [16, 45, 49, 57],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2407,7 +2415,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     data = {
         "timestamp": datetime.now().isoformat(),
-        "version": "2.8.0",
+        "version": "2.9.0",
         "system": {
             "os": f"{platform.system()} {platform.release()}",
             "arch": platform.machine(),

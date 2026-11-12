@@ -30,7 +30,7 @@ class TestVhackDashboardCLI:
         proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT))
         assert proc.returncode == 0
         data = json.loads(proc.stdout)
-        assert data["version"] in {"2.6.0", "2.7.0", "2.8.0"}
+        assert data["version"] in {"2.6.0", "2.7.0", "2.8.0", "2.9.0"}
         assert "system" in data
         assert "os" in data["system"]
         assert "memory" in data["system"]
@@ -43,7 +43,7 @@ class TestVhackDashboardCLI:
         proc1 = subprocess.run(cmd_status, capture_output=True, text=True, cwd=str(REPO_ROOT))
         assert proc1.returncode == 0
         data1 = json.loads(proc1.stdout)
-        assert data1["version"] in {"2.6.0", "2.7.0", "2.8.0"}
+        assert data1["version"] in {"2.6.0", "2.7.0", "2.8.0", "2.9.0"}
 
         # test 'stats' alias
         cmd_stats = [sys.executable, str(REPO_ROOT / "vhack.py"), "stats", "--json"]

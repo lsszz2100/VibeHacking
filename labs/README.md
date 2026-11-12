@@ -83,6 +83,8 @@ docker-compose --version
 | 51 | [클라우드 네이티브 eBPF 런타임 보안 랩](./51_ebpf_runtime_security_lab/) | Cilium Tetragon & Falco eBPF 커널 옵저버빌리티, kprobe:sys_execve 비인가 셸 탐지, bpf_lsm_file_open 네임스페이스 탈출 차단, TracingPolicy 실시간 SIGKILL, Shadow BPF Rootkit 무결성 감사 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/08_ebpf_runtime_observability_and_tetragon_deepdive.md) | `ebpfruntime` / `endpoint` |
 | 52 | [C2 네트워크 터널링 & 은닉 채널 방어 랩](./52_c2_tunneling_and_exfiltration_lab/) | DNS 터널링 Shannon 엔트로피 분석(H >= 3.8), Chisel/SSH 역방향 SOCKS5 피보팅 차단, Malleable C2 지터 비콘 분산 프로필 핑거프린팅, Zeek/Suricata Flowbits 인라인 DPI 실시간 차단 | ★★★★★ | [02장 네트워크 해킹](../02_Network_Hacking/08_c2_tunneling_and_covert_channels_deepdive.md) | `c2tunnel` / `network` |
 | 53 | [AD BloodHound & ACL 익스플로잇 실습](./53_ad_bloodhound_lab/) | SharpHound 도메인 수집, Cypher 최단 공격 경로 탐색, GenericAll/WriteDacl DACL 악용, Protected Users 하드닝 | ★★★★★ | [54장 Active Directory](../54_Active_Directory_Attacks/08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md) | `adgraph` / `activedirectory` |
+| 54 | [AI 에이전트 샌드박스 탈출 & Landlock 방어 랩](./54_ai_agent_sandbox_escape_lab/) | MCP 도구 포이즈닝, Confused Deputy 권한 대행 탈취, 비특권 Landlock LSM 파일 격리, eBPF Tetragon 런타임 방어 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/08_agent_sandbox_escape_and_landlock_defense_deepdive.md) | `agentsandbox` / `ai` |
+| 55 | [양자 내성 암호 마이그레이션 & FIPS 203/204 랩](./55_pqc_migration_lab/) | NIST FIPS 203 ML-KEM-768 격자 KEM, FIPS 204 ML-DSA-65 전자서명, SNDL 도청 대응, 하이브리드 TLS 1.3 다운그레이드 방어 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqcmigrate` / `crypto` |
 
 ---
 
@@ -460,6 +462,24 @@ docker-compose --version
 - **교재 챕터 연계**: [54장 Active Directory 공격 심층 딥다이브](../54_Active_Directory_Attacks/08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md)
 - **워게임 트랙**: `adgraph` / `activedirectory` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 53` (웹 콘솔 & AD 그래프 대시보드: `http://localhost:8053`)
+
+### 54. AI 에이전트 샌드박스 탈출 & Landlock 방어 랩 (AgentSandboxGuard)
+- 간접 프롬프트 주입(IPI)을 통한 Model Context Protocol(MCP) 도구 정의 오염 및 스키마 포이즈닝
+- 호스트 시스템 높은 권한을 탈취하는 Confused Deputy 서브프로세스 셸 탈출 익스플로잇
+- Linux Landlock LSM 비특권 파일시스템 샌드박싱(`PR_SET_NO_NEW_PRIVS`)을 통한 `/workspace/safe` 엄격 격리
+- eBPF Tetragon 및 Dual-LLM 아비트레이터를 통한 커널 수준 비정상 시스템콜 실시간 감시 및 SIGKILL 방어
+- **교재 챕터 연계**: [69장 LLM 보안 심층 딥다이브](../69_LLM_Security/08_agent_sandbox_escape_and_landlock_defense_deepdive.md)
+- **워게임 트랙**: `agentsandbox` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 54` (웹 콘솔 & 에이전트 모니터: `http://localhost:8054`)
+
+### 55. 양자 내성 암호 마이그레이션 & FIPS 203/204 랩 (PQCMigrationGuard)
+- NIST FIPS 203 ML-KEM-768 (Module-Lattice KEM) 키 캡슐화 및 역캡슐화 무결성 검증
+- NIST FIPS 204 ML-DSA-65 (Module-Lattice Digital Signatures) 전자서명 생성 및 거부 샘플링 검증
+- 수동적 도청자(Passive Adversary)의 SNDL (Store-Now-Decrypt-Later) 공격 모델 위협 평가
+- 하이브리드 TLS 1.3 (X25519Kyber768Draft00) 키 교환 및 중간자(MitM) 다운그레이드 스트리핑 차단 정책 검증
+- **교재 챕터 연계**: [57장 양자 암호학 심층 딥다이브](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md)
+- **워게임 트랙**: `pqcmigrate` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 55` (웹 콘솔 & PQC 게이트웨이: `http://localhost:8055`)
 
 ---
 

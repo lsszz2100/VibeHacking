@@ -1581,6 +1581,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ eBPF LSM kernel filter and Dual-LLM semantic validator actively protecting agent runtime -> FLAG{EBPF_DUAL_LLM_RUNTIME_SHIELD_ACTIVE_5404}"
             }
         ]
+    },
+    "55": {
+        "title": "Lab 55: PQCMigrationGuard — FIPS 203/204 양자 내성 암호 마이그레이션 랩",
+        "description": "NIST FIPS 203 ML-KEM-768 격자 KEM 캡슐화, FIPS 204 ML-DSA-65 전자서명 검증, X25519+ML-KEM 하이브리드 키 교환 및 양자 다운그레이드 방어.",
+        "steps": [
+            {
+                "step": 1,
+                "name": "레거시 RSA-2048 세션 키 도청 및 쇼어 알고리즘 양자 해독 시뮬레이션",
+                "target": "POST /api/stage1/intercept_shor (target_algorithm, captured_ciphertext, shor_qubit_count)",
+                "poc_explanation": "SNDL(Store-Now-Decrypt-Later) 위협 모델 하에서 4,096 논리 큐비트를 활용한 양자 소인수분해로 레거시 RSA-2048 세션 키를 역산 복원합니다.",
+                "exploit_payload": '{"target_algorithm": "RSA-2048", "captured_ciphertext": "a4f91c98e21bc087f912e84c17b8a923", "shor_qubit_count": 4096}',
+                "defense": "NIST FIPS 203 격자 기반 KEM으로 조기 마이그레이션 시행.",
+                "sample_output": "🔓 Shor quantum algorithm successfully factored RSA modulus -> FLAG{STORE_NOW_DECRYPT_LATER_QUANTUM_THREAT_5501}"
+            },
+            {
+                "step": 2,
+                "name": "NIST FIPS 203 ML-KEM-768 모듈 격자 캡슐화 및 공유 비밀 유도",
+                "target": "POST /api/stage2/ml_kem_encapsulate (recipient_pubkey, encapsulation_entropy, matrix_dimension_k)",
+                "poc_explanation": "ML-KEM-768(차수 k=3) 링 R_q 상에서 다항식 노이즈를 샘플링하여 양자 내성 암호문 벡터 c와 공유 비밀 K를 안전하게 수립합니다.",
+                "exploit_payload": '{"recipient_pubkey": "fips203_ml_kem_768_seed_pk_v1", "encapsulation_entropy": "secure_entropy_seed_2026_q3329", "matrix_dimension_k": 3}',
+                "defense": "NIST FIPS 203 표준 파라미터(k=3, q=3329) 준수.",
+                "sample_output": "⚛️ ML-KEM-768 lattice encapsulation established 256-bit quantum-safe shared secret -> FLAG{FIPS203_ML_KEM_768_ENCAPSULATION_MASTERED_5502}"
+            },
+            {
+                "step": 3,
+                "name": "NIST FIPS 204 ML-DSA-65 모듈 격자 전자서명 검증 및 위변조 탐지",
+                "target": "POST /api/stage3/ml_dsa_verify (document_hash, signature_hex, signer_pubkey, tamper_test)",
+                "poc_explanation": "M-SIS 격자 기반 ML-DSA-65 전자서명을 검증하고, 비트 플리핑 변조 시 즉각적인 서명 불일치 경보를 트리거합니다.",
+                "exploit_payload": '{"document_hash": "8f4b23a9d821e89b4f91c87a23d84f918eac784b12f45812eac784f1284a91b2", "signature_hex": "<expected_sig>", "signer_pubkey": "signer_mldsa65_pk_2026_enterprise", "tamper_test": false}',
+                "defense": "NIST FIPS 204 표준 서명 검증 알고리즘 적용.",
+                "sample_output": "✍️ FIPS 204 ML-DSA-65 lattice digital signature validated against tampering -> FLAG{FIPS204_ML_DSA_65_LATTICE_SIGNATURE_VERIFIED_5503}"
+            },
+            {
+                "step": 4,
+                "name": "X25519 + ML-KEM-768 엔터프라이즈 하이브리드 키 교환 및 양자 다운그레이드 방어",
+                "target": "POST /api/stage4/hybrid_key_exchange (classical_curve, pqc_algorithm, enable_downgrade_prevention, tls_negotiated_group)",
+                "poc_explanation": "고전 ECDH와 양자 격자 KEM을 HKDF로 결합하고, TLS 1.3 NamedGroup 정책을 통해 다운그레이드 공격을 원천 봉쇄합니다.",
+                "exploit_payload": '{"classical_curve": "X25519", "pqc_algorithm": "ML-KEM-768", "enable_downgrade_prevention": true, "tls_negotiated_group": "x25519mlkem768"}',
+                "defense": "Strict PQC Enforcement 및 draft-ietf-tls-hybrid-design 하이브리드 NamedGroup 강제.",
+                "sample_output": "🛡️ Hybrid X25519+ML-KEM-768 key exchange locked with anti-downgrade shield -> FLAG{HYBRID_X25519_ML_KEM_ANTI_DOWNGRADE_SHIELDED_5504}"
+            }
+        ]
     }
 }
 

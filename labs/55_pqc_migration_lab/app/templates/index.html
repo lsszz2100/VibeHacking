@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 55: PQCMigrationGuard — FIPS 203/204 Post-Quantum Cryptography Lab</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #1f2937;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            color: var(--accent-color);
+            margin: 0;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .badge {
+            background: #1e293b;
+            color: var(--accent-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: 1px solid var(--accent-color);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.15rem;
+            color: #38bdf8;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0369a1;
+        }
+        .btn-reset {
+            background: #475569;
+        }
+        .btn-reset:hover {
+            background: #334155;
+        }
+        pre {
+            background: #030712;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            color: #a7f3d0;
+        }
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            background-color: #64748b;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .status-dot.active {
+            background-color: var(--success-color);
+            box-shadow: 0 0 8px var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>⚛️ Lab 55: PQCMigrationGuard <span class="badge">NIST FIPS 203/204</span></h1>
+                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.9rem;">
+                    엔터프라이즈 양자 내성 암호(PQC) 마이그레이션 & 하이브리드 키 교환 방어 랩
+                </p>
+            </div>
+            <div>
+                <button class="btn-reset" onclick="resetLab()">상태 초기화</button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Stage 1 -->
+            <div class="card">
+                <h2>1. SNDL 위협 & 쇼어 알고리즘 역산 시뮬레이션 <span class="status-dot" id="dot-s1"></span></h2>
+                <div class="form-group">
+                    <label>레거시 대상 암호 알고리즘</label>
+                    <select id="s1-algo">
+                        <option value="RSA-2048">RSA-2048 (NIST Deprecated by 2030)</option>
+                        <option value="ECDH-P256">ECDH-P256 (Weierstrass Curve)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>도청된 세션 암호문 (SNDL 캡처)</label>
+                    <input type="text" id="s1-ct" value="a4f91c98e21bc087f912e84c17b8a923d84f9812eac784b12f45812eac784f12">
+                </div>
+                <div class="form-group">
+                    <label>양자 컴퓨터 결함 허용 논리 큐비트 (Logical Qubits)</label>
+                    <input type="number" id="s1-qubits" value="4096">
+                </div>
+                <button onclick="runStage1()">Shor 알고리즘 양자 해독 트리거</button>
+                <pre id="out-s1">// 결과 대기 중...</pre>
+            </div>
+
+            <!-- Stage 2 -->
+            <div class="card">
+                <h2>2. NIST FIPS 203 ML-KEM-768 격자 캡슐화 <span class="status-dot" id="dot-s2"></span></h2>
+                <div class="form-group">
+                    <label>수신자 ML-KEM-768 공개키 ($pk$)</label>
+                    <input type="text" id="s2-pk" value="fips203_ml_kem_768_seed_pk_v1_hex_vector_dimension_768">
+                </div>
+                <div class="form-group">
+                    <label>모듈 격자 엔트로피 시드 (다항식 노이즈 샘플링)</label>
+                    <input type="text" id="s2-seed" value="secure_lattice_entropy_seed_2026_q3329">
+                </div>
+                <div class="form-group">
+                    <label>격자 차수 파라미터 ($k$)</label>
+                    <input type="number" id="s2-k" value="3" readonly>
+                </div>
+                <button onclick="runStage2()">ML-KEM 캡슐화 및 공유 비밀 유도</button>
+                <pre id="out-s2">// 결과 대기 중...</pre>
+            </div>
+
+            <!-- Stage 3 -->
+            <div class="card">
+                <h2>3. NIST FIPS 204 ML-DSA-65 양자 내성 전자서명 <span class="status-dot" id="dot-s3"></span></h2>
+                <div class="form-group">
+                    <label>전자문서 SHA-256 해시</label>
+                    <input type="text" id="s3-hash" value="8f4b23a9d821e89b4f91c87a23d84f918eac784b12f45812eac784f1284a91b2">
+                </div>
+                <div class="form-group">
+                    <label>ML-DSA-65 전자서명 (Hex)</label>
+                    <input type="text" id="s3-sig" value="e6b91c84f91a23b84f91c87a23d84f918eac784b12f45812eac784f1284a91b2">
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="s3-tamper" style="width:auto; display:inline;"> 서명 비트 조작(Bit-Flip) 위변조 테스트</label>
+                </div>
+                <button onclick="runStage3()">ML-DSA 전자서명 무결성 검증</button>
+                <pre id="out-s3">// 결과 대기 중...</pre>
+            </div>
+
+            <!-- Stage 4 -->
+            <div class="card">
+                <h2>4. 엔터프라이즈 하이브리드 키 교환 & 다운그레이드 방어 <span class="status-dot" id="dot-s4"></span></h2>
+                <div class="form-group">
+                    <label>하이브리드 암호 조합</label>
+                    <input type="text" value="X25519 (Classical) + ML-KEM-768 (PQC)" readonly>
+                </div>
+                <div class="form-group">
+                    <label>TLS 1.3 협상 NamedGroup</label>
+                    <input type="text" id="s4-group" value="x25519mlkem768">
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="s4-anti-downgrade" checked style="width:auto; display:inline;"> 양자 다운그레이드 공격 방어 정책 강제 (Anti-Downgrade Enforced)</label>
+                </div>
+                <button onclick="runStage4()">하이브리드 세션 키 수립 및 정책 검증</button>
+                <pre id="out-s4">// 결과 대기 중...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function updateStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                document.getElementById('dot-s1').className = 'status-dot' + (data.stage1_completed ? ' active' : '');
+                document.getElementById('dot-s2').className = 'status-dot' + (data.stage2_completed ? ' active' : '');
+                document.getElementById('dot-s3').className = 'status-dot' + (data.stage3_completed ? ' active' : '');
+                document.getElementById('dot-s4').className = 'status-dot' + (data.stage4_completed ? ' active' : '');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function runStage1() {
+            const res = await fetch('/api/stage1/intercept_shor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target_algorithm: document.getElementById('s1-algo').value,
+                    captured_ciphertext: document.getElementById('s1-ct').value,
+                    shor_qubit_count: parseInt(document.getElementById('s1-qubits').value)
+                })
+            });
+            const data = await res.json();
+            document.getElementById('out-s1').textContent = JSON.stringify(data, null, 2);
+            updateStatus();
+        }
+
+        async function runStage2() {
+            const res = await fetch('/api/stage2/ml_kem_encapsulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipient_pubkey: document.getElementById('s2-pk').value,
+                    encapsulation_entropy: document.getElementById('s2-seed').value,
+                    matrix_dimension_k: 3
+                })
+            });
+            const data = await res.json();
+            document.getElementById('out-s2').textContent = JSON.stringify(data, null, 2);
+            updateStatus();
+        }
+
+        async function runStage3() {
+            const hash = document.getElementById('s3-hash').value;
+            const pk = "signer_mldsa65_pk_2026_enterprise";
+            // Precompute matching sig if not tampered
+            const sig = document.getElementById('s3-tamper').checked ? "000000_tampered_sig" : "";
+            const res = await fetch('/api/stage3/ml_dsa_verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    document_hash: hash,
+                    signature_hex: sig || document.getElementById('s3-sig').value,
+                    signer_pubkey: pk,
+                    tamper_test: document.getElementById('s3-tamper').checked
+                })
+            });
+            const data = await res.json();
+            document.getElementById('out-s3').textContent = JSON.stringify(data, null, 2);
+            updateStatus();
+        }
+
+        async function runStage4() {
+            const res = await fetch('/api/stage4/hybrid_key_exchange', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    classical_curve: "X25519",
+                    pqc_algorithm: "ML-KEM-768",
+                    enable_downgrade_prevention: document.getElementById('s4-anti-downgrade').checked,
+                    tls_negotiated_group: document.getElementById('s4-group').value
+                })
+            });
+            const data = await res.json();
+            document.getElementById('out-s4').textContent = JSON.stringify(data, null, 2);
+            updateStatus();
+        }
+
+        async function resetLab() {
+            await fetch('/api/reset', { method: 'POST' });
+            updateStatus();
+            alert('랩 상태가 초기화되었습니다.');
+        }
+
+        updateStatus();
+    </script>
+</body>
+</html>

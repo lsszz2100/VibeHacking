@@ -21,14 +21,14 @@
 
 <br/>
 
-[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·2310 문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
+[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·2345 문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 2310 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 75개 섹션 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
+> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 2345 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 75개 섹션 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
 
 <br/>
 
 문의 · 자료 공유 &nbsp;→&nbsp; [![Email](https://img.shields.io/badge/이메일-leemanrank%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com) &nbsp; [![KakaoTalk](https://img.shields.io/badge/카카오톡_오픈채팅-인공지능_자료_공유-FAE100?style=flat-square&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
-&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%201%2C820%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+38+labs)+and+terminal+wargame+with+2310+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
+&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%201%2C820%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+55+labs)+and+terminal+wargame+with+2345+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
 
 </div>
 
@@ -151,7 +151,7 @@ python3 vhack.py alias remove           # alias 제거
 
 # 대시보드 & 벤치마크
 python3 vhack.py dashboard              # 시스템/랩/워게임 통합 관제 대시보드 (alias: status, stats)
-python3 vhack.py benchmark --all        # 전체 54개 랩 성능 및 지연시간 벤치마크 진단
+python3 vhack.py benchmark --all        # 전체 55개 랩 성능 및 지연시간 벤치마크 진단
 
 # 업데이트
 python3 vhack.py update                 # git pull
@@ -161,7 +161,7 @@ python3 vhack.py update                 # git pull
 
 | 명령어 | 설명 |
 |--------|------|
-| `vhack dashboard` | 시스템 리소스, 54개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
+| `vhack dashboard` | 시스템 리소스, 55개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
 | `vhack benchmark` | 실습 랩 기동 지연시간, 헬스체크 및 성능 벤치마크 (`--all`, `--dry-run`, `-o`) |
 | `vhack list` | 전체 75개 섹션 목록 |
 | `vhack list --search <키워드>` | 섹션명 필터링 |
