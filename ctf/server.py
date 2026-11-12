@@ -1634,6 +1634,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "IT SUPPORTS 그룹의 과도 권한 ACE를 제거하고 관리자들을 Protected Users 그룹에 격리하여 공격 경로를 단절하세요."}
                 ],
             },
+            "LAB54_POISON": {
+                "id": "LAB54_POISON",
+                "title": "AgentSandboxGuard: MCP Tool Poisoning & Shadowing",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{MCP_TOOL_POISONING_HIJACK_DEFLECTED_5401}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "run_command 또는 file_reader와 같은 실행형 MCP 도구 스키마에 프롬프트 인젝션 페이로드를 주입하여 도구를 오염시키세요."}
+                ],
+            },
+            "LAB54_ESCAPE": {
+                "id": "LAB54_ESCAPE",
+                "title": "AgentSandboxGuard: Confused Deputy Subprocess Shell Escape",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{CONFUSED_DEPUTY_ESCAPE_VECTOR_CONTAINED_5402}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "에이전트 권한을 이용하여 /etc/shadow 또는 /proc/1/environ과 같은 호스트 주요 탈출 타깃을 탈취하세요."}
+                ],
+            },
+            "LAB54_LANDLOCK": {
+                "id": "LAB54_LANDLOCK",
+                "title": "AgentSandboxGuard: Linux Landlock LSM Unprivileged Sandboxing",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{LANDLOCK_LSM_FILE_SANDBOXING_ENFORCED_5403}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Landlock ruleset을 활성화하여 /workspace/safe 경로만 허용하고 /etc, /proc, /root 디렉터리 접근을 원천 차단하세요."}
+                ],
+            },
+            "LAB54_EBPF_GUARD": {
+                "id": "LAB54_EBPF_GUARD",
+                "title": "AgentSandboxGuard: In-Kernel eBPF LSM & Dual-LLM Runtime Defense",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{EBPF_DUAL_LLM_RUNTIME_SHIELD_ACTIVE_5404}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "sys_enter_execve eBPF 후크와 Dual-LLM 검증 모델을 연동하여 런타임 악성 도구 호출을 SIGKILL 차단하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1684,6 +1732,7 @@ class CTFState:
             ["LAB51_KPROBE_TRACE", "LAB51_LSM_ESCAPE", "LAB51_TETRAGON_SIGKILL", "LAB51_ROOTKIT_CARVE"],
             ["LAB52_DNS_ENTROPY", "LAB52_SOCKS_PIVOT", "LAB52_C2_JITTER", "LAB52_INLINE_DPI"],
             ["LAB53_INGEST", "LAB53_SHORTEST_PATH", "LAB53_ACL_PWN", "LAB53_REMEDIATION"],
+            ["LAB54_POISON", "LAB54_ESCAPE", "LAB54_LANDLOCK", "LAB54_EBPF_GUARD"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

@@ -9,10 +9,10 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#table-of-contents)
 [![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·2275-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·2310-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 &nbsp; [![Wargame source](https://img.shields.io/badge/Wargame_source-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **Browser terminal infiltration CTF** — drive a fake shell (`connect` · `cat` · `submit`) to breach 5 security layers of `vibe.corp` (perimeter→web→internal→vault→core) and clear 2275 challenges. Boot sequence, `ACCESS GRANTED` effects, matrix rain, sound, hints, KO/EN. Drawn from this repo's 75 sections. ([about](wargame/README.md) · available once GitHub Pages is enabled)
+> 🎮 **Browser terminal infiltration CTF** — drive a fake shell (`connect` · `cat` · `submit`) to breach 5 security layers of `vibe.corp` (perimeter→web→internal→vault→core) and clear 2310 challenges. Boot sequence, `ACCESS GRANTED` effects, matrix rain, sound, hints, KO/EN. Drawn from this repo's 75 sections. ([about](wargame/README.md) · available once GitHub Pages is enabled)
 
 <br/>
 
@@ -1382,15 +1382,17 @@ Red/blue team collaboration, Atomic Red Team and CALDERA simulation, Sigma rule 
 
 ```
 69_LLM_Security/
-├── 01_llm_security_fundamentals.md      ← LLM attack surface, OWASP LLM Top 10, threat model
-├── 02_prompt_injection.md               ← Direct/indirect injection, jailbreaks, multimodal attacks
-├── 03_model_extraction_and_inversion.md ← Model extraction, training data inversion, membership inference
-├── 04_adversarial_attacks_on_llm.md     ← Adversarial suffixes, transfer attacks, input manipulation
-├── 05_llm_security_defense.md           ← Guardrails, output validation, secure LLM architecture
-└── 06_llm_security_ctf_lab.md           ← CTF: basic injection/Base64 bypass/indirect injection/token smuggling
+├── 01_llm_security_fundamentals.md                         ← LLM attack surface, OWASP LLM Top 10, threat model
+├── 02_prompt_injection.md                                  ← Direct/indirect injection, jailbreaks, multimodal attacks
+├── 03_model_extraction_and_inversion.md                    ← Model extraction, training data inversion, membership inference
+├── 04_adversarial_attacks_on_llm.md                        ← Adversarial suffixes, transfer attacks, input manipulation
+├── 05_llm_security_defense.md                              ← Guardrails, output validation, secure LLM architecture
+├── 06_llm_security_ctf_lab.md                              ← CTF: basic injection/Base64 bypass/indirect injection/token smuggling
+├── 07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md     ← Deep-dive: AI Agent & MCP Tool Poisoning and Sandboxing Defense
+└── 08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md ← Deep-dive: Agent Escape, Landlock LSM Sandboxing & eBPF Defense
 ```
 
-OWASP LLM Top 10, prompt injection and jailbreaks, model extraction, adversarial attacks, LLM security architecture. Includes a 4-challenge CTF.
+OWASP LLM Top 10, prompt injection and jailbreaks, model extraction, adversarial attacks, LLM security architecture, AI agent MCP tool security, and Landlock LSM sandboxing defense. Includes CTF challenges.
 
 ---
 

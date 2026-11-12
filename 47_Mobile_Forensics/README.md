@@ -13,7 +13,7 @@
 | [03_mobile_evidence_extraction.md](./03_mobile_evidence_extraction.md) | **모바일 증거 추출** — 모바일 증거 추출은 스마트폰, 태블릿, 피처폰에서 법적 증거 능력을 갖춘 디지털 증거를 수집하는 과정이다. 단순히 파일을 복사하는 것이 아니라, 증거가 변경되지 않았다는 것(무결성)을... |
 | [04_mobile_forensics_tools.md](./04_mobile_forensics_tools.md) | **모바일 포렌식 도구** — 모바일 포렌식 도구는 스마트폰에서 디지털 증거를 추출하고 분석하는 전문 소프트웨어다. 무료 오픈소스 도구부터 수천만 원짜리 전문 장비까지 다양하다. 올바른 도구 선택이 증거 수집 성공... |
 | [05_mobile_malware_analysis.md](./05_mobile_malware_analysis.md) | **모바일 악성코드 분석** — 모바일 악성코드(Mobile Malware)는 스마트폰을 타깃으로 설계된 악성 앱이다. 뱅킹 정보 탈취, SMS 가로채기, 원격 제어, 랜섬웨어 등 다양한 형태로 존재한다. 악성코드 ... |
-| [06_mobile_forensics_ctf_lab.md](./06_mobile_forensics_ctf_lab.md) | **모바일 포렌식 CTF 실습 랩** — pip install androguard frida-tools sqlite-utils pillow |
+| [06_mobile_forensics_ctf_lab.md](./06_mobile_forensics_ctf_lab.md) | **모바일 포렌식 CTF 실습 랩** — 추출된 Android 앱 데이터 디렉터리에서 암호화된 SQLite 데이터베이스를 복호화하고 플래그를 찾아라. |
 
 ## 🎯 학습 목표
 

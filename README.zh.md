@@ -9,10 +9,10 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目录)
 [![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·2275-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·2310-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 &nbsp; [![Wargame source](https://img.shields.io/badge/Wargame_source-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **浏览器终端渗透 CTF 战争游戏** — 用伪 Shell（`connect`·`cat`·`submit`）逐层攻破目标 `vibe.corp` 的 5 道安全层（外围→Web→内网→金库→核心），通关 2275 道挑战。含启动序列、`ACCESS GRANTED` 演出、矩阵雨、音效、提示与中英文。取材自本仓库的 75 个章节。([介绍](wargame/README.md) · 启用 GitHub Pages 后可访问)
+> 🎮 **浏览器终端渗透 CTF 战争游戏** — 用伪 Shell（`connect`·`cat`·`submit`）逐层攻破目标 `vibe.corp` 的 5 道安全层（外围→Web→内网→金库→核心），通关 2310 道挑战。含启动序列、`ACCESS GRANTED` 演出、矩阵雨、音效、提示与中英文。取材自本仓库的 75 个章节。([介绍](wargame/README.md) · 启用 GitHub Pages 后可访问)
 
 <br/>
 
@@ -1382,15 +1382,17 @@ C2架构与信标、Shellcode开发、四种持久化技术、AMSI/ETW绕过。�
 
 ```
 69_LLM_Security/
-├── 01_llm_security_fundamentals.md      ← LLM攻击面、OWASP LLM Top 10、威胁模型
-├── 02_prompt_injection.md               ← 直接/间接注入、越狱、多模态攻击
-├── 03_model_extraction_and_inversion.md ← 模型提取、训练数据反演、成员推理
-├── 04_adversarial_attacks_on_llm.md     ← 对抗性后缀、迁移攻击、输入操纵
-├── 05_llm_security_defense.md           ← 护栏、输出验证、安全LLM架构
-└── 06_llm_security_ctf_lab.md           ← CTF: 基础注入/Base64绕过/Token走私
+├── 01_llm_security_fundamentals.md                         ← LLM攻击面、OWASP LLM Top 10、威胁模型
+├── 02_prompt_injection.md                                  ← 直接/间接注入、越狱、多模态攻击
+├── 03_model_extraction_and_inversion.md                    ← 模型提取、训练数据反演、成员推理
+├── 04_adversarial_attacks_on_llm.md                        ← 对抗性后缀、迁移攻击、输入操纵
+├── 05_llm_security_defense.md                              ← 护栏、输出验证、安全LLM架构
+├── 06_llm_security_ctf_lab.md                              ← CTF: 基础注入/Base64绕过/Token走私
+├── 07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md     ← 深度剖析: AI Agent 与 MCP 工具投毒防御与沙箱隔离
+└── 08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md ← 深度剖析: Agent 沙箱逃逸、Landlock LSM 非特权隔离与 eBPF 防御
 ```
 
-OWASP LLM Top 10、提示注入与越狱、模型提取、对抗攻击、LLM安全架构。含4个挑战的CTF。
+OWASP LLM Top 10、提示注入与越狱、模型提取、对抗攻击、LLM安全架构、AI Agent MCP 工具安全与 Landlock LSM 沙箱防御。含 CTF 实战。
 
 ---
 

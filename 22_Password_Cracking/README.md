@@ -12,7 +12,7 @@
 | [03_Advanced_Cracking_Techniques.md](./03_Advanced_Cracking_Techniques.md) | **Advanced Cracking Techniques** — 기본적인 사전 공격이나 브루트포스만으로는 복잡한 비밀번호를 크래킹하기 어렵다. 고급 크래킹 기법은 인간이 비밀번호를 만드는 패턴(P@ssw0rd, 이름+연도 등)을 활용한 규칙 기반 ... |
 | [04_Credential_Stuffing_Automation.md](./04_Credential_Stuffing_Automation.md) | **크리덴셜 스터핑 및 패스워드 분석 자동화** — 크리덴셜 스터핑(Credential Stuffing)은 다른 서비스에서 유출된 아이디/비밀번호 쌍을 자동으로 다른 사이트에 대입하는 공격이다. 사용자들이 여러 사이트에서 같은 비밀번호... |
 | [05_password_policy_audit.md](./05_password_policy_audit.md) | **패스워드 정책 감사 — 약한 정책 탐지·해시 강도 분석·권고사항** — 패스워드 정책 감사(Password Policy Audit)는 조직의 비밀번호 요구사항이 실제로 충분히 강한지 평가하는 과정이다. 단순히 "최소 8자 이상" 같은 규칙이 있다고 안전한... |
-| [06_password_ctf_lab.md](./06_password_ctf_lab.md) | **패스워드 크래킹 CTF 실습 랩** — docker run -d --name crack-lab \ |
+| [06_password_ctf_lab.md](./06_password_ctf_lab.md) | **패스워드 크래킹 CTF 실습 랩** — 주어진 해시 파일에서 여러 해시 알고리즘(MD5, SHA-1, SHA-256, bcrypt)을 식별하고 크래킹하여 플래그를 획득하라. |
 
 ## 🎯 학습 목표
 

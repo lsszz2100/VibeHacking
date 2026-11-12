@@ -12,7 +12,7 @@
 | [03_Post_Exploitation_Scripts.md](./03_Post_Exploitation_Scripts.md) | **Post-Exploitation Scripts** — 사후 익스플로잇(Post-Exploitation)은 공격자가 시스템에 처음 접근(초기 침투)한 이후에 수행하는 모든 활동을 말한다. 초기 접근은 문을 여는 것이고, 사후 익스플로잇은 ... |
 | [04_Advanced_Obfuscation_Evasion.md](./04_Advanced_Obfuscation_Evasion.md) | **셸 스크립트 난독화 및 탐지 우회** — 난독화(Obfuscation)는 코드나 명령어를 원래 의미를 유지하면서도 읽기 어렵게 변형하는 기술이다. 보안 제품(안티바이러스, EDR)은 알려진 공격 패턴의 "서명(시그니처)"을 ... |
 | [05_bash_forensics_and_monitoring.md](./05_bash_forensics_and_monitoring.md) | **Bash 포렌식·모니터링 자동화 — 로그 분석·이상 탐지·인시던트 대응** — 디지털 포렌식(Digital Forensics)은 사이버 사고가 발생했을 때 "무슨 일이 있었는가"를 증거에 근거하여 규명하는 과학적 조사 과정이다. 모니터링은 사고 발생 전에 이상 ... |
-| [06_shell_ctf_lab.md](./06_shell_ctf_lab.md) | **쉘 스크립팅 CTF 실습 랩** — docker run -d --name shell-lab \ |
+| [06_shell_ctf_lab.md](./06_shell_ctf_lab.md) | **쉘 스크립팅 CTF 실습 랩** — 취약하게 설정된 크론 잡을 분석하고 악용하여 root 권한을 획득한 뒤 플래그를 읽어라. |
 
 ## 🎯 학습 목표
 

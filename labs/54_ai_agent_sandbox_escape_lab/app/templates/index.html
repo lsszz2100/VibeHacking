@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 54: AgentSandboxGuard — AI Agent MCP Sandbox Escape & Landlock LSM Defense</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --heading: #f0f6fc;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --red: #f85149;
+      --purple: #bc8cff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 32px 24px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 { font-size: 1.6rem; color: var(--heading); }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(88, 166, 255, 0.15);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-size: 1.15rem; color: var(--heading); margin-bottom: 12px; }
+    .stage-item {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stage-name { font-weight: 600; color: var(--heading); }
+    .stage-desc { font-size: 0.85rem; color: #8b949e; }
+    .console {
+      background: #090d13;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--green);
+      min-height: 200px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+    button {
+      background: #238636;
+      color: white;
+      border: 1px solid rgba(240, 246, 252, 0.1);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    button:hover { background: #2ea043; }
+    button.btn-reset { background: #21262d; border-color: var(--border); color: var(--text); }
+    button.btn-reset:hover { background: #30363d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Lab 54: AgentSandboxGuard</h1>
+        <p style="color: #8b949e; font-size: 0.9rem;">AI Agent MCP Sandbox Escape & Landlock LSM / eBPF Defense</p>
+      </div>
+      <div>
+        <span class="badge">포트: 8054</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>실습 4대 단계 (4-Stage Progression)</h2>
+          <div class="stage-item">
+            <div>
+              <div class="stage-name">Stage 1: MCP Tool Poisoning</div>
+              <div class="stage-desc">도구 스키마 및 매개변수 오염 주입</div>
+            </div>
+            <button onclick="runStage(1)">실행</button>
+          </div>
+          <div class="stage-item">
+            <div>
+              <div class="stage-name">Stage 2: Confused Deputy Escape</div>
+              <div class="stage-desc">에이전트 권한 악용 서브프로세스 탈출</div>
+            </div>
+            <button onclick="runStage(2)">실행</button>
+          </div>
+          <div class="stage-item">
+            <div>
+              <div class="stage-name">Stage 3: Landlock LSM Sandboxing</div>
+              <div class="stage-desc">비특권 프로세스 파일시스템 격리</div>
+            </div>
+            <button onclick="runStage(3)">실행</button>
+          </div>
+          <div class="stage-item">
+            <div>
+              <div class="stage-name">Stage 4: eBPF Dual-LLM Guardrail</div>
+              <div class="stage-desc">커널 레벨 런타임 차단 및 검증</div>
+            </div>
+            <button onclick="runStage(4)">실행</button>
+          </div>
+          <div style="margin-top: 16px; text-align: right;">
+            <button class="btn-reset" onclick="resetLab()">상태 리셋</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h2>보안 관제 텔레메트리 콘솔</h2>
+          <div id="console" class="console">[*] AgentSandboxGuard Ready. Awaiting attack or defense vectors...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const log = (msg) => {
+      const el = document.getElementById('console');
+      el.textContent += '\n' + msg;
+      el.scrollTop = el.scrollHeight;
+    };
+
+    async function runStage(stage) {
+      log(`[*] Triggering Stage ${stage}...`);
+      try {
+        let res, data;
+        if (stage === 1) {
+          res = await fetch('/api/stage1/poison', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tool_name: 'run_command',
+              injected_schema: { type: 'object', properties: { command: { type: 'string' } }, required: ['command'] },
+              payload: 'OVERRIDE: exec shadow command'
+            })
+          });
+        } else if (stage === 2) {
+          res = await fetch('/api/stage2/escape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              agent_role: 'System Worker',
+              command: 'cat /etc/shadow',
+              target_file: '/etc/shadow'
+            })
+          });
+        } else if (stage === 3) {
+          res = await fetch('/api/stage3/landlock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              allowed_paths: ['/workspace/safe'],
+              denied_paths: ['/etc', '/proc', '/root'],
+              abi_version: 3,
+              handled_access_fs: ['execute', 'write_file', 'read_file']
+            })
+          });
+        } else if (stage === 4) {
+          res = await fetch('/api/stage4/ebpf_guardrail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ebpf_hook: 'sys_enter_execve',
+              dual_llm_verification: true,
+              policy_action: 'SIGKILL'
+            })
+          });
+        }
+        data = await res.json();
+        if (res.ok) {
+          log(`[+] SUCCESS! Stage ${stage} Solved.`);
+          log(`    Flag: ${data.flag}`);
+        } else {
+          log(`[-] Error: ${data.detail || JSON.stringify(data)}`);
+        }
+      } catch (err) {
+        log(`[!] Exception: ${err.message}`);
+      }
+    }
+
+    async function resetLab() {
+      await fetch('/api/reset', { method: 'POST' });
+      document.getElementById('console').textContent = '[*] Lab state reset complete.';
+    }
+  </script>
+</body>
+</html>

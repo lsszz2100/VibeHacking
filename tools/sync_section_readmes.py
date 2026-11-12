@@ -30,37 +30,56 @@ def parse_file_info(filepath: Path) -> tuple[str, str]:
         ls = line.strip()
         if ls.startswith("# ") and not ls.startswith("# 0."):
             t = ls[2:].strip()
+            # Remove "제NN장 ... : " prefix if present
+            t = re.sub(r"^제\s*\d+\s*장\s*[^:]*:\s*", "", t)
             t = re.sub(r"^[0-9]+[._\s\-]*", "", t)
             title = clean_text(t)
             break
 
     summary = ""
-    # Look for explanation in sections
-    for i, line in enumerate(lines[:90]):
-        ls = line.strip()
-        if ls.startswith("### ") or ls.startswith("## 0.") or ls.startswith("## "):
-            for next_l in lines[i+1:i+15]:
-                nl = next_l.strip()
-                if nl and not nl.startswith(("#", "```", ">", "-", "*", "|", "<")):
-                    summary = clean_text(nl)
-                    break
-            if summary:
-                break
+    in_code = False
+    skip_section = False
+    candidate_lines = []
 
-    if not summary:
-        for line in lines[:60]:
-            ls = line.strip()
-            if ls and not ls.startswith(("#", "```", ">", "|", "-", "*", "<")) and len(ls) > 20:
-                summary = clean_text(ls)
-                break
+    for line in lines[:150]:
+        ls = line.strip()
+        if ls.startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+
+        if ls.startswith("## ") or ls.startswith("### "):
+            header_title = ls.lstrip("#").strip().lower()
+            if any(k in header_title for k in ["실습 환경", "준비", "환경 구축", "사전 요구", "prerequisite", "setup", "lab setup"]):
+                skip_section = True
+            else:
+                skip_section = False
+            continue
+
+        if skip_section:
+            continue
+
+        if ls.startswith(("#", ">", "<", "|", "- [ ]", "1.", "2.", "3.", "4.", "5.")):
+            continue
+
+        if any(cmd in ls for cmd in ["pip install", "docker run", "docker pull", "sudo apt", "npm i", "npm install", "git clone"]):
+            continue
+
+        cl = clean_text(ls)
+        if len(cl) > 20 and not cl.startswith(("$", "#", "http://", "https://")):
+            candidate_lines.append(cl)
+
+    if candidate_lines:
+        summary = candidate_lines[0]
 
     if not title:
         title = filepath.stem.replace("_", " ").title()
     if not summary:
-        summary = f"{title} 심화 학습 및 실습"
+        summary = f"{title} 원리 및 실전 공격/방어 기법"
 
-    if len(summary) > 105:
-        summary = summary[:102] + "..."
+    if len(summary) > 95:
+        summary = summary[:92] + "..."
 
     return title, summary
 
@@ -133,19 +152,43 @@ def main():
             created_count += 1
             print(f"[+] Created README.md for Section {sec_num:02d} ({meta['ko']})")
         else:
-            # 기존 README.md에 누락된 파일이 있는지 확인
+            # 기존 README.md 확인 및 코드 누출/누락 파일 수정
             existing_content = readme_path.read_text(encoding="utf-8")
-            missing_files = [f for f in md_files if f.name not in existing_content]
+            lines = existing_content.splitlines()
+            file_map = {fname: (title, summary) for fname, title, summary in file_infos}
+            
+            modified = False
+            # 1. 기존 테이블 행 중 코드가 들어간 행이나 잘못된 행 감지 및 교체
+            new_lines = []
+            table_found = False
+            for line in lines:
+                m = re.match(r"^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|\s*(.*)$", line)
+                if m:
+                    fname = m.group(1).strip()
+                    desc = m.group(3).strip()
+                    if fname in file_map:
+                        # 설명 부분에 설치 명령어/코드가 들어있는지 확인
+                        has_code_leak = any(cmd in desc for cmd in [
+                            "pip install", "docker run", "docker pull", "sudo apt", "npm i", "git clone"
+                        ])
+                        if has_code_leak:
+                            t, s = file_map[fname]
+                            new_line = f"| [{fname}](./{fname}) | **{t}** — {s} |"
+                            new_lines.append(new_line)
+                            modified = True
+                            continue
+                new_lines.append(line)
+            lines = new_lines
 
+            # 2. 누락된 파일 추가
+            current_text = "\n".join(lines)
+            missing_files = [f for f in md_files if f.name not in current_text]
             if missing_files:
-                # 테이블 끝에 누락된 파일 행 추가
                 table_additions = []
                 for fname, title, summary in file_infos:
                     if fname in [mf.name for mf in missing_files]:
                         table_additions.append(f"| [{fname}](./{fname}) | **{title}** — {summary} |")
 
-                # 목차 테이블 위치 탐색
-                lines = existing_content.splitlines()
                 table_idx = -1
                 for idx, l in enumerate(lines):
                     if l.startswith("|") and ("---" in l or ":---" in l):
@@ -153,18 +196,18 @@ def main():
                         break
 
                 if table_idx != -1:
-                    # Find end of table
                     end_idx = table_idx + 1
                     while end_idx < len(lines) and lines[end_idx].strip().startswith("|"):
                         end_idx += 1
                     for add_line in table_additions:
                         lines.insert(end_idx, add_line)
                         end_idx += 1
-                    readme_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-                    updated_count += 1
-                    print(f"[*] Updated README.md for Section {sec_num:02d} (added {len(missing_files)} files)")
-                else:
-                    skipped_count += 1
+                    modified = True
+
+            if modified:
+                readme_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+                updated_count += 1
+                print(f"[*] Updated README.md for Section {sec_num:02d} ({meta['ko']})")
             else:
                 skipped_count += 1
 

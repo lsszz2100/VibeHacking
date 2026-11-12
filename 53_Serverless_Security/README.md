@@ -12,7 +12,7 @@
 | [03_serverless_iam_abuse.md](./03_serverless_iam_abuse.md) | **서버리스 IAM 권한 남용 — 역할 체인·권한 상승·분석 CLI** — 서버리스 IAM 문제: |
 | [04_serverless_hardening.md](./04_serverless_hardening.md) | **서버리스 보안 강화 — SAST·런타임 보호·자동 감사** — 전통적 보안: |
 | [05_serverless_incident_response.md](./05_serverless_incident_response.md) | **서버리스 사고 대응** — 1. 준비 (Preparation) |
-| [06_serverless_ctf_lab.md](./06_serverless_ctf_lab.md) | **서버리스 보안 CTF 실습 랩** — pip install boto3 aws-lambda-powertools moto requests |
+| [06_serverless_ctf_lab.md](./06_serverless_ctf_lab.md) | **서버리스 보안 CTF 실습 랩** — Lambda 함수에 전달되는 이벤트 페이로드를 조작하여 명령어 인젝션을 수행하고 플래그를 획득하라. |
 | [07_serverless_event_injection_and_lambda_runtime_deepdive.md](./07_serverless_event_injection_and_lambda_runtime_deepdive.md) | **서버리스 클라우드 보안 심층 분석: AWS Lambda 런타임 해부, 이벤트 인젝션, Warm 컨테이너 영속성 및 최소 권한 방어 아키텍처** — 서버리스(Serverless / FaaS) 아키텍처는 인프라 관리 부담을 클라우드 제공자(CSP)에게 위임하고 이벤트 기반으로 코드를 실행함으로써 비즈니스 민첩성을 극대화합니다. 그러... |
 
 ## 🎯 학습 목표

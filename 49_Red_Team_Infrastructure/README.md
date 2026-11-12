@@ -12,7 +12,7 @@
 | [03_opsec_infrastructure.md](./03_opsec_infrastructure.md) | **OPSEC 인프라 관리** — OPSEC(Operations Security, 작전 보안)은 레드팀 작전 중 공격자(레드팀)의 신원, 위치, 방법론이 방어자(블루팀)에게 노출되지 않도록 관리하는 원칙이다. 실제 A... |
 | [04_red_team_automation.md](./04_red_team_automation.md) | **레드팀 자동화** — 수동 레드팀: |
 | [05_red_team_detection_evasion.md](./05_red_team_detection_evasion.md) | **레드팀 인프라 탐지 우회 (방어자 관점)** — 블루팀 입장: |
-| [06_red_team_infra_ctf_lab.md](./06_red_team_infra_ctf_lab.md) | **레드팀 인프라 CTF 실습 랩** — pip install requests dnspython paramiko cryptography |
+| [06_red_team_infra_ctf_lab.md](./06_red_team_infra_ctf_lab.md) | **레드팀 인프라 CTF 실습 랩** — 네트워크 트래픽에서 C2 (Command & Control) 서버 통신 패턴을 탐지하고 플래그를 획득하라. |
 
 ## 🎯 학습 목표
 

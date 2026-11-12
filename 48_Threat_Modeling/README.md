@@ -12,7 +12,7 @@
 | [03_threat_modeling_tools.md](./03_threat_modeling_tools.md) | **위협 모델링 도구 및 자동화** — 위협 모델링 도구는 DFD(데이터 흐름 다이어그램) 작성과 STRIDE 위협 분석을 자동화하는 소프트웨어다. 수작업으로 하던 위협 분류와 완화 방법 도출을 자동화해 시간을 단축하고, ... |
 | [04_threat_modeling_practice.md](./04_threat_modeling_practice.md) | **위협 모델링 실전 연습** — 이론으로 배운 STRIDE, DREAD, Attack Trees를 실제 시스템에 적용하는 실습이다. 전자상거래 사이트, 모바일 뱅킹 앱, Kubernetes 클러스터 등 현실적인 시스... |
 | [05_ai_system_threat_modeling.md](./05_ai_system_threat_modeling.md) | **AI 시스템 위협 모델링** — AI 시스템은 전통적인 소프트웨어와 다른 특유의 취약점을 가진다. 프롬프트 인젝션, 학습 데이터 오염, 모델 추출, 적대적 예제 등은 기존 보안 도구로 탐지하기 어렵다. AI 시스템 ... |
-| [06_threat_modeling_ctf_lab.md](./06_threat_modeling_ctf_lab.md) | **위협 모델링 CTF 실습 랩** — pip install matplotlib networkx graphviz |
+| [06_threat_modeling_ctf_lab.md](./06_threat_modeling_ctf_lab.md) | **위협 모델링 CTF 실습 랩** — 주어진 웹 애플리케이션 데이터 흐름도(DFD)에서 STRIDE 위협을 모두 식별하고 플래그를 완성하라. |
 
 ## 🎯 학습 목표
 

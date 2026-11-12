@@ -541,6 +541,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A01:2021",
         "owasp_name": "Broken Access Control (Active Directory DACL/ACE Privilege Escalation)",
     },
+    "54": {
+        "kisa_id": "2.10.2",
+        "kisa_name": "보안 시스템 운영 (AI 에이전트 샌드박스 & 비인가 시스템콜 차단)",
+        "nist_csf_id": "PR.AC-06",
+        "nist_csf_name": "Identities & Autonomous Agents Least Privilege (Landlock LSM Sandboxing)",
+        "owasp_id": "LLM01:2025",
+        "owasp_name": "Prompt Injection & Tool Hijacking (AI Agent MCP Sandbox Escape)",
+    },
 }
 
 @dataclass
@@ -1536,6 +1544,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Active Directory schema contains misconfigured access control entries (ACEs) granting unprivileged groups full control or password reset permissions on higher-tier accounts.",
                 "affected_component": "ADGraphMaster Domain Controller (Port 8053)",
                 "remediation": "Audit and prune abusable ACEs using BloodHound, enroll administrative identities into the Protected Users security group, and enforce Microsoft 3-Tier Administration."
+            }
+        ]
+    },
+    "54": {
+        "title": "54 AgentSandboxGuard AI Agent MCP Sandbox Escape & Landlock LSM Defense",
+        "category": "AI Security & Kernel Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5401",
+                "name": "Autonomous AI Agent Subprocess Escape via Model Context Protocol Tool Poisoning and Confused Deputy Abuse",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1059.004",
+                "mitre_technique": "Command and Scripting Interpreter: Unix Shell",
+                "mitre_tactic": "Execution / Privilege Escalation",
+                "impact": "Remote untrusted prompts poison MCP tool schemas, forcing confused deputy agents to spawn unauthorized subshells and read sensitive host files.",
+                "description": "Autonomous agents executing Model Context Protocol lack kernel-enforced sandboxing, allowing malicious prompts to shadow legitimate tools and invoke arbitrary host system calls.",
+                "affected_component": "AgentSandboxGuard Execution Engine (Port 8054)",
+                "remediation": "Enforce Linux Landlock LSM unprivileged filesystem sandboxing (restricting access to /workspace/safe) and integrate eBPF Dual-LLM runtime syscall filters with real-time SIGKILL actions."
             }
         ]
     }

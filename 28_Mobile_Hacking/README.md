@@ -13,7 +13,7 @@
 | [03_mobile_traffic_analysis.md](./03_mobile_traffic_analysis.md) | **모바일 트래픽 분석** — 모바일 트래픽 분석은 스마트폰 앱이 서버와 주고받는 네트워크 데이터를 캡처하고 분석하는 과정이다. 앱이 어떤 API를 호출하는지, 어떤 데이터를 전송하는지, 인증 토큰을 어떻게 처리하... |
 | [04_Mobile_Malware_Analysis.md](./04_Mobile_Malware_Analysis.md) | **모바일 악성코드 분석 (Android/iOS)** — 모바일 악성코드 분석은 의심스러운 앱의 악성 행위를 식별하는 과정이다. 정적 분석(실행 없이 코드 분석)과 동적 분석(실제 실행하면서 행위 관찰)을 병행한다. 악성코드 분석을 배우면 ... |
 | [05_mobile_app_security_testing.md](./05_mobile_app_security_testing.md) | **모바일 앱 보안 테스트 — 자동화 분석·런타임 후킹·API 감사** — 모바일 앱 보안 테스트는 앱의 설계부터 구현, 배포까지 전 과정에서 보안 취약점을 찾아내는 체계적인 평가 과정이다. OWASP Mobile Security Testing Guide(M... |
-| [06_mobile_ctf_lab.md](./06_mobile_ctf_lab.md) | **모바일 해킹 CTF 실습 랩** — pip install androguard frida-tools objection |
+| [06_mobile_ctf_lab.md](./06_mobile_ctf_lab.md) | **모바일 해킹 CTF 실습 랩** — 안드로이드 APK 파일을 역공학하여 소스코드에 하드코딩된 API 키, 시크릿, 플래그를 추출한다. |
 | [07_frida_android_dynamic_analysis_deepdive.md](./07_frida_android_dynamic_analysis_deepdive.md) | **제28장 모바일 해킹 심층: 안드로이드 악성코드 분석 & Frida 동적 후킹 (Deep-dive)** — 현대 안드로이드 악성코드(Banker, Spyware, Ransomware)는 단순한 Java 코드 레벨의 악의적 행위를 넘어, 탐지 회피(Anti-Analysis), 난독화(Obfu... |
 | [08_android_native_so_and_frida_unpinning_deepdive.md](./08_android_native_so_and_frida_unpinning_deepdive.md) | **제28장 모바일 해킹 심층: 안드로이드 네이티브 SO 분석 & Frida SSL 언피닝 심층 분석 (Deep-dive)** — 최신 안드로이드 금융, 게임, 엔터프라이즈 앱은 역공학 및 동적 조작을 방어하기 위해 핵심 비즈니스 로직, 암호화 키 파생(KDF), 토큰 서명, 무결성 검증, 네트워크 보안 검사를 ... |
 

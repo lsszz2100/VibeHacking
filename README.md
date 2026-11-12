@@ -1455,15 +1455,17 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ```
 69_LLM_Security/
-├── 01_llm_security_fundamentals.md      ← LLM 공격 표면, OWASP LLM Top 10, 위협 모델
-├── 02_prompt_injection.md               ← 직접·간접 인젝션, 탈옥, 멀티모달 공격
-├── 03_model_extraction_and_inversion.md ← 모델 추출, 훈련 데이터 역추론, 멤버십 추론
-├── 04_adversarial_attacks_on_llm.md     ← 적대적 접미사, 전이 공격, 입력 조작
-├── 05_llm_security_defense.md           ← 가드레일, 출력 검증, 안전한 LLM 아키텍처
-└── 06_llm_security_ctf_lab.md           ← CTF: 기본 인젝션·Base64 우회·간접 인젝션·토큰 스머글링
+├── 01_llm_security_fundamentals.md                         ← LLM 공격 표면, OWASP LLM Top 10, 위협 모델
+├── 02_prompt_injection.md                                  ← 직접·간접 인젝션, 탈옥, 멀티모달 공격
+├── 03_model_extraction_and_inversion.md                    ← 모델 추출, 훈련 데이터 역추론, 멤버십 추론
+├── 04_adversarial_attacks_on_llm.md                        ← 적대적 접미사, 전이 공격, 입력 조작
+├── 05_llm_security_defense.md                              ← 가드레일, 출력 검증, 안전한 LLM 아키텍처
+├── 06_llm_security_ctf_lab.md                              ← CTF: 기본 인젝션·Base64 우회·간접 인젝션·토큰 스머글링
+├── 07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md     ← 심층: AI 에이전트 & MCP 툴 포이즈닝·탈취 및 샌드박싱 방어
+└── 08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md ← 심층: 에이전트 탈출·Landlock LSM 비특권 격리 & eBPF 듀얼 런타임
 ```
 
-**핵심 내용:** OWASP LLM Top 10, 프롬프트 인젝션·탈옥, 모델 추출, 적대적 공격, LLM 보안 아키텍처. 4챌린지 CTF 포함.
+**핵심 내용:** OWASP LLM Top 10, 프롬프트 인젝션·탈옥, 모델 추출, 적대적 공격, LLM 보안 아키텍처, AI 에이전트 MCP 포이즈닝 방어 및 Landlock LSM 비특권 샌드박싱. 4챌린지 CTF 포함.
 
 ---
 

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ai_agent_sandbox_lab:
+    build: .
+    container_name: vhack_lab_54
+    ports:
+      - "127.0.0.1:8054:8054"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

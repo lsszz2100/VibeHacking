@@ -549,6 +549,16 @@ const ALLOWLIST = new Map([
   ['t3_adgraph_laps_password_attribute_read_rights -> t4_adlaps', 'LAPS password attribute read rights discuss LAPS credential harvesting'],
   ['t3_adgraph_protected_users_security_group_controls -> t2_membership', 'Protected Users group controls discuss security group membership'],
   ['t4_adgraph_autonomous_bloodhound_pipeline_remediation -> t1_iac', 'Autonomous pipeline remediation discusses infrastructure-as-code automation'],
+  // 66th Track: agentsandbox (AI Agent MCP Sandbox Escape & Landlock LSM Defense)
+  ['t1_agentsandbox_tool_parameter_type_confusion -> t4_pwntypeconfusion', 'Parameter type confusion vulnerability references type confusion class'],
+  ['t2_agentsandbox_unprivileged_worker_chroot_isolation -> t2_firmwarechroot', 'pivot_root and chroot jail isolation discussion'],
+  ['t2_agentsandbox_cgroup_v2_memory_cpu_starvation_mitigation -> t3_ebpfcgroup', 'cgroup v2 resource limits discuss cgroup controllers'],
+  ['t2_agentsandbox_seccomp_bpf_filter_syscall_kill -> t3_reptrace', 'Seccomp-BPF filters dangerous ptrace syscall'],
+  ['t2_agentsandbox_host_docker_socket_mounting_danger -> t3_dockersock', 'Host docker.sock container mounting risks discuss docker socket'],
+  ['t2_agentsandbox_dual_llm_intent_arbitration -> t1_arbitration', 'Dual-LLM intent arbitration for tool calls references arbitration term'],
+  ['t2_agentsandbox_spiffe_spire_agent_attestation -> t4_ztsvid', 'SPIRE issues SVID credentials to agent workloads'],
+  ['t2_agentsandbox_spiffe_spire_agent_attestation -> t3_ebpfcgroup', 'SPIRE attestation inspects cgroup and namespaces'],
+  ['t4_agentsandbox_landlock_lsm_hardened_runtime_sandbox -> t4_gvisor', 'Multi-tier sandboxing combining gVisor and Landlock LSM'],
 ]);
 
 function loadChallenges() {

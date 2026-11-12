@@ -12,7 +12,7 @@
 | [03_packet_manipulation.md](./03_packet_manipulation.md) | **게임 패킷 조작 (Game Packet Manipulation)** — 네트워크 보안 학습: |
 | [04_anti_cheat_analysis.md](./04_anti_cheat_analysis.md) | **안티치트 분석 (Anti-Cheat Analysis)** — 보안 연구 가치: |
 | [05_game_server_exploitation.md](./05_game_server_exploitation.md) | **게임 서버 취약점 연구** — 게임 서버 보안의 중요성: |
-| [06_game_ctf_lab.md](./06_game_ctf_lab.md) | **게임 해킹 CTF 실습 랩** — pip install struct ctypes psutil scapy |
+| [06_game_ctf_lab.md](./06_game_ctf_lab.md) | **게임 해킹 CTF 실습 랩** — 시뮬레이션된 게임 프로세스 메모리에서 체력(HP) 값을 찾고 수정하여 플래그를 획득하라. |
 
 ## 🎯 학습 목표
 

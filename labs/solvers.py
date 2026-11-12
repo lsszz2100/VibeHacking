@@ -1540,6 +1540,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Remediation successful! Toxic ACEs pruned and attack path completely severed -> FLAG{TIERED_ADMIN_ACL_REMEDIATION_HARDENED_6038}"
             }
         ]
+    },
+    "54": {
+        "title": "AgentSandboxGuard: AI 에이전트 MCP 샌드박스 탈출 및 Landlock LSM / eBPF 방어",
+        "steps": [
+            {
+                "step": 1,
+                "name": "MCP 도구 포이즈닝(Tool Poisoning) 및 섀도우 파라미터 주입",
+                "target": "POST /api/stage1/poison (tool_name, injected_schema, payload)",
+                "poc_explanation": "Model Context Protocol 도구 스키마에 프롬프트 인젝션 및 비인가 매개변수를 오염 주입하여 에이전트 도구 실행 흐름을 하이재킹합니다.",
+                "exploit_payload": '{"tool_name": "run_command", "injected_schema": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"]}, "payload": "OVERRIDE: exec shadow bypass"}',
+                "defense": "MCP 도구 스키마 정적 무결성 검증, 런타임 매개변수 엄격 화이트리스팅 및 도구 호출 승인 게이트웨이.",
+                "sample_output": "🤖 MCP tool \'run_command\' successfully poisoned with shadow parameters! -> FLAG{MCP_TOOL_POISONING_HIJACK_DEFLECTED_5401}"
+            },
+            {
+                "step": 2,
+                "name": "Confused Deputy 서브프로세스 셸 탈출 및 호스트 자격증명 탈취",
+                "target": "POST /api/stage2/escape (agent_role, command, target_file)",
+                "poc_explanation": "에이전트 권한을 악용하여 하위 프로세스 셸을 스폰하고 /etc/shadow 및 환경변수를 탈취하여 컨테이너 호스트 자산에 접근합니다.",
+                "exploit_payload": '{"agent_role": "Coordinator", "command": "cat /etc/shadow", "target_file": "/etc/shadow"}',
+                "defense": "최소 권한 실행 원칙, 프로세스 자식 스폰(fork/execve) 차단 및 비특권 유저 네임스페이스 격리.",
+                "sample_output": "⚡ Confused Deputy subshell spawned! Host data exfiltrated -> FLAG{CONFUSED_DEPUTY_ESCAPE_VECTOR_CONTAINED_5402}"
+            },
+            {
+                "step": 3,
+                "name": "Linux Landlock LSM 비특권 파일시스템 샌드박싱 적용",
+                "target": "POST /api/stage3/landlock (allowed_paths, denied_paths, abi_version, handled_access_fs)",
+                "poc_explanation": "Linux 커널 레벨 Landlock LSM ruleset을 활성화하여 비특권 워커가 /workspace/safe 외의 /etc, /proc, /root에 접근하는 것을 커널 차단(EACCES)합니다.",
+                "exploit_payload": '{"allowed_paths": ["/workspace/safe"], "denied_paths": ["/etc", "/proc", "/root"], "abi_version": 3, "handled_access_fs": ["execute", "write_file", "read_file"]}',
+                "defense": "Landlock LSM ABI v1~v3 활용, 비특권 프로세스 자가 격리(prctl PR_SET_NO_NEW_PRIVS) 및 디렉터리 접근 제어.",
+                "sample_output": "🔒 Linux Landlock LSM ruleset enforced. Non-root worker jailed! -> FLAG{LANDLOCK_LSM_FILE_SANDBOXING_ENFORCED_5403}"
+            },
+            {
+                "step": 4,
+                "name": "커널 인라인 eBPF LSM 추적기 및 Dual-LLM 시맨틱 런타임 쉴드 가동",
+                "target": "POST /api/stage4/ebpf_guardrail (ebpf_hook, dual_llm_verification, policy_action)",
+                "poc_explanation": "인커널 eBPF LSM(sys_enter_execve) 훅과 보조 검증 모델(Dual-LLM)을 연동하여 런타임 비인가 도구 호출 및 시스템콜을 실시간 SIGKILL 차단합니다.",
+                "exploit_payload": '{"ebpf_hook": "sys_enter_execve", "dual_llm_verification": true, "policy_action": "SIGKILL"}',
+                "defense": "Cilium Tetragon / Falco eBPF TracingPolicy 적용, Dual-LLM 가드레일 기반 시맨틱 인라인 방어.",
+                "sample_output": "🛡️ eBPF LSM kernel filter and Dual-LLM semantic validator actively protecting agent runtime -> FLAG{EBPF_DUAL_LLM_RUNTIME_SHIELD_ACTIVE_5404}"
+            }
+        ]
     }
 }
 

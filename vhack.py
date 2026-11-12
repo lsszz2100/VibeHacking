@@ -575,6 +575,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 29, 54, 10],
     },
+    "54": {
+        "name": "AI 에이전트 MCP 샌드박스 탈출 & 방어 랩",
+        "dir":  "54_ai_agent_sandbox_escape_lab",
+        "desc": "AgentSandboxGuard: MCP 도구 포이즈닝 · Confused Deputy 셸 탈출 · Linux Landlock LSM 비특권 파일 격리 · eBPF Dual-LLM 런타임 시스템콜 가드레일",
+        "url":  "웹 콘솔 & 에이전트 샌드박스 대시보드: http://localhost:8054",
+        "difficulty": "★★★★★",
+        "related": [18, 25, 47, 51, 69],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2399,7 +2407,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     data = {
         "timestamp": datetime.now().isoformat(),
-        "version": "2.6.0",
+        "version": "2.8.0",
         "system": {
             "os": f"{platform.system()} {platform.release()}",
             "arch": platform.machine(),

@@ -13,7 +13,7 @@
 | [03_Disassembly_Analysis.md](./03_Disassembly_Analysis.md) | **디스어셈블리 분석** — 소스코드 없는 바이너리를 분석해야 할 때: |
 | [04_ROP_Chain_Programming.md](./04_ROP_Chain_Programming.md) | **ROP(Return-Oriented Programming) 체인 구성** — NX/DEP 보호 이후의 시대: |
 | [05_shellcode_analysis_and_detection.md](./05_shellcode_analysis_and_detection.md) | **셸코드 분석 및 탐지 — 정적·동적 분석·시그니처 생성** — 침해 사고 대응: |
-| [06_assembly_ctf_lab.md](./06_assembly_ctf_lab.md) | **어셈블리 언어 CTF 실습 랩** — docker run -d --name asm-lab \ |
+| [06_assembly_ctf_lab.md](./06_assembly_ctf_lab.md) | **어셈블리 언어 CTF 실습 랩** — 바이너리를 역어셈블하여 패스워드 검증 알고리즘을 분석하고, 올바른 입력값을 찾아 플래그를 획득하라. |
 
 ## 🎯 학습 목표
 

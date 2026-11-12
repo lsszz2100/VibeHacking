@@ -9,10 +9,10 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目次)
 [![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·2275-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·2310-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 &nbsp; [![Wargame source](https://img.shields.io/badge/Wargame_source-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **ブラウザのターミナルで遊ぶ侵入CTFワーゲーム** — 偽シェル（`connect`・`cat`・`submit`）でターゲット `vibe.corp` のセキュリティ層5つ（外周→Web→内部→金庫→コア）を1層ずつ突破し、2275 問をクリア。起動シーケンス・`ACCESS GRANTED` 演出・マトリックスレイン・サウンド・ヒント・日英対応。本リポジトリの75セクション基盤。([紹介](wargame/README.md) · GitHub Pages有効化後にアクセス可能)
+> 🎮 **ブラウザのターミナルで遊ぶ侵入CTFワーゲーム** — 偽シェル（`connect`・`cat`・`submit`）でターゲット `vibe.corp` のセキュリティ層5つ（外周→Web→内部→金庫→コア）を1層ずつ突破し、2310 問をクリア。起動シーケンス・`ACCESS GRANTED` 演出・マトリックスレイン・サウンド・ヒント・日英対応。本リポジトリの75セクション基盤。([紹介](wargame/README.md) · GitHub Pages有効化後にアクセス可能)
 
 <br/>
 
@@ -1382,15 +1382,17 @@ C2アーキテクチャ・ビーコン、シェルコード開発、永続化4�
 
 ```
 69_LLM_Security/
-├── 01_llm_security_fundamentals.md      ← LLM攻撃対象領域、OWASP LLM Top 10、脅威モデル
-├── 02_prompt_injection.md               ← 直接・間接インジェクション、脱獄、マルチモーダル攻撃
-├── 03_model_extraction_and_inversion.md ← モデル抽出、訓練データ逆推論、メンバーシップ推論
-├── 04_adversarial_attacks_on_llm.md     ← 敵対的サフィックス、転移攻撃、入力操作
-├── 05_llm_security_defense.md           ← ガードレール、出力検証、安全なLLMアーキテクチャ
-└── 06_llm_security_ctf_lab.md           ← CTF: 基本インジェクション・Base64回避・トークンスマグリング
+├── 01_llm_security_fundamentals.md                         ← LLM攻撃対象領域、OWASP LLM Top 10、脅威モデル
+├── 02_prompt_injection.md                                  ← 直接・間接インジェクション、脱獄、マルチモーダル攻撃
+├── 03_model_extraction_and_inversion.md                    ← モデル抽出、訓練データ逆推論、メンバーシップ推論
+├── 04_adversarial_attacks_on_llm.md                        ← 敵対的サフィックス、転移攻撃、入力操作
+├── 05_llm_security_defense.md                              ← ガードレール、出力検証、安全なLLMアーキテクチャ
+├── 06_llm_security_ctf_lab.md                              ← CTF: 基本インジェクション・Base64回避・トークンスマグリング
+├── 07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md     ← 深層: AIエージェント & MCPツールポイズニング・サンドボックス防衛
+└── 08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md ← 深層: エージェント脱出・Landlock LSM非特権サンドボックス & eBPF防衛
 ```
 
-OWASP LLM Top 10、プロンプトインジェクション・脱獄、モデル抽出、敵対的攻撃、LLMセキュリティアーキテクチャ。4チャレンジCTF収録。
+OWASP LLM Top 10、プロンプトインジェクション・脱獄、モデル抽出、敵対的攻撃、LLMセキュリティアーキテクチャ、AIエージェントMCPセキュリティおよびLandlock LSM防衛。CTF実習を含む。
 
 ---
 

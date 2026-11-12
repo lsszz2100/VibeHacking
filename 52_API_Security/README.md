@@ -13,7 +13,7 @@
 | [03_api_fuzzing.md](./03_api_fuzzing.md) | **API 퍼징 — ffuf·OpenAPI 기반 자동 취약점 탐지** — 일반적인 테스트: |
 | [04_api_security_hardening.md](./04_api_security_hardening.md) | **API 보안 강화 — 게이트웨이·OAuth2·자동화 감사** — API의 보안 레이어: |
 | [05_api_security_testing_automation.md](./05_api_security_testing_automation.md) | **API 보안 테스트 자동화** — API 통신 예시: |
-| [06_api_ctf_lab.md](./06_api_ctf_lab.md) | **API 보안 CTF 실습 랩** — pip install requests flask jwt pyjwt httpx |
+| [06_api_ctf_lab.md](./06_api_ctf_lab.md) | **API 보안 CTF 실습 랩** — 취약한 JWT 구현에서 다양한 공격(alg:none, RS256→HS256 혼동)을 수행하여 관리자 권한을 획득하고 플래그를 획득하라. |
 
 ## 🎯 학습 목표
 

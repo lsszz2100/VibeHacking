@@ -25,7 +25,7 @@
 <!-- Twitter / X Cards -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="VibeHacking Wargame — 브라우저 터미널 사이버보안 침투 CTF">
-<meta name="twitter:description" content="브라우저에서 즐기는 단계별 65개 트랙 2,275개 사이버보안 침투 챌린지. 실시간 터미널 & 21대 취약점 시뮬레이터 탑재.">
+<meta name="twitter:description" content="브라우저에서 즐기는 단계별 66개 트랙 2,310개 사이버보안 침투 챌린지. 실시간 터미널 & 22대 취약점 시뮬레이터 탑재.">
 <meta name="twitter:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 
 <!-- Schema.org Structured Data -->
@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2275</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2310</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -169,6 +169,7 @@
         <button class="pg-tab" data-tab="ebpfruntime">🐝 eBPF &amp; Tetragon Inspector</button>
         <button class="pg-tab" data-tab="c2tunnel">📡 C2 Malleable &amp; Tunneling Inspector</button>
         <button class="pg-tab" data-tab="adgraph">🩸 AD Graph &amp; Cypher</button>
+        <button class="pg-tab" data-tab="agentsandbox">🤖 Agent Sandbox &amp; Landlock</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -1098,6 +1099,50 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="adgraphRiskBadge" class="token-tag" style="background:#b91c1c;color:#fff;">TIER 0 AT RISK</span>
                 </div>
                 <div id="adgraphOutput" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- AI Agent Sandbox & Landlock Inspector Panel -->
+        <div id="pgPanel-agentsandbox" class="pg-panel">
+          <div class="agentsandbox-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn danger" data-agentsandbox-preset="poison">1. MCP Tool Poisoning (IPI)</button>
+              <button class="pg-btn danger" data-agentsandbox-preset="escape">2. Confused Deputy Subprocess Escape</button>
+              <button class="pg-btn success" data-agentsandbox-preset="landlock">3. Landlock LSM Unprivileged Confinement</button>
+              <button class="pg-btn success" data-agentsandbox-preset="ebpf_shield">4. Dual-LLM &amp; Tetragon eBPF Wire-Speed Intercept</button>
+            </div>
+            <div class="agentsandbox-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="agentsandbox-ctrl-group">
+                <label class="dim" style="font-size:11px;">MCP Tool Call Payload:</label>
+                <input id="agentsandboxToolInput" type="text" value='{"tool": "bash", "arguments": {"command": "cat /etc/shadow"}}' style="width:380px;font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+              </div>
+              <div class="agentsandbox-ctrl-group">
+                <label class="dim" style="font-size:11px;">Enforcement Mode:</label>
+                <select id="agentsandboxPolicySelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="none">0: Unconfined Host (Default / High Risk)</option>
+                  <option value="landlock" selected>1: Landlock LSM (No-New-Privs + FS Rules)</option>
+                  <option value="ebpf">2: Dual-LLM Arbitrator + Tetragon SIGKILL</option>
+                </select>
+              </div>
+              <button id="agentsandboxExecuteBtn" class="pg-btn">Dispatch Action</button>
+              <button id="agentsandboxResetBtn" class="pg-btn dim">Reset Sandbox</button>
+            </div>
+            <div class="agentsandbox-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="agentsandbox-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🤖 AI Agent Execution Trace &amp; Tool Telemetry</span>
+                  <span id="agentsandboxStatusBadge" class="token-tag token-lit" style="background:#dc2626;color:#fff;">AGENT: UNCONFINED</span>
+                </div>
+                <div id="agentsandboxAgentView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="agentsandbox-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🛡️ Landlock LSM &amp; eBPF Kernel Confinement</span>
+                  <span id="agentsandboxVerdictBadge" class="token-tag" style="background:#16a34a;color:#fff;">LSM: ACTIVE</span>
+                </div>
+                <div id="agentsandboxPolicyView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
               </div>
             </div>
           </div>
