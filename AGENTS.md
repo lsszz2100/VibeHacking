@@ -139,7 +139,7 @@
 
 ---
 
-## 2. 실습 랩(01~53) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(01~55) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :--- | :---: | :--- |
@@ -196,6 +196,8 @@
 | **51** | 클라우드 네이티브 eBPF 런타임 보안 랩 (BPFRuntimeGuard) | Cilium Tetragon & Falco eBPF 커널 옵저버빌리티, kprobe:sys_execve 비인가 셸 탐지, bpf_lsm_file_open 네임스페이스 탈출 차단, TracingPolicy 실시간 SIGKILL, Shadow BPF Rootkit 무결성 감사 | `26_Linux_Hardening` | `ebpfruntime` | `vhack lab start 51` |
 | **52** | C2 네트워크 터널링 & 은닉 채널 방어 랩 (C2TunnelGuard) | DNS 터널링 Shannon 엔트로피 분석(H >= 3.8), Chisel/SSH 역방향 SOCKS5 피보팅 차단, Malleable C2 지터 비콘 분산 프로필 핑거프린팅, Zeek/Suricata Flowbits 인라인 DPI 실시간 차단 | `02_Network_Hacking` | `c2tunnel` | `vhack lab start 52` |
 | **53** | Active Directory 어택 그래프 & BloodHound 랩 (ADGraphLab) | SharpHound 도메인 수집, Cypher 최단 공격 경로 탐색, GenericAll/WriteDacl DACL 악용, Toxic ACE Pruning & Protected Users 하드닝 | `54_Active_Directory_Attacks` | `adgraph` | `vhack lab start 53` |
+| **54** | AI 에이전트 샌드박스 탈출 & Landlock 랩 (AgentSandboxGuard) | AI 에이전트 샌드박스 탈출, IPI/Confused Deputy 도구 탈취, Landlock LSM 무특권 파일 격리, Tetragon 런타임 Sigkill 방어 | `69_LLM_Security` | `agentsandbox` | `vhack lab start 54` |
+| **55** | PQC 양자 내성 암호 마이그레이션 랩 (PQCMigrationGuard) | NIST FIPS 203 ML-KEM-768 격자 KEM, FIPS 204 ML-DSA-65 전자서명, SNDL 도청 대응, TLS 1.3 다운그레이드 방어, CBOM 감사 | `57_Quantum_Cryptography` | `pqcmigrate` | `vhack lab start 55` |
 
 ---
 
@@ -274,6 +276,32 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-11-12 (v2.9.0 Mega Milestone: Golden 55th Lab PQCMigrationGuard, 67 Tracks / 2,345 Challenges, 23 Simulators, Comprehensive Security & Governance Audit, Multi-Format Audit Reports, 633 Tests All Green)**:
+  - **Golden 55번째 실습 랩 신규 구축 (`labs/55_pqc_migration_lab/`)**:
+    - NIST FIPS 203 (ML-KEM-768) 격자 기반 암호 캡슐화, FIPS 204 (ML-DSA-65) 전자서명, SNDL(Store Now, Decrypt Later) 도청 위협 방어, X25519+ML-KEM-768 하이브리드 TLS 1.3 다운그레이드 방어 및 CBOM 생성 실전 랩 구축.
+    - 4단계 실전 시나리오: Step 1 (고전 암호 식별 및 SNDL 분석), Step 2 (Kyber 선택 암호문 공격 및 FO 변환 결함 진단), Step 3 (하이브리드 TLS 1.3 다운그레이드 변조 탐지), Step 4 (CBOM 암호 자산 평가 및 NIST 표준 KEM 캡슐화 방어).
+    - `labs/solvers.py`: Lab 55 4단계 자동 익스플로잇 PoC 및 방어 솔버 연동 (`vhack solve 55`).
+    - `tools/report_generator.py`: 55개 전 랩 컴플라이언스(KISA 2.8.1, NIST CSF PR.DS-02, OWASP A02:2021) 매핑 (`VIBE-2026-5501`).
+    - `portal/server.py`, `vhack.py`: 55개 랩 등록 및 포트 8055 등록.
+    - 단위/통합 테스트 전건 통과 (`labs/55_pqc_migration_lab/tests/test_pqc_migration_lab.py`).
+  - **워게임 67번째 트랙 (`pqcmigrate`) 확장 및 2,345문제 달성**:
+    - PQC 양자 내성 암호 마이그레이션 트랙 35개 문제 구축으로 2,345문제 완비 (`wargame/assets/challenges.js`, `wargame/index.html`, `wargame/cli.py`).
+    - 23번째 인터랙티브 시뮬레이터 탑재 (`⚛️ PQC Migration & FIPS 203`, `pqc-migrate`).
+    - 4대 무결성 검증 스위트(`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js`) 전원 0결함 완벽 통과 (누수 0건, 1,347제 도출 검증).
+  - **글로벌 프로모션 툴킷 및 다국어 문서 전수 동기화**:
+    - `tools/promo_kit.py`, `docs/PROMOTION_AND_SEO.md`, `index.html` 55개 랩 / 67개 트랙 / 2,345문제 / 23대 시뮬레이터 정렬.
+    - 4개 국어(KO, EN, JA, ZH) `README.md`, `USAGE.md`, `AI_LEARNING.md`, `wargame/README.md` 전수 동기화.
+  - **보안 감사 및 보고서 다중 포맷 자동 발행**:
+    - `tools/report_generator.py`를 통해 Markdown, HTML, JSON, UTF-8 BOM CSV 4대 포맷의 취약점·컴플라이언스 종합 감사 보고서(`release/audit_reports/`) 발행.
+    - 55개 랩 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CWE/CVE 매핑 완료.
+  - **오프라인 릴리스 배포 패키징 및 SHA-256 서명**:
+    - `pyproject.toml` 버전 `2.9.0` 갱신.
+    - `release/vibehacking-v2.9.0.tar.gz` (10.16 MB) 빌드 및 `release/SHA256SUMS` (`230206b11cfae5e062fbee1c305ee91a7366f09c1b2e9d42442fcdef2d1e5fb5`) 갱신.
+    - `tools/verify_offline_deployment.sh`: 7단계 에어갭 격리 배포 무결성 전건 통과.
+  - **전체 테스트 스위트 633개 전건 통과**:
+    - `pytest -q`: **633 passed** ALL GREEN 달성.
+    - `vhack doctor`: 6대 항목 무결성 통과 (포트 충돌 0건).
 
 - **2026-11-12 (v2.8.0 Mega Milestone: Golden 54th Lab AgentSandboxGuard, 66 Tracks / 2,310 Challenges, 39 Deepdives / 491 Chapters, 22 Simulators, 26 Section READMEs Code Sanitization, 626 Tests All Green)**:
   - **Golden 54번째 실습 랩 신규 구축 (`labs/54_ai_agent_sandbox_escape_lab`)**:
