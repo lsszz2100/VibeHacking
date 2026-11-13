@@ -3205,7 +3205,7 @@ const CHALLENGES = [
     "points": 130,
     "ci": true,
     "hash": "631aada47deaf488bb72eee0873a20472c8f43ff960f2188f66cc41eb3f35428",
-    "fmt": "헤더 접미사 / header suffix",
+    "fmt": "헤더 접미사 / header suffix (11글자 / 11 chars)",
     "title": {
       "ko": "출처를 반사하다",
       "en": "Reflected Origin"
