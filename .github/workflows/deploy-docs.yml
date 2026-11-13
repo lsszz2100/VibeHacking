@@ -1,4 +1,4 @@
-name: Deploy Documentation Portal to GitHub Pages
+name: Deploy Unified Portal & Wargame to GitHub Pages
 
 on:
   push:
@@ -11,11 +11,37 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Wargame Pre-Deploy Audits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 1. Verify Challenge Integrity & Structural Invariants
+        run: node wargame/scripts/verify.js
+
+      - name: 2. Cross-Challenge Answer Leak Scan
+        run: node wargame/scripts/leakscan.js
+
+      - name: 3. Grader Heuristics & Strict Anti-Ambiguity Audit
+        run: node wargame/scripts/audit.js --strict
+
+      - name: 4. Automated Ciphertext / Derivable Solver Engine
+        run: node wargame/scripts/solve-derivable.js
+
   deploy:
+    name: Deploy to GitHub Pages
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -25,7 +51,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup GitHub Pages
-        uses: actions/configure-pages@v4
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
@@ -35,3 +64,13 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Setup Node.js
+        if: always()
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify Live Wargame Deployment
+        if: always()
+        run: node wargame/scripts/live-check.js "${{ steps.deployment.outputs.page_url || steps.pages.outputs.base_url }}wargame/"

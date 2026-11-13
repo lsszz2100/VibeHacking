@@ -2,7 +2,7 @@
   * [🏠 프로젝트 소개](README.md)
   * [⚖️ 법적 고지 및 면책조항](DISCLAIMER.md)
   * [🛡️ 보안 정책 및 윤리 지침](SECURITY.md)
-  * [🔬 실습 랩 가이드 (1~46)](labs/README.md)
+  * [🔬 실습 랩 가이드 (1~55)](labs/README.md)
   * [🎮 브라우저 워게임 (PWA)](wargame/index.html)
 
 * **1. 시스템 & 저수준 보안**

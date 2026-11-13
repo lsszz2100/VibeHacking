@@ -124,7 +124,7 @@
 - **CI/CD 및 자동 색인 파이프라인**:
   - [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml): Labs 01~55, `vhack doctor`, Pytest All Green, Wargame 4대 엄격 검증 스위트 자동화
   - [`.github/workflows/security.yml`](file:///.github/workflows/security.yml): CodeQL 정적 분석, Dependabot 보안 패치, pip-audit 및 비밀정보 스캔 자동화
-  - [`.github/workflows/deploy-docs.yml`](file:///.github/workflows/deploy-docs.yml) & [`.github/workflows/deploy-wargame.yml`](file:///.github/workflows/deploy-wargame.yml): GitHub Pages 배포 자동화
+  - [`.github/workflows/deploy-docs.yml`](file:///.github/workflows/deploy-docs.yml): GitHub Pages 통합 배포 (Docsify 포털 + 워게임) 및 4대 사전 감사/라이브 CDN 무결성 검증 자동화
   - [`.github/workflows/seo-submit.yml`](file:///.github/workflows/seo-submit.yml): 커밋 시 검색엔진 자동 색인 및 IndexNow 즉시 전송
 - **검색엔진 최적화 (SEO) & 웹 홍보 툴킷**:
   - `Open Graph / Twitter Cards / Schema.org JSON-LD`: 1200x630 터미널 배너(`assets/og-preview.svg`) 및 리치 카드 최적화

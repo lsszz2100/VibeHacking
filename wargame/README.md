@@ -472,7 +472,7 @@ python3 -m http.server 8000
 
 ## ⚙️ GitHub Pages 배포 / Deployment
 
-`.github/workflows/deploy-wargame.yml` 가 `wargame/` 변경 시 자동으로 Pages에 배포합니다. 배포 전 `validate` 잡이 네 가지 검사를 돌리고, 하나라도 실패하면 배포가 차단됩니다.
+`.github/workflows/deploy-docs.yml` 가 커밋 시 자동으로 Pages에 배포합니다. 배포 전 `validate` 잡이 네 가지 검사를 돌리고, 하나라도 실패하면 배포가 차단됩니다.
 
 | 스크립트 | 검사 내용 |
 |---|---|
@@ -483,7 +483,7 @@ python3 -m http.server 8000
 
 앞의 셋은 정적 검사이고, `solve-derivable.js`는 실제로 게임을 플레이합니다. 안내대로 따라 풀었는데 오답 처리되는 문제(정답 형식 모순, 깨진 암호문, 사라진 아티팩트)는 이 검사만 잡을 수 있습니다. 네 스크립트 모두 평문 정답을 저장하지 않고 출력하지도 않아 공개 CI에서도 안전합니다.
 
-`.github/workflows/deploy-wargame.yml` auto-deploys to Pages on `wargame/` changes. Before deploying, a `validate` job runs four checks and blocks the deployment if any of them fails.
+`.github/workflows/deploy-docs.yml` auto-deploys to Pages on commits to `main`. Before deploying, a `validate` job runs four checks and blocks the deployment if any of them fails.
 
 | Script | What it checks |
 |---|---|
