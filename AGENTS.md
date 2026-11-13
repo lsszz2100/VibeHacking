@@ -136,6 +136,15 @@
   - SAST/AST 보안 검사: CLI(`vhack.py`) 및 웹 관제 포털(`portal/server.py`)의 `shell=True` 파라미터를 안전한 `shell=False` 및 명시적 서브프로세스 호출 구조로 전환하여 명령 주입(CWE-78) 원천 차단
   - 실습 랩 시크릿 위생화: Labs 07, 12, 18, 42의 테스트 픽스처를 `os.getenv` 및 명시적 모의 키(`mock-...`, `dummy-...`)로 전환하여 SAST 오탐 및 크리덴셜 누출 위험 제거
   - 거버넌스 지표 갱신: 전사 보안 위험도 99점(CRITICAL) -> 4점(LOW) 달성 및 취약점 0건(Clean) 유지
+- **🛠️ AI 에이전트 스킬 시스템 (Agent Skills Architecture - `.agents/skills/`)**:
+  - Anthropic Skills, Superpowers, Vercel Labs Skills 3대 글로벌 오픈소스 표준 통합 채택
+  - **Progressive Disclosure**: 초벌 컨텍스트 최소화(name/description) 및 온디맨드 심층 레퍼런스(`references/`) 로딩
+  - **Deterministic Script Offloading**: 토큰 소모 및 환각을 방지하기 위해 결정론적 파싱/컴파일/검증 로직을 `scripts/` 파이썬 CLI로 오프로딩
+  - **4대 핵심 스킬 구축 완료**:
+    1. [`wargame-chall-builder`](file:///mnt/d/바이브해킹%20자료/vibe-hacking/.agents/skills/wargame-chall-builder/SKILL.md): 워게임 신규 문제 0결함 자동 저작 및 4대 엄격 감사 게이트(`verify`, `audit --strict`, `leakscan`, `solve-derivable`) 100% 보장
+    2. [`hands-on-lab-creator`](file:///mnt/d/바이브해킹%20자료/vibe-hacking/.agents/skills/hands-on-lab-creator/SKILL.md): 도커 기반 신규 실습 랩(Lab 56+) 스캐폴딩(Dockerfile, Compose, App, TestClient) 및 CVSS 3.1 카탈로그 자동 등록
+    3. [`remote-chrome-publisher`](file:///mnt/d/바이브해킹%20자료/vibe-hacking/.agents/skills/remote-chrome-publisher/SKILL.md): Windows 호스트 Chrome 원격 디버깅(`127.0.0.1:9222`)을 연동한 2FA/SSO/Cloudflare 우회 및 Product Hunt / Reddit 무인 홍보 집행
+    4. [`sec-compliance-reporter`](file:///mnt/d/바이브해킹%20자료/vibe-hacking/.agents/skills/sec-compliance-reporter/SKILL.md): KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 기반 전사 보안 진단 보고서 다중 포맷(MD, HTML, JSON, CSV) 원클릭 생성
 
 ---
 
@@ -276,6 +285,21 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-11-13 (Enterprise AI Agent Skills Suite 4종 구축 및 Anthropic/Superpowers/Vercel 오픈소스 표준 통합)**:
+  - **글로벌 에이전트 스킬 아키텍처 도입 (`.agents/skills/`)**:
+    - Anthropic Skills, Superpowers, Vercel Labs Skills 표준을 분석·흡수하여 Progressive Disclosure 및 결정론적 스크립트 오프로딩(`scripts/`) 체계 완성.
+    - 토큰 낭비 방지 및 AI 환각 차단을 위해 검증·해싱·포트 체크 로직을 결정론적 파이썬 CLI로 구현.
+  - **4대 실전 에이전트 스킬 구축**:
+    1. `wargame-chall-builder`: 워게임 신규 문제 0결함 자동 저작 및 4대 감사 게이트(`verify`, `audit --strict`, `leakscan`, `solve-derivable`) 100% 보장.
+    2. `hands-on-lab-creator`: 도커 기반 신규 실습 랩(Lab 56+) 스캐폴딩(Dockerfile, Compose, App, TestClient) 및 CVSS 3.1 카탈로그 자동 등록.
+    3. `remote-chrome-publisher`: Windows Chrome 디버깅 포트(`127.0.0.1:9222`) 연동을 통한 SSO/2FA/Cloudflare 우회 및 Product Hunt / Reddit 무인 홍보 집행.
+    4. `sec-compliance-reporter`: KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 기반 전사 보안 진단 보고서 다중 포맷(MD, HTML, JSON, CSV) 원클릭 생성.
+  - **통합 검증 및 감사 100% All Green**:
+    - `python .agents/skills/wargame-chall-builder/scripts/pre_audit.py`: 4대 게이트 0결함 통과.
+    - `python .agents/skills/hands-on-lab-creator/scripts/scaffold_lab.py --dry-run`: 템플릿 렌더링 검증.
+    - `python .agents/skills/sec-compliance-reporter/scripts/render_report.py --summary`: 55개 랩 컴플라이언스 집계 확인.
+  - **전사 문서화 완료**: `AGENTS.md`, `README.md`, `README.en.md`, `USAGE.md`에 에이전트 스킬 시스템 명세 및 활용 가이드 수록.
 
 - **2026-11-12 (v2.9.0 Mega Milestone: Golden 55th Lab PQCMigrationGuard, 67 Tracks / 2,345 Challenges, 23 Simulators, Comprehensive Security & Governance Audit, Multi-Format Audit Reports, 633 Tests All Green)**:
   - **Golden 55번째 실습 랩 신규 구축 (`labs/55_pqc_migration_lab/`)**:

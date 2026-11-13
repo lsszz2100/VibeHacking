@@ -70,6 +70,27 @@ claude   # or: codex / gemini
 
 ---
 
+## 🛠️ Autonomous AI Agent Skills Architecture
+
+VibeHacking adheres to leading open-source agent skill standards (**Anthropic Agent Skills**, **Superpowers**, and **Vercel Labs Skills**). Pre-packaged in `.agents/skills/`, these skills empower autonomous coding agents (Claude Code, Antigravity, Codex, Cursor) to automate authoring, scaffolding, publishing, and audits with 0-defect guarantees.
+
+### Architectural Invariants
+- **Progressive Disclosure**: Only concise metadata (`name`, `description`) is exposed at session launch, preventing token bloat. Deep instructions and reference sheets (`references/`) are fetched strictly on-demand.
+- **Deterministic Offloading**: Compute-heavy or hallucination-sensitive tasks (SHA-256 calculation, length invariants, CVSS formulas, port scanning) are offloaded to standalone Python CLI scripts in `scripts/`.
+
+### 4 Core Skills Suite
+
+| Skill Name | Role & Core Capabilities | Quick Execution / CLI |
+| :--- | :--- | :--- |
+| **[`wargame-chall-builder`](.agents/skills/wargame-chall-builder/)** | Zero-defect wargame challenge generation strictly enforcing all 4 audit gates (`verify`, `audit --strict`, `leakscan`, `solve-derivable`). | `python scripts/gen_challenge.py`<br>`python scripts/pre_audit.py` |
+| **[`hands-on-lab-creator`](.agents/skills/hands-on-lab-creator/)** | Automated scaffolding for Dockerized hands-on labs (Lab 56+) and automatic CVSS 3.1 catalog registration. | `python scripts/scaffold_lab.py --lab-id 56`<br>`python scripts/register_catalog.py` |
+| **[`remote-chrome-publisher`](.agents/skills/remote-chrome-publisher/)** | Chrome DevTools remote debugging automation (`127.0.0.1:9222`) bypassing Cloudflare, SSO, and 2FA for Product Hunt & Reddit releases. | `python scripts/check_session.py`<br>`references/producthunt_flow.md` |
+| **[`sec-compliance-reporter`](.agents/skills/sec-compliance-reporter/)** | Enterprise security diagnostic reporting mapped to KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, and CVSS 3.1 across MD, HTML, JSON, and CSV. | `python scripts/render_report.py --format md`<br>`--severity Critical High` |
+
+> 🤖 For detailed agent protocols and memory: see **[AGENTS.md](./AGENTS.md)** and **[.agents/skills/](.agents/skills/)**.
+
+---
+
 ## 🛠️ CLI + Lab Environments — Get Started Now
 
 ### 1-Minute Setup

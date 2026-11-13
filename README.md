@@ -113,6 +113,27 @@ claude   # 또는 codex / gemini
 
 ---
 
+## 🛠️ AI 에이전트 스킬 시스템 (Agent Skills Architecture)
+
+VibeHacking은 글로벌 오픈소스 스킬 표준(**Anthropic Agent Skills**, **Superpowers**, **Vercel Labs Skills**)을 채택하여 자율 에이전트(Claude Code, Antigravity, Codex, Cursor 등)가 저장소에서 직접 작업을 수행할 수 있는 **4대 실전 스킬**을 `.agents/skills/`에 기본 탑재하고 있습니다.
+
+### 핵심 설계 철학
+- **점진적 공개 (Progressive Disclosure)**: 메타데이터(`name`, `description`)만 상시 노출하여 컨텍스트 윈도우 토큰을 절약하고, 스킬 발동 시에만 `SKILL.md` 및 `references/`를 온디맨드로 로딩합니다.
+- **결정론적 스크립트 오프로딩 (Deterministic Offloading)**: 해시 계산, 길이 검증, 포트 검사, 템플릿 스캐폴딩 등 규칙 기반 로직을 `scripts/` 파이썬 CLI로 분리하여 LLM 환각을 원천 차단하고 0-결함을 보장합니다.
+
+### 4대 스킬 라인업
+
+| 스킬명 | 역할 및 핵심 기능 | 호출 가이드 & 스크립트 |
+| :--- | :--- | :--- |
+| **[`wargame-chall-builder`](.agents/skills/wargame-chall-builder/)** | 워게임 신규 문제 0결함 자동 저작 및 4대 감사 게이트(`verify`, `audit --strict`, `leakscan`, `solve-derivable`) 100% 보장 | `python scripts/gen_challenge.py`<br>`python scripts/pre_audit.py` |
+| **[`hands-on-lab-creator`](.agents/skills/hands-on-lab-creator/)** | 도커 기반 신규 실습 랩(Lab 56+) 스캐폴딩(Dockerfile, Compose, App, TestClient) 및 CVSS 3.1 카탈로그 자동 등록 | `python scripts/scaffold_lab.py --lab-id 56`<br>`python scripts/register_catalog.py` |
+| **[`remote-chrome-publisher`](.agents/skills/remote-chrome-publisher/)** | Windows 호스트 Chrome 디버깅 포트(`127.0.0.1:9222`) 연동을 통한 SSO/2FA/Cloudflare 우회 및 Product Hunt / Reddit 무인 홍보 | `python scripts/check_session.py`<br>`references/producthunt_flow.md` |
+| **[`sec-compliance-reporter`](.agents/skills/sec-compliance-reporter/)** | KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 기반 전사 보안 진단 보고서 다중 포맷(MD, HTML, JSON, CSV) 원클릭 생성 | `python scripts/render_report.py --format md`<br>`--severity Critical High` |
+
+> 🤖 상세 스킬 구현 및 에이전트 가이드 → **[AGENTS.md](./AGENTS.md)** 및 **[.agents/skills/](.agents/skills/)**
+
+---
+
 ## 🛠️ CLI + 실습 환경 — 바로 시작하기
 
 ### 1분 설치

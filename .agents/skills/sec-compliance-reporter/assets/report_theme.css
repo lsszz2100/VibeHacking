@@ -1,0 +1,79 @@
+/* Enterprise Security Audit Report Stylesheet */
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-critical: #ef4444;
+  --accent-high: #f97316;
+  --accent-medium: #eab308;
+  --accent-low: #3b82f6;
+  --accent-blue: #06b6d4;
+  --border-color: #334155;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0;
+  padding: 2rem;
+}
+
+.report-header {
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.report-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #38bdf8;
+  margin: 0 0 0.5rem 0;
+}
+
+.badge-critical { background-color: var(--accent-critical); color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+.badge-high { background-color: var(--accent-high); color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+.badge-medium { background-color: var(--accent-medium); color: black; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+.badge-low { background-color: var(--accent-low); color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+th {
+  background-color: #0b1120;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+pre, code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: #0b1120;
+  border-radius: 4px;
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    padding: 0;
+  }
+  table, th, td {
+    border-color: #ccc !important;
+    color: black !important;
+  }
+}

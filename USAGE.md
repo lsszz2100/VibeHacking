@@ -21,6 +21,7 @@
 11. [브라우저 워게임 — 침투 콘솔](#11-브라우저-워게임--침투-콘솔)
 12. [vhack dashboard (status) — 통합 관제 대시보드](#12-vhack-dashboard-status--통합-관제-대시보드)
 13. [vhack benchmark — 실습 랩 성능 벤치마크 진단](#13-vhack-benchmark--실습-랩-성능-벤치마크-진단)
+14. [AI 에이전트 스킬 활용 가이드 (.agents/skills)](#14-ai-에이전트-스킬-활용-가이드-agentsskills)
 
 ---
 
@@ -718,6 +719,54 @@ vhack benchmark --lab-id 01 16 52 --dry-run
 
 # 벤치마크 결과를 파일로 저장
 vhack benchmark --all --dry-run -o reports/benchmark_report.json
+```
+
+---
+
+## 14. AI 에이전트 스킬 활용 가이드 (`.agents/skills`)
+
+VibeHacking은 Anthropic Agent Skills, Superpowers, Vercel Labs Skills 오픈소스 표준에 기반한 **4대 자율 에이전트 스킬**을 제공합니다. 에이전트는 아래 지침과 CLI를 통해 0-결함 저작, 스캐폴딩, 원격 발행, 컴플라이언스 진단을 자동 수행합니다.
+
+### 14-1. `wargame-chall-builder` — 워게임 문제 0결함 저작
+새로운 워게임 챌린지를 규격에 맞게 생성하고, 4대 사전 감사 게이트를 통과시킵니다:
+```bash
+# SHA-256 해시, 길이 힌트, 본문 템플릿 생성
+python .agents/skills/wargame-chall-builder/scripts/gen_challenge.py \
+  --track web --tier 2 --num 36 --title "Advanced SSRF" \
+  --answer "gopher://127.0.0.1:6379"
+
+# 4대 감사 게이트(verify, audit, leakscan, solve-derivable) 일괄 검증
+python .agents/skills/wargame-chall-builder/scripts/pre_audit.py
+```
+
+### 14-2. `hands-on-lab-creator` — 도커 실습 랩 스캐폴딩
+새로운 번호의 실습 랩(Dockerfile, Compose, App, Pytest, README)을 원클릭으로 스캐폴딩합니다:
+```bash
+# 신규 실습 랩 56 스캐폴딩 (Dry-run 테스트 가능)
+python .agents/skills/hands-on-lab-creator/scripts/scaffold_lab.py --lab-id 56 --name "KubeEscapeGuard" --port 8056
+
+# CVSS 3.1 벡터 계산 및 카탈로그 스니펫 생성
+python .agents/skills/hands-on-lab-creator/scripts/register_catalog.py --lab-id 56 --name "KubeEscapeGuard" --cvss-vector "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+```
+
+### 14-3. `remote-chrome-publisher` — 원격 브라우저 무인 발행
+Windows 호스트의 디버깅 세션(`port 9222`)을 점검하고 Product Hunt 및 기술 커뮤니티 런칭을 무인 집행합니다:
+```bash
+# 포트 9222 세션 및 열린 탭 헬스체크
+python .agents/skills/remote-chrome-publisher/scripts/check_session.py
+```
+
+### 14-4. `sec-compliance-reporter` — 엔터프라이즈 컴플라이언스 보고서 생성
+KISA ISMS-P 및 NIST CSF 2.0에 매핑된 실습 랩 보안 진단 보고서를 다양한 포맷으로 생성합니다:
+```bash
+# 전체 진단 요약 통계 출력
+python .agents/skills/sec-compliance-reporter/scripts/render_report.py --summary
+
+# 마크다운 포맷 보고서 생성
+python .agents/skills/sec-compliance-reporter/scripts/render_report.py --format md
+
+# Critical / High 등급 필터링 및 HTML 보고서 생성
+python .agents/skills/sec-compliance-reporter/scripts/render_report.py --severity Critical High --format html -o reports/exec_summary.html
 ```
 
 ---
