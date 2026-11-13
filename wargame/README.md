@@ -4,7 +4,7 @@
 
 A browser-based, **terminal-style infiltration wargame**. You drive a fake shell to breach 5 security layers of `vibe.corp` — perimeter → web server → internal → vault → core. 100% client-side, no backend.
 
-🔗 **플레이 / Play:** `https://lsszz2240.github.io/VibeHacking/`
+🔗 **플레이 / Play:** `https://lsszz2100.github.io/VibeHacking/`
 *(GitHub Pages 활성화 후 접속 가능 / available once GitHub Pages is enabled — see below)*
 
 ---
@@ -493,7 +493,7 @@ The first three are static; the last one plays the game. A challenge where follo
 **최초 1회 설정** (저장소 소유자):
 1. 저장소 **Settings → Pages → Build and deployment → Source** 를 **"GitHub Actions"** 로 설정.
 2. (워크플로의 `configure-pages` 가 자동 활성화를 시도하므로 보통 위 단계도 자동 처리됩니다.)
-3. `Actions` 탭에서 **Deploy Wargame** 워크플로가 성공하면 `https://lsszz2240.github.io/VibeHacking/` 에서 플레이 가능.
+3. `Actions` 탭에서 **Deploy Wargame** 워크플로가 성공하면 `https://lsszz2100.github.io/VibeHacking/` 에서 플레이 가능.
 
 ---
 
