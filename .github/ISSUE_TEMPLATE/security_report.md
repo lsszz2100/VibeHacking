@@ -7,7 +7,7 @@ assignees: 'lsszz2100'
 ---
 
 > ⚠️ **DO NOT REPORT CRITICAL VULNERABILITIES PUBLICLY**
-> If this vulnerability affects the core infrastructure, `vhack.py` CLI execution, or enables host compromise, please report it privately via email to **leemanrank@gmail.com** or via [GitHub Security Advisories](https://github.com/lsszz2100/VibeHacking/security/advisories/new) pursuant to [SECURITY.md](../SECURITY.md).
+> If this vulnerability affects the core infrastructure, `vhack.py` CLI execution, or enables host compromise, please report it privately via [GitHub Security Advisories](https://github.com/lsszz2100/VibeHacking/security/advisories/new) pursuant to [SECURITY.md](../../SECURITY.md).
 
 ### 1. Vulnerability Summary
 A brief description of what the vulnerability is.

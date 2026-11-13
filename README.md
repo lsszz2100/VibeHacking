@@ -27,7 +27,7 @@
 
 <br/>
 
-문의 · 자료 공유 &nbsp;→&nbsp; [![Email](https://img.shields.io/badge/이메일-leemanrank%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com) &nbsp; [![KakaoTalk](https://img.shields.io/badge/카카오톡_오픈채팅-인공지능_자료_공유-FAE100?style=flat-square&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
+커뮤니티 · 문의 &nbsp;→&nbsp; [![Discussions](https://img.shields.io/badge/Discussions-커뮤니티_Q%26A-00FF41?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/discussions) &nbsp; [![Security Advisories](https://img.shields.io/badge/보안_권고문-Security_Advisories-EA4335?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/security/advisories)
 &nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%202%2C345%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+55+labs)+and+terminal+wargame+with+2345+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
 
 </div>
@@ -1628,15 +1628,15 @@ labs/
 
 ## 📬 저자 & 문의
 
-학습 질문, 오류 제보, 스터디 참여 등 모든 문의는 아래 채널로 연락해 주세요.
+학습 질문, 오류 제보, 연구 협업 등 모든 문의는 공식 GitHub 채널을 통해 투명하고 안전하게 진행됩니다.
 
 <div align="center">
 
 <br/>
 
-[![Email](https://img.shields.io/badge/📧_이메일_문의-leemanrank%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com)
+[![GitHub Discussions](https://img.shields.io/badge/💬_Discussions-커뮤니티_Q%26A-00FF41?style=for-the-badge&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/discussions)
 &nbsp;&nbsp;&nbsp;
-[![KakaoTalk](https://img.shields.io/badge/💬_카카오톡_오픈채팅-참여하기-FAE100?style=for-the-badge&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
+[![Security Advisories](https://img.shields.io/badge/🛡️_Security_Advisories-보안_취약점_제보-EA4335?style=for-the-badge&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/security/advisories)
 
 <br/>
 
@@ -1644,11 +1644,11 @@ labs/
 
 | 채널 | 용도 | 링크 |
 |------|------|------|
-| 📧 이메일 | 개인 질문·협업·심층 문의 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
-| 💬 카카오톡 오픈채팅 | 인공지능 자료 공유 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
-| 🐛 GitHub Issues | 오탈자·오류 제보 | [이슈 열기](https://github.com/lsszz2100/VibeHacking/issues/new) |
+| 💬 GitHub Discussions | 기술 질문·연구 토론·학습 Q&A | [토론 참여하기](https://github.com/lsszz2100/VibeHacking/discussions) |
+| 🛡️ Security Advisories | 보안 취약점 비공개 제보 (CVD) | [권고문 제출](https://github.com/lsszz2100/VibeHacking/security/advisories/new) |
+| 🐛 GitHub Issues | 오탈자·기능 요청·버그 제보 | [이슈 열기](https://github.com/lsszz2100/VibeHacking/issues/new) |
 
-> 오픈채팅방에서 인공지능 관련 자료를 공유합니다. 누구에게나 열려 있습니다.
+> 모든 보안 취약점 제보는 비공개 권고문(Security Advisories)을 통해 안전하게 접수 및 공조 분석됩니다.
 
 ---
 

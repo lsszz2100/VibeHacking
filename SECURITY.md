@@ -39,8 +39,7 @@ VibeHacking 프로젝트 자체의 소스코드나 배포 인프라에서 보안
 * 소셜 엔지니어링, 피싱 등 비기술적 공격
 
 ### 2.3 제보 채널 및 절차
-* **보안 전용 이메일**: [leemanrank@gmail.com](mailto:leemanrank@gmail.com)
-* **GitHub 보안 권고문**: [GitHub Security Advisories](https://github.com/lsszz2100/VibeHacking/security/advisories/new) (비공개 리포트 권장)
+* **GitHub 보안 권고문 (공식 제보 채널)**: [GitHub Security Advisories](https://github.com/lsszz2100/VibeHacking/security/advisories/new) (비공개 리포트 권장)
 * **제보 시 권장 포함 정보**:
   1. 취약점의 유형 및 심각도 (CVSS 3.1 기준 추정)
   2. 취약점이 존재하는 파일 경로 및 라인 번호
@@ -127,8 +126,8 @@ VibeHacking 저장소는 다음 자체 보안 통제를 준수합니다:
 
 | 채널 | 용도 | 링크 |
 |------|------|------|
-| 📧 이메일 | 보안 취약점 제보, 협업, 정책 문의 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
-| 💬 카카오톡 오픈채팅 | 인공지능 및 보안 학습 자료 공유 커뮤니티 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
+| 🛡️ Security Advisories | 보안 취약점 비공개 제보, CVD 공조 | [보안 권고문 열기](https://github.com/lsszz2100/VibeHacking/security/advisories/new) |
+| 💬 GitHub Discussions | 기술 질문·연구 토론·학습 커뮤니티 | [토론 참여하기](https://github.com/lsszz2100/VibeHacking/discussions) |
 | 🐛 GitHub Issues | 교재 오류, 일반 버그 제보 | [이슈 열기](https://github.com/lsszz2100/VibeHacking/issues/new) |
 
 ---
@@ -168,8 +167,7 @@ If you identify a security vulnerability within the VibeHacking codebase, tools,
 * Social engineering or phishing attempts.
 
 ### 2.3 Reporting Channel & Format
-* **Security Contact**: [leemanrank@gmail.com](mailto:leemanrank@gmail.com)
-* **GitHub Private Advisory**: [Create Security Advisory](https://github.com/lsszz2100/VibeHacking/security/advisories/new)
+* **GitHub Private Advisory (Official Channel)**: [Create Security Advisory](https://github.com/lsszz2100/VibeHacking/security/advisories/new)
 * **Submission Details**:
   1. Summary and estimated severity (CVSS 3.1)
   2. Affected file paths and line numbers
@@ -239,6 +237,6 @@ For complete legal terms, review [DISCLAIMER.md](./DISCLAIMER.md).
 
 | Channel | Purpose | Link |
 |---------|---------|------|
-| 📧 Email | Security reports, inquiries, collaborations | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
-| 💬 KakaoTalk Open Chat | Community discussion & AI/Security resource sharing | [Join Chat](https://open.kakao.com/o/sv3aJD4h) |
+| 🛡️ Security Advisories | Security vulnerability reports, CVD collaboration | [Open Advisory](https://github.com/lsszz2100/VibeHacking/security/advisories/new) |
+| 💬 GitHub Discussions | Technical discussion & security research community | [Join Discussions](https://github.com/lsszz2100/VibeHacking/discussions) |
 | 🐛 GitHub Issues | Bug reports and content errata | [Open Issue](https://github.com/lsszz2100/VibeHacking/issues/new) |

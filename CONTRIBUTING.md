@@ -38,8 +38,8 @@ PR·이슈 외에 직접 연락을 원하시면:
 
 | 채널 | 링크 |
 |------|------|
-| 📧 이메일 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
-| 💬 카카오톡 오픈채팅 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
+| 💬 GitHub Discussions | [커뮤니티 토론 참여하기](https://github.com/lsszz2100/VibeHacking/discussions) |
+| 🛡️ Security Advisories | [보안 취약점 비공개 제보](https://github.com/lsszz2100/VibeHacking/security/advisories/new) |
 
 ---
 
@@ -77,5 +77,5 @@ For direct inquiries beyond GitHub:
 
 | Channel | Link |
 |---------|------|
-| 📧 Email | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
-| 💬 KakaoTalk Open Chat | [Join the chat](https://open.kakao.com/o/sv3aJD4h) |
+| 💬 GitHub Discussions | [Join Community Discussions](https://github.com/lsszz2100/VibeHacking/discussions) |
+| 🛡️ Security Advisories | [Report Security Vulnerability](https://github.com/lsszz2100/VibeHacking/security/advisories/new) |

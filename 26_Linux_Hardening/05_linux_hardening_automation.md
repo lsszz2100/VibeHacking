@@ -286,7 +286,7 @@ if __name__ == "__main__":
 ```yaml
 # linux_hardening.yml
 # 사용법: ansible-playbook -i inventory.ini linux_hardening.yml
-# 참고: https://docs.ansible.com/
+# CIS Benchmark Level 1 Automated Remediation Playbook
 
 ---
 - name: CIS Level 1 Linux 보안 강화
