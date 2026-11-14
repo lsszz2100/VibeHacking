@@ -17,11 +17,10 @@
     ],
     "first_comment": "Hello Product Hunt community! 👋\n\nWe are excited to share VibeHacking — an open-source cybersecurity and reverse engineering platform designed for engineers, security researchers, and students.\n\nKey Highlights:\n- 🛡️ 75 Complete Sections across Offensive & Defensive Security\n- 🐳 56 Hands-on Docker Environments (127.0.0.1 isolated)\n- 🗺️ 68 Strategic Career Roadmap Tracks (Offensive, Cloud, AppSec, RE)\n- 🧩 2,380 Zero-Defect Wargame Challenges with deterministic verification\n- 🤖 Autonomous AI Agent Skills (wargame builder, lab creator, remote publisher, compliance reporter)\n\nEverything is 100% open source under Apache-2.0. We'd love your feedback and contributions!",
     "media": {
-      "thumbnail": "assets/hero_banner.png",
+      "thumbnail": "assets/promo/producthunt_thumbnail_square.png",
       "gallery": [
-        "assets/screenshot_curriculum.png",
-        "assets/screenshot_wargame.png",
-        "assets/screenshot_lab.png"
+        "assets/promo/producthunt_gallery_1_wargame.png",
+        "assets/promo/producthunt_gallery_2_portal.png"
       ]
     }
   }
