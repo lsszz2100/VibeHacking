@@ -61,6 +61,8 @@ def test_team_drill_single_lab():
     drill_57 = res_57["drills"][0]
     assert drill_57["lab_id"] == "57"
     assert drill_57["detection_rate"] == 100.0
+    assert drill_57["mitre"] == "T1622"
+    assert drill_57["kisa"] == "2.10.2"
     assert len(drill_57["stages"]) == 4
 
     res_56 = run_drill(lab_id="56")
@@ -69,12 +71,20 @@ def test_team_drill_single_lab():
     drill_56 = res_56["drills"][0]
     assert drill_56["lab_id"] == "56"
     assert drill_56["detection_rate"] == 100.0
+    assert drill_56["mitre"] == "T1014"
+    assert drill_56["kisa"] == "2.10.1"
 
 
 def test_team_drill_invalid_team():
     """존재하지 않는 팀 예외 처리 검증."""
     with pytest.raises(ValueError):
         run_drill(team_id="non_existent_team")
+
+
+def test_team_drill_invalid_lab():
+    """존재하지 않는 랩 예외 처리 검증."""
+    with pytest.raises(ValueError):
+        run_drill(lab_id="999")
 
 
 def test_team_drill_cli_json(capsys):

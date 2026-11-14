@@ -183,9 +183,21 @@ def simulate_lab_drill(team_id: str, lab_id: str) -> Dict[str, Any]:
     title = solver["title"] if solver else catalog.get("title", f"Lab {lab_id}")
     steps = solver.get("steps", []) if solver else []
 
-    cve = catalog.get("cve", f"VIBE-2026-{lab_id}01")
-    cvss = catalog.get("cvss", 7.5)
-    mitre = catalog.get("mitre", "T1059")
+    findings = catalog.get("findings", [])
+    first_f = findings[0] if findings else {}
+    cve = first_f.get("vuln_id", f"VIBE-2026-{lab_id}01")
+    mitre = first_f.get("mitre_id", "T1059")
+    cvss = 7.5
+    if "cvss_vector" in first_f:
+        try:
+            from tools.report_generator import CVSS31Calculator
+            cvss = CVSS31Calculator.calculate(first_f["cvss_vector"])["base_score"]
+        except Exception:
+            cvss = 7.5
+
+    kisa = compliance.get("kisa_id", "2.10.1")
+    nist = compliance.get("nist_csf_id", "PR.IP-01")
+    owasp = compliance.get("owasp_id", "A01:2021")
 
     stage_results = []
     attacks_count = max(len(steps), 1)
@@ -236,9 +248,9 @@ def simulate_lab_drill(team_id: str, lab_id: str) -> Dict[str, Any]:
         "cve": cve,
         "cvss": cvss,
         "mitre": mitre,
-        "kisa": compliance.get("kisa", "2.10.1"),
-        "nist": compliance.get("nist", "PR.IP-01"),
-        "owasp": compliance.get("owasp", "A01:2021"),
+        "kisa": kisa,
+        "nist": nist,
+        "owasp": owasp,
         "attacks_executed": attacks_count,
         "attacks_detected": detected_count,
         "attacks_blocked": blocked_count,
@@ -272,6 +284,8 @@ def run_drill(
 
     if lab_id:
         target_lab = lab_id.zfill(2)
+        if target_lab not in SOLVERS and target_lab not in LAB_CATALOG:
+            raise ValueError(f"Lab '{lab_id}' not found in catalog or solvers.")
         # Find which team claims this lab
         assigned_team = "purple"
         for tid, tinfo in TEAMS.items():
