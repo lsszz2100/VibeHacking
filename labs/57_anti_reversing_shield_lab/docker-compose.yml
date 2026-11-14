@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  anti_reversing_shield_lab:
+    build: .
+    container_name: vhack_lab_57
+    ports:
+      - "127.0.0.1:8057:8057"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

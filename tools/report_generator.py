@@ -565,6 +565,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A05:2021",
         "owasp_name": "Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)",
     },
+    "57": {
+        "kisa_id": "2.10.2",
+        "kisa_name": "시스템 보안 (바이너리 역공학 방지 및 안티디버깅/난독화 보호 통제)",
+        "nist_csf_id": "PR.IP-01",
+        "nist_csf_name": "Baseline Configuration & Binary Protection Mechanisms (Anti-Reversing & VM Evasion Defense)",
+        "owasp_id": "A08:2021",
+        "owasp_name": "Software and Data Integrity Failures (Tamper-Resistance & Binary Protections)",
+    },
 }
 
 @dataclass
@@ -1614,6 +1622,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Lack of kernel-level eBPF program audit and unprivileged BPF restrictions permits execution of rogue kprobes and process hollowing under spoofed task_struct comm names.",
                 "affected_component": "eBPFShield Kernel Runtime Controller (Port 8056)",
                 "remediation": "Deploy eBPF LSM (Linux Security Module) hooks with strict -EPERM execution barriers, restrict /proc/sys/kernel/unprivileged_bpf_disabled=1, and enforce cryptographic BPF signature verification."
+            }
+        ]
+    },
+    "57": {
+        "title": "57 AntiReversingShield Advanced Binary Protection & Anti-Reversing",
+        "category": "Reverse Engineering, Binary Protection & Anti-Analysis",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5701",
+                "name": "Unprotected Binary Execution & Dynamic Anti-Analysis Defenses Bypass",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+                "mitre_id": "T1622",
+                "mitre_technique": "Debugger Evasion & Virtualization/Sandbox Evasion",
+                "mitre_tactic": "Defense Evasion",
+                "impact": "Reverse engineers and automated analysis tools bypass ptrace and PEB traps, reconstruct obfuscated dynamic IAT via ROR13 hash cracking, unpack protected binaries, and neutralize sandbox execution guards.",
+                "description": "Lack of kernel-level integrity verification and multi-layered tamper-resistance enables byte patching of debug traps and dynamic resolution of sensitive memory allocation APIs.",
+                "affected_component": "AntiReversingShield Binary Protection Gateway (Port 8057)",
+                "remediation": "Implement hardware-enforced Control Flow Guard (CFG), cryptographic code signing with sealed enclaves, runtime tamper-detection with eBPF LSM, and multi-algorithm dynamic API hashing."
             }
         ]
     }

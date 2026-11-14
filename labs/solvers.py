@@ -1665,6 +1665,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ eBPF LSM Zero-Trust Runtime Sandboxing Active -> Intercepted unauthorized execution -> FLAG{EBPF_LSM_RUNTIME_ZERO_TRUST_ENFORCED_5604}"
             }
         ]
+    },
+    "57": {
+        "title": "바이너리 보호 & 안티 리버싱 능동 방어 랩 (Anti-Reversing Shield)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "동적 안티디버깅(ptrace/BeingDebugged/Hardware Breakpoints) 무력화",
+                "target": "POST /api/stage1/bypass_anti_debugging (bypass_method, target_checks, patch_hex)",
+                "poc_explanation": "ptrace(PTRACE_TRACEME), PEB BeingDebugged, 하드웨어 브레이크포인트 검증 루틴을 바이트 패칭(31c0c3) 또는 LD_PRELOAD 후킹으로 우회합니다.",
+                "exploit_payload": '{"bypass_method": "byte_patch", "target_checks": ["ptrace_traceme", "being_debugged", "hardware_breakpoints"], "patch_hex": "31c0c3"}',
+                "defense": "다중 계층 동적 무결성 체크 및 커널 레벨 안티디버깅(Kprobes/eBPF) 능동 탐지.",
+                "sample_output": "🛡️ Anti-debugging traps neutralized -> FLAG{ANTI_DEBUGGING_PEB_PTRACE_BYPASSED_5701}"
+            },
+            {
+                "step": 2,
+                "name": "API Hashing(ROR13) 역산 및 동적 IAT 복원",
+                "target": "POST /api/stage2/resolve_api_hashing (hash_algorithm, target_hash, candidate_api)",
+                "poc_explanation": "정적 IAT에 은닉된 VirtualAlloc 함수의 ROR13 해시(0x91afca54)를 브루트포스/사전 공격으로 역산하여 동적 호출 테이블을 복원합니다.",
+                "exploit_payload": '{"hash_algorithm": "ror13", "target_hash": "0x91afca54", "candidate_api": "VirtualAlloc"}',
+                "defense": "Control Flow Guard(CFG) 및 바이너리 IAT 서명 무결성 검증.",
+                "sample_output": "🔍 API Hash 0x91afca54 resolved to VirtualAlloc -> FLAG{API_HASHING_ROR13_DYNAMIC_IAT_RESOLVED_5702}"
+            },
+            {
+                "step": 3,
+                "name": "패커 스텁 tail jump 추적 및 OEP 바이너리 언패킹",
+                "target": "POST /api/stage3/unpack_binary (unpack_strategy, target_oep, rebuild_iat)",
+                "poc_explanation": "패킹된 바이너리의 엔트로피(7.82)를 분석하고 스텁 루틴 끝의 tail jump를 추적하여 OEP(0x00401580)에서 메모리 덤프 및 IAT를 복구합니다.",
+                "exploit_payload": '{"unpack_strategy": "tail_jump_tracking", "target_oep": "0x00401580", "rebuild_iat": true}',
+                "defense": "코드 가상화(VMP) 및 런타임 자체 수정 코드(SMC) 무결성 감시.",
+                "sample_output": "📦 Packer tail jump reached OEP at 0x00401580 -> Unpacked clean binary -> FLAG{CUSTOM_PACKER_OEP_DUMP_AND_UNPACKED_5703}"
+            },
+            {
+                "step": 4,
+                "name": "Anti-VM(RDTSC 타이밍/CPUID/SMBIOS) 탐지 우회",
+                "target": "POST /api/stage4/neutralize_anti_vm (rdtsc_threshold_cycles, spoof_cpuid_hypervisor, filter_smbios_artifacts)",
+                "poc_explanation": "RDTSC 싱글스텝 지연시간 분석을 허용 사이클(500)로 보정하고, CPUID 하이퍼바이저 비트 클리어 및 SMBIOS 가상화 아티팩트를 필터링하여 가상 샌드박스 탐지를 우회합니다.",
+                "exploit_payload": '{"rdtsc_threshold_cycles": 500, "spoof_cpuid_hypervisor": true, "filter_smbios_artifacts": ["VMware", "QEMU", "VirtualBox"]}',
+                "defense": "중첩 가상화(Nested Virtualization) 하드웨어 기반 타이밍 분석 및 불변 하이퍼바이저 텔레메트리.",
+                "sample_output": "⚔️ Anti-VM timing defenses neutralized -> Execution permitted in sandbox -> FLAG{ANTI_VM_RDTSC_TIMING_DEFENSE_NEUTRALIZED_5704}"
+            }
+        ]
     }
 }
 

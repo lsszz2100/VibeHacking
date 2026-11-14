@@ -599,6 +599,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [3, 18, 46, 54, 57],
     },
+    "57": {
+        "name": "바이너리 보호 & 안티 리버싱 능동 방어 랩",
+        "dir":  "57_anti_reversing_shield_lab",
+        "desc": "AntiReversingShield: 동적 안티디버깅(ptrace/BeingDebugged) 무력화 · ROR13 API 해싱 역산 및 동적 IAT 복원 · 변형 패커 OEP 언패킹 · Anti-VM & RDTSC 타이밍 분석 능동 방어",
+        "url":  "웹 콘솔 & 안티리버싱 대시보드: http://localhost:8057",
+        "difficulty": "★★★★★",
+        "related": [2, 7, 26, 46],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2220,6 +2228,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_docker.add_argument("-y", "--yes", action="store_true", help="확인 프롬프트 없이 자동 설치 진행")
     p_docker.add_argument("--wsl", action="store_true", help="WSL2 환경 전용 가이드 강제 출력")
 
+    # drill (10대 보안 기술팀 공방전 자동 훈련)
+    p_drill = sub.add_parser("drill", help="10대 보안 기술팀 공방전 자동 훈련 엔진 (Red vs Blue 시뮬레이션 & Purple Team 점수 산출)")
+    p_drill.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
+    p_drill.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
+    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 57개 랩 종합 공방전 실행")
+    p_drill.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
+    p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
+    p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")
+
     # update
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
@@ -2232,6 +2249,11 @@ def cmd_bundle(args: argparse.Namespace) -> None:
     if getattr(args, "tar", None):
         cmd.extend(["--tar", args.tar])
     subprocess.run(cmd)
+
+
+def cmd_drill(args: argparse.Namespace) -> None:
+    from tools.team_drill_runner import run_drill_cli
+    run_drill_cli(args)
 
 
 def cmd_report(args: argparse.Namespace) -> None:
@@ -2759,6 +2781,7 @@ def main() -> None:
         "portal":       cmd_portal,
         "ctf":          cmd_ctf,
         "bundle":       cmd_bundle,
+        "drill":        cmd_drill,
         "report":       cmd_report,
         "dashboard":    cmd_dashboard,
         "status":       cmd_dashboard,

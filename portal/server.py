@@ -95,7 +95,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "40": "dfir", "41": "supplychain", "42": "cloud", "43": "cloud",
     "44": "web", "45": "crypto", "46": "endpoint",
     "47": "ai", "48": "iot", "49": "crypto", "50": "dfir", "51": "endpoint", "52": "network",
-    "53": "ad", "54": "ai", "55": "crypto",
+    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing",
 }
 
 
@@ -316,6 +316,13 @@ class ExecRequest(BaseModel):
     command: str
 
 
+class DrillRequest(BaseModel):
+    team_id: Optional[str] = None
+    lab_id: Optional[str] = None
+    all_teams: bool = False
+    verbose: bool = False
+
+
 DANGEROUS_PATTERNS = [
     "rm -rf /", "rm -rf /*", "mkfs", ":(){ :|:& };:",
     "> /dev/sd", "> /dev/nvme", "dd if=/dev/zero",
@@ -402,6 +409,108 @@ def get_lab_solution(lab_id: str, step: int = 1):
         return res
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/teams")
+def get_teams_catalog():
+    """10대 보안 기술팀 목록 및 메타데이터 반환"""
+    try:
+        from tools.team_drill_runner import TEAMS
+        team_list = []
+        for tid, info in TEAMS.items():
+            team_list.append({
+                "id": tid,
+                "name": info["name"],
+                "name_en": info["name_en"],
+                "mission": info["mission"],
+                "labs_count": len(info["labs"]),
+                "labs": info["labs"],
+                "tactics": info["tactics"],
+                "tools": info["tools"],
+            })
+        return {
+            "total_teams": len(team_list),
+            "teams": team_list,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/teams/{team_id}/labs")
+def get_team_labs_status(team_id: str):
+    """특정 팀에 소속된 실습 랩 상태 조회"""
+    try:
+        from tools.team_drill_runner import TEAMS
+        tid = team_id.lower().strip()
+        if tid not in TEAMS:
+            raise HTTPException(status_code=404, detail=f"Team '{team_id}' not found")
+        
+        team_info = TEAMS[tid]
+        assigned_labs = team_info["labs"]
+        
+        lab_items = []
+        for lid in assigned_labs:
+            meta = LABS.get(lid, {})
+            port = get_lab_port(lid)
+            is_running = check_port_open(port) if port else False
+            lab_items.append({
+                "id": lid,
+                "title": meta.get("title", f"Lab {lid}"),
+                "port": port,
+                "running": is_running,
+                "category": LAB_CATEGORIES.get(lid, "general"),
+                "url": meta.get("url", f"http://127.0.0.1:{port}" if port else None),
+            })
+        
+        return {
+            "team_id": tid,
+            "team_name": team_info["name"],
+            "total_labs": len(lab_items),
+            "running_labs": sum(1 for l in lab_items if l["running"]),
+            "labs": lab_items,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/compliance/summary")
+def get_compliance_summary():
+    """57개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
+    try:
+        from tools.report_generator import SecurityReportGenerator
+        gen = SecurityReportGenerator()
+        stats = gen.get_summary_stats()
+        return {
+            "total_labs": stats["total_labs"],
+            "total_findings": stats["total_findings"],
+            "average_cvss": stats["average_cvss"],
+            "severity_counts": stats["severity_counts"],
+            "owasp_counts": stats["owasp_counts"],
+            "kisa_mapped_count": len(stats.get("kisa_counts", {})),
+            "nist_mapped_count": len(stats.get("nist_csf_counts", {})),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/drill/run")
+def run_team_drill_api(req: DrillRequest = DrillRequest()):
+    """웹 포털에서 10대 보안팀 공방전 모의 훈련 즉시 실행"""
+    try:
+        from tools.team_drill_runner import run_drill
+        res = run_drill(
+            team_id=req.team_id,
+            lab_id=req.lab_id,
+            all_teams=req.all_teams or (req.team_id is None and req.lab_id is None),
+            verbose=req.verbose,
+        )
+        return res
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Drill execution error: {str(e)}")
 
 
 

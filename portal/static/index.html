@@ -129,14 +129,25 @@
     </div>
 
     <div class="section-header">
-      <h2>🛡️ 실전 침투 & 방어 실습 환경 (49 Labs)</h2>
-      <button class="btn btn-cyan" onclick="fetchLabs(); fetchCategories();">🔄 새로고침</button>
+      <h2>🛡️ 실전 침투 & 방어 실습 환경 (57 Labs)</h2>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn btn-amber" onclick="triggerDrillModal()">⚔️ 공방전 모의 훈련 (Drill)</button>
+        <button class="btn btn-cyan" onclick="fetchLabs(); fetchCategories(); fetchTeams();">🔄 새로고침</button>
+      </div>
+    </div>
+
+    <!-- 10대 보안 기술팀 필터 바 -->
+    <div class="filter-bar" style="margin-bottom: 0.75rem;">
+      <div style="font-size: 0.8rem; font-weight: bold; color: var(--accent-cyan); align-self: center; margin-right: 0.5rem;">🏢 10대 보안팀:</div>
+      <div class="filter-chips" id="team-filters">
+        <button class="filter-chip active" onclick="setTeamFilter('')">전체 팀</button>
+      </div>
     </div>
 
     <!-- Category Filter & Batch Controls Bar -->
     <div class="filter-bar">
       <div class="filter-chips" id="category-filters">
-        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 (44)</button>
+        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 카테고리 (57)</button>
       </div>
       <div class="batch-actions">
         <button class="btn btn-green" onclick="batchControl('start')">▶ 일괄 가동</button>
@@ -193,6 +204,62 @@
   }
 
   let currentCategory = '';
+  let currentTeam = '';
+
+  async function fetchTeams() {
+    try {
+      const res = await fetch('/api/teams');
+      const data = await res.json();
+      const container = document.getElementById('team-filters');
+      if (!container) return;
+      container.innerHTML = `<button class="filter-chip ${currentTeam === '' ? 'active' : ''}" onclick="setTeamFilter('')">전체 팀 (10)</button>`;
+      data.teams.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = `filter-chip ${currentTeam === t.id ? 'active' : ''}`;
+        btn.innerHTML = `${t.name} (${t.labs_count})`;
+        btn.onclick = () => setTeamFilter(t.id);
+        container.appendChild(btn);
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function setTeamFilter(tid) {
+    currentTeam = tid;
+    fetchTeams();
+    fetchLabs();
+  }
+
+  async function triggerDrillModal() {
+    showToast("⚔️ 10대 보안팀 공방전 모의 훈련을 실행 중입니다...");
+    try {
+      const payload = currentTeam ? { team_id: currentTeam } : { all_teams: true };
+      const res = await fetch('/api/drill/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const modal = document.getElementById('solve-modal');
+      const title = document.getElementById('modal-solve-title');
+      const content = document.getElementById('solve-content');
+      title.innerText = `⚔️ 공방전 훈련 결과: 종합 점수 ${data.overall_composite_score}/100`;
+      
+      let html = `<div style="padding:0.5rem; color:#a5f3fc; line-height:1.6;">`;
+      html += `<p><b>📅 일시:</b> ${data.timestamp} | <b>공격:</b> ${data.total_attacks_executed}건 | <b>탐지율:</b> ${data.overall_detection_rate}% | <b>차단율:</b> ${data.overall_mitigation_rate}%</p><hr style="border-color:#374151; margin:0.75rem 0;">`;
+      html += `<h4 style="color:#f59e0b; margin-bottom:0.5rem;">팀별 성과 요약:</h4><ul>`;
+      for (const [tid, tdata] of Object.entries(data.team_breakdown || {})) {
+        html += `<li><b>${tdata.team_name}:</b> 랩 ${tdata.labs_tested}개 | 공격 ${tdata.attacks}회 -> 탐지 ${tdata.detection_rate}% (점수: <span style="color:#10b981;">${tdata.score}점</span>)</li>`;
+      }
+      html += `</ul></div>`;
+      content.innerHTML = html;
+      modal.classList.add('active');
+      showToast(`공방전 완료: 종합 점수 ${data.overall_composite_score}점 (All Defended)`);
+    } catch (e) {
+      showToast(`공방전 실행 실패: ${e.message}`);
+    }
+  }
 
   async function fetchCategories() {
     try {
@@ -242,7 +309,12 @@
 
   async function fetchLabs() {
     try {
-      const url = currentCategory ? `/api/labs?category=${encodeURIComponent(currentCategory)}` : '/api/labs';
+      let url = '/api/labs';
+      if (currentTeam) {
+        url = `/api/teams/${encodeURIComponent(currentTeam)}/labs`;
+      } else if (currentCategory) {
+        url = `/api/labs?category=${encodeURIComponent(currentCategory)}`;
+      }
       const res = await fetch(url);
       const data = await res.json();
       const container = document.getElementById('labs-list');
@@ -429,10 +501,12 @@
 
   fetchStatus();
   fetchCategories();
+  fetchTeams();
   fetchLabs();
   setInterval(fetchStatus, 5000);
   setInterval(fetchLabs, 10000);
   setInterval(fetchCategories, 15000);
+  setInterval(fetchTeams, 30000);
 </script>
 
 <!-- Terminal Modal -->

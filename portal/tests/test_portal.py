@@ -30,22 +30,23 @@ def test_system_status(client):
     data = res.json()
     assert "cpu_usage_percent" in data
     assert "total_labs" in data
-    assert data["total_labs"] == 56
+    assert data["total_labs"] == 57
 
 
 def test_list_labs(client):
     res = client.get("/api/labs")
     assert res.status_code == 200
     data = res.json()
-    assert data["total"] == 56
-    assert len(data["labs"]) == 56
-    # Check Lab 19~56 presence
+    assert data["total"] == 57
+    assert len(data["labs"]) == 57
+    # Check Lab 19~57 presence
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
     assert "54" in ids
     assert "55" in ids
     assert "56" in ids
+    assert "57" in ids
     assert "21" in ids
     assert "22" in ids
     assert "23" in ids
@@ -135,7 +136,7 @@ def test_get_lab_categories(client):
     res = client.get("/api/labs/categories")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 56
+    assert data["total_labs"] == 57
     assert "ai" in data["categories"]
     assert "54" in data["categories"]["ai"]["labs"]
     assert "crypto" in data["categories"]
@@ -196,4 +197,63 @@ def test_lab_exec_blocked_regex_patterns(client):
         data = res.json()
         assert data["status"] == "blocked", f"Expected {cmd} to be blocked"
         assert "위험한 시스템 파괴 명령어" in data["output"]
+
+
+def test_portal_teams_catalog(client):
+    res = client.get("/api/teams")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_teams"] == 10
+    teams_map = {t["id"]: t for t in data["teams"]}
+    assert "red" in teams_map
+    assert "blue" in teams_map
+    assert "purple" in teams_map
+    assert "re" in teams_map
+    assert "antire" in teams_map
+    assert "57" in teams_map["antire"]["labs"]
+    assert "56" in teams_map["blue"]["labs"]
+
+
+def test_portal_team_labs_status(client):
+    res = client.get("/api/teams/antire/labs")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["team_id"] == "antire"
+    assert data["total_labs"] == 3
+    ids = [l["id"] for l in data["labs"]]
+    assert "57" in ids
+
+    # 404 test for unknown team
+    res_404 = client.get("/api/teams/unknown_team/labs")
+    assert res_404.status_code == 404
+
+
+def test_portal_compliance_summary(client):
+    res = client.get("/api/compliance/summary")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_labs"] == 57
+    assert data["total_findings"] >= 57
+    assert data["average_cvss"] > 0
+    assert "Critical" in data["severity_counts"]
+    assert "High" in data["severity_counts"]
+
+
+def test_portal_drill_run_api(client):
+    # Test specific team drill
+    res = client.post("/api/drill/run", json={"team_id": "antire"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "SUCCESS"
+    assert "antire" in data["team_breakdown"]
+    assert data["overall_composite_score"] == 100.0
+
+    # Test single lab drill
+    res_lab = client.post("/api/drill/run", json={"lab_id": "57"})
+    assert res_lab.status_code == 200
+    data_lab = res_lab.json()
+    assert data_lab["status"] == "SUCCESS"
+    assert len(data_lab["drills"]) == 1
+    assert data_lab["drills"][0]["lab_id"] == "57"
+
 

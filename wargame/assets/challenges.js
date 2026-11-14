@@ -599,6 +599,15 @@ const TRACKS = [
     "desc_ko": "eBPF 커널 시스콜 텔레메트리·Ring Buffer 익명 실행 포착·task_struct comm 프로세스 위장 탐지·bpf_override_return 악성 루트킷 색출·eBPF LSM 제로 트러스트 런타임 통제.",
     "desc_en": "eBPF in-kernel syscall telemetry, Ring Buffer anonymous execution capture, task_struct comm process masquerading detection, bpf_override_return malicious rootkit hunting, and eBPF LSM zero-trust runtime control."
   }
+,
+  {
+    "id": "antire",
+    "icon": "🧩",
+    "ko": "안티리버싱 & 바이너리 프로텍션",
+    "en": "Anti-Reversing & Binary Protection",
+    "desc_ko": "안티디버깅(PEB BeingDebugged/ptrace) 우회·동적 API Hashing(ROR13/Murmur3) 역산·변형 패커 스텁 분석 & OEP 언패킹·가상화 난독화 해제·Anti-VM & RDTSC 타이밍 분석 무력화.",
+    "desc_en": "Anti-debugging (PEB BeingDebugged/ptrace) bypass, dynamic API hashing (ROR13/Murmur3) resolution, custom packer stub analysis & OEP unpacking, virtualization deobfuscation, and Anti-VM & RDTSC timing defense neutralization."
+  }
 ];
 
 const CHALLENGES = [
@@ -67298,5 +67307,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "302840244b7c4d52b0f17824663d409ad3cd4a96c4e6eb8ab901ac49627ae447"
+  },
+  {
+    "id": "t0_antire_fundamentals_anti_reversing_overview",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "안티 리버싱 및 바이너리 보호의 기본 원리",
+      "en": "Anti-Reversing & Binary Protection Fundamentals"
+    },
+    "prompt": {
+      "ko": "정적 분석(디스어셈블러)과 동적 분석(디버거)을 방해하기 위해 바이너리에 적용되는 난독화, 패킹, 무결성 검증의 기본 메커니즘을 학습합니다.\n지정된 식별자 `antire_fundamentals_anti_reversing_overview_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_fundamentals_anti_reversing_overview_v1\") 앞 20자리}",
+      "en": "Learn the foundational mechanisms of obfuscation, packing, and integrity verification designed to hinder static disassembly and dynamic debugging.\nCompute the first 20 hex characters of SHA256(\"antire_fundamentals_anti_reversing_overview_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_fundamentals_anti_reversing_overview_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_fundamentals_anti_reversing_overview_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_fundamentals_anti_reversing_overview_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_fundamentals_anti_reversing_overview_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_fundamentals_anti_reversing_overview_v1\")."
+      ]
+    },
+    "hash": "4710ba42ca6947ecc869a9bf1cc66f3eeaa27ff597c66f712a3d221d4a3bf740"
+  },
+  {
+    "id": "t0_antire_disassembly_linear_sweep_vs_recursive_traversal",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "선형 스윕과 재귀 순회 디스어셈블러 분석 한계",
+      "en": "Linear Sweep vs Recursive Traversal Disassembly Limitations"
+    },
+    "prompt": {
+      "ko": "선형 스윕 디스어셈블러가 정크 바이트 삽입 및 불투명 조건문(Opaque Predicate)에 의해 코드 흐름을 오도하는 원리를 분석합니다.\n지정된 식별자 `antire_disassembly_linear_sweep_vs_recursive_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_disassembly_linear_sweep_vs_recursive_traversal_v1\") 앞 20자리}",
+      "en": "Analyze how linear sweep disassemblers are deceived by junk byte insertion and opaque predicates leading to invalid instruction decoding.\nCompute the first 20 hex characters of SHA256(\"antire_disassembly_linear_sweep_vs_recursive_traversal_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_disassembly_linear_sweep_vs_recursive_traversal_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_disassembly_linear_sweep_vs_recursive_traversal_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_disassembly_linear_sweep_vs_recursive_traversal_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_disassembly_linear_sweep_vs_recursive_traversal_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_disassembly_linear_sweep_vs_recursive_traversal_v1\")."
+      ]
+    },
+    "hash": "024240888d0bc1a0d7bffe68c01af9d59a0c80928bdefa934acdd966a7069615"
+  },
+  {
+    "id": "t0_antire_peb_being_debugged_flag_structure",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Windows PEB BeingDebugged 플래그 구조와 탐지",
+      "en": "Windows PEB BeingDebugged Flag Architecture"
+    },
+    "prompt": {
+      "ko": "프로세스 환경 블록(PEB)의 오프셋 0x02에 위치한 BeingDebugged 플래그를 IsDebuggerPresent API 및 인라인 어셈블리로 검사하는 기법을 이해합니다.\n지정된 식별자 `antire_peb_being_debugged_flag_structure_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_peb_being_debugged_flag_structure_v1\") 앞 20자리}",
+      "en": "Understand how the BeingDebugged flag at PEB offset 0x02 is queried via IsDebuggerPresent and inline assembly routines.\nCompute the first 20 hex characters of SHA256(\"antire_peb_being_debugged_flag_structure_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_peb_being_debugged_flag_structure_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_peb_being_debugged_flag_structure_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_peb_being_debugged_flag_structure_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_peb_being_debugged_flag_structure_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_peb_being_debugged_flag_structure_v1\")."
+      ]
+    },
+    "hash": "1bf448a613535125eea9f955bdb3ae90c972a4894bf618f0bfe492e6209f5d77"
+  },
+  {
+    "id": "t0_antire_linux_ptrace_traceme_mechanism",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Linux ptrace(PTRACE_TRACEME) 단일 디버거 제약",
+      "en": "Linux ptrace(PTRACE_TRACEME) Single-Debugger Constraint"
+    },
+    "prompt": {
+      "ko": "동일 프로세스에 하나의 디버거만 attach될 수 있는 POSIX ptrace 특성을 악용하여 사전에 PTRACE_TRACEME를 호출해 외부 디버깅을 원천 차단하는 기법을 분석합니다.\n지정된 식별자 `antire_linux_ptrace_traceme_mechanism_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_linux_ptrace_traceme_mechanism_v1\") 앞 20자리}",
+      "en": "Analyze the POSIX constraint where only one debugger can attach, exploited by invoking PTRACE_TRACEME early to reject external debuggers.\nCompute the first 20 hex characters of SHA256(\"antire_linux_ptrace_traceme_mechanism_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_linux_ptrace_traceme_mechanism_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_linux_ptrace_traceme_mechanism_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_linux_ptrace_traceme_mechanism_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_linux_ptrace_traceme_mechanism_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_linux_ptrace_traceme_mechanism_v1\")."
+      ]
+    },
+    "hash": "97de8cdaf260ab38be57d88529f0d212ede7afdbf75c1f698a7481443c4384db"
+  },
+  {
+    "id": "t0_antire_binary_packing_stub_and_payload",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "바이너리 패커 스텁 구조와 엔트로피 분석 기초",
+      "en": "Binary Packer Stub Architecture & Entropy Basics"
+    },
+    "prompt": {
+      "ko": "압축/암호화된 페이로드와 이를 메모리에 전개하는 디컴프레션 스텁의 역할을 규명하고, 높은 섀넌 엔트로피(>7.2)를 통한 패킹 식별법을 학습합니다.\n지정된 식별자 `antire_binary_packing_stub_and_payload_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_binary_packing_stub_and_payload_v1\") 앞 20자리}",
+      "en": "Identify compressed/encrypted payloads and decompression stubs while utilizing high Shannon entropy (>7.2) for automated packing detection.\nCompute the first 20 hex characters of SHA256(\"antire_binary_packing_stub_and_payload_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_binary_packing_stub_and_payload_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_binary_packing_stub_and_payload_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_binary_packing_stub_and_payload_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_binary_packing_stub_and_payload_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_binary_packing_stub_and_payload_v1\")."
+      ]
+    },
+    "hash": "5ab7da5132fa711924d9ec8c5a13dba9118dc6a4ec1473c855fdc74a78a3312c"
+  },
+  {
+    "id": "t0_antire_dynamic_api_resolution_motivation",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "동적 API 로딩과 정적 IAT 은닉의 필요성",
+      "en": "Dynamic API Resolution & Static IAT Concealment"
+    },
+    "prompt": {
+      "ko": "정적 임포트 주소 테이블(IAT)에 중요 API(VirtualAlloc, WriteProcessMemory)가 노출되지 않도록 런타임에 GetProcAddress를 대치하는 은닉 기법을 학습합니다.\n지정된 식별자 `antire_dynamic_api_resolution_motivation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_dynamic_api_resolution_motivation_v1\") 앞 20자리}",
+      "en": "Study how hiding sensitive APIs (VirtualAlloc, WriteProcessMemory) from the static IAT hinders heuristic antivirus scanners.\nCompute the first 20 hex characters of SHA256(\"antire_dynamic_api_resolution_motivation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_dynamic_api_resolution_motivation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_dynamic_api_resolution_motivation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_dynamic_api_resolution_motivation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_dynamic_api_resolution_motivation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_dynamic_api_resolution_motivation_v1\")."
+      ]
+    },
+    "hash": "630f4c9ba5f37214b1c1f631aba87095270c0accc0adc4cdba5b17512774f381"
+  },
+  {
+    "id": "t0_antire_anti_vm_virtualization_artifacts_intro",
+    "tier": 0,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가상화 환경(VM) 아티팩트 및 하이퍼바이저 식별 개요",
+      "en": "Virtualization Artifacts & Hypervisor Detection Overview"
+    },
+    "prompt": {
+      "ko": "자동 분석 샌드박스를 회피하기 위해 드라이버 이름, MAC 주소 OUI, 레지스트리 키, 가상 장치 아티팩트를 스캔하는 기본 원리를 파악합니다.\n지정된 식별자 `antire_anti_vm_virtualization_artifacts_intro_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_anti_vm_virtualization_artifacts_intro_v1\") 앞 20자리}",
+      "en": "Examine the fundamentals of scanning virtual drivers, MAC address OUIs, registry artifacts, and virtual hardware to evade sandboxes.\nCompute the first 20 hex characters of SHA256(\"antire_anti_vm_virtualization_artifacts_intro_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_anti_vm_virtualization_artifacts_intro_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_anti_vm_virtualization_artifacts_intro_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_anti_vm_virtualization_artifacts_intro_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_anti_vm_virtualization_artifacts_intro_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_anti_vm_virtualization_artifacts_intro_v1\")."
+      ]
+    },
+    "hash": "a317172e3ee4b8a80b8f6493a0866d310a5f897331cd1d7f52afca8b54422f97"
+  },
+  {
+    "id": "t1_antire_peb_nt_global_flag_heap_flags_audit",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PEB NtGlobalFlag 및 힙 플래그 디버거 흔적 색출",
+      "en": "PEB NtGlobalFlag & Heap Flags Debugger Inspection"
+    },
+    "prompt": {
+      "ko": "디버거 부착 시 힙 검증을 위해 PEB의 NtGlobalFlag(0x70) 및 ProcessHeap Flags가 특정 플래그(0x00000002)로 설정되는 메모리 아티팩트를 분석합니다.\n지정된 식별자 `antire_peb_nt_global_flag_heap_flags_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_peb_nt_global_flag_heap_flags_audit_v1\") 앞 20자리}",
+      "en": "Audit PEB NtGlobalFlag (0x70) and ProcessHeap Flags which are automatically asserted by Windows loaders when attaching a debugger.\nCompute the first 20 hex characters of SHA256(\"antire_peb_nt_global_flag_heap_flags_audit_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_peb_nt_global_flag_heap_flags_audit_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_peb_nt_global_flag_heap_flags_audit_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_peb_nt_global_flag_heap_flags_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_peb_nt_global_flag_heap_flags_audit_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_peb_nt_global_flag_heap_flags_audit_v1\")."
+      ]
+    },
+    "hash": "8d232a8d7964552aef5f1193922632e57ab8982e2aaa10dd21e05b6079564463"
+  },
+  {
+    "id": "t1_antire_hardware_breakpoints_dr_registers_detection",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 브레이크포인트 디버그 레지스터(DR0-DR7) 탐지",
+      "en": "Hardware Breakpoint Debug Registers (DR0-DR7) Audit"
+    },
+    "prompt": {
+      "ko": "GetThreadContext API 또는 SEH 구조적 예외 처리를 통해 x86/x64 디버그 레지스터(DR0~DR3)의 주소 및 DR7 제어 레지스터의 활성화 여부를 탐지하는 기법을 학습합니다.\n지정된 식별자 `antire_hardware_breakpoints_dr_registers_detection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_hardware_breakpoints_dr_registers_detection_v1\") 앞 20자리}",
+      "en": "Detect hardware breakpoints by querying thread context registers (DR0-DR3, DR7) using GetThreadContext or Structured Exception Handlers.\nCompute the first 20 hex characters of SHA256(\"antire_hardware_breakpoints_dr_registers_detection_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_hardware_breakpoints_dr_registers_detection_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_hardware_breakpoints_dr_registers_detection_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_hardware_breakpoints_dr_registers_detection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_hardware_breakpoints_dr_registers_detection_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_hardware_breakpoints_dr_registers_detection_v1\")."
+      ]
+    },
+    "hash": "6df2491155aedb3e189fc1ba1e82107cd5b94a7efd6fd7433c7ce429b30c6604"
+  },
+  {
+    "id": "t1_antire_ror13_api_hashing_implementation",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ROR13 알고리즘 기반 API Hashing 구현 원리",
+      "en": "ROR13 Dynamic API Hashing Mechanics"
+    },
+    "prompt": {
+      "ko": "문자열을 13비트 오른쪽 순환 시프트(ROR)하고 누적하여 32비트 고유 해시값을 산출하는 표준 ROR13 해싱 알고리즘을 분석합니다.\n지정된 식별자 `antire_ror13_api_hashing_implementation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_ror13_api_hashing_implementation_v1\") 앞 20자리}",
+      "en": "Analyze the standard ROR13 hashing algorithm rotating 13 bits right and accumulating ASCII values to yield 32-bit unique API hashes.\nCompute the first 20 hex characters of SHA256(\"antire_ror13_api_hashing_implementation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_ror13_api_hashing_implementation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_ror13_api_hashing_implementation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_ror13_api_hashing_implementation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_ror13_api_hashing_implementation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_ror13_api_hashing_implementation_v1\")."
+      ]
+    },
+    "hash": "8bd5d947deaac21c2945ff21d8f477081a3dbaf6c1a9f936bddd699f43e8c43d"
+  },
+  {
+    "id": "t1_antire_peb_ldr_data_export_directory_traversal",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PEB InLoadOrderModuleList 기반 익스포트 디렉터리 순회",
+      "en": "PEB InLoadOrderModuleList Export Directory Traversal"
+    },
+    "prompt": {
+      "ko": "GetModuleHandle/GetProcAddress를 호출하지 않고 PEB Ldr 이중 연결 리스트를 순회하여 kernel32.dll의 EAT(Export Address Table)를 직접 파싱하는 기법을 학습합니다.\n지정된 식별자 `antire_peb_ldr_data_export_directory_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_peb_ldr_data_export_directory_traversal_v1\") 앞 20자리}",
+      "en": "Walk the PEB Ldr double-linked list to locate kernel32.dll and directly parse the Export Address Table without calling Win32 APIs.\nCompute the first 20 hex characters of SHA256(\"antire_peb_ldr_data_export_directory_traversal_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_peb_ldr_data_export_directory_traversal_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_peb_ldr_data_export_directory_traversal_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_peb_ldr_data_export_directory_traversal_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_peb_ldr_data_export_directory_traversal_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_peb_ldr_data_export_directory_traversal_v1\")."
+      ]
+    },
+    "hash": "604be50775b97a000c43a367e5978a2d64739913284d27b7070f2571f8d276cc"
+  },
+  {
+    "id": "t1_antire_upx_packer_structure_and_signature_modification",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "UPX 패커 헤더 시그니처 변조 및 분석 도구 무력화",
+      "en": "UPX Header Signature Tampering & Tool Confusion"
+    },
+    "prompt": {
+      "ko": "공식 `upx -d` 언패커의 자동 복구를 차단하기 위해 UPX0/UPX1 섹션 이름 및 헤더 매직 넘버를 제로화하거나 변조하는 안티-언패킹 트릭을 분석합니다.\n지정된 식별자 `antire_upx_packer_structure_and_signature_modification_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_upx_packer_structure_and_signature_modification_v1\") 앞 20자리}",
+      "en": "Examine anti-unpacking techniques where UPX section headers and magic numbers are zeroed or renamed to break standard decompression tools.\nCompute the first 20 hex characters of SHA256(\"antire_upx_packer_structure_and_signature_modification_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_upx_packer_structure_and_signature_modification_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_upx_packer_structure_and_signature_modification_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_upx_packer_structure_and_signature_modification_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_upx_packer_structure_and_signature_modification_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_upx_packer_structure_and_signature_modification_v1\")."
+      ]
+    },
+    "hash": "6d837aa05af92b198220a800df91e18624b5656d03f1cbe10b38bfa9e58e1f0d"
+  },
+  {
+    "id": "t1_antire_tls_callbacks_pre_main_execution",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS(Thread Local Storage) 콜백을 활용한 사전 탐지",
+      "en": "TLS Callbacks for Pre-Entry Point Analysis Defense"
+    },
+    "prompt": {
+      "ko": "메인 엔트리 포인트(AddressOfEntryPoint)가 호출되기 전 운영체제 로더 단계에서 먼저 실행되는 TLS 콜백 함수에 안티디버깅 루틴을 배치하는 기법을 학습합니다.\n지정된 식별자 `antire_tls_callbacks_pre_main_execution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_tls_callbacks_pre_main_execution_v1\") 앞 20자리}",
+      "en": "Learn how TLS callbacks execute before the main AddressOfEntryPoint to run stealthy anti-debugging checks before analysts break.\nCompute the first 20 hex characters of SHA256(\"antire_tls_callbacks_pre_main_execution_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_tls_callbacks_pre_main_execution_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_tls_callbacks_pre_main_execution_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_tls_callbacks_pre_main_execution_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_tls_callbacks_pre_main_execution_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_tls_callbacks_pre_main_execution_v1\")."
+      ]
+    },
+    "hash": "64a490de87ffe940a2a7fe234ff77f4931789363a9ecfbc5de6c92e870b296be"
+  },
+  {
+    "id": "t1_antire_linux_proc_status_tracerpid_audit",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Linux /proc/self/status TracerPid 모니터링",
+      "en": "Linux /proc/self/status TracerPid Monitoring"
+    },
+    "prompt": {
+      "ko": "프로세스가 디버거(GDB, LLDB)에 의해 추적될 때 `/proc/self/status`의 TracerPid 필드가 디버거 PID로 갱신되는 원리를 감시하여 탐지하는 메커니즘을 규명합니다.\n지정된 식별자 `antire_linux_proc_status_tracerpid_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_linux_proc_status_tracerpid_audit_v1\") 앞 20자리}",
+      "en": "Inspect how processes monitor `/proc/self/status` TracerPid fields to catch attached debuggers (GDB, LLDB) in runtime.\nCompute the first 20 hex characters of SHA256(\"antire_linux_proc_status_tracerpid_audit_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_linux_proc_status_tracerpid_audit_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_linux_proc_status_tracerpid_audit_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_linux_proc_status_tracerpid_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_linux_proc_status_tracerpid_audit_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_linux_proc_status_tracerpid_audit_v1\")."
+      ]
+    },
+    "hash": "80f4f421fd353c99e9b2a31d96a5ea80dcfd86d95b95b4affe9e303871b4d287"
+  },
+  {
+    "id": "t2_antire_opaque_predicates_control_flow_obfuscation",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "불투명 조건문(Opaque Predicate)을 통한 제어 흐름 왜곡",
+      "en": "Opaque Predicates Control Flow Obfuscation"
+    },
+    "prompt": {
+      "ko": "수학적 항등식(예: 7y^2 - 1 != x^2)을 이용해 런타임에는 항상 동일하게 평가되지만 디컴파일러 정적 분석 시 양방향 분기로 인식하게 만드는 난독화를 분석합니다.\n지정된 식별자 `antire_opaque_predicates_control_flow_obfuscation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_opaque_predicates_control_flow_obfuscation_v1\") 앞 20자리}",
+      "en": "Analyze mathematical identities that evaluate invariantly at runtime but force decompilers to generate complex false control flow paths.\nCompute the first 20 hex characters of SHA256(\"antire_opaque_predicates_control_flow_obfuscation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_opaque_predicates_control_flow_obfuscation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_opaque_predicates_control_flow_obfuscation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_opaque_predicates_control_flow_obfuscation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_opaque_predicates_control_flow_obfuscation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_opaque_predicates_control_flow_obfuscation_v1\")."
+      ]
+    },
+    "hash": "f7771dcaf5f7d2c59ecaf297ed299d26cad0d625bd0662ddc556ddefc5db7fe8"
+  },
+  {
+    "id": "t2_antire_packer_tail_jump_and_oep_reconstruction",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "패커 테일 점프(Tail Jump) 식별과 OEP 복원",
+      "en": "Packer Tail Jump Identification & OEP Reconstruction"
+    },
+    "prompt": {
+      "ko": "스텁 루틴의 스택 균형(`popad`/`POPFQ`) 이후 장거리 무조건 분기(`jmp OEP`)를 추적하여 실제 프로그램의 원본 진입점(OEP)을 특정하는 기법을 실습합니다.\n지정된 식별자 `antire_packer_tail_jump_and_oep_reconstruction_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_packer_tail_jump_and_oep_reconstruction_v1\") 앞 20자리}",
+      "en": "Track the final stack restoration (popad/POPFQ) followed by a long-distance unconditional jump to pinpoint the Original Entry Point (OEP).\nCompute the first 20 hex characters of SHA256(\"antire_packer_tail_jump_and_oep_reconstruction_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_packer_tail_jump_and_oep_reconstruction_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_packer_tail_jump_and_oep_reconstruction_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_packer_tail_jump_and_oep_reconstruction_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_packer_tail_jump_and_oep_reconstruction_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_packer_tail_jump_and_oep_reconstruction_v1\")."
+      ]
+    },
+    "hash": "09125c736419e8ee95bcd6fce8b2dab58c7fcbc5d100b5f19128ea50cbe989bd"
+  },
+  {
+    "id": "t2_antire_murmur3_api_hashing_collision_resistance",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Murmur3 API Hashing 및 해시 충돌 방어 기법",
+      "en": "Murmur3 API Hashing & Collision-Resistant Resolution"
+    },
+    "prompt": {
+      "ko": "단순 회전 시프트 알고리즘보다 높은 비트 분산도를 제공하는 32비트 Murmur3 해시를 활용하여 EAT 순회 시 충돌 없이 API를 동적 바인딩하는 구조를 파악합니다.\n지정된 식별자 `antire_murmur3_api_hashing_collision_resistance_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_murmur3_api_hashing_collision_resistance_v1\") 앞 20자리}",
+      "en": "Study 32-bit Murmur3 hashing offering superior avalanche characteristics for collision-free dynamic API symbol resolution.\nCompute the first 20 hex characters of SHA256(\"antire_murmur3_api_hashing_collision_resistance_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_murmur3_api_hashing_collision_resistance_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_murmur3_api_hashing_collision_resistance_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_murmur3_api_hashing_collision_resistance_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_murmur3_api_hashing_collision_resistance_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_murmur3_api_hashing_collision_resistance_v1\")."
+      ]
+    },
+    "hash": "8645c2fc4a8591e74ae95563cae0db4c5162f76aa2a409e02ee21b4de7fe7628"
+  },
+  {
+    "id": "t2_antire_seh_veh_structured_exception_handling_anti_debug",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SEH 및 VEH 예외 처리를 활용한 디버거 흐름 가로채기",
+      "en": "SEH & VEH Structured Exception Handling Anti-Debug"
+    },
+    "prompt": {
+      "ko": "의도적으로 `INT 3`(0xCC) 또는 메모리 접근 위반 예외를 유발하여 디버거가 예외를 삼키는지 확인하고 예외 핸들러에서 실행 흐름을 전환하는 기법을 분석합니다.\n지정된 식별자 `antire_seh_veh_structured_exception_handling_anti_debug_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_seh_veh_structured_exception_handling_anti_debug_v1\") 앞 20자리}",
+      "en": "Trigger deliberate INT 3 or memory fault exceptions to verify if a debugger swallows them before delegating to custom VEH/SEH handlers.\nCompute the first 20 hex characters of SHA256(\"antire_seh_veh_structured_exception_handling_anti_debug_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_seh_veh_structured_exception_handling_anti_debug_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_seh_veh_structured_exception_handling_anti_debug_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_seh_veh_structured_exception_handling_anti_debug_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_seh_veh_structured_exception_handling_anti_debug_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_seh_veh_structured_exception_handling_anti_debug_v1\")."
+      ]
+    },
+    "hash": "f731f161ec2cf58b54f14ae9ee2be05aa922ad1dda7df82f6ec7a5ff98f7e6cb"
+  },
+  {
+    "id": "t2_antire_rdtsc_timing_analysis_single_stepping_defense",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "RDTSC 명령어 기반 싱글 스텝 디버깅 시간 지연 탐지",
+      "en": "RDTSC CPU Cycle Delta Single-Stepping Detection"
+    },
+    "prompt": {
+      "ko": "코드 블록 전후의 CPU 타임스탬프 카운터(`rdtsc`) 차이를 측정하여 분석가가 명령어를 한 줄씩 단계별 실행(F8/F7)할 때 발생하는 비정상적 사이클 지연을 탐지합니다.\n지정된 식별자 `antire_rdtsc_timing_analysis_single_stepping_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_rdtsc_timing_analysis_single_stepping_defense_v1\") 앞 20자리}",
+      "en": "Measure elapsed CPU timestamp cycles before and after instructions to detect human single-stepping delays during interactive debugging.\nCompute the first 20 hex characters of SHA256(\"antire_rdtsc_timing_analysis_single_stepping_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_rdtsc_timing_analysis_single_stepping_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_rdtsc_timing_analysis_single_stepping_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_rdtsc_timing_analysis_single_stepping_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_rdtsc_timing_analysis_single_stepping_defense_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_rdtsc_timing_analysis_single_stepping_defense_v1\")."
+      ]
+    },
+    "hash": "c50b7c1bf71961fdf06412922e6c170736f7a96f5e958a92baad35a6eec7198d"
+  },
+  {
+    "id": "t2_antire_import_address_table_rebuilding_scylla",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "덤프된 PE 바이너리의 IAT 재구축 및 Scylla 복구 원리",
+      "en": "Dumped PE Import Address Table Rebuilding Mechanics"
+    },
+    "prompt": {
+      "ko": "메모리 덤프 과정에서 손상된 Import Directory를 가상 메모리 내의 함수 포인터와 비교하여 원본 DLL 명칭 및 Thunk 데이터를 완전히 복원하는 원리를 학습합니다.\n지정된 식별자 `antire_import_address_table_rebuilding_scylla_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_import_address_table_rebuilding_scylla_v1\") 앞 20자리}",
+      "en": "Reconstruct corrupted Import Address Tables in memory dumps by resolving function pointers back to corresponding DLL names and thunk arrays.\nCompute the first 20 hex characters of SHA256(\"antire_import_address_table_rebuilding_scylla_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_import_address_table_rebuilding_scylla_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_import_address_table_rebuilding_scylla_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_import_address_table_rebuilding_scylla_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_import_address_table_rebuilding_scylla_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_import_address_table_rebuilding_scylla_v1\")."
+      ]
+    },
+    "hash": "87f40c8de756e014290ee250a6dcde4730daf74c3c9419de7e94772493557f11"
+  },
+  {
+    "id": "t2_antire_smbios_registry_mac_anti_vm_triangulation",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SMBIOS, 레지스트리, MAC OUI 복합 가상 머신 탐지",
+      "en": "SMBIOS, Registry & MAC OUI Multi-Artifact Anti-VM"
+    },
+    "prompt": {
+      "ko": "QEMU, VMware, VirtualBox 특유의 SMBIOS 문자열, PCI Vendor ID, 가상 이더넷 MAC OUI(00:05:69, 08:00:27)를 복합 검증하여 분석 샌드박스를 차단하는 기법을 분석합니다.\n지정된 식별자 `antire_smbios_registry_mac_anti_vm_triangulation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_smbios_registry_mac_anti_vm_triangulation_v1\") 앞 20자리}",
+      "en": "Triangulate sandbox presence by cross-checking SMBIOS vendor strings, PCI device IDs, and virtual MAC OUIs (VMware, VirtualBox, QEMU).\nCompute the first 20 hex characters of SHA256(\"antire_smbios_registry_mac_anti_vm_triangulation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_smbios_registry_mac_anti_vm_triangulation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_smbios_registry_mac_anti_vm_triangulation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_smbios_registry_mac_anti_vm_triangulation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_smbios_registry_mac_anti_vm_triangulation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_smbios_registry_mac_anti_vm_triangulation_v1\")."
+      ]
+    },
+    "hash": "8a3e97bbfb77caea42f2d98b473e7555b71c736d4c9fe9e49d8a39c7b79bcbab"
+  },
+  {
+    "id": "t3_antire_control_flow_flattening_ollvm_dispatcher",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "OLLVM 제어 흐름 평탄화(Control Flow Flattening) 분석",
+      "en": "OLLVM Control Flow Flattening Dispatcher Reversal"
+    },
+    "prompt": {
+      "ko": "함수 내 기본 블록(Basic Block)들의 제어 흐름을 제거하고 거대한 switch-case 상태 머신 디스패처로 통합하여 정적 제어 그래프를 무력화하는 난독화를 해체합니다.\n지정된 식별자 `antire_control_flow_flattening_ollvm_dispatcher_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_control_flow_flattening_ollvm_dispatcher_v1\") 앞 20자리}",
+      "en": "Reverse-engineer flattened control flows where basic blocks are collapsed into a centralized state dispatcher switch-case loop.\nCompute the first 20 hex characters of SHA256(\"antire_control_flow_flattening_ollvm_dispatcher_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_control_flow_flattening_ollvm_dispatcher_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_control_flow_flattening_ollvm_dispatcher_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_control_flow_flattening_ollvm_dispatcher_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_control_flow_flattening_ollvm_dispatcher_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_control_flow_flattening_ollvm_dispatcher_v1\")."
+      ]
+    },
+    "hash": "cb1695fc5890be2df93263bd699752748ddba6c662f9d0042550fed0f74b01a1"
+  },
+  {
+    "id": "t3_antire_code_virtualization_custom_bytecode_vm",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "코드 가상화(Code Virtualization) 및 가상 바이트코드 인터프리터",
+      "en": "Code Virtualization & Custom Bytecode Interpreter"
+    },
+    "prompt": {
+      "ko": "x86 네이티브 인스트럭션을 커스텀 바이트코드로 컴파일하고 가상 CPU(가상 레지스터, 가상 스택, VIP) 인터프리터로 구동하는 고도화된 보호 기법을 분석합니다.\n지정된 식별자 `antire_code_virtualization_custom_bytecode_vm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_code_virtualization_custom_bytecode_vm_v1\") 앞 20자리}",
+      "en": "Analyze advanced binary protections transforming native x86 instructions into proprietary bytecode executed by an in-binary virtual CPU interpreter.\nCompute the first 20 hex characters of SHA256(\"antire_code_virtualization_custom_bytecode_vm_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_code_virtualization_custom_bytecode_vm_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_code_virtualization_custom_bytecode_vm_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_code_virtualization_custom_bytecode_vm_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_code_virtualization_custom_bytecode_vm_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_code_virtualization_custom_bytecode_vm_v1\")."
+      ]
+    },
+    "hash": "bdafeaeb108dc30f03ba8c1ee0acf5f93f0092f4e73815da2138dd4f56d41bac"
+  },
+  {
+    "id": "t3_antire_self_modifying_code_smc_runtime_decryption",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자가 수정 코드(SMC)와 런타임 다형성 복호화",
+      "en": "Self-Modifying Code (SMC) & Runtime Polymorphic Decryption"
+    },
+    "prompt": {
+      "ko": "실행 중인 코드 섹션(PROT_WRITE|PROT_EXEC)이 다음 실행할 루틴을 실시간으로 복호화한 후 실행 직후 다시 제로화하여 정적 덤프를 무력화하는 SMC 구조를 규명합니다.\n지정된 식별자 `antire_self_modifying_code_smc_runtime_decryption_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_self_modifying_code_smc_runtime_decryption_v1\") 앞 20자리}",
+      "en": "Deconstruct self-modifying code dynamically decrypting subsequent function blocks in memory and clearing them immediately after execution.\nCompute the first 20 hex characters of SHA256(\"antire_self_modifying_code_smc_runtime_decryption_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_self_modifying_code_smc_runtime_decryption_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_self_modifying_code_smc_runtime_decryption_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_self_modifying_code_smc_runtime_decryption_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_self_modifying_code_smc_runtime_decryption_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_self_modifying_code_smc_runtime_decryption_v1\")."
+      ]
+    },
+    "hash": "551b634e313991ecd058a23d5318bbc5cebd41c44f2fa9f299e302bb1bd4783a"
+  },
+  {
+    "id": "t3_antire_cpuid_hypervisor_bit_and_leaf_spoofing",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CPUID 하이퍼바이저 비트(Leaf 1 ECX 31) 검증과 우회",
+      "en": "CPUID Hypervisor Flag & Feature Leaf Evasion"
+    },
+    "prompt": {
+      "ko": "CPUID 명령어 실행 시 EAX=1 조건에서 반환되는 ECX 레지스터의 31번째 비트(Hypervisor Present) 및 0x40000000 리프의 하이퍼바이저 서명(TCGTCGTCGTCG)을 분석합니다.\n지정된 식별자 `antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1\") 앞 20자리}",
+      "en": "Evaluate CPUID leaf 1 ECX bit 31 (Hypervisor Present) and leaf 0x40000000 hypervisor vendor signatures used for hardware-level VM detection.\nCompute the first 20 hex characters of SHA256(\"antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_cpuid_hypervisor_bit_and_leaf_spoofing_v1\")."
+      ]
+    },
+    "hash": "edd7046c01c3cb54e3b654d139dcfe33b424aeaeee89748ad47040625587d206"
+  },
+  {
+    "id": "t3_antire_instruction_counting_trap_flag_anti_debugging",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "트랩 플래그(Trap Flag)와 단일 스텝 명령어 카운팅 안티디버깅",
+      "en": "Trap Flag (TF) & Single-Step Instruction Counting Defense"
+    },
+    "prompt": {
+      "ko": "EFLAGS의 Trap Flag(TF)를 활성화하여 단일 스텝 예외(STATUS_SINGLE_STEP)를 유발하고, 실제 실행된 명령어 바이트 수와 디버거 중재 결과를 교차 검증하는 기법을 분석합니다.\n지정된 식별자 `antire_instruction_counting_trap_flag_anti_debugging_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_instruction_counting_trap_flag_anti_debugging_v1\") 앞 20자리}",
+      "en": "Harness EFLAGS Trap Flag (TF) single-step exceptions to cross-check instruction retirement counters against debugger event handlers.\nCompute the first 20 hex characters of SHA256(\"antire_instruction_counting_trap_flag_anti_debugging_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_instruction_counting_trap_flag_anti_debugging_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_instruction_counting_trap_flag_anti_debugging_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_instruction_counting_trap_flag_anti_debugging_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_instruction_counting_trap_flag_anti_debugging_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_instruction_counting_trap_flag_anti_debugging_v1\")."
+      ]
+    },
+    "hash": "46351abf85865a450a9b7045c2c1b6298a871510f03bba48b389cfc510eb5314"
+  },
+  {
+    "id": "t3_antire_driver_level_kernel_hooking_anti_analysis",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 드라이버 기반 디버그 서브시스템 후킹 및 블라인드",
+      "en": "Kernel Driver Debug Subsystem Hooking & Blinding"
+    },
+    "prompt": {
+      "ko": "루트킷 또는 안티치트 드라이버가 DbgkDebugObjectType 객체 및 NtDebugActiveProcess 시스템콜을 가로채 사용자 모드 디버거의 프로세스 핸들 획득을 원천 차단하는 기법을 파악합니다.\n지정된 식별자 `antire_driver_level_kernel_hooking_anti_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_driver_level_kernel_hooking_anti_analysis_v1\") 앞 20자리}",
+      "en": "Study kernel drivers hooking NtDebugActiveProcess and Dbgk subsystem internals to blind and deny userland debuggers from attaching.\nCompute the first 20 hex characters of SHA256(\"antire_driver_level_kernel_hooking_anti_analysis_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_driver_level_kernel_hooking_anti_analysis_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_driver_level_kernel_hooking_anti_analysis_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_driver_level_kernel_hooking_anti_analysis_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_driver_level_kernel_hooking_anti_analysis_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_driver_level_kernel_hooking_anti_analysis_v1\")."
+      ]
+    },
+    "hash": "6fc9b94ece68edd9a4fb602c3ee254f333d07be62c6cf2b6e405d0e8b9f5cf8b"
+  },
+  {
+    "id": "t3_antire_string_encryption_xor_chacha_stack_strings",
+    "tier": 3,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 175,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "스택 스트링 및 동적 스트림 암호화 문자열 난독화 해제",
+      "en": "Stack Strings & Stream Cipher Dynamic String Obfuscation"
+    },
+    "prompt": {
+      "ko": "바이너리 .rdata 섹션에 문자열을 남기지 않고 개별 mov 명령어로 스택에 바이트를 조립하거나 ChaCha20/XOR 스트림으로 암호화하여 정적 문자열 추출을 차단하는 기법을 분석합니다.\n지정된 식별자 `antire_string_encryption_xor_chacha_stack_strings_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_string_encryption_xor_chacha_stack_strings_v1\") 앞 20자리}",
+      "en": "Analyze stack strings constructed on the fly via discrete mov opcodes and ChaCha20/XOR stream decryption routines preventing static string extraction.\nCompute the first 20 hex characters of SHA256(\"antire_string_encryption_xor_chacha_stack_strings_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_string_encryption_xor_chacha_stack_strings_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_string_encryption_xor_chacha_stack_strings_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_string_encryption_xor_chacha_stack_strings_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_string_encryption_xor_chacha_stack_strings_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_string_encryption_xor_chacha_stack_strings_v1\")."
+      ]
+    },
+    "hash": "9315e3e8b4b0fc01458ca6bfbe26ad18cfa1fa1e3f55876960c1caca420a6950"
+  },
+  {
+    "id": "t4_antire_advanced_virtualizer_devirtualization_symbolic_execution",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기호 실행(Symbolic Execution)을 활용한 가상화 바이트코드 탈난독화",
+      "en": "Symbolic Execution-Assisted Binary Devirtualization"
+    },
+    "prompt": {
+      "ko": "Angr, Triton 등 기호 실행 엔진을 동원하여 가상 CPU 핸들러의 의미론(Semantics)을 추출하고, 가상 바이트코드를 원래의 LLVM IR 및 x86 네이티브 코드로 복원합니다.\n지정된 식별자 `antire_advanced_virtualizer_devirtualization_symbolic_execution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_advanced_virtualizer_devirtualization_symbolic_execution_v1\") 앞 20자리}",
+      "en": "Leverage symbolic execution engines (Angr/Triton) to synthesize virtual handler semantics and devirtualize bytecode back to LLVM IR and native assembly.\nCompute the first 20 hex characters of SHA256(\"antire_advanced_virtualizer_devirtualization_symbolic_execution_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_advanced_virtualizer_devirtualization_symbolic_execution_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_advanced_virtualizer_devirtualization_symbolic_execution_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_advanced_virtualizer_devirtualization_symbolic_execution_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_advanced_virtualizer_devirtualization_symbolic_execution_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_advanced_virtualizer_devirtualization_symbolic_execution_v1\")."
+      ]
+    },
+    "hash": "fff885db5b4c8ff93a5e9309175e56d0dce1b578fd27a5e696967b9c9dde274e"
+  },
+  {
+    "id": "t4_antire_nested_virtualization_timing_side_channel_mitigation",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "중첩 가상화 환경의 미세 타이밍 부채널 분석 및 능동 완화",
+      "en": "Nested Virtualization Microarchitectural Timing Mitigation"
+    },
+    "prompt": {
+      "ko": "VM-Exit 지연시간을 활용한 정교한 하이퍼바이저 감지 기법을 분석하고, TSC 가상화 오프셋 보정 및 KVM 하이퍼콜 인터셉트로 부채널 탐지를 무력화하는 샌드박스를 구축합니다.\n지정된 식별자 `antire_nested_virtualization_timing_side_channel_mitigation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_nested_virtualization_timing_side_channel_mitigation_v1\") 앞 20자리}",
+      "en": "Deconstruct microarchitectural VM-Exit latency profiling used for stealthy hypervisor detection, implementing TSC offsetting to restore transparent virtualization.\nCompute the first 20 hex characters of SHA256(\"antire_nested_virtualization_timing_side_channel_mitigation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_nested_virtualization_timing_side_channel_mitigation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_nested_virtualization_timing_side_channel_mitigation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_nested_virtualization_timing_side_channel_mitigation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_nested_virtualization_timing_side_channel_mitigation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_nested_virtualization_timing_side_channel_mitigation_v1\")."
+      ]
+    },
+    "hash": "d2d262464d472f29a62cdf100c0c8854f99ab2bf7e94f1abc229208df0dc53b8"
+  },
+  {
+    "id": "t4_antire_custom_cryptographic_packer_dump_reconstruction",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커스텀 암호화 다계층 패커 무력화 및 PE/ELF 완전 복구",
+      "en": "Multi-Layered Cryptographic Packer Eradication & Rebuilding"
+    },
+    "prompt": {
+      "ko": "다계층 복호화 스텁, TLS 콜백 무결성 해시 체이닝, 동적 재배치(Relocation) 테이블 손상을 순차 격파하고 클린 PE/ELF 이미지를 메모리에서 재구성합니다.\n지정된 식별자 `antire_custom_cryptographic_packer_dump_reconstruction_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_custom_cryptographic_packer_dump_reconstruction_v1\") 앞 20자리}",
+      "en": "Defeat multi-stage polymorphic decryptor stubs, TLS hash chains, and damaged relocation tables to reconstruct clean PE/ELF executable images.\nCompute the first 20 hex characters of SHA256(\"antire_custom_cryptographic_packer_dump_reconstruction_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_custom_cryptographic_packer_dump_reconstruction_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_custom_cryptographic_packer_dump_reconstruction_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_custom_cryptographic_packer_dump_reconstruction_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_custom_cryptographic_packer_dump_reconstruction_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_custom_cryptographic_packer_dump_reconstruction_v1\")."
+      ]
+    },
+    "hash": "fb8de1257458eea86d5d4c8433d91e229785a08ef60e91d846604f361fe4e321"
+  },
+  {
+    "id": "t4_antire_kernel_assisted_anti_tamper_ebpf_lsm_guard",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM 및 하드웨어 보안 기능을 결합한 바이너리 변조 방어",
+      "en": "eBPF LSM & Hardware-Enforced Binary Anti-Tamper Guard"
+    },
+    "prompt": {
+      "ko": "메모리 패칭(31c0c3) 및 디버거 어태치를 커널 레벨 eBPF LSM 훅과 Intel CET(Control-flow Enforcement Technology)로 실시간 탐지·차단하는 엔터프라이즈 방어망을 설계합니다.\n지정된 식별자 `antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1\") 앞 20자리}",
+      "en": "Architect enterprise binary integrity guards combining eBPF LSM hooks and Intel CET shadow stacks to prevent inline patching and memory tampering.\nCompute the first 20 hex characters of SHA256(\"antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_kernel_assisted_anti_tamper_ebpf_lsm_guard_v1\")."
+      ]
+    },
+    "hash": "b70a936bbaf4163db7c449741e5692bc9b08ed6674ed1511412f3fa89ff43625"
+  },
+  {
+    "id": "t4_antire_anti_analysis_resilient_threat_hunting_pipeline",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "고도 난독화 악성 바이너리 전수 자동 분석 및 색출 파이프라인",
+      "en": "Anti-Analysis Resilient Automated Triage & Hunting Pipeline"
+    },
+    "prompt": {
+      "ko": "수만 개의 안티-리버싱/안티-VM 바이너리를 QEMU/KVM 하이퍼바이저 패치 및 커널 텔레메트리를 통해 100% 투명하게 자동 동적 분석하는 분석 팜을 설계합니다.\n지정된 식별자 `antire_anti_analysis_resilient_threat_hunting_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_anti_analysis_resilient_threat_hunting_pipeline_v1\") 앞 20자리}",
+      "en": "Design a transparent dynamic analysis pipeline using patched hypervisors and kernel telemetry to triage thousands of heavily-obfuscated malware samples.\nCompute the first 20 hex characters of SHA256(\"antire_anti_analysis_resilient_threat_hunting_pipeline_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_anti_analysis_resilient_threat_hunting_pipeline_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_anti_analysis_resilient_threat_hunting_pipeline_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_anti_analysis_resilient_threat_hunting_pipeline_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_anti_analysis_resilient_threat_hunting_pipeline_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_anti_analysis_resilient_threat_hunting_pipeline_v1\")."
+      ]
+    },
+    "hash": "f90fa86ea735e5da34791c636c7e31ef8e971d32277d32c6bec58c458ec2ce3f"
+  },
+  {
+    "id": "t4_antire_hardware_enclave_sgx_trustzone_binary_shield",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 보안 엔클레이브(Intel SGX / ARM TrustZone) 바이너리 보호",
+      "en": "Hardware Enclave (SGX / TrustZone) Binary Shield Architecture"
+    },
+    "prompt": {
+      "ko": "호스트 OS 및 링 0 커널조차 메모리를 읽을 수 없는 하드웨어 암호화 엔클레이브 내에서 핵심 알고리즘을 구동하여 100% 리버싱 불가능성을 달성하는 구조를 분석합니다.\n지정된 식별자 `antire_hardware_enclave_sgx_trustzone_binary_shield_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_hardware_enclave_sgx_trustzone_binary_shield_v1\") 앞 20자리}",
+      "en": "Analyze isolated hardware enclaves (Intel SGX, ARM TrustZone) executing sensitive logic in hardware-encrypted memory beyond the reach of kernel rootkits and debuggers.\nCompute the first 20 hex characters of SHA256(\"antire_hardware_enclave_sgx_trustzone_binary_shield_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_hardware_enclave_sgx_trustzone_binary_shield_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_hardware_enclave_sgx_trustzone_binary_shield_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_hardware_enclave_sgx_trustzone_binary_shield_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_hardware_enclave_sgx_trustzone_binary_shield_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_hardware_enclave_sgx_trustzone_binary_shield_v1\")."
+      ]
+    },
+    "hash": "140b9aff4d9ab8c316f503f955d8e0c36ca2884a2d9ff750f9a00d771a6ec8a8"
+  },
+  {
+    "id": "t4_antire_capstone_full_spectrum_anti_reversing_defense",
+    "tier": 4,
+    "cat": "reversing",
+    "track": "antire",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "바이너리 보호 및 안티 리버싱 능동 방어 풀 스펙트럼 캡스톤",
+      "en": "Capstone: Full-Spectrum Binary Protection & Anti-Reversing"
+    },
+    "prompt": {
+      "ko": "동적 안티디버깅 무력화, ROR13 API Hashing 역산, 변형 패커 OEP 언패킹, Anti-VM 타이밍 분석 차단을 총동원하여 고도화된 보호 바이너리를 완벽히 공략하고 차세대 능동 방어 대책을 확립합니다.\n지정된 식별자 `antire_capstone_full_spectrum_anti_reversing_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"antire_capstone_full_spectrum_anti_reversing_defense_v1\") 앞 20자리}",
+      "en": "Synthesize all binary defense disciplines: anti-debugging evasion, API hashing resolution, packer unpacking, and anti-VM timing mitigation into a unified offensive-defensive mastery capstone.\nCompute the first 20 hex characters of SHA256(\"antire_capstone_full_spectrum_anti_reversing_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"antire_capstone_full_spectrum_anti_reversing_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `antire_capstone_full_spectrum_anti_reversing_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `antire_capstone_full_spectrum_anti_reversing_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `antire_capstone_full_spectrum_anti_reversing_defense_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"antire_capstone_full_spectrum_anti_reversing_defense_v1\")."
+      ]
+    },
+    "hash": "ec4dcaf0c29d72d861676cb244ee5c47e5b128bbf53bbad818f2175a22f91be0"
   }
 ];
