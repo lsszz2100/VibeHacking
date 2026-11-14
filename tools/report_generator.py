@@ -557,6 +557,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A02:2021",
         "owasp_name": "Cryptographic Failures (Store-Now-Decrypt-Later & Quantum Vulnerable Primitives)",
     },
+    "56": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "시스템 보안 (eBPF 커널 시스콜 텔레메트리 & 루트킷 은닉 차단)",
+        "nist_csf_id": "DE.CM-01",
+        "nist_csf_name": "Networks & Kernel Computing Physical Environment Monitored (eBPF LSM Runtime Defense)",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)",
+    },
 }
 
 @dataclass
@@ -1588,6 +1596,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Legacy TLS and key exchange implementations rely strictly on RSA or non-hybrid ECDH, leaving communications permanently vulnerable to retroactive quantum cryptanalysis and active downgrade tampering.",
                 "affected_component": "PQCMigrationGuard Gateway (Port 8055)",
                 "remediation": "Deploy NIST FIPS 203 ML-KEM-768 hybrid key exchange (X25519Kyber768Draft00) with strict anti-downgrade policies and Constant-Time implicit rejection decapsulation."
+            }
+        ]
+    },
+    "56": {
+        "title": "56 eBPFShield eBPF Kernel Security & Active Threat Defense",
+        "category": "Kernel Security, eBPF & Runtime Defense",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5601",
+                "name": "Kernel eBPF Telemetry Blindspot & Rogue kprobe Rootkit Execution",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1014",
+                "mitre_technique": "Rootkit: eBPF Rootkit",
+                "mitre_tactic": "Defense Evasion / Privilege Escalation",
+                "impact": "Adversary manipulates kernel syscall return codes via bpf_override_return, hides malicious processes/files, and evades userland EDR detection.",
+                "description": "Lack of kernel-level eBPF program audit and unprivileged BPF restrictions permits execution of rogue kprobes and process hollowing under spoofed task_struct comm names.",
+                "affected_component": "eBPFShield Kernel Runtime Controller (Port 8056)",
+                "remediation": "Deploy eBPF LSM (Linux Security Module) hooks with strict -EPERM execution barriers, restrict /proc/sys/kernel/unprivileged_bpf_disabled=1, and enforce cryptographic BPF signature verification."
             }
         ]
     }

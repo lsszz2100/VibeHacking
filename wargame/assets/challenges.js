@@ -590,6 +590,15 @@ const TRACKS = [
     "desc_ko": "NIST FIPS 203 ML-KEM-768 격자 KEM·FIPS 204 ML-DSA-65 전자서명·SNDL 수집 도청 대응·하이브리드 TLS 1.3 다운그레이드 방어·암호 민첩성(Crypto-Agility) 검증.",
     "desc_en": "NIST FIPS 203 ML-KEM-768 Lattice KEM, FIPS 204 ML-DSA-65 digital signatures, SNDL eavesdropping defense, Hybrid TLS 1.3 anti-downgrade controls, and crypto-agility verification."
   }
+,
+  {
+    "id": "ebpfsec",
+    "icon": "🛡️",
+    "ko": "eBPF 커널 보안 & 런타임 위협 방어",
+    "en": "eBPF Kernel Security & Runtime Threat Defense",
+    "desc_ko": "eBPF 커널 시스콜 텔레메트리·Ring Buffer 익명 실행 포착·task_struct comm 프로세스 위장 탐지·bpf_override_return 악성 루트킷 색출·eBPF LSM 제로 트러스트 런타임 통제.",
+    "desc_en": "eBPF in-kernel syscall telemetry, Ring Buffer anonymous execution capture, task_struct comm process masquerading detection, bpf_override_return malicious rootkit hunting, and eBPF LSM zero-trust runtime control."
+  }
 ];
 
 const CHALLENGES = [
@@ -66308,5 +66317,986 @@ const CHALLENGES = [
       ]
     },
     "hash": "4550360297cb007885872a702acebd9b8511ea65128758ba0d21b2c254bb49b6"
+  }
+,
+  {
+    "id": "t0_ebpfsec_fundamentals_kernel_telemetry",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 커널 텔레메트리 기본 원리와 검증기(Verifier) 안전성",
+      "en": "eBPF Kernel Telemetry Fundamentals & Verifier Safety"
+    },
+    "prompt": {
+      "ko": "커널 모듈 재컴파일 없이 샌드박스화된 바이트코드를 커널 공간에서 안전하게 실행하는 eBPF 검증기(Verifier)와 JIT 컴파일러의 작동 원리를 학습합니다.\n지정된 식별자 `ebpfsec_fundamentals_kernel_telemetry_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_fundamentals_kernel_telemetry_v1\") 앞 20자리}",
+      "en": "Learn how the in-kernel eBPF verifier and JIT compiler ensure memory safety and loop termination without requiring kernel module recompilation.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_fundamentals_kernel_telemetry_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_fundamentals_kernel_telemetry_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "eBPF 검증기는 커널 크래시를 방지하기 위해 비초기화 메모리 참조, 메모리 경계 초과, 무한 루프를 정적으로 차단합니다.",
+        "식별자 `ebpfsec_fundamentals_kernel_telemetry_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "The eBPF verifier statically prevents uninitialized memory dereferencing, out-of-bounds access, and unbounded loops to protect the kernel.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_fundamentals_kernel_telemetry_v1\")."
+      ]
+    },
+    "hash": "d7ffb2c1db5483fbceca84abc8f5b0ad43baddcf377a0f05dbb3dd73a8e8cceb"
+  },
+  {
+    "id": "t0_ebpfsec_tracepoint_execve_intercept",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "tracepoint/syscalls/sys_enter_execve 시스콜 가로채기",
+      "en": "Syscall Interception via tracepoint/syscalls/sys_enter_execve"
+    },
+    "prompt": {
+      "ko": "프로세스 생성 시 호출되는 sys_enter_execve 트레이스포인트에 BPF 프로브를 연동하여 프로세스 인자 및 실행 경로를 실시간으로 모니터링합니다.\n지정된 식별자 `ebpfsec_tracepoint_execve_intercept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_tracepoint_execve_intercept_v1\") 앞 20자리}",
+      "en": "Attach an eBPF probe to the sys_enter_execve tracepoint to capture process arguments and binary paths with zero userland overhead.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_tracepoint_execve_intercept_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_tracepoint_execve_intercept_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "트레이스포인트(Tracepoint)는 커널에 안정적으로 정의된 정적 계측 지점으로 kprobe 대비 높은 안정성을 제공합니다.",
+        "식별자 `ebpfsec_tracepoint_execve_intercept_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Tracepoints provide stable static instrumentation points in the kernel with higher ABI stability than dynamic kprobes.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_tracepoint_execve_intercept_v1\")."
+      ]
+    },
+    "hash": "bee5e542ddf63fb4c9e460b1004604f8aaf1f841cbea66db1586c7dc7fc19169"
+  },
+  {
+    "id": "t1_ebpfsec_bpf_map_types_hash_array",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF 맵 데이터 구조 (BPF_MAP_TYPE_HASH & ARRAY)",
+      "en": "BPF Map Data Structures (BPF_MAP_TYPE_HASH & ARRAY)"
+    },
+    "prompt": {
+      "ko": "커널 공간의 eBPF 프로그램과 유저랜드 에이전트 간의 양방향 상태 공유를 지원하는 BPF 해시 및 배열 맵의 아키텍처를 분석합니다.\n지정된 식별자 `ebpfsec_bpf_map_types_hash_array_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_bpf_map_types_hash_array_v1\") 앞 20자리}",
+      "en": "Analyze BPF hash and array maps that enable bidirectional kernel-to-userland state sharing and metric aggregation.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_bpf_map_types_hash_array_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_bpf_map_types_hash_array_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "BPF 맵은 원자적 갱신(Atomic Update)을 지원하며 시스템콜 bpf(BPF_MAP_LOOKUP_ELEM)으로 조회됩니다.",
+        "식별자 `ebpfsec_bpf_map_types_hash_array_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "BPF maps support atomic updates and are queried from userland via the bpf(BPF_MAP_LOOKUP_ELEM) syscall.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_bpf_map_types_hash_array_v1\")."
+      ]
+    },
+    "hash": "0092cba9ae31fcfefb65a780debfe5f47b8863d618b541c96395548c222a55fa"
+  },
+  {
+    "id": "t1_ebpfsec_ring_buffer_zero_copy",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF 링 버퍼(Ring Buffer)와 제로 카피 이벤트 전송",
+      "en": "BPF Ring Buffer & Zero-Copy Event Transport"
+    },
+    "prompt": {
+      "ko": "기존 perf 버퍼의 CPU 코어별 메모리 파편화 한계를 극복하고 멀티프로듀서 단일컨슈머 링 버퍼를 활용한 고성능 텔레메트리 파이프라인을 구축합니다.\n지정된 식별자 `ebpfsec_ring_buffer_zero_copy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_ring_buffer_zero_copy_v1\") 앞 20자리}",
+      "en": "Explore the BPF ring buffer architecture that solves per-CPU memory fragmentation and offers zero-copy event streaming to userland.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_ring_buffer_zero_copy_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_ring_buffer_zero_copy_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "bpf_ringbuf_output 및 bpf_ringbuf_reserve/submit 함수를 통해 이벤트 유실 없는 로깅을 구현합니다.",
+        "식별자 `ebpfsec_ring_buffer_zero_copy_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "bpf_ringbuf_output and bpf_ringbuf_reserve/submit facilitate non-blocking, zero-copy event delivery without telemetry loss.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_ring_buffer_zero_copy_v1\")."
+      ]
+    },
+    "hash": "05d3577f640868d3b3b459e4f114055718ff7d24c0877abcf065121877c71ccd"
+  },
+  {
+    "id": "t1_ebpfsec_kprobe_vs_kretprobe_semantics",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "kprobe와 kretprobe의 커널 진입/반환 계측 시맨틱",
+      "en": "kprobe vs kretprobe Kernel Entry/Return Semantics"
+    },
+    "prompt": {
+      "ko": "동적 커널 함수 계측 시 kprobe로 함수 인자 레지스터(RDI, RSI, RDX)를 추출하고 kretprobe로 반환값(RAX)을 추적하는 기법을 비교합니다.\n지정된 식별자 `ebpfsec_kprobe_vs_kretprobe_semantics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_kprobe_vs_kretprobe_semantics_v1\") 앞 20자리}",
+      "en": "Compare dynamic kprobes capturing input registers with kretprobes inspecting return values (RAX) across kernel functions.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_kprobe_vs_kretprobe_semantics_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_kprobe_vs_kretprobe_semantics_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "x86_64 아키텍처에서 PT_REGS_PARM1/PARM2 매크로로 인자를 추출하고 PT_REGS_RC 매크로로 반환값을 수집합니다.",
+        "식별자 `ebpfsec_kprobe_vs_kretprobe_semantics_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Use PT_REGS_PARM1/PARM2 macros for entry arguments and PT_REGS_RC for return values on x86_64 systems.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_kprobe_vs_kretprobe_semantics_v1\")."
+      ]
+    },
+    "hash": "545ca296fb646222d667423059dc0051267ad43ac4ab99602572c8d089364e08"
+  },
+  {
+    "id": "t1_ebpfsec_fexit_and_fentry_trampolines",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF 트램펄린(Trampolines) 기반 fentry/fexit 고속 추적",
+      "en": "BPF Trampoline-based fentry/fexit Fast Tracing"
+    },
+    "prompt": {
+      "ko": "kprobe의 breakpoint 소프트웨어 인터럽트 오버헤드를 제거하고 직접 JIT 컴파일된 트램펄린 호출을 수행하는 fentry/fexit의 성능 우위를 분석합니다.\n지정된 식별자 `ebpfsec_fexit_and_fentry_trampolines_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_fexit_and_fentry_trampolines_v1\") 앞 20자리}",
+      "en": "Analyze fentry/fexit trampolines that replace breakpoint interrupt overhead with direct JIT call stubs for zero-overhead kernel tracing.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_fexit_and_fentry_trampolines_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_fexit_and_fentry_trampolines_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "BTF(BPF Type Format) 메타데이터를 활용하여 커널 구조체 오프셋을 컴파일 시점에 자동으로 해석합니다.",
+        "식별자 `ebpfsec_fexit_and_fentry_trampolines_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "BTF metadata allows fentry programs to directly access typed kernel function arguments with compiler-verified offsets.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_fexit_and_fentry_trampolines_v1\")."
+      ]
+    },
+    "hash": "524ee3d8c78f0f3fbc72f9e7ae4c4ac3535caf1ff56875ae906fe50c56bdb008"
+  },
+  {
+    "id": "t1_ebpfsec_unprivileged_bpf_sysctl",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "unprivileged_bpf_disabled 커널 파라미터 하드닝",
+      "en": "unprivileged_bpf_disabled Kernel Parameter Hardening"
+    },
+    "prompt": {
+      "ko": "비특권 사용자가 커널 BPF 하위 시스템을 호출하여 부채널 공격(Spectre)이나 권한 상승을 시도하지 못하도록 통제하는 sysctl 설정을 조사합니다.\n지정된 식별자 `ebpfsec_unprivileged_bpf_sysctl_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_unprivileged_bpf_sysctl_v1\") 앞 20자리}",
+      "en": "Inspect kernel hardening settings disabling unprivileged eBPF to prevent local unprivileged users from exploiting BPF sub-systems.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_unprivileged_bpf_sysctl_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_unprivileged_bpf_sysctl_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "/proc/sys/kernel/unprivileged_bpf_disabled=1 (또는 2: 영구 비활성화) 설정으로 CAP_BPF/CAP_SYS_ADMIN 권한자만 허용합니다.",
+        "식별자 `ebpfsec_unprivileged_bpf_sysctl_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Setting /proc/sys/kernel/unprivileged_bpf_disabled to 1 or 2 restricts BPF syscalls to CAP_BPF or CAP_SYS_ADMIN holders.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_unprivileged_bpf_sysctl_v1\")."
+      ]
+    },
+    "hash": "2b59cf9cc755749ef2d8088f17dccbc58e06ca00a4cfddb4ba58e2a13db05dd7"
+  },
+  {
+    "id": "t1_ebpfsec_memfd_create_fileless_detection",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "memfd_create 기반 파일리스 바이너리 실행 탐지",
+      "en": "memfd_create Fileless In-Memory Execution Detection"
+    },
+    "prompt": {
+      "ko": "디스크에 바이너리를 쓰지 않고 메모리 익명 파일 디스크립터(memfd)를 생성한 후 fexecve/execveat로 실행하는 공격자 기법을 포착합니다.\n지정된 식별자 `ebpfsec_memfd_create_fileless_detection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_memfd_create_fileless_detection_v1\") 앞 20자리}",
+      "en": "Detect fileless malware executing directly out of anonymous memory file descriptors via memfd_create and execveat syscalls.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_memfd_create_fileless_detection_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_memfd_create_fileless_detection_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "/proc/self/fd/3 경로 또는 anonymous inode 매핑을 eBPF 인그레스 필터에서 식별하여 의심 경보를 발생시킵니다.",
+        "식별자 `ebpfsec_memfd_create_fileless_detection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Detect processes executing from /proc/self/fd/ paths or anonymous inode numbers to catch memory-only droppers.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_memfd_create_fileless_detection_v1\")."
+      ]
+    },
+    "hash": "b0c7df94e4055a81a27241b76df66ea88d4f053f38d56722d3346e33480bc9f1"
+  },
+  {
+    "id": "t1_ebpfsec_sock_filter_cgroups_network",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cgroup BPF 소켓 필터와 컨테이너 네트워크 인그레스 통제",
+      "en": "Cgroup BPF Socket Filters & Container Ingress Control"
+    },
+    "prompt": {
+      "ko": "BPF_PROG_TYPE_CGROUP_SKB 프로그램을 활용하여 특정 컨테이너 cgroup에 할당된 네트워크 소켓의 비인가 아웃바운드 C2 비콘 연결을 차단합니다.\n지정된 식별자 `ebpfsec_sock_filter_cgroups_network_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_sock_filter_cgroups_network_v1\") 앞 20자리}",
+      "en": "Deploy BPF_PROG_TYPE_CGROUP_SKB filters attached to cgroups to inspect and drop egress C2 beacons at the socket layer.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_sock_filter_cgroups_network_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_sock_filter_cgroups_network_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "iptables/nftables 오버헤드 없이 소켓 버퍼(sk_buff)의 IP 및 포트를 커널 레벨에서 즉각 판정합니다.",
+        "식별자 `ebpfsec_sock_filter_cgroups_network_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Inspect destination IP/ports directly within sk_buff structs to enforce deterministic per-cgroup egress policies.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_sock_filter_cgroups_network_v1\")."
+      ]
+    },
+    "hash": "7b04f8884860082b3014ee725d622d7bf5301f624d390393f7838fa117b7f330"
+  },
+  {
+    "id": "t1_ebpfsec_bpftool_cli_prog_dump",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpftool CLI를 통한 커널 BPF 프로그램 전수 인벤토리 실사",
+      "en": "Kernel BPF Program Inventory Auditing via bpftool CLI"
+    },
+    "prompt": {
+      "ko": "현재 리눅스 커널에 로드되어 활성화된 모든 eBPF 프로그램의 타입, 이름, 바이트코드 인스트럭션, 부착 지점을 감사하는 bpftool 명령어를 실습합니다.\n지정된 식별자 `ebpfsec_bpftool_cli_prog_dump_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_bpftool_cli_prog_dump_v1\") 앞 20자리}",
+      "en": "Audit all running in-kernel BPF programs, their bytecode instructions, and attach points using bpftool CLI commands.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_bpftool_cli_prog_dump_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_bpftool_cli_prog_dump_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "bpftool prog list 및 bpftool prog dump xlated id <ID> 명령으로 커널 JIT 이전의 바이트코드 구조를 열람합니다.",
+        "식별자 `ebpfsec_bpftool_cli_prog_dump_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Run bpftool prog list and bpftool prog dump xlated id <ID> to audit compiled bytecode instructions for unauthorized helper calls.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_bpftool_cli_prog_dump_v1\")."
+      ]
+    },
+    "hash": "ce35d63503b23654191dadb917df584ac07a7c721253667dbd0f82abe4a656e3"
+  },
+  {
+    "id": "t2_ebpfsec_task_struct_comm_spoofing",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "task_struct->comm 조작과 프로세스 이름 위장 탐지",
+      "en": "task_struct->comm Manipulation & Process Masquerading Detection"
+    },
+    "prompt": {
+      "ko": "악성코드가 prctl(PR_SET_NAME)을 호출하여 자신을 kworker나 systemd-journald로 위장할 때, 실제 mm->exe_file의 dentry 경로와 교차 대조하여 은닉을 폭로합니다.\n지정된 식별자 `ebpfsec_task_struct_comm_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_task_struct_comm_spoofing_v1\") 앞 20자리}",
+      "en": "Unmask masqueraded processes spoofing task_struct->comm via prctl(PR_SET_NAME) by cross-referencing real mm->exe_file inode dentries.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_task_struct_comm_spoofing_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_task_struct_comm_spoofing_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "comm 문자열은 16바이트에 불과하며 유저랜드에서 자유롭게 변경 가능하므로 신뢰할 수 없는 식별자입니다.",
+        "식별자 `ebpfsec_task_struct_comm_spoofing_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "task_struct comm is an untrusted 16-byte field; always verify mm->exe_file to determine true binary origins.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_task_struct_comm_spoofing_v1\")."
+      ]
+    },
+    "hash": "85e3dc3bdfda7991398df326e165f183e84fc09e053ac6a390c44a22e1036c22"
+  },
+  {
+    "id": "t2_ebpfsec_vad_rwx_anonymous_detection",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비파일 백업 VAD 영역의 PROT_EXEC|PROT_WRITE 셸코드 주입 탐지",
+      "en": "Detection of Non-File-Backed Executable VAD Regions (PROT_EXEC|PROT_WRITE)"
+    },
+    "prompt": {
+      "ko": "mprotect를 악용하여 익명 힙/스택 영역을 실행 및 쓰기 가능(RWX)으로 변경하고 반사적 DLL/ELF 인젝션을 시도하는 W^X 위반 행위를 BPF로 감시합니다.\n지정된 식별자 `ebpfsec_vad_rwx_anonymous_detection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_vad_rwx_anonymous_detection_v1\") 앞 20자리}",
+      "en": "Monitor W^X memory violations where adversaries convert anonymous memory regions to RWX to execute staged shellcode payloads.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_vad_rwx_anonymous_detection_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_vad_rwx_anonymous_detection_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "sys_enter_mprotect 시스콜의 prot 인자에서 PROT_WRITE(0x2)와 PROT_EXEC(0x4)가 동시 활성화되는 패턴을 추적합니다.",
+        "식별자 `ebpfsec_vad_rwx_anonymous_detection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Track mprotect syscall invocations combining PROT_WRITE and PROT_EXEC on non-file-backed virtual memory regions.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_vad_rwx_anonymous_detection_v1\")."
+      ]
+    },
+    "hash": "0d828e181493ca5bcafec59c1c95881e47e614437535a4292bf3a779e079e6fa"
+  },
+  {
+    "id": "t2_ebpfsec_bpf_probe_write_user_hazard",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_probe_write_user 헬퍼 함수를 악용한 메모리 변조 위협",
+      "en": "Memory Tampering Hazard via bpf_probe_write_user Helper"
+    },
+    "prompt": {
+      "ko": "eBPF 프로그램이 사용자 공간 메모리를 직접 수정할 수 있도록 허용하는 bpf_probe_write_user 헬퍼가 악용될 경우 발생하는 동적 패칭 위험을 분석합니다.\n지정된 식별자 `ebpfsec_bpf_probe_write_user_hazard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_bpf_probe_write_user_hazard_v1\") 앞 20자리}",
+      "en": "Analyze risks associated with bpf_probe_write_user where malicious eBPF programs rewrite userland process memory and bypass authentication.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_bpf_probe_write_user_hazard_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_bpf_probe_write_user_hazard_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "이 헬퍼가 호출되면 커널 dmesg에 경고가 출력되므로 SIEM 텔레메트리에서 즉각 탐지해야 합니다.",
+        "식별자 `ebpfsec_bpf_probe_write_user_hazard_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Kernel logs output a warning when bpf_probe_write_user runs; alert immediately upon seeing this helper in SIEM pipelines.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_bpf_probe_write_user_hazard_v1\")."
+      ]
+    },
+    "hash": "7d9046c6e356c30b48e3793267dedd76079b87caa518e84912a864f62298472d"
+  },
+  {
+    "id": "t2_ebpfsec_bpf_override_return_hijack",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_override_return을 악용한 시스콜 반환값 조작 및 접근제어 무력화",
+      "en": "Syscall Return Code Tampering via bpf_override_return"
+    },
+    "prompt": {
+      "ko": "에러 주입용 BPF 헬퍼인 bpf_override_return을 악용하여 인증 실패 시스콜의 반환값을 0(성공)으로 덮어쓰는 은닉 익스플로잇을 분해합니다.\n지정된 식별자 `ebpfsec_bpf_override_return_hijack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_bpf_override_return_hijack_v1\") 앞 20자리}",
+      "en": "Dissect attack chains where adversaries abuse bpf_override_return to force failed security checks or syscall errors to return 0 (success).\nCompute the first 20 hex characters of SHA256(\"ebpfsec_bpf_override_return_hijack_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_bpf_override_return_hijack_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "CONFIG_BPF_KPROBE_OVERRIDE 커널 빌드 옵션이 활성화된 타깃에서만 작동하며 심각한 보안 결함을 야기합니다.",
+        "식별자 `ebpfsec_bpf_override_return_hijack_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "This attack requires CONFIG_BPF_KPROBE_OVERRIDE enabled in the kernel; disable it in production production configurations.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_bpf_override_return_hijack_v1\")."
+      ]
+    },
+    "hash": "50fb4fe6c443f560a977e8953df2b2a4649835177965ad2a167129be95587459"
+  },
+  {
+    "id": "t2_ebpfsec_sys_getdents64_rootkit_hook",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "sys_getdents64 디렉터리 탐색 후킹과 악성 파일 은닉 원리",
+      "en": "sys_getdents64 Directory Traversal Hooking & File Hiding"
+    },
+    "prompt": {
+      "ko": "eBPF 루트킷이 __x64_sys_getdents64 시스콜의 linux_dirent64 버퍼를 순회하며 특정 프리픽스를 가진 파일 엔트리를 목록에서 지우는 원리를 해부합니다.\n지정된 식별자 `ebpfsec_sys_getdents64_rootkit_hook_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_sys_getdents64_rootkit_hook_v1\") 앞 20자리}",
+      "en": "Dissect how eBPF rootkits manipulate linux_dirent64 structures during getdents64 syscalls to hide rootkit files from ls and find utilities.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_sys_getdents64_rootkit_hook_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_sys_getdents64_rootkit_hook_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "d_reclen 레코드 길이를 이전 엔트리에 합산시켜 파서가 대상 디렉터리 항목을 건너뛰도록 만듭니다.",
+        "식별자 `ebpfsec_sys_getdents64_rootkit_hook_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "By adjusting d_reclen of neighboring directory entries, the rootkit causes the userland libc parser to skip the target file record.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_sys_getdents64_rootkit_hook_v1\")."
+      ]
+    },
+    "hash": "3362b4d390ae87921d649cb3fd59940e92e5d10c98ac4e0f8fad46bfd4e91821"
+  },
+  {
+    "id": "t2_ebpfsec_badbpf_triplecross_rootkit",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "차세대 eBPF 루트킷(TripleCross & BadBPF) 다단계 구조 분석",
+      "en": "Multi-Stage eBPF Rootkits (TripleCross & BadBPF) Architecture"
+    },
+    "prompt": {
+      "ko": "eBPF 바이트코드만을 활용하여 파일 은닉, 프로세스 은닉, 네트워크 C2 백도어, 로컬 권한 상승을 모듈러하게 수행하는 오픈소스 eBPF 루트킷을 심층 분석합니다.\n지정된 식별자 `ebpfsec_badbpf_triplecross_rootkit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_badbpf_triplecross_rootkit_v1\") 앞 20자리}",
+      "en": "Analyze state-of-the-art eBPF rootkits (TripleCross/BadBPF) that orchestrate file hiding, network C2, and local privilege escalation purely via BPF.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_badbpf_triplecross_rootkit_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_badbpf_triplecross_rootkit_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "전통적인 LKM 루트킷과 달리 커널 모듈 목록(lsmod)에 나타나지 않아 기존 탐지 도구를 완벽히 회피합니다.",
+        "식별자 `ebpfsec_badbpf_triplecross_rootkit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Unlike traditional LKMs, eBPF rootkits do not register in lsmod or /proc/modules, evading conventional rootkit scanners.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_badbpf_triplecross_rootkit_v1\")."
+      ]
+    },
+    "hash": "430d02f7c5294fd42be2e568cd1bc53076f43c0dba6c5b3d801baff3a4236a2f"
+  },
+  {
+    "id": "t2_ebpfsec_bpf_tail_calls_chaining",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF 테일 콜(Tail Call) 연쇄 실행과 인스트럭션 한계 우회",
+      "en": "BPF Tail Calls Chaining & Instruction Limit Evasion"
+    },
+    "prompt": {
+      "ko": "단일 eBPF 프로그램의 인스트럭션 수 제한(1백만 insns)을 극복하고 제어 흐름을 은닉하기 위해 bpf_tail_call로 여러 하위 프로그램을 연쇄 실행하는 메커니즘을 학습합니다.\n지정된 식별자 `ebpfsec_bpf_tail_calls_chaining_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_bpf_tail_calls_chaining_v1\") 앞 20자리}",
+      "en": "Examine bpf_tail_call mechanisms that jump between programs without stack unwinding, allowing complex rootkit logic chains.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_bpf_tail_calls_chaining_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_bpf_tail_calls_chaining_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "BPF_MAP_TYPE_PROG_ARRAY 맵을 색인하여 점프하며 스택 프레임을 재사용하므로 복귀 지점이 없습니다.",
+        "식별자 `ebpfsec_bpf_tail_calls_chaining_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Tail calls use BPF_MAP_TYPE_PROG_ARRAY to transfer control directly without unwinding the stack.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_bpf_tail_calls_chaining_v1\")."
+      ]
+    },
+    "hash": "6f5645af014f4d7257b05f030379801e8af74cd486b647e5e98614de57fbf7ce"
+  },
+  {
+    "id": "t2_ebpfsec_bpf_map_poisoning_defense",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 BPF 맵 포이즈닝(Map Poisoning) 탐지 및 무결성 검증",
+      "en": "Kernel BPF Map Poisoning Detection & Integrity Verification"
+    },
+    "prompt": {
+      "ko": "루트킷이나 공격자가 보안 관제 BPF 프로그램의 화이트리스트 해시 맵에 비인가 IP/PID를 주입하여 감시를 무력화하는 맵 변조 공격을 방어합니다.\n지정된 식별자 `ebpfsec_bpf_map_poisoning_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_bpf_map_poisoning_defense_v1\") 앞 20자리}",
+      "en": "Defend against BPF map poisoning attacks where adversaries inject malicious PID exemptions directly into security monitoring hash maps.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_bpf_map_poisoning_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_bpf_map_poisoning_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "BPF_F_RDONLY_PROG 플래그로 맵을 읽기 전용으로 보호하거나 맵 쓰기 시스템콜을 감사 로그로 남깁니다.",
+        "식별자 `ebpfsec_bpf_map_poisoning_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Protect critical maps with BPF_F_RDONLY_PROG or enforce audit logging over BPF_MAP_UPDATE_ELEM syscalls.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_bpf_map_poisoning_defense_v1\")."
+      ]
+    },
+    "hash": "c5cb284e470fa975740c915c2fe80aacb89f2cc1d2df91ed41afaee47e33a143"
+  },
+  {
+    "id": "t2_ebpfsec_lsm_bprm_check_security",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_lsm_bprm_check_security 훅 기반 바이너리 실행 제어",
+      "en": "bpf_lsm_bprm_check_security Hook Binary Execution Control"
+    },
+    "prompt": {
+      "ko": "리눅스 보안 모듈(LSM)의 bprm_check_security 지점에 eBPF 훅을 부착하여 비인가 디렉터리(/dev/shm, /tmp)에서의 실행 요청을 커널 진입 즉시 차단합니다.\n지정된 식별자 `ebpfsec_lsm_bprm_check_security_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_lsm_bprm_check_security_v1\") 앞 20자리}",
+      "en": "Attach eBPF programs to bpf_lsm_bprm_check_security to intercept and deny unauthorized binary executions before memory mapping occurs.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_lsm_bprm_check_security_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_lsm_bprm_check_security_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "반환값으로 0이 아닌 음수 에러 코드(-EPERM, -1)를 반환하면 커널이 프로세스 실행을 즉각 중단시킵니다.",
+        "식별자 `ebpfsec_lsm_bprm_check_security_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Returning a non-zero error code like -EPERM causes the Linux kernel to immediately abort execution with permission denied.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_lsm_bprm_check_security_v1\")."
+      ]
+    },
+    "hash": "64531308c9f03254b81a3a9523ab94495a4bb833e8723789e7dfbd963749b70f"
+  },
+  {
+    "id": "t2_ebpfsec_lsm_file_open_containment",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_lsm_file_open 기반 민감 파일 경로 접근 통제",
+      "en": "Sensitive File Path Access Control via bpf_lsm_file_open"
+    },
+    "prompt": {
+      "ko": "/etc/shadow, 클라우드 IAM 자격증명, SSH 개인키 등 중요 파일에 대해 비인가 프로세스의 open/openat 시스콜을 파일 디스크립터 할당 전에 차단합니다.\n지정된 식별자 `ebpfsec_lsm_file_open_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_lsm_file_open_containment_v1\") 앞 20자리}",
+      "en": "Prevent unauthorized processes from accessing /etc/shadow or cloud credentials by inspecting file paths inside bpf_lsm_file_open.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_lsm_file_open_containment_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_lsm_file_open_containment_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "struct file 포인터의 f_path.dentry를 역순회하여 전체 정규화된 경로를 판정하고 정책을 강제합니다.",
+        "식별자 `ebpfsec_lsm_file_open_containment_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Traverse f_path.dentry structures to verify normalized file paths before granting open file descriptors.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_lsm_file_open_containment_v1\")."
+      ]
+    },
+    "hash": "e00ed77b71063a0751ceea9c3a78cbfc80354a4da4d0549243e832752da9cc7c"
+  },
+  {
+    "id": "t2_ebpfsec_tetragon_sigkill_enforcement",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cilium Tetragon 연계 커널 동기식 SIGKILL 강제 종료",
+      "en": "Synchronous SIGKILL Enforcement via Cilium Tetragon"
+    },
+    "prompt": {
+      "ko": "비동기 로깅에 의존하지 않고 위협 행위(권한 상승, 네임스페이스 탈출 등)가 감지되는 즉시 커널 스레드에서 해당 프로세스에 SIGKILL을 직접 송신합니다.\n지정된 식별자 `ebpfsec_tetragon_sigkill_enforcement_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_tetragon_sigkill_enforcement_v1\") 앞 20자리}",
+      "en": "Implement in-kernel real-time process termination via Tetragon TracingPolicies with synchronous SIGKILL actions.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_tetragon_sigkill_enforcement_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_tetragon_sigkill_enforcement_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "bpf_send_signal 헬퍼를 호출하여 유저랜드 에이전트의 개입 없이 커널 인터럽트 시점에 프로세스를 사살합니다.",
+        "식별자 `ebpfsec_tetragon_sigkill_enforcement_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Use the bpf_send_signal helper to terminate malicious processes synchronously before syscalls complete.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_tetragon_sigkill_enforcement_v1\")."
+      ]
+    },
+    "hash": "c7fed9fdda2a2b12a675638199a51e676c767f89677d61cb8b3744d0ad568a5f"
+  },
+  {
+    "id": "t2_ebpfsec_ebpf_container_namespace_boundary",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 기반 컨테이너 네임스페이스 격리 경계 감사",
+      "en": "Container Namespace Isolation Boundary Auditing via eBPF"
+    },
+    "prompt": {
+      "ko": "PID/마운트/네트워크 네임스페이스의 inode 번호를 추적하여 컨테이너 내부 프로세스가 호스트 네임스페이스로 탈출(Namespace Escape)하는 이상을 감지합니다.\n지정된 식별자 `ebpfsec_ebpf_container_namespace_boundary_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_ebpf_container_namespace_boundary_v1\") 앞 20자리}",
+      "en": "Track namespace inode numbers via eBPF to detect container escape attempts breaking out of PID/Mount boundaries.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_ebpf_container_namespace_boundary_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_ebpf_container_namespace_boundary_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "task_struct->nsproxy 포인터의 mnt_ns->ns.inum과 호스트 기준 이놈 번호를 대조하여 경계 이탈을 판정합니다.",
+        "식별자 `ebpfsec_ebpf_container_namespace_boundary_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Compare task_struct->nsproxy namespace inums against host baselines to flag breakout anomalies.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_ebpf_container_namespace_boundary_v1\")."
+      ]
+    },
+    "hash": "5582a7d78360aa91185b748f153748bc84f76a7fe31081b1d9f9ac6db0ba21cd"
+  },
+  {
+    "id": "t3_ebpfsec_speculative_execution_spectre_v1",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "스펙터(Spectre v1) 부채널 공격과 eBPF 검증기 완화책",
+      "en": "Spectre v1 Speculative Side-Channel & eBPF Verifier Mitigations"
+    },
+    "prompt": {
+      "ko": "투기적 실행(Speculative Execution) 중 경계 검사를 우회하여 커널 메모리를 누출하는 스펙터 v1 공격을 차단하는 eBPF 배열 인덱스 마스킹 기법을 분석합니다.\n지정된 식별자 `ebpfsec_speculative_execution_spectre_v1_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_speculative_execution_spectre_v1_v1\") 앞 20자리}",
+      "en": "Analyze how the eBPF verifier applies speculative index masking to prevent bounds check bypass attacks leaking kernel secrets.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_speculative_execution_spectre_v1_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_speculative_execution_spectre_v1_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "eBPF 검증기는 배열 접근 인덱스에 대해 비트 마스킹을 강제 삽입하여 투기적 분기 실행 중의 OOB 접근을 무력화합니다.",
+        "식별자 `ebpfsec_speculative_execution_spectre_v1_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "The verifier rewrites array indexing instructions with bitwise masks to suppress speculative out-of-bounds memory loads.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_speculative_execution_spectre_v1_v1\")."
+      ]
+    },
+    "hash": "37ac6b8acb6873472c002079917c4effbbcf3f4fb4f2811753965ad410865271"
+  },
+  {
+    "id": "t3_ebpfsec_jit_spraying_constant_blinding",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JIT 스프레잉(JIT Spraying) 방어와 bpf_jit_blind 상수 난독화",
+      "en": "JIT Spraying Defense & bpf_jit_blind Constant Blinding"
+    },
+    "prompt": {
+      "ko": "공격자가 eBPF 상수(Immediate value)에 셸코드 바이트를 인코딩하여 JIT 실행 공간에 주입하는 JIT 스프레잉을 난수 마스킹으로 차단하는 원리를 학습합니다.\n지정된 식별자 `ebpfsec_jit_spraying_constant_blinding_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_jit_spraying_constant_blinding_v1\") 앞 20자리}",
+      "en": "Examine how constant blinding (bpf_jit_blind=2) randomizes immediate values to defeat JIT spraying attacks in kernel space.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_jit_spraying_constant_blinding_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_jit_spraying_constant_blinding_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "/proc/sys/net/core/bpf_jit_blind=2 설정을 통해 모든 JIT 상수를 런타임 랜덤 키로 XOR 블라인딩합니다.",
+        "식별자 `ebpfsec_jit_spraying_constant_blinding_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforcing /proc/sys/net/core/bpf_jit_blind=2 splits and blinds all immediate constants using randomized keys.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_jit_spraying_constant_blinding_v1\")."
+      ]
+    },
+    "hash": "db3662932e6a2c01e5222a057eb730b0205cba7905b0a54fb073bb70f515d15d"
+  },
+  {
+    "id": "t3_ebpfsec_ebpf_signature_verification_kernel",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CONFIG_BPF_SIGNATURE 커널 레벨 eBPF 서명 검증 체계",
+      "en": "Kernel-Level eBPF Signature Verification (CONFIG_BPF_SIGNATURE)"
+    },
+    "prompt": {
+      "ko": "공격자가 컴파일된 임의의 BPF ELF를 커널에 로드하지 못하도록 리눅스 커널 키링(Kernel Keyring)과 연동하여 승인된 BPF 바이너리만 로드하는 보안 아키텍처를 분석합니다.\n지정된 식별자 `ebpfsec_ebpf_signature_verification_kernel_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_ebpf_signature_verification_kernel_v1\") 앞 20자리}",
+      "en": "Analyze kernel architectures requiring cryptographic signatures on eBPF bytecode programs verified against trusted system keyrings.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_ebpf_signature_verification_kernel_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_ebpf_signature_verification_kernel_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "IMA(Integrity Measurement Architecture) 및 BPF 토큰 메커니즘을 결합하여 서명되지 않은 BPF 프로그램을 원천 거부합니다.",
+        "식별자 `ebpfsec_ebpf_signature_verification_kernel_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Combine IMA and BPF signing frameworks to ensure only digitally certified eBPF objects can attach to kernel hooks.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_ebpf_signature_verification_kernel_v1\")."
+      ]
+    },
+    "hash": "9b0345123c00fe5b5382e167e54ef04ee7c5625c28092d4fd9f936050379bec1"
+  },
+  {
+    "id": "t3_ebpfsec_co_re_btf_type_relocation",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CO-RE(Compile Once - Run Everywhere)와 BTF 타입 정보 보안",
+      "en": "CO-RE (Compile Once - Run Everywhere) & BTF Security Implications"
+    },
+    "prompt": {
+      "ko": "리눅스 커널 헤더 없이도 상이한 커널 버전 간에 필드 오프셋을 자동 조정하는 CO-RE의 relocation 로직과 BTF 타입 위변조 탐지 방안을 연구합니다.\n지정된 식별자 `ebpfsec_co_re_btf_type_relocation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_co_re_btf_type_relocation_v1\") 앞 20자리}",
+      "en": "Investigate how CO-RE relies on BTF (BPF Type Format) to dynamically relocate struct offsets across differing kernel versions.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_co_re_btf_type_relocation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_co_re_btf_type_relocation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "bpf_core_read 매크로를 사용하여 컴파일 시점의 가상 오프셋을 런타임 호스트 커널의 실제 오프셋으로 매핑합니다.",
+        "식별자 `ebpfsec_co_re_btf_type_relocation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "CO-RE employs bpf_core_read macros and libbpf relocations against /sys/kernel/btf/vmlinux.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_co_re_btf_type_relocation_v1\")."
+      ]
+    },
+    "hash": "8df548cf513a6533c905d7c03cff012845f3bbd9423faa27e494295b833ebcee"
+  },
+  {
+    "id": "t3_ebpfsec_kernel_module_vs_ebpf_stealth",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "LKM 커널 모듈과 eBPF 루트킷의 포렌식 탐지 비교 분석",
+      "en": "Forensic Comparison: Loadable Kernel Modules vs eBPF Rootkits"
+    },
+    "prompt": {
+      "ko": "전통적인 sys_call_table 후킹 LKM과 현대적인 eBPF kprobe 루트킷의 탐지 아티팩트 차이점 및 커널 힙 메모리 스캔 기법을 비교합니다.\n지정된 식별자 `ebpfsec_kernel_module_vs_ebpf_stealth_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_kernel_module_vs_ebpf_stealth_v1\") 앞 20자리}",
+      "en": "Compare forensic artifacts left by traditional LKM rootkits versus in-memory eBPF hooks residing inside JIT allocations.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_kernel_module_vs_ebpf_stealth_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_kernel_module_vs_ebpf_stealth_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "eBPF 루트킷은 lsmod에 나타나지 않지만 bpf_prog_id 목록과 perf 이벤트 핸들러 트리에 반드시 등록됩니다.",
+        "식별자 `ebpfsec_kernel_module_vs_ebpf_stealth_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "While invisible to lsmod, eBPF rootkits remain cataloged inside kernel bpf_prog ID registries and tracepoint linkage structures.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_kernel_module_vs_ebpf_stealth_v1\")."
+      ]
+    },
+    "hash": "5d2b84a27b992d8bf37245babbf14cd3c31e5751fb494fbc06f4dd4a197a0993"
+  },
+  {
+    "id": "t3_ebpfsec_hidden_socket_dkom_correlation",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 소켓 테이블 순회와 숨겨진 은닉 C2 소켓 적발",
+      "en": "Kernel Socket Table Traversal & Hidden C2 Socket Detection"
+    },
+    "prompt": {
+      "ko": "/proc/net/tcp 텍스트 파일을 변조하여 C2 소켓을 은닉한 루트킷을 상대로 eBPF 소켓 이터레이터(BPF Iterator)를 실행하여 실제 소켓 구조체를 전수 수집합니다.\n지정된 식별자 `ebpfsec_hidden_socket_dkom_correlation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_hidden_socket_dkom_correlation_v1\") 앞 20자리}",
+      "en": "Detect stealthy C2 sockets hidden from /proc/net/tcp by executing eBPF iterators traversing in-kernel tcp_hashinfo structures.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_hidden_socket_dkom_correlation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_hidden_socket_dkom_correlation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "BPF_PROG_TYPE_TRACING bpf_iter_bpf_sk_storage 프로그램을 통해 커널 소켓 테이블을 직접 스캔합니다.",
+        "식별자 `ebpfsec_hidden_socket_dkom_correlation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Deploy BPF iterators to inspect in-kernel socket state directly from inet_hashinfo, ignoring userland /proc file hooks.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_hidden_socket_dkom_correlation_v1\")."
+      ]
+    },
+    "hash": "ff514c794741dbef93170cbe1ffd782ad9d9bc6aa6562962ca1b5bcb2ff47686"
+  },
+  {
+    "id": "t3_ebpfsec_dual_engine_telemetry_pipeline",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Falco & Tetragon & eBPF 듀얼 엔진 실시간 위협 관제",
+      "en": "Dual-Engine Real-Time Threat Hunting via Falco & Tetragon"
+    },
+    "prompt": {
+      "ko": "호스트 및 쿠버네티스 노드에서 Falco의 드라이버/eBPF 프로브와 Tetragon의 실시간 커널 차단기를 결합한 다계층 관제 아키텍처를 설계합니다.\n지정된 식별자 `ebpfsec_dual_engine_telemetry_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_dual_engine_telemetry_pipeline_v1\") 앞 20자리}",
+      "en": "Architect layered threat hunting combining Falco behavioral rules with Tetragon synchronous in-kernel enforcement.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_dual_engine_telemetry_pipeline_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_dual_engine_telemetry_pipeline_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "Falco의 시그니처 룰셋으로 의심 활동을 상관분석하고 Tetragon을 통해 커널 레벨에서 즉각 격리합니다.",
+        "식별자 `ebpfsec_dual_engine_telemetry_pipeline_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Correlate complex attack patterns with Falco rules while enforcing instant micro-segmentation and SIGKILL via Tetragon.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_dual_engine_telemetry_pipeline_v1\")."
+      ]
+    },
+    "hash": "b18e0c16be1a46676d9e5ad04370d175b52917c26d0fcabc818980001eaae651"
+  },
+  {
+    "id": "t3_ebpfsec_runtime_cgroup_cpu_throttling",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 커널 크립토마이너 탐지 및 Cgroup v2 자원 강제 제한",
+      "en": "In-Kernel eBPF Cryptominer Detection & Cgroup v2 Throttling"
+    },
+    "prompt": {
+      "ko": "eBPF 바이트코드 자체를 활용하여 AES-NI 명령어를 고빈도로 수행하는 크립토마이너를 식별하고 cgroup.max_cpu를 즉시 1%로 스로틀링합니다.\n지정된 식별자 `ebpfsec_runtime_cgroup_cpu_throttling_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_runtime_cgroup_cpu_throttling_v1\") 앞 20자리}",
+      "en": "Identify cryptominers executing intensive hashing routines and automatically throttle their cgroup v2 CPU quota via eBPF.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_runtime_cgroup_cpu_throttling_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_runtime_cgroup_cpu_throttling_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "하드웨어 성능 카운터(PMU)와 BPF perf 이벤트를 연계하여 비정상 CPU 사이클 소모 프로세스를 격리합니다.",
+        "식별자 `ebpfsec_runtime_cgroup_cpu_throttling_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Correlate hardware PMU cycle metrics via BPF perf events to identify and throttle cryptojacking workloads.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_runtime_cgroup_cpu_throttling_v1\")."
+      ]
+    },
+    "hash": "a2cf1800dba2702719c99382c932ceb7d72c7faaaa50e9dff5d611bfa247ae9d"
+  },
+  {
+    "id": "t4_ebpfsec_advanced_rootkit_eradication",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다중 훅(Multi-Hook) 악성 eBPF 루트킷 종합 침해사고 대응 및 박멸",
+      "en": "Incident Triage & Eradication of Multi-Hook eBPF Rootkits"
+    },
+    "prompt": {
+      "ko": "kprobe, kretprobe, tracepoint에 걸쳐 다중 설치된 악성 BPF 프로그램을 식별하고 BPF 링크 언링크 및 파일 디스크립터 강제 회수를 수행합니다.\n지정된 식별자 `ebpfsec_advanced_rootkit_eradication_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_advanced_rootkit_eradication_v1\") 앞 20자리}",
+      "en": "Perform forensic incident response on multi-hook eBPF rootkits, unlinking rogue BPF link fds and restoring clean kernel state.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_advanced_rootkit_eradication_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_advanced_rootkit_eradication_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "bpf(BPF_LINK_DETACH) 호출과 프로세스 소유권 조회를 통해 커널 상주 백도어를 완벽히 퇴출합니다.",
+        "식별자 `ebpfsec_advanced_rootkit_eradication_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Issue BPF_LINK_DETACH operations across anomalous program IDs to eradicate in-memory hooks without rebooting.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_advanced_rootkit_eradication_v1\")."
+      ]
+    },
+    "hash": "d5a095233168717291b5d9dbd1a4811aa519f43e56156684f4658f67d77405dd"
+  },
+  {
+    "id": "t4_ebpfsec_process_hollowing_forensic_triangulation",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF 링 버퍼 기반 프로세스 할로잉 인젝션 메모리 포렌식 삼각측량",
+      "en": "Process Hollowing Memory Forensic Triangulation via BPF Ring Buffers"
+    },
+    "prompt": {
+      "ko": "kworker로 위장된 프로세스의 부모/자식 관계, mm_struct 가상 메모리 매핑, 시스콜 호출 텔레메트리를 결합하여 주입된 페이로드를 역추적 복원합니다.\n지정된 식별자 `ebpfsec_process_hollowing_forensic_triangulation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_process_hollowing_forensic_triangulation_v1\") 앞 20자리}",
+      "en": "Triangulate process hollowing attacks by correlating parent-child hierarchies, mm_struct VAD mappings, and syscall traces.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_process_hollowing_forensic_triangulation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_process_hollowing_forensic_triangulation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "링 버퍼에 기록된 타임스탬프와 VAD 주소 공간 덤프를 교차 분석하여 C2 비콘 셸코드를 추출합니다.",
+        "식별자 `ebpfsec_process_hollowing_forensic_triangulation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Cross-reference ring buffer event timestamps with VAD dumps to extract injected C2 shellcode payload buffers.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_process_hollowing_forensic_triangulation_v1\")."
+      ]
+    },
+    "hash": "5aea10dbedbde49d9383363083d4c67f858921095a93a0e6396407b7f26df312"
+  },
+  {
+    "id": "t4_ebpfsec_zero_trust_lsm_policy_hardening",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 eBPF LSM 제로 트러스트 커널 보안 정책 하드닝",
+      "en": "Enterprise eBPF LSM Zero-Trust Kernel Policy Hardening"
+    },
+    "prompt": {
+      "ko": "호스트 전역에 적용되는 불변의 eBPF LSM 보안 프로파일을 설계하여 ptrace 디버깅 거부, unshare 네임스페이스 탈출 차단, 비인가 파일 접근 봉쇄를 확립합니다.\n지정된 식별자 `ebpfsec_zero_trust_lsm_policy_hardening_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_zero_trust_lsm_policy_hardening_v1\") 앞 20자리}",
+      "en": "Design comprehensive in-kernel eBPF LSM security profiles blocking unauthorized ptrace, unshare namespace escapes, and sensitive files.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_zero_trust_lsm_policy_hardening_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_zero_trust_lsm_policy_hardening_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "bpf_lsm_ptrace_access_check 및 bpf_lsm_task_fix_setuid 훅을 결합하여 권한 상승 공격 표면을 원천 차단합니다.",
+        "식별자 `ebpfsec_zero_trust_lsm_policy_hardening_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Combine bpf_lsm_ptrace_access_check and setuid hooks to eliminate privilege escalation vectors at the kernel barrier.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_zero_trust_lsm_policy_hardening_v1\")."
+      ]
+    },
+    "hash": "d3ef93e13689f3c9034a1cff107949f128ea0454cf4d0a65ca7487a87ff5fcda"
+  },
+  {
+    "id": "t4_ebpfsec_fleet_runtime_observability_pipeline",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "대규모 분산 서버 함대(Fleet) eBPF 런타임 옵저버빌리티 파이프라인",
+      "en": "Fleet-Wide Distributed eBPF Runtime Observability Pipeline"
+    },
+    "prompt": {
+      "ko": "수천 대의 쿠버네티스 노드에서 발생하는 초당 수백만 개의 커널 이벤트를 BPF 인-커널 집계 맵으로 99% 필터링하고 SIEM으로 전송하는 아키텍처를 설계합니다.\n지정된 식별자 `ebpfsec_fleet_runtime_observability_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_fleet_runtime_observability_pipeline_v1\") 앞 20자리}",
+      "en": "Architect fleet-wide eBPF telemetry pipelines aggregating millions of kernel events in-kernel before shipping high-fidelity anomalies to SIEM.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_fleet_runtime_observability_pipeline_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_fleet_runtime_observability_pipeline_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "커널 내 LRU 해시 맵으로 중복 이벤트를 집계하고 변칙 스코어가 임계치를 초과할 때만 링 버퍼 이벤트를 방출합니다.",
+        "식별자 `ebpfsec_fleet_runtime_observability_pipeline_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Filter benign baseline executions inside BPF LRU maps, emitting ring buffer alerts only when anomaly thresholds breach.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_fleet_runtime_observability_pipeline_v1\")."
+      ]
+    },
+    "hash": "48fd20d6b8512e904edb62d6f4871a6610207444d59e3170ec53ad7fadd4a395"
+  },
+  {
+    "id": "t4_ebpfsec_capstone_full_spectrum_kernel_defense",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "ebpfsec",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 커널 보안 및 능동 런타임 위협 방어 풀 스펙트럼 캡스톤",
+      "en": "Capstone: Full-Spectrum eBPF Kernel Security & Active Runtime Defense"
+    },
+    "prompt": {
+      "ko": "시스콜 텔레메트리, 링 버퍼 프로세스 할로잉 탐지, 악성 eBPF 루트킷 박멸, LSM 제로 트러스트 정책을 총동원하여 고도화된 APT 커널 침투를 완벽히 격퇴합니다.\n지정된 식별자 `ebpfsec_capstone_full_spectrum_kernel_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"ebpfsec_capstone_full_spectrum_kernel_defense_v1\") 앞 20자리}",
+      "en": "Deploy the full spectrum of eBPF kernel defenses: syscall telemetry, ring buffer unmasking, rootkit purging, and LSM zero-trust barriers.\nCompute the first 20 hex characters of SHA256(\"ebpfsec_capstone_full_spectrum_kernel_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"ebpfsec_capstone_full_spectrum_kernel_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "모든 방어 계층을 통합하여 커널 공간과 유저랜드의 위협을 0-지연시간으로 무력화하는 현대 엔터프라이즈 보안의 정점입니다.",
+        "식별자 `ebpfsec_capstone_full_spectrum_kernel_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Synthesize all layers into a unified zero-latency active defense fabric protecting cloud-native and Linux enterprise workloads.",
+        "Extract the first 20 hex characters of SHA256(\"ebpfsec_capstone_full_spectrum_kernel_defense_v1\")."
+      ]
+    },
+    "hash": "302840244b7c4d52b0f17824663d409ad3cd4a96c4e6eb8ab901ac49627ae447"
   }
 ];

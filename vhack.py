@@ -591,6 +591,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★☆",
         "related": [16, 45, 49, 57],
     },
+    "56": {
+        "name": "eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩",
+        "dir":  "56_ebpf_kernel_security_lab",
+        "desc": "eBPFShield: 커널 시스콜 텔레메트리 · Ring Buffer 익명 실행 포착 · 프로세스 할로잉/커널 스레드 위장 탐지 · bpf_override_return 루트킷 색출 및 eBPF LSM 제로 트러스트 능동 차단",
+        "url":  "웹 콘솔 & eBPF 보안 대시보드: http://localhost:8056",
+        "difficulty": "★★★★★",
+        "related": [3, 18, 46, 54, 57],
+    },
 }
 
 LABS_METADATA = LABS

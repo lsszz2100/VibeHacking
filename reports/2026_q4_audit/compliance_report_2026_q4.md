@@ -1,0 +1,1421 @@
+# 🛡️ VibeHacking Enterprise Security Diagnostic & Threat Assessment Report
+> **Generated at**: `2026-11-14 01:53:20` &nbsp;|&nbsp; **Target Scope**: `56 Labs` &nbsp;|&nbsp; **Standard**: `CVSS 3.1, MITRE ATT&CK, KISA ISMS-P, NIST CSF 2.0 & OWASP Top 10`
+
+---
+
+## 1. Executive Summary (경영진 요약)
+
+본 진단 보고서는 VibeHacking 플랫폼 내 총 **56개 실습 랩** 전반에 걸쳐 식별된 **56개 핵심 취약점**에 대한 보안 태세를 종합 진단한 결과입니다.
+- **평균 CVSS 3.1 Base Score**: **`8.7 / 10.0`**
+- **취약점 심각도 분포**: 🚨 Critical: `29` &nbsp;|&nbsp; ⚠️ High: `21` &nbsp;|&nbsp; 🟡 Medium: `6` &nbsp;|&nbsp; 🟢 Low: `0`
+
+### 📊 취약점 심각도 매트릭스 (Severity Matrix)
+| 심각도 (Severity) | 식별 건수 | 비율 | 대응 우선순위 |
+|---|---|---|---|
+| 🚨 **Critical** (9.0~10.0) | 29 | 51.8% | **P0 (즉시 긴급 패치 필요)** |
+| ⚠️ **High** (7.0~8.9) | 21 | 37.5% | **P1 (차기 스프린트 내 교정)** |
+| 🟡 **Medium** (4.0~6.9) | 6 | 10.7% | **P2 (정기 패치 주기 반영)** |
+| 🟢 **Low** (0.1~3.9) | 0 | 0.0% | **P3 (모니터링 및 하드닝 권고)** |
+
+### 🎯 MITRE ATT&CK 전술 분포 (Tactics Distribution)
+| MITRE 전술 (Tactic) | 매핑된 취약점 수 | 비중 |
+|---|---|---|
+| `Credential Access` | 11 | 19.6% |
+| `Execution` | 10 | 17.9% |
+| `Defense Evasion` | 9 | 16.1% |
+| `Privilege Escalation` | 9 | 16.1% |
+| `Initial Access` | 7 | 12.5% |
+| `Lateral Movement` | 2 | 3.6% |
+| `Command and Control` | 2 | 3.6% |
+| `Resource Development` | 1 | 1.8% |
+| `Impact` | 1 | 1.8% |
+| `Persistence` | 1 | 1.8% |
+| `Execution / Privilege Escalation` | 1 | 1.8% |
+| `Credential Access / Collection` | 1 | 1.8% |
+| `Defense Evasion / Privilege Escalation` | 1 | 1.8% |
+
+### 📋 컴플라이언스 표준 매핑 현황 (Compliance Frameworks)
+
+#### 🇰🇷 KISA ISMS-P 인증 기준 통제 항목
+| KISA ISMS-P 기준 | 해당 취약점 수 |
+|---|---|
+| `2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (메모리 버퍼 및 포인터 관리)` | 1건 |
+| `2.6.1 네트워크 접근통제 (불필요 프로토콜 및 포트 차단)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (역공학 방지 기술)` | 1건 |
+| `2.6.5 시스템 접근통제 (특권 권한 및 SUID 관리)` | 1건 |
+| `2.10.1 침해사고 예방 및 탐지 (악성코드 감염 예방)` | 1건 |
+| `2.10.1 침해사고 예방 및 탐지 (메모리 변조 및 은닉 탐지)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (역직렬화 취약점 차단)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (힙 동적 할당 및 메모리 안전성)` | 1건 |
+| `2.6.2 사용자 인증 (인증수단 관리 및 사전 공격 차단)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (AI 모델 입력 검증 및 프롬프트 주입 차단)` | 1건 |
+| `2.6.5 시스템 접근통제 (객체 참조 권한 검증 및 동시성 제어)` | 1건 |
+| `2.5.2 보안시스템 로그 관리 (감사 로그 생성 및 무결성 보장)` | 1건 |
+| `2.6.5 시스템 접근통제 (컨테이너 격리 및 권한 제한)` | 1건 |
+| `2.6.1 네트워크 접근통제 (무선 네트워크 암호화 정책)` | 1건 |
+| `2.7.1 암호정책 적용 (안전한 암호 알고리즘 및 키 길이)` | 1건 |
+| `2.10.1 침해사고 예방 및 탐지 (비인가 외부 통신 채널 차단)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (CI/CD 파이프라인 무결성)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (제어 흐름 무결성 보호)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (인자 및 환경변수 주입 검증)` | 1건 |
+| `2.6.2 사용자 인증 (디렉터리 서비스 취약점 패치)` | 1건 |
+| `2.6.5 시스템 접근통제 (인증 정보 메모리 보호 및 디렉터리 복제 통제)` | 1건 |
+| `2.6.5 시스템 접근통제 (데이터베이스 관리자 권한 분립)` | 1건 |
+| `2.6.1 네트워크 접근통제 (L2 네트워크 스위칭 보안)` | 1건 |
+| `2.10.1 침해사고 예방 및 탐지 (위협 인텔리전스 무결성 검증)` | 1건 |
+| `2.10.2 취약점 점검 및 조치 (운영체제 보안 설정 기준 준수)` | 1건 |
+| `2.6.2 사용자 인증 (기본 비밀번호 및 백도어 계정 제거)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (모바일 앱 컴포넌트 접근통제)` | 1건 |
+| `2.7.2 암호키 관리 (인증서 템플릿 발행 및 등록 권한 통제)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (지적재산 보호 및 코드 난독화)` | 1건 |
+| `2.6.2 사용자 인증 (OAuth 토큰 검증 및 서명 유효성 체크)` | 1건 |
+| `2.6.1 네트워크 접근통제 (인터넷 라우팅 프로토콜 무결성 RPKI)` | 1건 |
+| `2.10.2 취약점 점검 및 조치 (주요정보통신기반시설 기술적 취약점 기준)` | 1건 |
+| `2.7.2 암호키 관리 (소스코드 내 비밀번호/API키 하드코딩 금지)` | 1건 |
+| `2.6.5 시스템 접근통제 (클라우드 IAM 최소 권한 원칙 부여)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (동적 라이브러리 및 저장 프로시저 실행 통제)` | 1건 |
+| `2.6.1 네트워크 접근통제 (근거리 무선 통신 암호화 페어링)` | 1건 |
+| `2.10.1 침해사고 예방 및 탐지 (보안 솔루션 무력화 시도 탐지 및 방지)` | 1건 |
+| `2.7.1 암호정책 적용 (암호화 알고리즘 안전 모드 및 패딩 검증)` | 1건 |
+| `2.10.1 침해사고 예방 및 탐지 (랜섬웨어 이상 행위 모니터링 및 즉시 격리)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (오픈소스 소프트웨어 공급망 보안)` | 1건 |
+| `2.8.2 소프트웨어 개발 보안 (서버리스 함수 이벤트 페이로드 검증)` | 1건 |
+| `2.5.2 보안시스템 로그 관리 (클라우드 감사 추적 로그 위변조 방지)` | 1건 |
+| `2.6.5 시스템 접근통제 (엔드포인트 브라우저 확장 프로그램 권한 통제)` | 1건 |
+| `2.7.1 암호정책 적용 (양자내성암호 PQC 전환 계획 및 하이브리드 키 교환)` | 1건 |
+| `2.6.5 시스템 접근통제 (커널 샌드박싱 및 시스템콜 공격 표면 최소화)` | 1건 |
+| `2.10.1 보안 시스템 및 서비스 개발 보안 (AI 에이전트 도구 검증 및 가드레일)` | 1건 |
+| `2.8.2 네트워크 및 IoT 기기 취약점 관리 (임베디드 펌웨어 보안)` | 1건 |
+| `2.7.1 암호 통제 (양자 내성 하이브리드 TLS 1.3 전환)` | 1건 |
+| `2.12.1 사고 탐지 및 분석 (SANS DFIR 아티팩트 트리아지 & 침해사고 대응)` | 1건 |
+| `2.10.1 보안 시스템 운영 (클라우드 네이티브 커널 런타임 보안 & eBPF LSM 통제)` | 1건 |
+| `2.10.2 네트워크 보안 관리 (C2 은닉 통신 및 비인가 터널링 유출 차단)` | 1건 |
+| `2.5.1 사용자 식별 및 인증 (AD 권한 관리 & 비특권 계정 ACL 남용 방어)` | 1건 |
+| `2.10.2 보안 시스템 운영 (AI 에이전트 샌드박스 & 비인가 시스템콜 차단)` | 1건 |
+| `2.8.1 암호통제 (NIST FIPS 203 ML-KEM-768 격자 KEM & SNDL 방어)` | 1건 |
+| `2.10.1 시스템 보안 (eBPF 커널 시스콜 텔레메트리 & 루트킷 은닉 차단)` | 1건 |
+
+#### 🏛️ NIST CSF 2.0 프레임워크 카테고리
+| NIST CSF 2.0 카테고리 | 해당 취약점 수 |
+|---|---|
+| `PR.PS-01 Platform Security / PR.DS-01 Data Security` | 2건 |
+| `PR.PS-01 Platform Security / PR.PS-05 Software Integrity` | 2건 |
+| `PR.AC-05 Network Integrity & Segmentation` | 1건 |
+| `PR.PS-05 Software Integrity & Behavioral Evasion Defense` | 1건 |
+| `PR.AC-04 Least Privilege Access & System Hardening` | 1건 |
+| `DE.CM-01 Continuous Endpoint Monitoring & Payload Detection` | 1건 |
+| `DE.CM-01 Continuous Host Monitoring / DE.AE-04 Correlation` | 1건 |
+| `PR.AC-01 Credential Management / PR.AC-02 Authentication` | 1건 |
+| `GV.RM-01 AI Risk Management Strategy & Model Integrity` | 1건 |
+| `PR.AC-04 Least Privilege Access & Authorization Checks` | 1건 |
+| `DE.CM-03 Event Logging & Audit Log Protection` | 1건 |
+| `PR.AC-05 Network & Workload Segmentation / Container Hardening` | 1건 |
+| `PR.AC-05 Wireless Network Security / PR.DS-02 Over-the-Air Protection` | 1건 |
+| `PR.DS-02 In-Transit Cryptographic Protection & Key Exchange` | 1건 |
+| `DE.CM-01 Network Continuous Monitoring / DE.AE-03 C2 Anomaly Analysis` | 1건 |
+| `PR.PS-05 Software Supply Chain Security & Pipeline Least Privilege` | 1건 |
+| `PR.PS-01 Platform Security / PR.PS-05 Binary Hardening` | 1건 |
+| `PR.PS-01 Platform Security / PR.PS-02 Input Validation` | 1건 |
+| `PR.AC-01 Credential Protection / PR.AC-02 Identification & Authentication` | 1건 |
+| `PR.AC-01 Credential Defense / DE.CM-01 Endpoint Threat Hunting` | 1건 |
+| `PR.AC-04 Least Privilege / PR.PS-01 Database Hardening` | 1건 |
+| `PR.AC-05 Network Integrity & Segmentation / PR.IR-01 Infrastructure Resilience` | 1건 |
+| `ID.RA-02 Threat Intelligence Integrity / DE.AE-01 Threat Correlation` | 1건 |
+| `PR.PS-01 Operating System Configuration Management / ID.RA-01 Vulnerability Scanning` | 1건 |
+| `PR.AC-02 Authentication Management / PR.PS-01 IoT Firmware Hardening` | 1건 |
+| `PR.AC-04 Mobile App Least Privilege / PR.PS-01 Sandbox Isolation` | 1건 |
+| `PR.AC-01 Credential & Certificate Governance / PR.AC-02 Strong Authentication` | 1건 |
+| `PR.PS-05 Software Integrity & IP Protection` | 1건 |
+| `PR.AC-01 Federated Identity Management / PR.AC-02 OAuth/OIDC Hardening` | 1건 |
+| `PR.IR-01 Infrastructure Resilience / PR.AC-05 Border Gateway Security` | 1건 |
+| `ID.RA-01 Vulnerability Management / PR.PS-01 System Baseline Hardening` | 1건 |
+| `PR.AC-01 Secret Management / PR.DS-01 Sensitive Data Protection` | 1건 |
+| `PR.AC-04 Least Privilege Access / PR.AC-01 Cloud Entitlement Management` | 1건 |
+| `PR.PS-01 Database Platform Security / PR.AC-04 Database Execution Privileges` | 1건 |
+| `PR.AC-02 IoT Device Authentication / PR.DS-02 Over-the-Air Encryption` | 1건 |
+| `DE.CM-01 Host Telemetry Monitoring / PR.PS-01 Endpoint Defense Tamper Resistance` | 1건 |
+| `PR.DS-05 Cryptographic Integrity / PR.DS-01 Data Confidentiality` | 1건 |
+| `RS.MA-01 Incident Response / DE.AE-02 Endpoint Behavioral Analysis` | 1건 |
+| `PR.PS-05 Software Supply Chain Security / PR.DS-05 Cryptographic Verification` | 1건 |
+| `PR.PS-01 Serverless Runtime Hardening / PR.AC-04 Function Least Privilege` | 1건 |
+| `PR.PS-04 Audit Log Protection / DE.CM-03 Cloud Audit Monitoring` | 1건 |
+| `PR.PS-01 Browser Sandbox & Extension Governance / PR.AC-04 Least Privilege` | 1건 |
+| `PR.DS-02 Post-Quantum Cryptographic Migration / GV.RM-01 Cryptographic Risk` | 1건 |
+| `PR.PS-01 Kernel & Platform Security / PR.AC-05 Workload Isolation` | 1건 |
+| `PR.AT-01 AI Risk Management / PR.AC-04 Access Control for Automated Agents` | 1건 |
+| `PR.IP-01 Firmware Integrity & Hardware Root-of-Trust` | 1건 |
+| `PR.DS-02 Post-Quantum Cryptographic Migration / FIPS 203 ML-KEM` | 1건 |
+| `DE.AE-02 Adverse Events Analysis & Supertimeline Correlation` | 1건 |
+| `DE.CM-01 Network and Host Runtime Event Detection (eBPF Kernel Probing & Tetragon)` | 1건 |
+| `PR.AC-05 Network Integrity & Covert Channel Protections (DPI & DNS Entropy)` | 1건 |
+| `PR.AC-04 Access Control & Permissions Management (BloodHound AD Attack Path Mitigation)` | 1건 |
+| `PR.AC-06 Identities & Autonomous Agents Least Privilege (Landlock LSM Sandboxing)` | 1건 |
+| `PR.DS-02 Data in Transit Cryptographic Protection (Post-Quantum Hybrid TLS 1.3)` | 1건 |
+| `DE.CM-01 Networks & Kernel Computing Physical Environment Monitored (eBPF LSM Runtime Defense)` | 1건 |
+
+#### 🌐 OWASP Top 10 (2021) 취약점 분류
+| OWASP 분류 | 해당 취약점 수 |
+|---|---|
+| `A05:2021 Security Misconfiguration` | 10건 |
+| `A01:2021 Broken Access Control` | 7건 |
+| `A08:2021 Software and Data Integrity Failures` | 6건 |
+| `A04:2021 Insecure Design` | 5건 |
+| `A07:2021 Identification and Authentication Failures` | 5건 |
+| `A02:2021 Cryptographic Failures` | 5건 |
+| `A03:2021 Injection` | 4건 |
+| `A09:2021 Security Logging and Monitoring Failures` | 3건 |
+| `A03:2021 Injection (OWASP LLM01: Prompt Injection)` | 1건 |
+| `A06:2021 Vulnerable and Outdated Components` | 1건 |
+| `LLM01:2025 Prompt Injection & Insecure Tool Execution` | 1건 |
+| `A03:2021 Injection (Command Injection in Embedded CGI)` | 1건 |
+| `A02:2021 Cryptographic Failures (Harvest-Now-Decrypt-Later)` | 1건 |
+| `A05:2021 Security Misconfiguration (Container Namespace Escape & Unchecked Privileges)` | 1건 |
+| `A01:2021 Broken Access Control (Unauthorized Reverse Proxy & SOCKS5 Pivoting)` | 1건 |
+| `A01:2021 Broken Access Control (Active Directory DACL/ACE Privilege Escalation)` | 1건 |
+| `LLM01:2025 Prompt Injection & Tool Hijacking (AI Agent MCP Sandbox Escape)` | 1건 |
+| `A02:2021 Cryptographic Failures (Store-Now-Decrypt-Later & Quantum Vulnerable Primitives)` | 1건 |
+| `A05:2021 Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)` | 1건 |
+
+---
+
+## 2. Detailed Vulnerability Findings (취약점별 상세 진단서)
+
+### 1. [VIBE-2026-0101] SQL Injection & Stored Cross-Site Scripting (XSS)
+- **대상 랩 / 환경**: `01 Web Vulnerabilities (DVWA/JuiceShop/WebGoat)` (`Lab 01`)
+- **보안 분류**: `Web Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1190` — **Exploit Public-Facing Application** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A03:2021`
+- **영향을 받는 컴포넌트**: `/vulnerabilities/sqli/ & /vulnerabilities/xss_s/`
+
+**🔍 상세 취약점 분석 (Description)**:
+> User-supplied input is directly concatenated into SQL queries and rendered unescaped in HTML DOM.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Unrestricted backend database exfiltration, credential dumping, and administrative session hijacking.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Apply parameterized prepared statements (PDO/PreparedStatement) and context-aware HTML entity encoding (DOMPurify).
+```
+
+---
+
+### 2. [VIBE-2026-0201] Stack-based Buffer Overflow & ROP Chain Hijack
+- **대상 랩 / 환경**: `02 Binary Exploitation & Memory Safety` (`Lab 02`)
+- **보안 분류**: `Binary & System`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1203` — **Exploitation for Client Execution** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (메모리 버퍼 및 포인터 관리)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A04:2021`
+- **영향을 받는 컴포넌트**: `ELF binary pwn_server (ports 10001-10005)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Unbounded gets() / strcpy() calls overwrite function return addresses allowing control flow hijacking.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Remote code execution within the process context, arbitrary shellcode execution, and host compromise.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enable compiler mitigations (Canary -fstack-protector-all, PIE, Full RELRO) and bounds-checked string functions.
+```
+
+---
+
+### 3. [VIBE-2026-0301] Insecure Service Configuration & Lateral Pivoting
+- **대상 랩 / 환경**: `03 Network Infrastructure & Protocol Pivot` (`Lab 03`)
+- **보안 분류**: `Network Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.5`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:L/A:N`
+- **MITRE ATT&CK 매핑**: `T1021` — **Remote Services** (전술: `Lateral Movement`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.1 네트워크 접근통제 (불필요 프로토콜 및 포트 차단)` | 🏛️ NIST CSF 2.0: `PR.AC-05` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Internal gateway router & BIND9 service`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Weak SSH credentials and permissive DNS AXFR zone transfer expose entire internal topology.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Unrestricted internal subnet reconnaissance and lateral movement across DMZ boundary.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Disable anonymous DNS zone transfer, enforce public key SSH authentication, and segment network VLANs.
+```
+
+---
+
+### 4. [VIBE-2026-0401] Dynamic Analysis Detection & Evasion Routines
+- **대상 랩 / 환경**: `04 Anti-Reverse Engineering & Obfuscation` (`Lab 04`)
+- **보안 분류**: `Reverse Engineering`
+- **심각도**: **🟡 MEDIUM** (CVSS 3.1 Base Score: **`6.3`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1027` — **Obfuscated Files or Information** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (역공학 방지 기술)` | 🏛️ NIST CSF 2.0: `PR.PS-05` | 🌐 OWASP Top 10: `A04:2021`
+- **영향을 받는 컴포넌트**: `Client license verification daemon`
+
+**🔍 상세 취약점 분석 (Description)**:
+> RDTSC timing checks, IsDebuggerPresent APIs, and control flow flattening thwart reverse engineering.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Security tool blinding, automated sandbox evasion, and undetected malware execution.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy kernel-level hypervisor tracing and automated symbolic execution disassemblers.
+```
+
+---
+
+### 5. [VIBE-2026-0501] Insecure SUID Binary & Cron Job Root Escalation
+- **대상 랩 / 환경**: `05 Linux Hardening & Privilege Escalation` (`Lab 05`)
+- **보안 분류**: `System Hardening`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1068` — **Exploitation for Privilege Escalation** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (특권 권한 및 SUID 관리)` | 🏛️ NIST CSF 2.0: `PR.AC-04` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `/usr/local/bin/backup_agent (SUID root)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Custom SUID binary executes relative paths without sanitize_path, vulnerable to PATH hijacking.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Complete root compromise from an unprivileged shell account.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Remove unneeded SUID flags (chmod u-s), audit crontab file permissions, and restrict sudo privileges.
+```
+
+---
+
+### 6. [VIBE-2026-0601] VBA AutoOpen Macro Execution & Payload Drop
+- **대상 랩 / 환경**: `06 Malicious Document & Macro Analysis` (`Lab 06`)
+- **보안 분류**: `Malware Analysis`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1204.002` — **User Execution: Malicious File** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 침해사고 예방 및 탐지 (악성코드 감염 예방)` | 🏛️ NIST CSF 2.0: `DE.CM-01` | 🌐 OWASP Top 10: `A08:2021`
+- **영향을 받는 컴포넌트**: `Invoice_Q3_Review.docm`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Embedded VBA macro executes shell strings upon document open to fetch external stager.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Remote endpoint infection via weaponized phishing attachments.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Block macros across all untrusted Office documents via Group Policy (Block macros from running in Office files from the Internet).
+```
+
+---
+
+### 7. [VIBE-2026-0701] In-Memory Reflective DLL Injection & Process Hollowing
+- **대상 랩 / 환경**: `07 Digital Forensics & Volatility Memory Triage` (`Lab 07`)
+- **보안 분류**: `Forensics`
+- **심각도**: **🟡 MEDIUM** (CVSS 3.1 Base Score: **`5.7`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1055.012` — **Process Injection: Process Hollowing** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 침해사고 예방 및 탐지 (메모리 변조 및 은닉 탐지)` | 🏛️ NIST CSF 2.0: `DE.CM-01` | 🌐 OWASP Top 10: `A08:2021`
+- **영향을 받는 컴포넌트**: `Target memory capture memory.raw`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Unbacked memory pages with PAGE_EXECUTE_READWRITE permissions detected in memory dump.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Stealthy execution of C2 agent masquerading as trusted svchost.exe without touching disk.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce kernel driver signature verification, EDR memory threat protection, and periodic memory volatility triage.
+```
+
+---
+
+### 8. [VIBE-2026-0801] Insecure Pickle Deserialization Remote Code Execution
+- **대상 랩 / 환경**: `08 Python Security & Prototype Vulnerability` (`Lab 08`)
+- **보안 분류**: `Application Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059.006` — **Command and Scripting Interpreter: Python** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (역직렬화 취약점 차단)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A08:2021`
+- **영향을 받는 컴포넌트**: `/api/session/restore endpoint`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Server deserializes client-supplied base64 session tokens directly with pickle.loads().
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Arbitrary OS command execution via untrusted object reconstruction (__reduce__ exploit).
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Replace pickle with safe serializers (JSON, Protocol Buffers, or HMAC-signed tokens).
+```
+
+---
+
+### 9. [VIBE-2026-0901] Glibc Tcache Poisoning & Arbitrary Write-What-Where
+- **대상 랩 / 환경**: `09 Advanced Exploit Engineering & Heap Feng Shui` (`Lab 09`)
+- **보안 분류**: `Binary & System`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.4`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1068` — **Exploitation for Privilege Escalation** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (힙 동적 할당 및 메모리 안전성)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A04:2021`
+- **영향을 받는 컴포넌트**: `Heap manager chunk allocator`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Double free in user chunk allows poisoned tcache next pointer to point to arbitrary memory addresses.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Arbitrary code execution via heap pointer corruption and __free_hook overwriting.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Upgrade glibc to >= 2.32 (with safe-linking pointer mangling) and nullify pointers immediately after free.
+```
+
+---
+
+### 10. [VIBE-2026-1001] Weak Domain Controller Delegation & AS-REP Roasting
+- **대상 랩 / 환경**: `10 Enterprise Penetration Testing & Methodology` (`Lab 10`)
+- **보안 분류**: `Offensive Operations`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1558.004` — **Steal or Forge Kerberos Tickets: AS-REP Roasting** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.2 사용자 인증 (인증수단 관리 및 사전 공격 차단)` | 🏛️ NIST CSF 2.0: `PR.AC-01` | 🌐 OWASP Top 10: `A07:2021`
+- **영향을 받는 컴포넌트**: `Active Directory Kerberos KDC (Port 88)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Accounts configured with DONT_REQ_PREAUTH return encrypted TGTs to unauthenticated attackers.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Offline password cracking of service accounts without pre-authentication.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce Kerberos pre-authentication across all domain accounts and mandate 25+ character complex passwords.
+```
+
+---
+
+### 11. [VIBE-2026-1101] Indirect Prompt Injection & Tool Calling Hijack
+- **대상 랩 / 환경**: `11 AI/LLM Security & Prompt Injection` (`Lab 11`)
+- **보안 분류**: `AI Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:L`
+- **MITRE ATT&CK 매핑**: `T1059` — **Command and Scripting Interpreter** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (AI 모델 입력 검증 및 프롬프트 주입 차단)` | 🏛️ NIST CSF 2.0: `GV.RM-01` | 🌐 OWASP Top 10: `A03:2021`
+- **영향을 받는 컴포넌트**: `AI Assistant Agent & Tools Engine`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Untrusted external data processed by LLM overrides system prompt instructions and manipulates MCP tools.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Autonomous LLM agent executes unauthorized file modifications and exfiltrates internal credentials.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Implement dual-LLM verification, strict JSON schema parameter validation, and user confirmation gates for critical tools.
+```
+
+---
+
+### 12. [VIBE-2026-1201] Insecure Direct Object Reference (IDOR) & Race Condition
+- **대상 랩 / 환경**: `12 Bug Bounty Web Applications & Business Logic` (`Lab 12`)
+- **보안 분류**: `Web Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1078` — **Valid Accounts** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (객체 참조 권한 검증 및 동시성 제어)` | 🏛️ NIST CSF 2.0: `PR.AC-04` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `/api/v2/orders/{order_id} & /api/v2/coupons/redeem`
+
+**🔍 상세 취약점 분석 (Description)**:
+> API fails to verify user authorization on record identifiers and lacks database row locks during transaction processing.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Unauthorized access to other tenants' financial records and coupon double-spending via concurrency flaws.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce object-level access control (ABAC/RBAC) and database pessimistic locking (SELECT FOR UPDATE).
+```
+
+---
+
+### 13. [VIBE-2026-1301] Log Evasion & Unmonitored PowerShell Downgrade
+- **대상 랩 / 환경**: `13 SOC & Blue Team SIEM Threat Detection` (`Lab 13`)
+- **보안 분류**: `Blue Team & SOC`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1059.001` — **Command and Scripting Interpreter: PowerShell** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.5.2 보안시스템 로그 관리 (감사 로그 생성 및 무결성 보장)` | 🏛️ NIST CSF 2.0: `DE.CM-03` | 🌐 OWASP Top 10: `A09:2021`
+- **영향을 받는 컴포넌트**: `Windows PowerShell 2.0 Engine`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Attacker invokes PowerShell version 2.0 (-Version 2) to bypass Script Block and Transcription logging.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Silent execution of malicious scripts without generating Script Block Logging (EID 4104) telemetry.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Uninstall PowerShell 2.0 feature (Disable-WindowsOptionalFeature) and enforce AppLocker Constrained Language Mode.
+```
+
+---
+
+### 14. [VIBE-2026-1401] Privileged Container Host Escape via cgroups release_agent
+- **대상 랩 / 환경**: `14 Cloud Security & Kubernetes Container Breakout` (`Lab 14`)
+- **보안 분류**: `Cloud Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1611` — **Escape to Host** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (컨테이너 격리 및 권한 제한)` | 🏛️ NIST CSF 2.0: `PR.AC-05` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Kubernetes worker node runtime`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Container running with --privileged flag mounts host cgroup hierarchy and configures release_agent script.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Full host operating system takeover from within an isolated container pod.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Disallow privileged containers via Kubernetes Pod Security Admission (restricted profile) and drop CAP_SYS_ADMIN.
+```
+
+---
+
+### 15. [VIBE-2026-1501] WPA3 Transition Mode SAE Downgrade & Side-Channel Leak
+- **대상 랩 / 환경**: `15 Wireless Security & WPA3 SAE Auditing` (`Lab 15`)
+- **보안 분류**: `Wireless Security`
+- **심각도**: **🟡 MEDIUM** (CVSS 3.1 Base Score: **`5.3`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N`
+- **MITRE ATT&CK 매핑**: `T1557` — **Adversary-in-the-Middle** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.1 네트워크 접근통제 (무선 네트워크 암호화 정책)` | 🏛️ NIST CSF 2.0: `PR.AC-05` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `WPA3 Enterprise Access Point`
+
+**🔍 상세 취약점 분석 (Description)**:
+> WPA3 SAE transition mode allows Rogue APs to spoof SSID and force legacy WPA2 4-way handshakes.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Recovery of Wi-Fi pre-shared key via hunting-and-pecking timing analysis.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Disable transition mode; enforce WPA3-Enterprise 192-bit only with 802.11w Protected Management Frames (PMF).
+```
+
+---
+
+### 16. [VIBE-2026-1601] Weak Diffie-Hellman Group & Small Subgroup Confinement
+- **대상 랩 / 환경**: `16 Cryptographic Engineering & Key Exchange` (`Lab 16`)
+- **보안 분류**: `Cryptography`
+- **심각도**: **🟡 MEDIUM** (CVSS 3.1 Base Score: **`5.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N`
+- **MITRE ATT&CK 매핑**: `T1600` — **Weaken Encryption** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.7.1 암호정책 적용 (안전한 암호 알고리즘 및 키 길이)` | 🏛️ NIST CSF 2.0: `PR.DS-02` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `Custom TLS / IPsec Key Negotiation Daemon`
+
+**🔍 상세 취약점 분석 (Description)**:
+> DH parameters use composite or non-safe primes, enabling attackers to confine keys to small subgroups.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Eavesdropping and offline recovery of shared session secrets across encrypted tunnels.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Mandate standardized RFC 7919 FFDHE groups (>= 3072-bit) or Curve25519 / NIST P-256.
+```
+
+---
+
+### 17. [VIBE-2026-1701] Domain Fronting & HTTPS Malleable C2 Beaconing
+- **대상 랩 / 환경**: `17 Red Team Operations & C2 Infrastructure` (`Lab 17`)
+- **보안 분류**: `Red Team`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1071.001` — **Application Layer Protocol: Web Protocols** (전술: `Command and Control`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 침해사고 예방 및 탐지 (비인가 외부 통신 채널 차단)` | 🏛️ NIST CSF 2.0: `DE.CM-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Corporate perimeter edge proxy`
+
+**🔍 상세 취약점 분석 (Description)**:
+> TLS SNI matches trusted CDN while HTTP Host header routes traffic to malicious hidden C2 backend.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Long-term persistent remote command and control bypassing egress perimeter firewalls.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy TLS interception with SNI-Host header consistency checks and high-entropy DNS/HTTP inspection.
+```
+
+---
+
+### 18. [VIBE-2026-1801] GitHub Actions Workflow Poisoning (Pwn Request)
+- **대상 랩 / 환경**: `18 DevSecOps & CI/CD Pipeline Security` (`Lab 18`)
+- **보안 분류**: `DevSecOps`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1195.002` — **Supply Chain Compromise: Compromise Software Supply Chain** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (CI/CD 파이프라인 무결성)` | 🏛️ NIST CSF 2.0: `PR.PS-05` | 🌐 OWASP Top 10: `A08:2021`
+- **영향을 받는 컴포넌트**: `.github/workflows/deploy.yml`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Workflow triggers on pull_request_target and checks out untrusted fork code with privileged repository secrets.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Extraction of production deployment cloud credentials and automated release poisoning.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Never checkout pull request code with write tokens; use standard pull_request trigger or separate triage pipelines.
+```
+
+---
+
+### 19. [VIBE-2026-1901] Return-to-CSU & JOP (Jump-Oriented Programming)
+- **대상 랩 / 환경**: `19 Assembly Language & CPU Architecture` (`Lab 19`)
+- **보안 분류**: `Binary & System`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.4`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1055` — **Process Injection** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (제어 흐름 무결성 보호)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A04:2021`
+- **영향을 받는 컴포넌트**: `Compiled x86_64 target binary`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Exploit chains __libc_csu_init functions to initialize register arguments (rdi, rsi, rdx) for arbitrary syscalls.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Bypassing W^X / DEP protections using universal libc initialization gadgets.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Compile with GCC 11+ which eliminates unused CSU stub routines, or enforce Intel CET / Shadow Stack.
+```
+
+---
+
+### 20. [VIBE-2026-2001] Unquoted Variable Expansion & Argument Injection
+- **대상 랩 / 환경**: `20 Shell Scripting Security & Command Injection` (`Lab 20`)
+- **보안 분류**: `Application Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059.004` — **Command and Scripting Interpreter: Unix Shell** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (인자 및 환경변수 주입 검증)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A03:2021`
+- **영향을 받는 컴포넌트**: `/usr/local/sbin/backup.sh`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Scripts use unquoted "$@" and "*" in tar or chown commands, vulnerable to option injection (--checkpoint-action).
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Privilege escalation and arbitrary command execution through bash wildcard globbing.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Always quote shell variables ("$var"), avoid passing wildcards to external commands, and use absolute paths.
+```
+
+---
+
+### 21. [VIBE-2026-2101] ZeroLogon (CVE-2020-1472) & Pass-the-Hash
+- **대상 랩 / 환경**: `21 Windows Exploitation & Active Directory` (`Lab 21`)
+- **보안 분류**: `Windows & AD`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1210` — **Exploitation of Remote Services** (전술: `Lateral Movement`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.2 사용자 인증 (디렉터리 서비스 취약점 패치)` | 🏛️ NIST CSF 2.0: `PR.AC-01` | 🌐 OWASP Top 10: `A07:2021`
+- **영향을 받는 컴포넌트**: `Windows Netlogon Service (MS-NRPC)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Flawed AES-CFB8 implementation in Netlogon protocol allows setting machine account password to empty.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Instant Domain Controller administrative takeover and NTDS.dit extraction.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Apply Microsoft security update MS-NRPC, enforce Secure RPC for all machine accounts, and monitor Event ID 5829.
+```
+
+---
+
+### 22. [VIBE-2026-2201] LSASS Memory Dumping & DCSync Replication Abuse
+- **대상 랩 / 환경**: `22 Password Security & Credential Dumping` (`Lab 22`)
+- **보안 분류**: `Identity & Credential`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.7`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1003.001` — **OS Credential Dumping: LSASS Memory** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (인증 정보 메모리 보호 및 디렉터리 복제 통제)` | 🏛️ NIST CSF 2.0: `PR.AC-01` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `Local Security Authority Subsystem Service (LSASS)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Mimikatz reads unencrypted credentials from LSASS memory via SeDebugPrivilege.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Extraction of plaintext passwords, Kerberos tickets, and Golden Ticket forgery.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enable LSA RunAsPPL (Protected Process Light) and Credential Guard (Virtualization-based Security).
+```
+
+---
+
+### 23. [VIBE-2026-2301] Database Superuser Misconfiguration & xp_cmdshell
+- **대상 랩 / 환경**: `23 Database Security & Privilege Escalation` (`Lab 23`)
+- **보안 분류**: `Database Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059` — **Command and Scripting Interpreter** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (데이터베이스 관리자 권한 분립)` | 🏛️ NIST CSF 2.0: `PR.AC-04` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Microsoft SQL Server Master Database`
+
+**🔍 상세 취약점 분석 (Description)**:
+> MSSQL sa account enabled with xp_cmdshell allowed to invoke system commands under SYSTEM context.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Direct host operating system RCE via database administrative procedures.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Disable xp_cmdshell, enforce least privilege database service accounts, and revoke sa login.
+```
+
+---
+
+### 24. [VIBE-2026-2401] VLAN Hopping & STP Topology Manipulation
+- **대상 랩 / 환경**: `24 Network Infrastructure & Cisco Switch Security` (`Lab 24`)
+- **보안 분류**: `Network Infrastructure`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.6`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1557.002` — **Adversary-in-the-Middle: ARP Poisoning** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.1 네트워크 접근통제 (L2 네트워크 스위칭 보안)` | 🏛️ NIST CSF 2.0: `PR.AC-05` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Cisco Catalyst Switch Access Ports`
+
+**🔍 상세 취약점 분석 (Description)**:
+> DTP (Dynamic Trunking Protocol) enabled by default on access ports allows attackers to negotiate 802.1Q trunks.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Inter-VLAN bridge breakout, rogue root bridge injection, and traffic interception.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Disable DTP (switchport nonegotiate), enable BPDU Guard, Port Security, and Dynamic ARP Inspection (DAI).
+```
+
+---
+
+### 25. [VIBE-2026-2501] Indicator Poisoning & TAXII Server Impersonation
+- **대상 랩 / 환경**: `25 Threat Intelligence & STIX/TAXII Integration` (`Lab 25`)
+- **보안 분류**: `Threat Intelligence`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.7`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1566` — **Phishing** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 침해사고 예방 및 탐지 (위협 인텔리전스 무결성 검증)` | 🏛️ NIST CSF 2.0: `ID.RA-02` | 🌐 OWASP Top 10: `A08:2021`
+- **영향을 받는 컴포넌트**: `Threat Intel Automation Platform (STIX 2.1)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> TAXII feed consumer accepts unverified HTTPS certificates, allowing MITM indicator injection.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> SIEM false positive storm, denial of service on SOC detection pipelines, and indicator suppression.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce strict TLS certificate pinning and cryptographic signature verification on all incoming STIX bundles.
+```
+
+---
+
+### 26. [VIBE-2026-2601] CIS Benchmark Non-Compliance & Insecure Sysctl Settings
+- **대상 랩 / 환경**: `26 Linux Hardening & CIS Benchmark Compliance` (`Lab 26`)
+- **보안 분류**: `System Hardening`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1562.001` — **Impair Defenses: Disable or Modify Tools** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.2 취약점 점검 및 조치 (운영체제 보안 설정 기준 준수)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `/etc/sysctl.conf & Linux Kernel runtime`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Kernel variables net.ipv4.conf.all.accept_redirects=1 and fs.suid_dumpable=1 left at insecure defaults.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> IP spoofing, ICMP redirect exploitation, and kernel core dump credential leaks.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Apply CIS Distribution-Independent Linux Benchmark Level 2 Hardening profile.
+```
+
+---
+
+### 27. [VIBE-2026-2701] Hardcoded Firmware Backdoor & Unauthenticated Telnet
+- **대상 랩 / 환경**: `27 IoT Security & Firmware Emulation` (`Lab 27`)
+- **보안 분류**: `IoT & Embedded`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1078.001` — **Valid Accounts: Default Accounts** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.2 사용자 인증 (기본 비밀번호 및 백도어 계정 제거)` | 🏛️ NIST CSF 2.0: `PR.AC-02` | 🌐 OWASP Top 10: `A07:2021`
+- **영향을 받는 컴포넌트**: `Smart Router Firmware squashfs image`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Firmware root filesystem contains static root password hash in /etc/shadow and open telnet on port 23.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Mass device recruitment into Mirai-style IoT botnet and remote root shell access.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Remove default credentials, disable unencrypted telnet, and mandate unique per-device bootstrap passwords.
+```
+
+---
+
+### 28. [VIBE-2026-2801] Exported Activity & Insecure Broadcast Receiver
+- **대상 랩 / 환경**: `28 Mobile Security & Android Reversing` (`Lab 28`)
+- **보안 분류**: `Mobile Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.7`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1404` — **Exploitation for Privilege Escalation** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (모바일 앱 컴포넌트 접근통제)` | 🏛️ NIST CSF 2.0: `PR.AC-04` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `com.vibe.mobile.bank APK`
+
+**🔍 상세 취약점 분석 (Description)**:
+> AndroidManifest.xml declares com.bank.TransferActivity with android:exported="true" without permission check.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Malicious 3rd-party apps trigger internal banking money transfers without user consent.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Set android:exported="false" on internal components or enforce custom signature-level permissions.
+```
+
+---
+
+### 29. [VIBE-2026-2901] AD CS ESC1 SAN Injection & Domain Admin Takeover
+- **대상 랩 / 환경**: `29 Active Directory Certificate Services (AD CS)` (`Lab 29`)
+- **보안 분류**: `Windows & AD`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1649` — **Steal or Forge Authentication Certificates** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.7.2 암호키 관리 (인증서 템플릿 발행 및 등록 권한 통제)` | 🏛️ NIST CSF 2.0: `PR.AC-01` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `Active Directory Certificate Template 'UserWebServer'`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Certificate template allows ENROLLEE_SUPPLIES_SAN and Client Authentication EKU with broad enrollment permissions.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Instant elevation from low-priv user to Enterprise Domain Administrator via PKINIT certificate authentication.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Disable CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT_ALT_NAME on templates and require Manager Approval.
+```
+
+---
+
+### 30. [VIBE-2026-3001] Control Flow Flattening & Opaque Predicate Tampering
+- **대상 랩 / 환경**: `30 Binary Analysis & Advanced Deobfuscation (Ghidra)` (`Lab 30`)
+- **보안 분류**: `Reverse Engineering`
+- **심각도**: **🟡 MEDIUM** (CVSS 3.1 Base Score: **`6.3`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1027` — **Obfuscated Files or Information** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (지적재산 보호 및 코드 난독화)` | 🏛️ NIST CSF 2.0: `PR.PS-05` | 🌐 OWASP Top 10: `A04:2021`
+- **영향을 받는 컴포넌트**: `Protected proprietary daemon (GhidraRev)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Automated symbolic deobfuscation simplifies state variable dispatchers, revealing core cryptographic routines.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Protection bypass in high-value intellectual property and proprietary licensing software.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Adopt virtualization-based obfuscation (VMProtect) and server-side hardware-backed attestation.
+```
+
+---
+
+### 31. [VIBE-2026-3101] Loose Regex Redirect URI & JWT Algorithm Confusion
+- **대상 랩 / 환경**: `31 OAuth 2.0 & OIDC SSO Security` (`Lab 31`)
+- **보안 분류**: `Web Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.3`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1556` — **Modify Authentication Process** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.2 사용자 인증 (OAuth 토큰 검증 및 서명 유효성 체크)` | 🏛️ NIST CSF 2.0: `PR.AC-01` | 🌐 OWASP Top 10: `A07:2021`
+- **영향을 받는 컴포넌트**: `/oauth/authorize & /oauth/token endpoints`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Identity provider permits wildcard redirect URIs (oauth.example.com.attacker.com) and accepts HS256 with public RSA key.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Single Sign-On account takeover and authorization code leakage to attacker server.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce strict exact string match on redirect_uri and enforce asymmetric RS256/ES256 verification only.
+```
+
+---
+
+### 32. [VIBE-2026-3201] BGP Sub-Prefix Hijacking & AS-Path Forgery
+- **대상 랩 / 환경**: `32 BGP Route Hijack & RPKI ROV Security` (`Lab 32`)
+- **보안 분류**: `Network Infrastructure`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1584.004` — **Compromise Infrastructure: Server** (전술: `Resource Development`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.1 네트워크 접근통제 (인터넷 라우팅 프로토콜 무결성 RPKI)` | 🏛️ NIST CSF 2.0: `PR.IR-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Core Autonomous System (AS65001) BGP Peering Daemon`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Rogue BGP peer advertises /24 sub-prefix overriding legitimate /23 route via Longest Prefix Match (LPM).
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Global traffic redirection, man-in-the-middle decryption of financial traffic, and Internet blackout.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy RPKI Route Origin Authorization (ROA) and drop RPKI Invalid routes at all border routers.
+```
+
+---
+
+### 33. [VIBE-2026-3301] KISA Major Infrastructure Audit U-01~U-44 Failures
+- **대상 랩 / 환경**: `33 KISA Infrastructure Audit & Hardening` (`Lab 33`)
+- **보안 분류**: `Compliance & Audit`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1078` — **Valid Accounts** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.2 취약점 점검 및 조치 (주요정보통신기반시설 기술적 취약점 기준)` | 🏛️ NIST CSF 2.0: `ID.RA-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Target infrastructure server (Linux)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Root SSH login allowed over password, anonymous FTP write enabled, and weak password policy configured.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Non-compliance penalty, unauthenticated root shell, and anonymous file retrieval.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Execute automated KISA U-01~U-72 baseline remediation script (PermitRootLogin no, Anonymous FTP disabled).
+```
+
+---
+
+### 34. [VIBE-2026-3401] Exposed Shadow Database & Git History Secret Leakage
+- **대상 랩 / 환경**: `34 OSINT Attack Surface & Shadow IT` (`Lab 34`)
+- **보안 분류**: `Offensive Operations`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.5`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N`
+- **MITRE ATT&CK 매핑**: `T1552.001` — **Unsecured Credentials: Credentials in Files** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.7.2 암호키 관리 (소스코드 내 비밀번호/API키 하드코딩 금지)` | 🏛️ NIST CSF 2.0: `PR.AC-01` | 🌐 OWASP Top 10: `A07:2021`
+- **영향을 받는 컴포넌트**: `http://target:8034/.git/ & Redis:6379`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Staging Redis instance exposed to 0.0.0.0 without authentication; .git repository publicly accessible via web root.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Unrestricted exposure of production customer PII and long-lived cloud master API keys.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Implement External Attack Surface Management (EASM), restrict cloud security groups, and run trufflehog in CI/CD.
+```
+
+---
+
+### 35. [VIBE-2026-3501] iam:PassRole & ec2:RunInstances Escalation Chain
+- **대상 랩 / 환경**: `35 Cloud IAM Privilege Escalation & Governance` (`Lab 35`)
+- **보안 분류**: `Cloud Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1078.004` — **Valid Accounts: Cloud Accounts** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (클라우드 IAM 최소 권한 원칙 부여)` | 🏛️ NIST CSF 2.0: `PR.AC-04` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `AWS IAM Policies & EC2 Service`
+
+**🔍 상세 취약점 분석 (Description)**:
+> User has iam:PassRole on admin-role and ec2:RunInstances, allowing launch of EC2 instance with admin instance profile.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Low-privilege cloud developer elevates directly to full Cloud Administrator privileges.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce strict IAM Permissions Boundaries and Service Control Policies (SCPs) preventing unauthorized role assumption.
+```
+
+---
+
+### 36. [VIBE-2026-3601] MySQL User-Defined Function (UDF) Dynamic Library Injection
+- **대상 랩 / 환경**: `36 Enterprise Database Security & UDF Root Escalation` (`Lab 36`)
+- **보안 분류**: `Database Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059` — **Command and Scripting Interpreter** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (동적 라이브러리 및 저장 프로시저 실행 통제)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A03:2021`
+- **영향을 받는 컴포넌트**: `MySQL Server 8.0 Plugin Subsystem`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Attacker writes compiled shared object (.so) into /usr/lib/mysql/plugin via SQL injection and creates sys_eval() function.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Breakout from database engine to root-level host OS shell.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Run database under dedicated non-root account, enable secure_file_priv, and revoke FILE / CREATE FUNCTION privileges.
+```
+
+---
+
+### 37. [VIBE-2026-3701] BLE Legacy Just Works TK Cracking & Unauthorized Unlock
+- **대상 랩 / 환경**: `37 Bluetooth Low Energy (BLE) & SDR RF Security` (`Lab 37`)
+- **보안 분류**: `Hardware & Wireless`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1557` — **Adversary-in-the-Middle** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.1 네트워크 접근통제 (근거리 무선 통신 암호화 페어링)` | 🏛️ NIST CSF 2.0: `PR.AC-02` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `SmartLock BLE GATT Service (UUID: 0xFFF0)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Smart lock uses unauthenticated GATT characteristic without pairing requirement, allowing replay attacks.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Physical security perimeter breach via unauthorized wireless smart lock actuation.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce Bluetooth 5.x Secure Connections (LESC ECDH pairing) and cryptographic application-layer nonce challenges.
+```
+
+---
+
+### 38. [VIBE-2026-3801] AMSI/ETW In-Memory Patching & Indirect Syscall Evasion
+- **대상 랩 / 환경**: `38 EDR Evasion, Indirect Syscalls & Memory Patching` (`Lab 38`)
+- **보안 분류**: `Malware & Evasion`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1562.001` — **Impair Defenses: Disable or Modify Tools** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 침해사고 예방 및 탐지 (보안 솔루션 무력화 시도 탐지 및 방지)` | 🏛️ NIST CSF 2.0: `DE.CM-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `Endpoint EDR Userland Sensor`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Payload unhooks ntdll .text section, overwrites AmsiScanBuffer with RET (0xC3), and uses Halo's Gate syscalls.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Complete blinding of endpoint detection and response (EDR) userland sensors.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy kernel-level telemetry (ELAM / Microsoft-Windows-Threat-Intelligence ETW-TI) and synthetic stack trace verification.
+```
+
+---
+
+### 39. [VIBE-2026-3901] AES-CBC Padding Oracle & RSA Bleichenbacher Signature Forgery
+- **대상 랩 / 환경**: `39 Modern Cryptography & Bleichenbacher Attack` (`Lab 39`)
+- **보안 분류**: `Cryptography`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1600` — **Weaken Encryption** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.7.1 암호정책 적용 (암호화 알고리즘 안전 모드 및 패딩 검증)` | 🏛️ NIST CSF 2.0: `PR.DS-05` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `Crypto Authentication Provider`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Application differentiates between padding errors and decryption errors; RSA parser neglects trailing garbage with e=3.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Decryption of AES ciphertext byte-by-byte and arbitrary administrative token forgery.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Migrate to authenticated AEAD encryption (AES-256-GCM / ChaCha20-Poly1305) and enforce strict RSA-PSS signatures.
+```
+
+---
+
+### 40. [VIBE-2026-4001] Ransomware Encryption Artifacts & Active C2 Beaconing
+- **대상 랩 / 환경**: `40 Enterprise DFIR, MFT Timeline & Ransomware Containment` (`Lab 40`)
+- **보안 분류**: `Incident Response`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1486` — **Data Encrypted for Impact** (전술: `Impact`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 침해사고 예방 및 탐지 (랜섬웨어 이상 행위 모니터링 및 즉시 격리)` | 🏛️ NIST CSF 2.0: `RS.MA-01` | 🌐 OWASP Top 10: `A08:2021`
+- **영향을 받는 컴포넌트**: `Enterprise Shared Storage & Domain Endpoints`
+
+**🔍 상세 취약점 분석 (Description)**:
+> MFT forensic timeline reveals high-entropy mass file renaming (.locked) and periodic beaconing to dynamic IP.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Widespread enterprise storage denial of service and data loss.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Trigger SOAR automated network host isolation, preserve volume shadow copies, and rotate KRBTGT credentials.
+```
+
+---
+
+### 41. [VIBE-2026-4101] Dependency Confusion & Unsigned Third-Party Artifact Injection
+- **대상 랩 / 환경**: `41 Software Supply Chain Security, SBOM & Sigstore` (`Lab 41`)
+- **보안 분류**: `Supply Chain`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1195.001` — **Supply Chain Compromise: Compromise Software Dependencies** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (오픈소스 소프트웨어 공급망 보안)` | 🏛️ NIST CSF 2.0: `PR.PS-05` | 🌐 OWASP Top 10: `A06:2021`
+- **영향을 받는 컴포넌트**: `npm / PyPI package dependency resolution`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Public package repository hosts malicious higher-version package with identical name to internal enterprise package.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Arbitrary code execution on developer machines and continuous deployment build servers.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Scope internal namespaces (@corp), generate CycloneDX SBOMs, and enforce SLSA Level 3 with Sigstore Cosign verification.
+```
+
+---
+
+### 42. [VIBE-2026-4201] S3 Event Notification Command Injection & Ephemeral Secret Theft
+- **대상 랩 / 환경**: `42 Serverless Cloud Security & Event Injection` (`Lab 42`)
+- **보안 분류**: `Serverless Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059` — **Command and Scripting Interpreter** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 소프트웨어 개발 보안 (서버리스 함수 이벤트 페이로드 검증)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A03:2021`
+- **영향을 받는 컴포넌트**: `AWS Lambda Image Processor (Port 8042)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Lambda function concatenates unvalidated S3 object key into subprocess shell command.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Remote code execution inside FaaS microVM and exfiltration of warm container AWS_SESSION_TOKEN.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Never invoke shell=True; use read-only root filesystems and enforce IAM least-privilege scoping.
+```
+
+---
+
+### 43. [VIBE-2026-4301] Unauthorized CloudTrail Policy Escalation & STS Exfiltration
+- **대상 랩 / 환경**: `43 Cloud Incident Response & Threat Hunting` (`Lab 43`)
+- **보안 분류**: `Cloud Incident Response`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1078.004` — **Valid Accounts: Cloud Accounts** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.5.2 보안시스템 로그 관리 (클라우드 감사 추적 로그 위변조 방지)` | 🏛️ NIST CSF 2.0: `PR.PS-04` | 🌐 OWASP Top 10: `A09:2021`
+- **영향을 받는 컴포넌트**: `AWS CloudTrail & S3 Data Storage (Port 8043)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Compromised service account attached AdministratorAccess policy without MFA; STS session exfiltrated 47MB PII.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Full AWS account takeover and exfiltration of sensitive regulatory customer data from S3.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Automate GuardDuty ASFF alert ingestion and trigger SOAR Lambda to revoke STS sessions and detach malicious policies.
+```
+
+---
+
+### 44. [VIBE-2026-4401] Manifest V3 Overprivileged Wildcard & WAR Token Leakage
+- **대상 랩 / 환경**: `44 Browser Extension Security & Manifest V3` (`Lab 44`)
+- **보안 분류**: `Browser Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1176` — **Browser Extensions** (전술: `Persistence`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (엔드포인트 브라우저 확장 프로그램 권한 통제)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `Corporate Productivity Suite MV3 Extension (Port 8044)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Extension requests <all_urls> and exposes auth_config.json via web_accessible_resources wildcard matches.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Silent keystroke and password logging across all web domains, and secret key leakage to untrusted sites.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Replace webRequestBlocking with Declarative Net Request (DNR), scope WAR matches strictly, and remove DOM innerHTML sinks.
+```
+
+---
+
+### 45. [VIBE-2026-4501] Harvest Now Decrypt Later (HNDL) Hazard & Hybrid KEM Downgrade
+- **대상 랩 / 환경**: `45 Post-Quantum Cryptography & PQC Migration` (`Lab 45`)
+- **보안 분류**: `Quantum Cryptography`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.4`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1557` — **Adversary-in-the-Middle** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.7.1 암호정책 적용 (양자내성암호 PQC 전환 계획 및 하이브리드 키 교환)` | 🏛️ NIST CSF 2.0: `PR.DS-02` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `PQCShield Hybrid TLS Service (Port 8045)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> TLS handshake accepts classical-only X25519 fallback when ML-KEM-768 extension is stripped by intermediary.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Retroactive decryption of long-lived corporate secrets upon Q-Day and MitM downgrade to classical curves.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce NIST FIPS 203 ML-KEM-768 & FIPS 204 ML-DSA-65 with strict non-downgradable hybrid KDF policy.
+```
+
+---
+
+### 46. [VIBE-2026-4601] Unrestricted Syscall Attack Surface & Cross-Process Memory Tampering
+- **대상 랩 / 환경**: `46 Linux Kernel Hardening & Runtime Defense` (`Lab 46`)
+- **보안 분류**: `Endpoint Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1055` — **Process Injection** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.6.5 시스템 접근통제 (커널 샌드박싱 및 시스템콜 공격 표면 최소화)` | 🏛️ NIST CSF 2.0: `PR.PS-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `KernelGuard Worker Daemon (Port 8046)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Lack of Seccomp-BPF architecture-pinned syscall filtering permits malicious debug syscalls and memory tampering.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Unprivileged worker process invokes ptrace and process_vm_writev to inject shellcode into host services.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy Seccomp-BPF filter pinning AUDIT_ARCH_X86_64, Landlock LSM filesystem confinement, and IMA appraisal.
+```
+
+---
+
+### 47. [VIBE-2026-4701] Indirect Prompt Injection leading to Arbitrary Tool Invocation
+- **대상 랩 / 환경**: `47 AI Agent & MCP Tool Hijacking` (`Lab 47`)
+- **보안 분류**: `AI Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.6`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059` — **Command and Scripting Interpreter** (전술: `Execution`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 보안 시스템 및 서비스 개발 보안 (AI 에이전트 도구 검증 및 가드레일)` | 🏛️ NIST CSF 2.0: `PR.AT-01` | 🌐 OWASP Top 10: `LLM01:2025`
+- **영향을 받는 컴포넌트**: `AgentGuard MCP Client (Port 8047)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Lack of input sanitization and tool invocation authorization allows indirect prompt injection attacks.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Attacker poisons RAG context to force agent to execute database queries and exfiltrate secrets.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy Dual LLM guardrail filters, HITL approval gates, and Landlock capability sandboxing.
+```
+
+---
+
+### 48. [VIBE-2026-4801] Unauthenticated Remote Command Injection in Embedded Web CGI
+- **대상 랩 / 환경**: `48 Embedded Firmware & IoT RCE` (`Lab 48`)
+- **보안 분류**: `IoT & Hardware Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.8`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1190` — **Exploit Public-Facing Application** (전술: `Initial Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.2 네트워크 및 IoT 기기 취약점 관리 (임베디드 펌웨어 보안)` | 🏛️ NIST CSF 2.0: `PR.IP-01` | 🌐 OWASP Top 10: `A03:2021`
+- **영향을 받는 컴포넌트**: `FirmwareGuard HTTP Daemon (Port 8048)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Improper input validation in /cgi-bin/ping.cgi allows shell metacharacter injection into system() call.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Unauthenticated attacker executes arbitrary shell commands on embedded IoT router.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Replace system() with execve() parameter arrays and enforce DM-Verity read-only rootfs.
+```
+
+---
+
+### 49. [VIBE-2026-4901] Harvest-Now-Decrypt-Later (HNDL) Threat in Classical TLS Key Exchange
+- **대상 랩 / 환경**: `49 Quantum-Safe Hybrid TLS 1.3 & Post-Quantum Cryptography` (`Lab 49`)
+- **보안 분류**: `Cryptography & Network Security`
+- **심각도**: **🟡 MEDIUM** (CVSS 3.1 Base Score: **`5.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N`
+- **MITRE ATT&CK 매핑**: `T1040` — **Network Sniffing** (전술: `Credential Access`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.7.1 암호 통제 (양자 내성 하이브리드 TLS 1.3 전환)` | 🏛️ NIST CSF 2.0: `PR.DS-02` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `PQCTLSGuard Service (Port 8049)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Classical ECDHE and RSA public key algorithms are vulnerable to Shor's algorithm.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Adversary records encrypted sessions today to decrypt retroactively when cryptographically relevant quantum computers arrive.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy X25519 + ML-KEM-768 hybrid key exchange and enforce strict FIPS 203 policy.
+```
+
+---
+
+### 50. [VIBE-2026-5001] Undetected Fileless Memory Injection via DKOM and Reflective RWX Stager
+- **대상 랩 / 환경**: `50 SANS DFIR Enterprise Threat Hunting & Artifact Analysis` (`Lab 50`)
+- **보안 분류**: `Incident Response & Forensics`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1055.001` — **Process Injection: Dynamic-link Library Injection** (전술: `Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.12.1 사고 탐지 및 분석 (SANS DFIR 아티팩트 트리아지 & 침해사고 대응)` | 🏛️ NIST CSF 2.0: `DE.AE-02` | 🌐 OWASP Top 10: `A09:2021`
+- **영향을 받는 컴포넌트**: `ArtifactHunter Triage Engine (Port 8050)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Infected workstation harbors reflective DLL injection in private RWX VAD tree and unlinked EPROCESS ActiveProcessLinks.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Adversary achieves persistent in-memory execution unlinked from process hierarchy, evading traditional antivirus scanning.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Implement Volatility 3/Rekall psscan automation, LSA PPL enforcement, and SOAR supertimeline network containment.
+```
+
+---
+
+### 51. [VIBE-2026-5101] Host Namespace Breakout and Arbitrary Credential Access via Unrestricted Privileged Container
+- **대상 랩 / 환경**: `51 eBPFRuntimeGuard Cloud Native Kernel Observability & Runtime Security` (`Lab 51`)
+- **보안 분류**: `Linux & Cloud Native Security`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1611` — **Escape to Host** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 보안 시스템 운영 (클라우드 네이티브 커널 런타임 보안 & eBPF LSM 통제)` | 🏛️ NIST CSF 2.0: `DE.CM-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `eBPFRuntimeGuard Engine (Port 8051)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Container with CAP_SYS_ADMIN escapes mount namespace to access /etc/shadow directly on host VFS.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Attacker escapes container containment into host kernel space and accesses host credentials.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy Cilium Tetragon eBPF LSM synchronous SIGKILL enforcement and drop CAP_SYS_ADMIN capabilities.
+```
+
+---
+
+### 52. [VIBE-2026-5201] Covert Data Exfiltration and Lateral Pivoting via Unrestricted DNS/SOCKS5 Tunneling
+- **대상 랩 / 환경**: `52 C2TunnelGuard C2 Network Tunneling & Covert Channel Defense` (`Lab 52`)
+- **보안 분류**: `Network Security & Red Teaming`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1071.004` — **DNS Protocol Tunneling** (전술: `Command and Control`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.2 네트워크 보안 관리 (C2 은닉 통신 및 비인가 터널링 유출 차단)` | 🏛️ NIST CSF 2.0: `PR.AC-05` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `C2TunnelGuard Gateway (Port 8052)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Perimeter network permits unrestricted recursive DNS queries and external reverse SSH/Chisel SOCKS5 egress without DPI or entropy analysis.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Exfiltration of sensitive enterprise secrets through high-entropy DNS queries and dynamic lateral movement across internal subnets.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy recursive DNS Shannon entropy filtering, enforce egress firewall whitelisting, and activate Suricata/Zeek inline DPI drop rules.
+```
+
+---
+
+### 53. [VIBE-2026-5301] Active Directory Domain Privilege Escalation via Abusable Object DACLs and Transitive Permissions
+- **대상 랩 / 환경**: `53 ADGraphMaster Active Directory BloodHound Attack Graph & ACL Exploitation` (`Lab 53`)
+- **보안 분류**: `Active Directory & Red Teaming`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`9.9`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1484.001` — **Group Policy and Domain Object Modification** (전술: `Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.5.1 사용자 식별 및 인증 (AD 권한 관리 & 비특권 계정 ACL 남용 방어)` | 🏛️ NIST CSF 2.0: `PR.AC-04` | 🌐 OWASP Top 10: `A01:2021`
+- **영향을 받는 컴포넌트**: `ADGraphMaster Domain Controller (Port 8053)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Active Directory schema contains misconfigured access control entries (ACEs) granting unprivileged groups full control or password reset permissions on higher-tier accounts.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Low-privileged domain users compromise Tier 0 Domain Admins through transitive GenericAll and WriteDacl permission chains.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Audit and prune abusable ACEs using BloodHound, enroll administrative identities into the Protected Users security group, and enforce Microsoft 3-Tier Administration.
+```
+
+---
+
+### 54. [VIBE-2026-5401] Autonomous AI Agent Subprocess Escape via Model Context Protocol Tool Poisoning and Confused Deputy Abuse
+- **대상 랩 / 환경**: `54 AgentSandboxGuard AI Agent MCP Sandbox Escape & Landlock LSM Defense` (`Lab 54`)
+- **보안 분류**: `AI Security & Kernel Hardening`
+- **심각도**: **🚨 CRITICAL** (CVSS 3.1 Base Score: **`10.0`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1059.004` — **Command and Scripting Interpreter: Unix Shell** (전술: `Execution / Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.2 보안 시스템 운영 (AI 에이전트 샌드박스 & 비인가 시스템콜 차단)` | 🏛️ NIST CSF 2.0: `PR.AC-06` | 🌐 OWASP Top 10: `LLM01:2025`
+- **영향을 받는 컴포넌트**: `AgentSandboxGuard Execution Engine (Port 8054)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Autonomous agents executing Model Context Protocol lack kernel-enforced sandboxing, allowing malicious prompts to shadow legitimate tools and invoke arbitrary host system calls.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Remote untrusted prompts poison MCP tool schemas, forcing confused deputy agents to spawn unauthorized subshells and read sensitive host files.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Enforce Linux Landlock LSM unprivileged filesystem sandboxing (restricting access to /workspace/safe) and integrate eBPF Dual-LLM runtime syscall filters with real-time SIGKILL actions.
+```
+
+---
+
+### 55. [VIBE-2026-5501] Store-Now-Decrypt-Later (SNDL) Exposure via Classical Public-Key Cryptography and Forced TLS Downgrade Vulnerability
+- **대상 랩 / 환경**: `55 PQCMigrationGuard Post-Quantum Cryptography Migration & Anti-Downgrade Defense` (`Lab 55`)
+- **보안 분류**: `Applied Cryptography & Post-Quantum Security`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.7`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N`
+- **MITRE ATT&CK 매핑**: `T1557` — **Adversary-in-the-Middle** (전술: `Credential Access / Collection`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.8.1 암호통제 (NIST FIPS 203 ML-KEM-768 격자 KEM & SNDL 방어)` | 🏛️ NIST CSF 2.0: `PR.DS-02` | 🌐 OWASP Top 10: `A02:2021`
+- **영향을 받는 컴포넌트**: `PQCMigrationGuard Gateway (Port 8055)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Legacy TLS and key exchange implementations rely strictly on RSA or non-hybrid ECDH, leaving communications permanently vulnerable to retroactive quantum cryptanalysis and active downgrade tampering.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Passive adversaries harvest classical ciphertexts for future retroactive Shor decryption, or active middleboxes strip PQC extensions to force weak cipher negotiation.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy NIST FIPS 203 ML-KEM-768 hybrid key exchange (X25519Kyber768Draft00) with strict anti-downgrade policies and Constant-Time implicit rejection decapsulation.
+```
+
+---
+
+### 56. [VIBE-2026-5601] Kernel eBPF Telemetry Blindspot & Rogue kprobe Rootkit Execution
+- **대상 랩 / 환경**: `56 eBPFShield eBPF Kernel Security & Active Threat Defense` (`Lab 56`)
+- **보안 분류**: `Kernel Security, eBPF & Runtime Defense`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`8.2`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1014` — **Rootkit: eBPF Rootkit** (전술: `Defense Evasion / Privilege Escalation`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.1 시스템 보안 (eBPF 커널 시스콜 텔레메트리 & 루트킷 은닉 차단)` | 🏛️ NIST CSF 2.0: `DE.CM-01` | 🌐 OWASP Top 10: `A05:2021`
+- **영향을 받는 컴포넌트**: `eBPFShield Kernel Runtime Controller (Port 8056)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Lack of kernel-level eBPF program audit and unprivileged BPF restrictions permits execution of rogue kprobes and process hollowing under spoofed task_struct comm names.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Adversary manipulates kernel syscall return codes via bpf_override_return, hides malicious processes/files, and evades userland EDR detection.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy eBPF LSM (Linux Security Module) hooks with strict -EPERM execution barriers, restrict /proc/sys/kernel/unprivileged_bpf_disabled=1, and enforce cryptographic BPF signature verification.
+```
+
+---
+
+## 3. Recommended Remediation Roadmap (조치 우선순위 로드맵)
+1. **즉각 조치 (Phase 1, 0-24 Hours)**: Critical 등급 취약점 즉시 완화 (S3 Event Injection, Cloud IAM 권한 상승, AD CS ESC1, SQLi, Buffer Overflow).
+2. **단기 조치 (Phase 2, 1-2 Weeks)**: High 등급 취약점 교정 (EDR 후킹 우회, BLE Replay, Supply Chain Dependency Confusion, Hybrid TLS Downgrade).
+3. **중장기 조치 (Phase 3, 1-3 Months)**: 전사 PQC(양자 내성 암호) CBOM 목록화, RPKI ROV 배포, 제로 트러스트 서비스 메시 하드닝.
+
+*(End of Report)*

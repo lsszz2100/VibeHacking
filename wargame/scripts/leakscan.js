@@ -570,6 +570,25 @@ const ALLOWLIST = new Map([
   ['t3_pqcmigrate_crypto_asset_inventory_cbom -> t3_sccyclonedx', 'CBOM asset inventory utilizes CycloneDX format'],
   ['t3_pqcmigrate_quantum_random_number_generator_qrng -> t4_prng', 'QRNG entropy comparison analyzes pseudo-random generators'],
   ['t3_pqcmigrate_quantum_random_number_generator_qrng -> t3_freshness', 'QRNG seed entropy discusses seed freshness'],
+  // 68th Track: ebpfsec (eBPF Kernel Security & Runtime Threat Defense)
+  ['t1_ebpfsec_bpf_map_types_hash_array -> t3_ebpfmapspec', 'BPF map data structures references BPF_MAP_TYPE_HASH'],
+  ['t1_ebpfsec_unprivileged_bpf_sysctl -> t3_ebpfspectre', 'Unprivileged BPF sysctl discusses Spectre side-channel'],
+  ['t1_ebpfsec_unprivileged_bpf_sysctl -> t3_ebpfcaps', 'Unprivileged BPF sysctl discusses CAP_BPF capabilities'],
+  ['t2_ebpfsec_bpf_probe_write_user_hazard -> t3_ebpfprobewrite', 'Probe write user hazard discusses bpf_probe_write_user helper'],
+  ['t2_ebpfsec_bpf_override_return_hijack -> t3_ebpfoverride', 'Override return hijack discusses bpf_override_return helper'],
+  ['t2_ebpfsec_bpf_override_return_hijack -> t2_ghdissect', 'Override return analysis mentions dissecting attack chains'],
+  ['t2_ebpfsec_sys_getdents64_rootkit_hook -> t4_wasmrce', 'getdents64 hook analyzes directory traversal techniques'],
+  ['t2_ebpfsec_sys_getdents64_rootkit_hook -> t2_ghdissect', 'getdents64 rootkit analysis mentions dissecting dirent structures'],
+  ['t2_ebpfsec_sys_getdents64_rootkit_hook -> t3_ebpfoverwrite', 'Rootkit hooks getdents64 directory traversal syscall'],
+  ['t2_ebpfsec_bpf_tail_calls_chaining -> t3_ebpftailcall', 'BPF tail calls chaining analyzes tail call mechanisms'],
+  ['t2_ebpfsec_lsm_bprm_check_security -> t3_wasmtrap', 'LSM bprm check security notes kernel execution abort'],
+  ['t3_ebpfsec_speculative_execution_spectre_v1 -> t3_ebpfspectre', 'Speculative execution mitigations discuss Spectre side-channel'],
+  ['t3_ebpfsec_speculative_execution_spectre_v1 -> t3_wasmboundcheck', 'eBPF verifier applies bounds check masking'],
+  ['t3_ebpfsec_co_re_btf_type_relocation -> t2_ebpfcore', 'CO-RE relocations leverage libbpf library'],
+  ['t3_ebpfsec_dual_engine_telemetry_pipeline -> t3_falco', 'Dual engine pipeline integrates Falco behavioral rules'],
+  ['t3_ebpfsec_runtime_cgroup_cpu_throttling -> t3_cryptojacking', 'CPU throttling targets cryptojacking workloads'],
+  ['t4_ebpfsec_process_hollowing_forensic_triangulation -> t3_volhollowing', 'Process hollowing forensics investigates hollowing payloads'],
+  ['t4_ebpfsec_zero_trust_lsm_policy_hardening -> t3_reptrace', 'LSM security profile blocks unauthorized ptrace access'],
 ]);
 
 function loadChallenges() {

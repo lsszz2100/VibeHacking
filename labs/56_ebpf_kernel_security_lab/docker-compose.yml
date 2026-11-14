@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ebpf_kernel_security_lab_lab:
+    build: .
+    container_name: vhack_lab_56
+    ports:
+      - "127.0.0.1:8056:8056"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

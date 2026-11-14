@@ -26,8 +26,9 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 67
-    assert len(challenges) == 2345
+    assert len(tracks) == 68
+    assert len(challenges) == 2380
+    assert any(t["id"] == "ebpfsec" for t in tracks)
     assert any(t["id"] == "pqcmigrate" for t in tracks)
     assert any(t["id"] == "agentsandbox" for t in tracks)
     assert any(t["id"] == "adgraph" for t in tracks)

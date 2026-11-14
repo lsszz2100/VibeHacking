@@ -1623,6 +1623,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Hybrid X25519+ML-KEM-768 key exchange locked with anti-downgrade shield -> FLAG{HYBRID_X25519_ML_KEM_ANTI_DOWNGRADE_SHIELDED_5504}"
             }
         ]
+    },
+    "56": {
+        "title": "Lab 56: eBPFShield — eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩",
+        "description": "eBPF 커널 시스콜 텔레메트리, Ring Buffer 분석, 프로세스 할로잉 위장 탐지, 악성 eBPF 루트킷(bpf_override_return) 색출 및 eBPF LSM 기반 제로 트러스트 능동 방어.",
+        "steps": [
+            {
+                "step": 1,
+                "name": "eBPF 커널 시스콜 텔레메트리 파이프라인 수립 및 execve 가로채기",
+                "target": "POST /api/stage1/attach_telemetry (hook_target, filter_expression, ring_buffer_size_kb)",
+                "poc_explanation": "tracepoint/syscalls/sys_enter_execve에 무오버헤드 BPF 프로브를 연동하여 memfd 익명 실행 및 은닉 프로세스를 실시간 포착합니다.",
+                "exploit_payload": '{"hook_target": "tracepoint/syscalls/sys_enter_execve", "filter_expression": "pid != 0", "ring_buffer_size_kb": 64}',
+                "defense": "커널 레벨 eBPF 트레이스포인트 감사 및 /proc/sys/kernel/unprivileged_bpf_disabled=1 적용.",
+                "sample_output": "🛰️ eBPF tracepoint probe attached -> Ring buffer intercepted memfd payload -> FLAG{EBPF_TRACEPOINT_EXECVE_TELEMETRY_ACQUIRED_5601}"
+            },
+            {
+                "step": 2,
+                "name": "eBPF Ring Buffer & 프로세스 할로잉/커널 스레드 위장 탐지",
+                "target": "POST /api/stage2/detect_process_hollowing (target_pid, cross_check_inode, scan_vad_permissions)",
+                "poc_explanation": "kworker로 위장한 유저랜드 바이너리의 실제 mm->exe_file inode 및 W^X 메모리 VAD 구역을 교차 검증하여 은닉 침투를 적발합니다.",
+                "exploit_payload": '{"target_pid": 1337, "cross_check_inode": true, "scan_vad_permissions": true}',
+                "defense": "task_struct vs mm_struct 메모리 불일치 실시간 텔레메트리 경보 및 W^X 메모리 보호 강제.",
+                "sample_output": "🔍 Process hollowing unmasked: Disguised binary masquerading as kworker/0:1 -> FLAG{RING_BUFFER_PROCESS_HOLLOWING_UNMASKED_5602}"
+            },
+            {
+                "step": 3,
+                "name": "악성 eBPF 루트킷(bpf_override_return) 색출 및 강제 언링크/제거",
+                "target": "POST /api/stage3/audit_ebpf_rootkit (scan_bpf_progs, rogue_prog_id, action)",
+                "poc_explanation": "sys_getdents64 디렉터리 탐색 시스콜을 후킹하여 백도어를 은닉하는 rogue BPF 프로그램(ID 404)을 색출하고 커널에서 제거합니다.",
+                "exploit_payload": '{"scan_bpf_progs": true, "rogue_prog_id": 404, "action": "detach_and_purge"}',
+                "defense": "BPF 서명 검증(CONFIG_BPF_SIGNATURE) 및 BPF 시스템콜 접근 감사.",
+                "sample_output": "⚔️ Rogue eBPF rootkit hook 404 detached and BPF map sanitized -> FLAG{MALICIOUS_EBPF_ROOTKIT_HOOK_PURGED_5603}"
+            },
+            {
+                "step": 4,
+                "name": "eBPF LSM 제로 트러스트 런타임 능동 차단 정책 적용",
+                "target": "POST /api/stage4/enforce_lsm_policy (policy_mode, allowed_binary_roots, block_unverified_mprotect, action_on_violation)",
+                "poc_explanation": "bpf_lsm_bprm_check_security 훅을 통해 비인가 바이너리 실행 시스콜을 커널 레벨에서 즉각 차단(-EPERM / SIGKILL)합니다.",
+                "exploit_payload": '{"policy_mode": "enforcing", "allowed_binary_roots": ["/usr/bin", "/bin", "/usr/sbin"], "block_unverified_mprotect": true, "action_on_violation": "SIGKILL"}',
+                "defense": "eBPF LSM 기반 런타임 제로 트러스트 바이너리 실행 통제 정책 상시 가동.",
+                "sample_output": "🛡️ eBPF LSM Zero-Trust Runtime Sandboxing Active -> Intercepted unauthorized execution -> FLAG{EBPF_LSM_RUNTIME_ZERO_TRUST_ENFORCED_5604}"
+            }
+        ]
     }
 }
 
