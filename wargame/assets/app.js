@@ -908,6 +908,12 @@
     renderSANSDFIR("prefetch_exec");
     renderEBPFRuntime("kprobe_exec");
     renderC2Tunnel("dns_entropy");
+    renderAdGraph("adcs_esc1");
+    renderAgentSandbox("landlock_restrict");
+    renderPqcMigrate("hybrid_tls");
+    renderAntiRev("dbg_probe");
+    renderEbpfShield("priv_esc");
+    renderHypervisorEscape("ept_guard");
   }
 
   function hidePlayground(){
@@ -918,7 +924,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate", "antirev", "ebpfshield", "hypervisorescape"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -932,6 +938,9 @@
     if (tabName === "adgraph") renderAdGraph();
     if (tabName === "agentsandbox") renderAgentSandbox();
     if (tabName === "pqcmigrate") renderPqcMigrate();
+    if (tabName === "antirev") renderAntiRev();
+    if (tabName === "ebpfshield") renderEbpfShield();
+    if (tabName === "hypervisorescape") renderHypervisorEscape();
   }
 
   // --- 1. CAN Bus Simulator ---
@@ -5641,6 +5650,541 @@
       sLaser();
       const p = btn.getAttribute("data-pqcmigrate-preset");
       renderPqcMigrate(p);
+    });
+  });
+
+  // --- 24. Anti-Reversing & BLA Shield Inspector ---
+  let currentAntirevScenario = "dbg_probe";
+
+  function renderAntiRev(scenario){
+    const layerSelect = document.getElementById("antirevLayerSelect");
+    const engineSelect = document.getElementById("antirevEngineSelect");
+    const wireBadge = document.getElementById("antirevWireBadge");
+    const auditBadge = document.getElementById("antirevAuditBadge");
+    const wireView = document.getElementById("antirevWireView");
+    const auditView = document.getElementById("antirevAuditView");
+
+    if (!layerSelect || !engineSelect || !wireBadge || !auditBadge || !wireView || !auditView) return;
+
+    if (scenario) {
+      currentAntirevScenario = scenario;
+      if (scenario === "dbg_probe") {
+        layerSelect.value = "peb_timing";
+        engineSelect.value = "ghidra";
+      } else if (scenario === "opaque_cff") {
+        layerSelect.value = "opaque_flow";
+        engineSelect.value = "ida";
+      } else if (scenario === "honey_decoy") {
+        layerSelect.value = "honey_shield";
+        engineSelect.value = "ai_agent";
+      } else if (scenario === "decompiler_probe") {
+        layerSelect.value = "full_combo";
+        engineSelect.value = "ghidra";
+      }
+    }
+
+    const layer = layerSelect.value;
+    const engine = engineSelect.value;
+
+    let wireText = "";
+    let auditText = "";
+
+    if (layer === "peb_timing") {
+      wireBadge.textContent = "DEBUGGER: DETECTED";
+      wireBadge.style.background = "#dc2626";
+      auditBadge.textContent = "DEFENSE: ACTIVE TRAP";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             PEB & Hardware Cycle Multi-Vector Probe Wire           ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Probe 1: PEB Memory Offset Examination]\n" +
+        "  - Target Assembly: mov rax, gs:[0x60] (Process Environment Block)\n" +
+        "  - Checked Field: byte ptr [rax + 0x02] (BeingDebugged)\n" +
+        "  - Result: 0x01 (Debugger Presence CONFIRMED)\n\n" +
+        "[Probe 2: High-Resolution Timestamp Counter (RDTSC)]\n" +
+        "  - Initial Cycle Count: t0 = 0x0004f21a89\n" +
+        "  - Instrumented Block: cpuid; nop; nop\n" +
+        "  - Final Cycle Count:   t1 = 0x0004f25f12 (Delta: 18,057 cycles)\n" +
+        "  - Threshold Limit:     2,500 cycles (Single-step delay detected!)\n\n" +
+        "[Evasion Execution Response]\n" +
+        "  - Action: Scramble stack pointer register RSP and force silent exit";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Anti-Reverse Engineering Posture & Defense Audit         ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ THREAT DETECTION: Interactive Hardware / Kernel Debugger Attached\n" +
+        "  - Attacker Target: Breakpoint insertion & step-by-step instruction trace\n" +
+        "  - Engine Tripped: " + engine.toUpperCase() + " Headless Trace Hook\n\n" +
+        "■ APPLIED COUNTERMEASURES:\n" +
+        "  1. PEB.BeingDebugged & NtGlobalFlag bitmask continuous verification\n" +
+        "  2. RDTSC timing discrepancy detection for software breakpoint trap\n" +
+        "  3. TLS callback execution before entry point main() initialization\n\n" +
+        "■ AUDIT VERDICT: THREAT NEUTRALIZED (Crash Diverted Safely)";
+
+    } else if (layer === "opaque_flow") {
+      wireBadge.textContent = "AST: FLATTENED";
+      wireBadge.style.background = "#2563eb";
+      auditBadge.textContent = "DECOMPILER: DEFEATED";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║       Control Flow Flattening & Polynomial Opaque Predicate        ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Opaque Invariant Ingestion]\n" +
+        "  - Identity Formula: (7 * n * (n + 1)) % 2 == 0 (Always True)\n" +
+        "  - Dead Basic Blocks: 32 synthetic branches injected into AST\n\n" +
+        "[State Dispatcher Machine]\n" +
+        "  - Dispatcher Variable: uint32_t state = 0x8f14c20b\n" +
+        "  - Flattened Switch Table: 18 jump cases with cyclic mutations\n" +
+        "  - Basic Block Relationships: Direct control edges completely erased\n\n" +
+        "[" + engine.toUpperCase() + " Decompiler Analysis Result]\n" +
+        "  - Cyclomatic Complexity: 214 (Threshold Overflow)\n" +
+        "  - P-Code High-Level C Synthesis: FAILED (Irreducible CFG loop detected)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Anti-Reverse Engineering Posture & Defense Audit         ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ TARGET ENGINE: " + engine.toUpperCase() + " AST & Flow Reconstruction\n" +
+        "  - Technique: Control Flow Flattening (CFF) + Insoluble Opaque Predicates\n" +
+        "  - Objective: Invalidate automated decompilation and function boundary recovery\n\n" +
+        "■ DEFENSE INVARIANTS:\n" +
+        "  1. Symbolic execution engines suffer exponential state space explosion\n" +
+        "  2. Mathematical invariants resist dead code stripping algorithms\n" +
+        "  3. High-level business logic masked inside state machine dispatcher\n\n" +
+        "■ AUDIT VERDICT: HIGH CODE OBSCURITY ENFORCED (0-Logic Extraction)";
+
+    } else if (layer === "honey_shield") {
+      wireBadge.textContent = "AI DECOY: ACTIVE";
+      wireBadge.style.background = "#d97706";
+      auditBadge.textContent = "LLM TOKENS: EXHAUSTED";
+      auditBadge.style.background = "#2563eb";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║         BLA Honey Source Map & AI Agent Decoy Trapping Wire        ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Client HTTP Request]\n" +
+        "  - GET /assets/app.min.js.map (Adversary AI Agent Source Map Fetch)\n\n" +
+        "[BLA Active Shield Response]\n" +
+        "  - Deployed Artifact: Injected Honey Source Map with 1,024 decoy handlers\n" +
+        "  - Decoy Token Volume: 3.84 Million synthetic AST syntax tokens\n" +
+        "  - Fabricated Functions: verifyKey(), decryptMasterSecret(), licenseAuth()\n\n" +
+        "[Adversary AI Agent Context Assessment]\n" +
+        "  - Agent Context Window: SATURATED (Maximum token limit exceeded)\n" +
+        "  - Hallucinated Function Analysis: Diverted into synthetic honeypot logic\n" +
+        "  - Genuine WebAssembly Module: Intact and unmapped";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Anti-Reverse Engineering Posture & Defense Audit         ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ THREAT PROFILE: Autonomous AI Reverse Engineering Agent / LLM Crawler\n" +
+        "  - Infiltration Vector: Automated source map harvesting & AST prompt extraction\n\n" +
+        "■ BLA DEFENSE MECHANISM:\n" +
+        "  1. Dynamic honeypot source map generation on developer tools activation\n" +
+        "  2. Decoy token amplifier depletes adversary LLM context window & API credits\n" +
+        "  3. Sensitive secrets encapsulated into bytecode without symbol tables\n\n" +
+        "■ AUDIT VERDICT: ADVERSARY AGENT DERAILED (Intellectual Property Secured)";
+
+    } else { // full_combo
+      wireBadge.textContent = "ARMOR: MULTI-TIER";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "OVERALL: FORTIFIED";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║       Full-Spectrum Multi-Tier Anti-Reverse Engineering Suite      ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Active Defense Layers Active]\n" +
+        "  ├─ Layer 1: PEB / RDTSC / Hardware Debug Register Verification (DR0-DR7)\n" +
+        "  ├─ Layer 2: Polynomial Opaque Predicate & Switch Dispatcher Flattening\n" +
+        "  ├─ Layer 3: BLA Honey Source Map Decoy Generator\n" +
+        "  └─ Layer 4: Self-Modifying Memory Encryption via Virtual Protect\n\n" +
+        "[Decompiler Probe Stress Assessment]\n" +
+        "  - Decompiler Target: " + engine.toUpperCase() + "\n" +
+        "  - Static Analysis: Completely Obfuscated (Control flow unrecoverable)\n" +
+        "  - Dynamic Debugging: Terminated upon attach\n" +
+        "  - Automated Agent Extraction: Poisoned via decoy tokens";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Anti-Reverse Engineering Posture & Defense Audit         ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ COMPREHENSIVE SECURITY RATING: GOLD STANDARD ARMORING\n" +
+        "  - Resilience Score: 99.8% against automated and manual decompilation\n" +
+        "  - Compliance Mapping: OWASP MASVS-RESILIENCE & KISA Secure Coding\n\n" +
+        "■ VERDICT: ZERO-EXPLOIT CODE SHIELD VERIFIED";
+    }
+
+    wireView.textContent = wireText;
+    auditView.textContent = auditText;
+  }
+
+  const antirevExecuteBtn = document.getElementById("antirevExecuteBtn");
+  if (antirevExecuteBtn) antirevExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderAntiRev(); });
+  const antirevResetBtn = document.getElementById("antirevResetBtn");
+  if (antirevResetBtn) antirevResetBtn.addEventListener("click", () => { audio(); renderAntiRev("dbg_probe"); });
+  const antirevLayerSelect = document.getElementById("antirevLayerSelect");
+  if (antirevLayerSelect) antirevLayerSelect.addEventListener("change", () => { audio(); renderAntiRev(); });
+  const antirevEngineSelect = document.getElementById("antirevEngineSelect");
+  if (antirevEngineSelect) antirevEngineSelect.addEventListener("change", () => { audio(); renderAntiRev(); });
+  document.querySelectorAll("[data-antirev-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-antirev-preset");
+      renderAntiRev(p);
+    });
+  });
+
+  // --- 25. eBPF Kernel Shield & Tetragon Inspector ---
+  let currentEbpfScenario = "priv_esc";
+
+  function renderEbpfShield(scenario){
+    const policySelect = document.getElementById("ebpfshieldPolicySelect");
+    const attackSelect = document.getElementById("ebpfshieldAttackSelect");
+    const wireBadge = document.getElementById("ebpfshieldWireBadge");
+    const auditBadge = document.getElementById("ebpfshieldAuditBadge");
+    const wireView = document.getElementById("ebpfshieldWireView");
+    const auditView = document.getElementById("ebpfshieldAuditView");
+
+    if (!policySelect || !attackSelect || !wireBadge || !auditBadge || !wireView || !auditView) return;
+
+    if (scenario) {
+      currentEbpfScenario = scenario;
+      if (scenario === "priv_esc") {
+        policySelect.value = "ringbuf_trace";
+        attackSelect.value = "memfd_exec";
+      } else if (scenario === "lsm_confinement") {
+        policySelect.value = "bpf_lsm_sigkill";
+        attackSelect.value = "ptrace_inject";
+      } else if (scenario === "stealth_kprobe") {
+        policySelect.value = "kprobe_hunter";
+        attackSelect.value = "rootkit_hook";
+      } else if (scenario === "raw_attack") {
+        policySelect.value = "ringbuf_trace";
+        attackSelect.value = "ptrace_inject";
+      }
+    }
+
+    const policy = policySelect.value;
+    const attack = attackSelect.value;
+
+    let wireText = "";
+    let auditText = "";
+
+    if (policy === "bpf_lsm_sigkill") {
+      wireBadge.textContent = "BPF LSM: SIGKILL FIRED";
+      wireBadge.style.background = "#dc2626";
+      auditBadge.textContent = "VERDICT: TERMINATED (-EPERM)";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             BPF LSM Mandatory Security Hook Event Log              ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[LSM Probe Point: security_bprm_check]\n" +
+        "  - Source PID: 18402 (process: /tmp/stealth_agent)\n" +
+        "  - Executable Path: /dev/shm/.stealth_payload (memfd in-memory ELF)\n" +
+        "  - Target Capabilities: CAP_SYS_ADMIN, CAP_NET_ADMIN requested\n\n" +
+        "[Tetragon Enforcement Engine Evaluation]\n" +
+        "  - Security Policy: Disallow unprivileged anonymous memory execution\n" +
+        "  - Action Triggered: bpf_send_signal(SIGKILL)\n" +
+        "  - Syscall Exit Return: -EPERM (Operation not permitted)\n\n" +
+        "[Kernel Ring Buffer Confirmation]\n" +
+        "  - Event Sequence: #48291 [LSM_KILL] Comm: .stealth_payload (Killed instantly)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║                eBPF Kernel Shield Diagnostic Audit                 ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK PATTERN: Fileless Execution via Anonymous Memory Buffer\n" +
+        "  - Vector: memfd_create / ptrace memory overwrite\n\n" +
+        "■ DEFENSE EVALUATION:\n" +
+        "  1. BPF LSM hook intercepts binary verification prior to execution\n" +
+        "  2. Non-bypassable kernel-level mandatory enforcement active\n" +
+        "  3. Zero user-mode delay: Process terminated in kernel space\n\n" +
+        "■ POSTURE AUDIT: ROOT ESCALATION PREVENTED 100%";
+
+    } else if (policy === "kprobe_hunter") {
+      wireBadge.textContent = "KPROBE: INTEGRITY VERIFIED";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "ROOTKIT: ZERO DETECTED";
+      auditBadge.style.background = "#2563eb";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          Kernel Function Pointer & Syscall Integrity Audit         ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[kprobe Hook Inspection: sys_call_table]\n" +
+        "  - Offset __NR_execve (59):  0xffffffff81234000 (Genuine kernel text)\n" +
+        "  - Offset __NR_ptrace (101): 0xffffffff812389a0 (Genuine kernel text)\n" +
+        "  - Offset __NR_bpf    (321): 0xffffffff812411e0 (Genuine kernel text)\n\n" +
+        "[ftrace & kretprobe Hook Verification]\n" +
+        "  - Function: do_sys_openat2 -> Hook list: clean (0 inline trampolines)\n" +
+        "  - Module List Cross-Reference: /proc/modules == struct module list\n" +
+        "  - Hidden Module Objects: 0 found";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║                eBPF Kernel Shield Diagnostic Audit                 ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ MONITORING TARGET: Stealth Rootkit & Syscall Hook Concealment\n" +
+        "  - Verification Technique: In-kernel pointer range checking\n\n" +
+        "■ KERNEL INTEGRITY VERDICT:\n" +
+        "  - All critical dispatch points correspond to compiled text boundaries\n" +
+        "  - Hidden device drivers and covert kernel threads: NONE\n" +
+        "  - Telemetry: Compliant with KISA & NIST Infrastructure standards";
+
+    } else { // ringbuf_trace
+      wireBadge.textContent = "RINGBUF: STREAMING";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "TELEMETRY: RECORDED";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║             eBPF Ring Buffer Telemetry Event Stream                ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Tracepoint: syscalls/sys_enter_execve]\n" +
+        "  - Timestamp: 2026-11-14T12:00:01.482Z\n" +
+        "  - PID: 19482, UID: 1000, GID: 1000\n" +
+        "  - Binary: " + (attack === "ptrace_inject" ? "/usr/bin/ptrace_tool" : "/tmp/worker_task") + "\n" +
+        "  - Parent: /bin/bash (PID: 19100)\n\n" +
+        "[Perf Event Telemetry Transfer]\n" +
+        "  - Event Channel: BPF_MAP_TYPE_RINGBUF\n" +
+        "  - Dropped Events: 0 (Zero loss telemetry pipeline)\n" +
+        "  - Latency: 1.2 microseconds from kernel trigger to SOC pipeline";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║                eBPF Kernel Shield Diagnostic Audit                 ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ TELEMETRY STATUS: Full Visibility into System Calls & Kernel Hooks\n" +
+        "  - Threat Detection: Immediate real-time notification to Blue/Purple teams\n" +
+        "  - Performance Overhead: < 0.8% CPU footprint (eBPF JIT optimized)\n\n" +
+        "■ VERDICT: SOC & SIEM STREAM SYNCHRONIZED";
+    }
+
+    wireView.textContent = wireText;
+    auditView.textContent = auditText;
+  }
+
+  const ebpfshieldExecuteBtn = document.getElementById("ebpfshieldExecuteBtn");
+  if (ebpfshieldExecuteBtn) ebpfshieldExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderEbpfShield(); });
+  const ebpfshieldResetBtn = document.getElementById("ebpfshieldResetBtn");
+  if (ebpfshieldResetBtn) ebpfshieldResetBtn.addEventListener("click", () => { audio(); renderEbpfShield("priv_esc"); });
+  const ebpfshieldPolicySelect = document.getElementById("ebpfshieldPolicySelect");
+  if (ebpfshieldPolicySelect) ebpfshieldPolicySelect.addEventListener("change", () => { audio(); renderEbpfShield(); });
+  const ebpfshieldAttackSelect = document.getElementById("ebpfshieldAttackSelect");
+  if (ebpfshieldAttackSelect) ebpfshieldAttackSelect.addEventListener("change", () => { audio(); renderEbpfShield(); });
+  document.querySelectorAll("[data-ebpfshield-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-ebpfshield-preset");
+      renderEbpfShield(p);
+    });
+  });
+
+  // --- 26. MicroVM & Hypervisor Escape Inspector ---
+  let currentHypervisorScenario = "ept_guard";
+
+  function renderHypervisorEscape(scenario){
+    const profileSelect = document.getElementById("hypervisorProfileSelect");
+    const vectorSelect = document.getElementById("hypervisorVectorSelect");
+    const wireBadge = document.getElementById("hypervisorWireBadge");
+    const auditBadge = document.getElementById("hypervisorAuditBadge");
+    const wireView = document.getElementById("hypervisorWireView");
+    const auditView = document.getElementById("hypervisorAuditView");
+
+    if (!profileSelect || !vectorSelect || !wireBadge || !auditBadge || !wireView || !auditView) return;
+
+    if (scenario) {
+      currentHypervisorScenario = scenario;
+      if (scenario === "ept_guard") {
+        profileSelect.value = "microvm_hardened";
+        vectorSelect.value = "mmio_fault";
+      } else if (scenario === "virtio_boundary") {
+        profileSelect.value = "microvm_hardened";
+        vectorSelect.value = "vring_oob";
+      } else if (scenario === "seccomp_landlock") {
+        profileSelect.value = "microvm_hardened";
+        vectorSelect.value = "msr_leak";
+      } else if (scenario === "guest_escape") {
+        profileSelect.value = "legacy_vmm";
+        vectorSelect.value = "vring_oob";
+      }
+    }
+
+    const profile = profileSelect.value;
+    const vector = vectorSelect.value;
+
+    let wireText = "";
+    let auditText = "";
+
+    if (profile === "legacy_vmm") {
+      wireBadge.textContent = "BARRIER: ESCAPE DETECTED";
+      wireBadge.style.background = "#dc2626";
+      auditBadge.textContent = "RISK: CRITICAL (CVSS 8.8)";
+      auditBadge.style.background = "#dc2626";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║       Legacy Hypervisor Out-of-Bounds Escape Simulation Wire       ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Guest Attacker MMIO / Virtio Memory Interaction]\n" +
+        "  - Guest Physical Address: 0x1048000 (vring descriptor table)\n" +
+        "  - Injected Malformed Descriptor: len = 0xffff0000, next = 0x00ff\n" +
+        "  - Host VMM Validation: DISABLED (Unbounded descriptor chaining)\n\n" +
+        "[Host VMM Process Exploitation]\n" +
+        "  - Out-of-bounds Heap Corruption: vring buffer smashes host heap chunk\n" +
+        "  - Pointer Smuggling: MSR_LSTAR read yields host kernel text address\n" +
+        "  - Arbitrary Write Primitive: ROP chain redirected to system(\"/bin/sh\")\n\n" +
+        "[Containment Status]\n" +
+        "  - Host Seccomp Filter: NONE (Running as unconfined host root)\n" +
+        "  - Landlock LSM Barrier: NOT APPLIED\n" +
+        "  - Result: Guest adversary spawned root interactive shell on host!";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          MicroVM & Hypervisor Escape Diagnostic Audit              ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ CRITICAL FINDING: VIBE-2026-5801 (CVSS 8.8 High Severity)\n" +
+        "  - Vulnerability Class: Hypervisor Virtio Ring Heap Smashing & MMIO Emulation Flaw\n" +
+        "  - Impact: Complete Host Takeover from Unprivileged MicroVM Guest\n\n" +
+        "■ COMPLIANCE DEFICIENCIES:\n" +
+        "  - KISA ISMS-P 2.6.5 (Cloud Virtualization & Hypervisor Isolation Fail)\n" +
+        "  - NIST CSF 2.0 PR.AC-05 (Network & Virtualization Integrity Violation)\n" +
+        "  - OWASP Top 10 A05:2021 (Security Misconfiguration: Unconfined VMM)\n\n" +
+        "■ URGENT REMEDIATION:\n" +
+        "  1. Upgrade to Hardened MicroVM architecture (Firecracker model)\n" +
+        "  2. Apply Seccomp BPF ioctl whitelisting for /dev/kvm\n" +
+        "  3. Enforce Landlock LSM filesystem confinement on host worker";
+
+    } else if (vector === "mmio_fault") {
+      wireBadge.textContent = "MMIO: BOUNDARY VERIFIED";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "EPT EXIT: TRAPPED SAFELY";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Extended Page Table (EPT) & MMIO Guard Wire             ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[KVM vCPU VM-Exit Event]\n" +
+        "  - Exit Reason: EXIT_REASON_EPT_VIOLATION (0x00000030)\n" +
+        "  - Guest Physical Address: 0xfe001014 (Virtio MMIO Control Region)\n" +
+        "  - Guest RIP: 0xffffffff81084b20 (Guest kernel driver)\n\n" +
+        "[MicroVM MMIO Emulation Dispatcher]\n" +
+        "  - Target Offset: 0x14 (QueueNotify register)\n" +
+        "  - Offset Range Check: Offset in [0x00 .. 0xff] -> VALIDATED\n" +
+        "  - Value Clamping: Restricting queue index to registered queues (0..3)\n" +
+        "  - Action: Dispatched safely to virtqueue worker without host memory escape";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          MicroVM & Hypervisor Escape Diagnostic Audit              ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ COMPONENT: EPT Page Fault & MMIO Intercept Controller\n" +
+        "  - Threat: Exploiting emulation bugs in MMIO write handlers to crash VMM\n\n" +
+        "■ ISOLATION GUARANTEES:\n" +
+        "  1. EPT mappings strictly enforce 1:1 guest-physical to host-virtual bounds\n" +
+        "  2. Non-existent MMIO registers return dummy 0xffffffff without side effects\n" +
+        "  3. Emulation handlers run inside non-root unprivileged process sandbox\n\n" +
+        "■ AUDIT VERDICT: MMIO INTERCEPT HARDENED (Zero Escape Surface)";
+
+    } else if (vector === "vring_oob") {
+      wireBadge.textContent = "VRING: BOUNDS ASSERTED";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "HEAP OVERFLOW: BLOCKED";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║            Virtio Ring Buffer Descriptor Validation Wire           ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Virtio RX Queue Descriptor Inspection]\n" +
+        "  - Queue Max Descriptors: 256 entries\n" +
+        "  - Inspected Descriptor Index: 12\n" +
+        "  - Specified Buffer GPA: 0x1048000 (Length: 1514 bytes)\n" +
+        "  - Chained Descriptor Flags: VRING_DESC_F_NEXT (Next: 13)\n\n" +
+        "[Bound Assertion Enforcement]\n" +
+        "  - Verification 1: Buffer GPA + Length within Guest RAM allocation: OK\n" +
+        "  - Verification 2: Descriptor loop counter < 256: OK (Prevents DoS loop)\n" +
+        "  - Verification 3: Host heap memory offset out-of-bounds check: PASSED\n" +
+        "  - Result: Malicious out-of-bounds overwrite detected and rejected";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          MicroVM & Hypervisor Escape Diagnostic Audit              ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ SECURITY PROPERTY: Virtio Shared Memory Memory-Safety\n" +
+        "  - Vector: Corrupting virtqueue ring buffers to smash host VMM heap\n\n" +
+        "■ DEFENSE VERIFICATION:\n" +
+        "  1. Memory boundaries checked via strict slice clamping prior to read/write\n" +
+        "  2. Circular chain detection prevents infinite iteration and cpu stalls\n" +
+        "  3. Host heap layout completely immune to guest descriptor manipulation\n\n" +
+        "■ AUDIT VERDICT: HEAP CORRUPTION RESILIENT";
+
+    } else { // msr_leak / seccomp_landlock
+      wireBadge.textContent = "CONFINEMENT: ACTIVE";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "HOST CONTAINMENT: 100%";
+      auditBadge.style.background = "#2563eb";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║     Seccomp BPF & Landlock LSM Host Confinement Telemetry Wire     ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Seccomp BPF System Call Barrier]\n" +
+        "  - Permitted System Calls: 38 (read, write, poll, ioctl on /dev/kvm)\n" +
+        "  - Prohibited ioctls: KVM_SET_MSRS, KVM_GET_MSRS context tampering\n" +
+        "  - Forbidden Syscalls: execve, clone, ptrace, socket -> Returns -EPERM\n\n" +
+        "[Landlock LSM Filesystem Sandbox]\n" +
+        "  - Allowed Paths: /dev/kvm (RW), MicroVM kernel image (RO), rootfs (RW)\n" +
+        "  - Denied Paths: /etc, /root, /home, /sys, /proc/kallsyms -> ACCESS DENIED\n\n" +
+        "[Exploit Smuggling Test]\n" +
+        "  - Adversary attempted: ioctl(/dev/kvm, KVM_SET_MSRS) for register smuggling\n" +
+        "  - Kernel Enforcement: Seccomp BPF policy trapped call. Threat aborted!";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          MicroVM & Hypervisor Escape Diagnostic Audit              ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ARCHITECTURE: Modern Zero-Trust MicroVM Hypervisor Barrier\n" +
+        "  - Multi-Layered Defense: KVM Isolation + Seccomp BPF + Landlock LSM\n\n" +
+        "■ RESILIENCE EVALUATION:\n" +
+        "  1. Even in hypothetical VMM memory corruption, host escape is IMPOSSIBLE\n" +
+        "  2. Seccomp blocks arbitrary syscall execution by compromised VMM\n" +
+        "  3. Landlock seals off host filesystem from unauthorized reads/writes\n\n" +
+        "■ AUDIT VERDICT: HIGHEST VIRTUALIZATION CONTAINMENT RATING";
+    }
+
+    wireView.textContent = wireText;
+    auditView.textContent = auditText;
+  }
+
+  const hypervisorExecuteBtn = document.getElementById("hypervisorExecuteBtn");
+  if (hypervisorExecuteBtn) hypervisorExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderHypervisorEscape(); });
+  const hypervisorResetBtn = document.getElementById("hypervisorResetBtn");
+  if (hypervisorResetBtn) hypervisorResetBtn.addEventListener("click", () => { audio(); renderHypervisorEscape("ept_guard"); });
+  const hypervisorProfileSelect = document.getElementById("hypervisorProfileSelect");
+  if (hypervisorProfileSelect) hypervisorProfileSelect.addEventListener("change", () => { audio(); renderHypervisorEscape(); });
+  const hypervisorVectorSelect = document.getElementById("hypervisorVectorSelect");
+  if (hypervisorVectorSelect) hypervisorVectorSelect.addEventListener("change", () => { audio(); renderHypervisorEscape(); });
+  document.querySelectorAll("[data-hypervisor-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-hypervisor-preset");
+      renderHypervisorEscape(p);
     });
   });
 

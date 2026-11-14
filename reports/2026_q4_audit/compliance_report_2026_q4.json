@@ -1,12 +1,12 @@
 {
   "report_title": "VibeHacking Enterprise Security Diagnostic & Threat Assessment Report",
   "metadata": {
-    "total_labs": 56,
-    "total_findings": 56,
+    "total_labs": 58,
+    "total_findings": 58,
     "average_cvss": 8.7,
     "severity_counts": {
       "Critical": 29,
-      "High": 21,
+      "High": 23,
       "Medium": 6,
       "Low": 0,
       "None": 0
@@ -15,7 +15,7 @@
       "Initial Access": 7,
       "Execution": 10,
       "Lateral Movement": 2,
-      "Defense Evasion": 9,
+      "Defense Evasion": 10,
       "Privilege Escalation": 9,
       "Credential Access": 11,
       "Command and Control": 2,
@@ -24,7 +24,8 @@
       "Persistence": 1,
       "Execution / Privilege Escalation": 1,
       "Credential Access / Collection": 1,
-      "Defense Evasion / Privilege Escalation": 1
+      "Defense Evasion / Privilege Escalation": 1,
+      "Privilege Escalation / Defense Evasion": 1
     },
     "category_counts": {
       "Web Security": 3,
@@ -68,7 +69,9 @@
       "Active Directory & Red Teaming": 1,
       "AI Security & Kernel Hardening": 1,
       "Applied Cryptography & Post-Quantum Security": 1,
-      "Kernel Security, eBPF & Runtime Defense": 1
+      "Kernel Security, eBPF & Runtime Defense": 1,
+      "Reverse Engineering, Binary Protection & Anti-Analysis": 1,
+      "Cloud Virtualization, MicroVM Isolation & Hypervisor Escape": 1
     },
     "kisa_counts": {
       "2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)": 1,
@@ -126,7 +129,9 @@
       "2.5.1 사용자 식별 및 인증 (AD 권한 관리 & 비특권 계정 ACL 남용 방어)": 1,
       "2.10.2 보안 시스템 운영 (AI 에이전트 샌드박스 & 비인가 시스템콜 차단)": 1,
       "2.8.1 암호통제 (NIST FIPS 203 ML-KEM-768 격자 KEM & SNDL 방어)": 1,
-      "2.10.1 시스템 보안 (eBPF 커널 시스콜 텔레메트리 & 루트킷 은닉 차단)": 1
+      "2.10.1 시스템 보안 (eBPF 커널 시스콜 텔레메트리 & 루트킷 은닉 차단)": 1,
+      "2.10.2 시스템 보안 (바이너리 역공학 방지 및 안티디버깅/난독화 보호 통제)": 1,
+      "2.6.5 클라우드 및 가상화 보안 (하이퍼바이저 탈출 및 MicroVM 격리 통제)": 1
     },
     "nist_csf_counts": {
       "PR.PS-01 Platform Security / PR.DS-01 Data Security": 2,
@@ -182,7 +187,9 @@
       "PR.AC-04 Access Control & Permissions Management (BloodHound AD Attack Path Mitigation)": 1,
       "PR.AC-06 Identities & Autonomous Agents Least Privilege (Landlock LSM Sandboxing)": 1,
       "PR.DS-02 Data in Transit Cryptographic Protection (Post-Quantum Hybrid TLS 1.3)": 1,
-      "DE.CM-01 Networks & Kernel Computing Physical Environment Monitored (eBPF LSM Runtime Defense)": 1
+      "DE.CM-01 Networks & Kernel Computing Physical Environment Monitored (eBPF LSM Runtime Defense)": 1,
+      "PR.IP-01 Baseline Configuration & Binary Protection Mechanisms (Anti-Reversing & VM Evasion Defense)": 1,
+      "PR.AC-05 Network & Virtualization Integrity Protected (MicroVM Isolation & MMIO Protection)": 1
     },
     "owasp_counts": {
       "A03:2021 Injection": 4,
@@ -203,10 +210,12 @@
       "A01:2021 Broken Access Control (Active Directory DACL/ACE Privilege Escalation)": 1,
       "LLM01:2025 Prompt Injection & Tool Hijacking (AI Agent MCP Sandbox Escape)": 1,
       "A02:2021 Cryptographic Failures (Store-Now-Decrypt-Later & Quantum Vulnerable Primitives)": 1,
-      "A05:2021 Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)": 1
+      "A05:2021 Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)": 1,
+      "A08:2021 Software and Data Integrity Failures (Tamper-Resistance & Binary Protections)": 1,
+      "A05:2021 Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)": 1
     },
     "live_active_labs": 0,
-    "generated_at": "2026-11-14 01:53:21"
+    "generated_at": "2026-11-14 21:04:58"
   },
   "findings": [
     {
@@ -1552,6 +1561,54 @@
       "nist_csf_name": "Networks & Kernel Computing Physical Environment Monitored (eBPF LSM Runtime Defense)",
       "owasp_id": "A05:2021",
       "owasp_name": "Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)"
+    },
+    {
+      "vuln_id": "VIBE-2026-5701",
+      "lab_id": "57",
+      "lab_title": "57 AntiReversingShield Advanced Binary Protection & Anti-Reversing",
+      "name": "Unprotected Binary Execution & Dynamic Anti-Analysis Defenses Bypass",
+      "category": "Reverse Engineering, Binary Protection & Anti-Analysis",
+      "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+      "mitre_id": "T1622",
+      "mitre_technique": "Debugger Evasion & Virtualization/Sandbox Evasion",
+      "mitre_tactic": "Defense Evasion",
+      "impact": "Reverse engineers and automated analysis tools bypass ptrace and PEB traps, reconstruct obfuscated dynamic IAT via ROR13 hash cracking, unpack protected binaries, and neutralize sandbox execution guards.",
+      "description": "Lack of kernel-level integrity verification and multi-layered tamper-resistance enables byte patching of debug traps and dynamic resolution of sensitive memory allocation APIs.",
+      "affected_component": "AntiReversingShield Binary Protection Gateway (Port 8057)",
+      "remediation": "Implement hardware-enforced Control Flow Guard (CFG), cryptographic code signing with sealed enclaves, runtime tamper-detection with eBPF LSM, and multi-algorithm dynamic API hashing.",
+      "calculated_score": 7.7,
+      "severity": "High",
+      "live_active": false,
+      "kisa_id": "2.10.2",
+      "kisa_name": "시스템 보안 (바이너리 역공학 방지 및 안티디버깅/난독화 보호 통제)",
+      "nist_csf_id": "PR.IP-01",
+      "nist_csf_name": "Baseline Configuration & Binary Protection Mechanisms (Anti-Reversing & VM Evasion Defense)",
+      "owasp_id": "A08:2021",
+      "owasp_name": "Software and Data Integrity Failures (Tamper-Resistance & Binary Protections)"
+    },
+    {
+      "vuln_id": "VIBE-2026-5801",
+      "lab_id": "58",
+      "lab_title": "58 MicrovmHypervisorEscapeLab MicroVM & Hypervisor Escape Defense",
+      "name": "MicroVM Hypervisor Escape via Virtio Ring Buffer Heap Corruption & MMIO Emulation Flaw",
+      "category": "Cloud Virtualization, MicroVM Isolation & Hypervisor Escape",
+      "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+      "mitre_id": "T1611",
+      "mitre_technique": "Escape to Host: MicroVM & Hypervisor Escape",
+      "mitre_tactic": "Privilege Escalation / Defense Evasion",
+      "impact": "Guest adversary corrupts virtio-net shared ring buffer heap memory, extracts host kernel base address via KVM vCPU register smuggling, and achieves full host root privileges outside MicroVM boundary.",
+      "description": "Flaws in MMIO emulation handler and unbounded virtio-net shared memory descriptors permit guest virtual machines to escape isolation, leak host kernel pointers via KVM vCPU register smuggling, and achieve host root confinement bypass.",
+      "affected_component": "MicrovmHypervisorEscapeLab Host Daemon (Port 8058)",
+      "remediation": "Apply Seccomp BPF ioctl whitelisting for /dev/kvm, configure Landlock LSM unprivileged host filesystem barriers, drop CAP_SYS_ADMIN and CAP_SYS_PTRACE, and validate all virtqueue descriptor boundaries.",
+      "calculated_score": 8.8,
+      "severity": "High",
+      "live_active": false,
+      "kisa_id": "2.6.5",
+      "kisa_name": "클라우드 및 가상화 보안 (하이퍼바이저 탈출 및 MicroVM 격리 통제)",
+      "nist_csf_id": "PR.AC-05",
+      "nist_csf_name": "Network & Virtualization Integrity Protected (MicroVM Isolation & MMIO Protection)",
+      "owasp_id": "A05:2021",
+      "owasp_name": "Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)"
     }
   ]
 }

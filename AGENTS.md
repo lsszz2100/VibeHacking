@@ -49,7 +49,7 @@
     39. `69_LLM_Security/08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md` (AI 에이전트 탈출 공격·Landlock LSM 비특권 샌드박스 & eBPF 듀얼 런타임 방어 심층 분석: 간접 프롬프트 주입 IPI, 도구 탈취 Confused Deputy, Linux 5.13+ Landlock LSM 무특권 자가 격리, Cilium Tetragon eBPF sys_enter_execve 0ms Sigkill 차단)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화 (26개 섹션 목차 테이블 코드 누출 전면 정제 완료)
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 56개 골든 실전 랩 완비** (`labs/01` ~ `labs/56`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 58개 골든 실전 랩 완비** (`labs/01` ~ `labs/58`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (포트: `8021`)
@@ -155,7 +155,7 @@
 
 ---
 
-## 2. 실습 랩(01~56) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(01~58) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :--- | :---: | :--- |
@@ -215,6 +215,8 @@
 | **54** | AI 에이전트 샌드박스 탈출 & Landlock 랩 (AgentSandboxGuard) | AI 에이전트 샌드박스 탈출, IPI/Confused Deputy 도구 탈취, Landlock LSM 무특권 파일 격리, Tetragon 런타임 Sigkill 방어 | `69_LLM_Security` | `agentsandbox` | `vhack lab start 54` |
 | **55** | PQC 양자 내성 암호 마이그레이션 랩 (PQCMigrationGuard) | NIST FIPS 203 ML-KEM-768 격자 KEM, FIPS 204 ML-DSA-65 전자서명, SNDL 도청 대응, TLS 1.3 다운그레이드 방어, CBOM 감사 | `57_Quantum_Cryptography` | `pqcmigrate` | `vhack lab start 55` |
 | **56** | eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩 (eBPFShield) | eBPF 시스콜 텔레메트리, Ring Buffer 익명 실행 포착, 프로세스 할로잉 탐지, bpf_override_return 루트킷 색출, eBPF LSM 제로 트러스트 능동 차단 | `26_Linux_Hardening`, `57_Kernel_and_Driver_Exploits` | `ebpfsec` | `vhack lab start 56` |
+| **57** | 안티 리버싱 & 바이너리 보호 랩 (AntiReversingShield) | 다중 디버거 탐지(PEB/RDTSC), 불투명 술어, BLA 허니 소스맵, LLM 컨텍스트 고갈 대(對)AI 역공학 방어 | `04_Reverse_Engineering`, `55_Evasion_Techniques` | `antirev` | `vhack lab start 57` |
+| **58** | MicroVM 하이퍼바이저 탈출 & 격리 하드닝 랩 (MicrovmHypervisorEscapeLab) | VM-Exit EPT 위반 & MMIO 인터셉트, Virtio-Net vring OOB 힙 변조, KVM vCPU MSR_LSTAR 레지스터 스머글링, Seccomp/Landlock 능동 봉쇄 | `14_Cloud_Security`, `26_Linux_Kernel_and_Driver_Development` | `hypervisor` | `vhack lab start 58` |
 
 ---
 
@@ -223,15 +225,15 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (Labs 01~53, Solvers, Portal, CTF, Wargame CLI, Report Generator)
+# 1. 전체 단위/통합 테스트 (Labs 01~58, Solvers, Portal, CTF, Wargame CLI, Report Generator)
 pytest -q
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (53개 랩 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (58개 랩 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 53개 랩 포트 충돌 검사 완비)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 58개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사

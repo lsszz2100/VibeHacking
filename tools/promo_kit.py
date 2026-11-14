@@ -159,13 +159,13 @@ def broadcast_discord_webhook(webhook_url: str) -> bool:
         "embeds": [
             {
                 "title": "⚡ VibeHacking 2.0 — 실전 사이버보안 바이블 & 워게임 공개",
-                "description": "브라우저에서 설치 없이 즐기는 67트랙 2,345제 침투 워게임과 75개 챕터 보안 바이블",
+                "description": "브라우저에서 설치 없이 즐기는 70트랙 2,450제 침투 워게임과 75개 챕터 보안 바이블",
                 "url": SITE_URL,
                 "color": 2621323,  # #27ff8b in decimal
                 "fields": [
                     {"name": "📚 종합 교재", "value": "75개 섹션 (리버싱, 익스플로잇, EDR, AI)", "inline": True},
-                    {"name": "🔬 실습 랩", "value": "55개 핸즈온 랩 (도커 기반)", "inline": True},
-                    {"name": "🎮 터미널 워게임", "value": "2,345개 챌린지 + 23대 시뮬레이터", "inline": True},
+                    {"name": "🔬 실습 랩", "value": "58개 핸즈온 랩 (도커 기반)", "inline": True},
+                    {"name": "🎮 터미널 워게임", "value": "2,450개 챌린지 + 26대 시뮬레이터", "inline": True},
                 ],
                 "footer": {"text": "VibeHacking Open Source Project"}
             }

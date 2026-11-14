@@ -171,6 +171,9 @@
         <button class="pg-tab" data-tab="adgraph">🩸 AD Graph &amp; Cypher</button>
         <button class="pg-tab" data-tab="agentsandbox">🤖 Agent Sandbox &amp; Landlock</button>
         <button class="pg-tab" data-tab="pqcmigrate">⚛️ PQC Migration &amp; FIPS 203</button>
+        <button class="pg-tab" data-tab="antirev">🛡️ Anti-Reversing &amp; BLA Shield</button>
+        <button class="pg-tab" data-tab="ebpfshield">🐝 eBPF Kernel Shield</button>
+        <button class="pg-tab" data-tab="hypervisorescape">⚡ MicroVM &amp; Hypervisor Escape</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -1193,6 +1196,154 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="pqcmigrateAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: QUANTUM SAFE</span>
                 </div>
                 <div id="pqcmigrateAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 24. Anti-Reversing & BLA Shield Inspector Panel -->
+        <div id="pgPanel-antirev" class="pg-panel">
+          <div class="antirev-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn success" data-antirev-preset="dbg_probe">1. Multi-Debugger Detection (PEB &amp; Timing)</button>
+              <button class="pg-btn success" data-antirev-preset="opaque_cff">2. Opaque Predicates &amp; Control Flow Flattening</button>
+              <button class="pg-btn success" data-antirev-preset="honey_decoy">3. Honey Source Map &amp; AI Decoy Injection</button>
+              <button class="pg-btn danger" data-antirev-preset="decompiler_probe">4. Adversary Decompiler &amp; Symbolic Analysis</button>
+            </div>
+            <div class="antirev-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="antirev-ctrl-group">
+                <label class="dim" style="font-size:11px;">Defense Layer:</label>
+                <select id="antirevLayerSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="peb_timing" selected>Layer 1: PEB &amp; RDTSC Hardware Clock Detection</option>
+                  <option value="opaque_flow">Layer 2: Polynomial Opaque Predicate &amp; Dispatcher Flattening</option>
+                  <option value="honey_shield">Layer 3: BLA Honey Source Map &amp; LLM Context Overflow</option>
+                  <option value="full_combo">Layer 4: Full Multi-Tier Anti-Reversing Armoring</option>
+                </select>
+              </div>
+              <div class="antirev-ctrl-group">
+                <label class="dim" style="font-size:11px;">Decompiler Engine:</label>
+                <select id="antirevEngineSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="ghidra" selected>Ghidra Headless Decompiler (P-Code Emulation)</option>
+                  <option value="ida">IDA Pro Hex-Rays AST Decompiler</option>
+                  <option value="ai_agent">Autonomous AI Reverse Engineering Agent</option>
+                </select>
+              </div>
+              <button id="antirevExecuteBtn" class="pg-btn">Simulate Defense</button>
+              <button id="antirevResetBtn" class="pg-btn dim">Reset Simulation</button>
+            </div>
+            <div class="antirev-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="antirev-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🛡️ Obfuscated Assembly &amp; P-Code AST Wire</span>
+                  <span id="antirevWireBadge" class="token-tag token-lit" style="background:#16a34a;color:#fff;">AST: PROTECTED</span>
+                </div>
+                <div id="antirevWireView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="antirev-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🔬 Reverse Engineering Resistance Audit</span>
+                  <span id="antirevAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: DEFENSE SECURE</span>
+                </div>
+                <div id="antirevAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 25. eBPF Kernel Shield & Tetragon Inspector Panel -->
+        <div id="pgPanel-ebpfshield" class="pg-panel">
+          <div class="ebpfshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn success" data-ebpfshield-preset="priv_esc">1. Rootkit Syscall Intercept &amp; Ring Buffer</button>
+              <button class="pg-btn success" data-ebpfshield-preset="lsm_confinement">2. BPF LSM bprm_check_security Hook</button>
+              <button class="pg-btn success" data-ebpfshield-preset="stealth_kprobe">3. Stealth Module &amp; Hidden Port Hunter</button>
+              <button class="pg-btn danger" data-ebpfshield-preset="raw_attack">4. Unmonitored Kernel Privilege Escalation</button>
+            </div>
+            <div class="ebpfshield-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="ebpfshield-ctrl-group">
+                <label class="dim" style="font-size:11px;">Kernel Enforcer Policy:</label>
+                <select id="ebpfshieldPolicySelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="ringbuf_trace" selected>Tetragon Ring Buffer: sys_enter_execve / ptrace telemetry</option>
+                  <option value="bpf_lsm_sigkill">BPF LSM Mandatory Enforcement: Return -EPERM / Send SIGKILL</option>
+                  <option value="kprobe_hunter">kprobe/kretprobe: Memory hidden rootkit pointer audit</option>
+                </select>
+              </div>
+              <div class="ebpfshield-ctrl-group">
+                <label class="dim" style="font-size:11px;">Adversary Payload:</label>
+                <select id="ebpfshieldAttackSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="memfd_exec" selected>memfd_create in-memory ELF execution</option>
+                  <option value="ptrace_inject">ptrace process memory injection</option>
+                  <option value="rootkit_hook">Kernel ftrace rootkit hook injection</option>
+                </select>
+              </div>
+              <button id="ebpfshieldExecuteBtn" class="pg-btn">Simulate Telemetry</button>
+              <button id="ebpfshieldResetBtn" class="pg-btn dim">Reset Simulation</button>
+            </div>
+            <div class="ebpfshield-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="ebpfshield-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🐝 eBPF Ring Buffer Telemetry Trace</span>
+                  <span id="ebpfshieldWireBadge" class="token-tag token-lit" style="background:#16a34a;color:#fff;">KERNEL: MONITORING</span>
+                </div>
+                <div id="ebpfshieldWireView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="ebpfshield-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🛡️ Tetragon LSM Enforcement Audit</span>
+                  <span id="ebpfshieldAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: THREAT BLOCKED</span>
+                </div>
+                <div id="ebpfshieldAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 26. MicroVM & Hypervisor Escape Inspector Panel -->
+        <div id="pgPanel-hypervisorescape" class="pg-panel">
+          <div class="hypervisorescape-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn success" data-hypervisor-preset="ept_guard">1. EPT Violation &amp; MMIO Intercept Guard</button>
+              <button class="pg-btn success" data-hypervisor-preset="virtio_boundary">2. Virtio Ring Buffer Heap Boundary Lock</button>
+              <button class="pg-btn success" data-hypervisor-preset="seccomp_landlock">3. Seccomp KVM ioctl &amp; Landlock Confinement</button>
+              <button class="pg-btn danger" data-hypervisor-preset="guest_escape">4. Guest-to-Host Hypervisor Escape Exploit</button>
+            </div>
+            <div class="hypervisorescape-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="hypervisorescape-ctrl-group">
+                <label class="dim" style="font-size:11px;">Hypervisor Profile:</label>
+                <select id="hypervisorProfileSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="microvm_hardened" selected>Hardened MicroVM (Seccomp BPF + Landlock LSM + Non-root)</option>
+                  <option value="kvm_standard">Standard Linux KVM (Unrestricted ioctl whitelist)</option>
+                  <option value="legacy_vmm">Legacy VMM (QEMU Monolithic Helper with /dev/kvm root)</option>
+                </select>
+              </div>
+              <div class="hypervisorescape-ctrl-group">
+                <label class="dim" style="font-size:11px;">Escape Vector:</label>
+                <select id="hypervisorVectorSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="vring_oob" selected>Virtio Ring Buffer Descriptor OOB Corruption</option>
+                  <option value="mmio_fault">MMIO Emulation Exit Context Injection</option>
+                  <option value="msr_leak">vCPU MSR_LSTAR Context Smuggling &amp; Host Pointer Leak</option>
+                </select>
+              </div>
+              <button id="hypervisorExecuteBtn" class="pg-btn">Simulate Intercept</button>
+              <button id="hypervisorResetBtn" class="pg-btn dim">Reset Simulation</button>
+            </div>
+            <div class="hypervisorescape-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="hypervisorescape-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>⚡ MicroVM Guest-Host Memory &amp; MMIO Telemetry</span>
+                  <span id="hypervisorWireBadge" class="token-tag token-lit" style="background:#16a34a;color:#fff;">BARRIER: ENFORCED</span>
+                </div>
+                <div id="hypervisorWireView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="hypervisorescape-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🛡️ Hypervisor Isolation &amp; Host Containment Audit</span>
+                  <span id="hypervisorAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: HOST PROTECTED</span>
+                </div>
+                <div id="hypervisorAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
               </div>
             </div>
           </div>
