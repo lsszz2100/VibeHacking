@@ -608,6 +608,15 @@ const TRACKS = [
     "desc_ko": "안티디버깅(PEB BeingDebugged/ptrace) 우회·동적 API Hashing(ROR13/Murmur3) 역산·변형 패커 스텁 분석 & OEP 언패킹·가상화 난독화 해제·Anti-VM & RDTSC 타이밍 분석 무력화.",
     "desc_en": "Anti-debugging (PEB BeingDebugged/ptrace) bypass, dynamic API hashing (ROR13/Murmur3) resolution, custom packer stub analysis & OEP unpacking, virtualization deobfuscation, and Anti-VM & RDTSC timing defense neutralization."
   }
+,
+  {
+    "id": "hypervisor",
+    "icon": "📦",
+    "ko": "하이퍼바이저 & MicroVM 가상화 보안",
+    "en": "Hypervisor & MicroVM Virtualization Security",
+    "desc_ko": "VM-Exit EPT 위반 & MMIO 에뮬레이션 인터셉트 · Virtio-Net vring OOB 힙 메모리 변조 · KVM vCPU MSR_LSTAR 레지스터 상태 스머글링 및 호스트 주소 유출 · Seccomp BPF & Landlock LSM MicroVM 능동 격리 하드닝.",
+    "desc_en": "VM-Exit EPT violation & MMIO emulation interception, Virtio-Net vring OOB heap corruption, KVM vCPU MSR_LSTAR register state smuggling & host kernel leak, and Seccomp BPF & Landlock LSM MicroVM active confinement."
+  }
 ];
 
 const CHALLENGES = [
@@ -68287,5 +68296,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "ec4dcaf0c29d72d861676cb244ee5c47e5b128bbf53bbad818f2175a22f91be0"
+  },
+  {
+    "id": "t0_hypervisor_fundamentals_hypervisor_architecture",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하이퍼바이저 아키텍처와 가상화 기본 원리",
+      "en": "Hypervisor Architecture & Virtualization Fundamentals"
+    },
+    "prompt": {
+      "ko": "Type-1(베어메탈)과 Type-2(호스트형) 하이퍼바이저의 구조적 차이와 CPU/메모리 하드웨어 지원 가상화의 기본 원리를 학습합니다.\n지정된 식별자 `hypervisor_fundamentals_hypervisor_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_fundamentals_hypervisor_architecture_v1\") 앞 20자리}",
+      "en": "Learn the structural differences between Type-1 (bare-metal) and Type-2 (hosted) hypervisors and fundamentals of hardware-assisted virtualization.\nCompute the first 20 hex characters of SHA256(\"hypervisor_fundamentals_hypervisor_architecture_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_fundamentals_hypervisor_architecture_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_fundamentals_hypervisor_architecture_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_fundamentals_hypervisor_architecture_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_fundamentals_hypervisor_architecture_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_fundamentals_hypervisor_architecture_v1\")."
+      ]
+    },
+    "hash": "df901579e06b7db5b59b01f2affc7f8b503a2ee8215af48ddb6677450c95ca5f"
+  },
+  {
+    "id": "t0_hypervisor_intel_vmx_root_and_non_root_operation",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel VMX Root 및 Non-Root 동작 모드",
+      "en": "Intel VMX Root vs Non-Root Operation Modes"
+    },
+    "prompt": {
+      "ko": "하이퍼바이저가 실행되는 VMX Root 모드와 게스트 OS가 격리 구동되는 VMX Non-Root 모드의 권한 계층 구조를 이해합니다.\n지정된 식별자 `hypervisor_intel_vmx_root_and_non_root_operation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_intel_vmx_root_and_non_root_operation_v1\") 앞 20자리}",
+      "en": "Understand the privilege hierarchy between VMX Root mode where the hypervisor runs and VMX Non-Root mode where guest VMs are isolated.\nCompute the first 20 hex characters of SHA256(\"hypervisor_intel_vmx_root_and_non_root_operation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_intel_vmx_root_and_non_root_operation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_intel_vmx_root_and_non_root_operation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_intel_vmx_root_and_non_root_operation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_intel_vmx_root_and_non_root_operation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_intel_vmx_root_and_non_root_operation_v1\")."
+      ]
+    },
+    "hash": "b4d5741e41d2204c99ea2c1c16cadb9e8355c18e0946d0dcb5fdf2e451def497"
+  },
+  {
+    "id": "t0_hypervisor_vm_entry_vm_exit_context_switching",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VM-Entry 및 VM-Exit 컨텍스트 전환 생명주기",
+      "en": "VM-Entry & VM-Exit Context Switching Lifecycle"
+    },
+    "prompt": {
+      "ko": "VMLAUNCH/VMRESUME 명령어를 통한 VM-Entry와 게스트 특권 작업 시 하이퍼바이저로 트랩되는 VM-Exit의 상태 저장/복원 주기를 분석합니다.\n지정된 식별자 `hypervisor_vm_entry_vm_exit_context_switching_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_vm_entry_vm_exit_context_switching_v1\") 앞 20자리}",
+      "en": "Analyze the state transition lifecycle of VM-Entry via VMLAUNCH/VMRESUME and VM-Exit traps invoked during guest privileged operations.\nCompute the first 20 hex characters of SHA256(\"hypervisor_vm_entry_vm_exit_context_switching_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_vm_entry_vm_exit_context_switching_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_vm_entry_vm_exit_context_switching_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_vm_entry_vm_exit_context_switching_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_vm_entry_vm_exit_context_switching_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_vm_entry_vm_exit_context_switching_v1\")."
+      ]
+    },
+    "hash": "8a15f58b5f6f6950f0d831eaa2c2635550584430f7ed124d4d7a1531b49e96d5"
+  },
+  {
+    "id": "t0_hypervisor_extended_page_tables_ept_slat_translation",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "확장 페이지 테이블(EPT / SLAT) 2차 주소 변환 원리",
+      "en": "Extended Page Tables (EPT) Second-Level Address Translation"
+    },
+    "prompt": {
+      "ko": "게스트 가상 주소(GVA)에서 게스트 물리 주소(GPA)를 거쳐 호스트 물리 주소(HPA)로 매핑되는 2차 주소 변환 메커니즘을 파악합니다.\n지정된 식별자 `hypervisor_extended_page_tables_ept_slat_translation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_extended_page_tables_ept_slat_translation_v1\") 앞 20자리}",
+      "en": "Study the two-dimensional page translation mechanism mapping Guest Virtual Address (GVA) through GPA to Host Physical Address (HPA).\nCompute the first 20 hex characters of SHA256(\"hypervisor_extended_page_tables_ept_slat_translation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_extended_page_tables_ept_slat_translation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_extended_page_tables_ept_slat_translation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_extended_page_tables_ept_slat_translation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_extended_page_tables_ept_slat_translation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_extended_page_tables_ept_slat_translation_v1\")."
+      ]
+    },
+    "hash": "7a3e8f1b2d8eea0f10f219b3ac384a9afd1a2a9f98fbce5af7b0b6e6acd8d4d4"
+  },
+  {
+    "id": "t0_hypervisor_microvm_firecracker_cloud_hypervisor_design",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Firecracker 및 초경량 MicroVM 설계 원리",
+      "en": "Firecracker & Lightweight MicroVM Architecture"
+    },
+    "prompt": {
+      "ko": "불필요한 레거시 디바이스 에뮬레이션을 제거하고 밀리초 단위 부팅을 달성하는 Rust 기반 MicroVM(Firecracker, Cloud-Hypervisor) 아키텍처를 학습합니다.\n지정된 식별자 `hypervisor_microvm_firecracker_cloud_hypervisor_design_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_microvm_firecracker_cloud_hypervisor_design_v1\") 앞 20자리}",
+      "en": "Learn the minimal Rust-based MicroVM (Firecracker, Cloud-Hypervisor) architecture stripping legacy emulated devices for sub-second cold starts.\nCompute the first 20 hex characters of SHA256(\"hypervisor_microvm_firecracker_cloud_hypervisor_design_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_microvm_firecracker_cloud_hypervisor_design_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_microvm_firecracker_cloud_hypervisor_design_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_microvm_firecracker_cloud_hypervisor_design_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_microvm_firecracker_cloud_hypervisor_design_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_microvm_firecracker_cloud_hypervisor_design_v1\")."
+      ]
+    },
+    "hash": "6289fe291f0eb98961533fc7411f35c5a57e160b4d7244730f8ae10ab5585867"
+  },
+  {
+    "id": "t0_hypervisor_virtio_paravirtualization_rings_architecture",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Virtio 반가상화 및 공유 메모리 링 버퍼 개요",
+      "en": "Virtio Paravirtualization & Shared Ring Buffer Basics"
+    },
+    "prompt": {
+      "ko": "게스트와 호스트 간의 고속 I/O 교환을 위해 표준화된 Virtio 프레임워크와 디스크립터 링 버퍼(vring) 구조의 기초를 이해합니다.\n지정된 식별자 `hypervisor_virtio_paravirtualization_rings_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_virtio_paravirtualization_rings_architecture_v1\") 앞 20자리}",
+      "en": "Understand the standardized Virtio paravirtualization framework and descriptor ring buffer (vring) enabling zero-copy host-guest I/O communication.\nCompute the first 20 hex characters of SHA256(\"hypervisor_virtio_paravirtualization_rings_architecture_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_virtio_paravirtualization_rings_architecture_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_virtio_paravirtualization_rings_architecture_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_virtio_paravirtualization_rings_architecture_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_virtio_paravirtualization_rings_architecture_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_virtio_paravirtualization_rings_architecture_v1\")."
+      ]
+    },
+    "hash": "d250b5b71119987bfdd93683c2a15a7170d562450589f4829e9800501f21e41d"
+  },
+  {
+    "id": "t0_hypervisor_kvm_kernel_module_dev_kvm_interface",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Linux KVM 커널 모듈 및 /dev/kvm ioctl 인터페이스",
+      "en": "Linux KVM Kernel Module & /dev/kvm ioctl Interface"
+    },
+    "prompt": {
+      "ko": "리눅스 커널을 Type-1 하이퍼바이저로 전환하는 KVM 모듈과 사용자 공간 VMM이 가상 머신을 제어하는 /dev/kvm ioctl API를 분석합니다.\n지정된 식별자 `hypervisor_kvm_kernel_module_dev_kvm_interface_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_kvm_kernel_module_dev_kvm_interface_v1\") 앞 20자리}",
+      "en": "Analyze the Linux KVM kernel module and /dev/kvm ioctl interface utilized by userland VMMs to manage virtual CPUs and guest memory.\nCompute the first 20 hex characters of SHA256(\"hypervisor_kvm_kernel_module_dev_kvm_interface_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_kvm_kernel_module_dev_kvm_interface_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_kvm_kernel_module_dev_kvm_interface_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_kvm_kernel_module_dev_kvm_interface_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_kvm_kernel_module_dev_kvm_interface_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_kvm_kernel_module_dev_kvm_interface_v1\")."
+      ]
+    },
+    "hash": "dd0c1487305791fe7529295df3a56467ee51c3b140ed88a11befa55eebdb8f89"
+  },
+  {
+    "id": "t1_hypervisor_vmcs_virtual_machine_control_structure_audit",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VMCS 가상 머신 제어 구조 레이아웃 감사",
+      "en": "VMCS (Virtual Machine Control Structure) Layout Audit"
+    },
+    "prompt": {
+      "ko": "게스트 상태 영역, 호스트 상태 영역, VM-Execution 제어 필드 등 4KB 물리 페이지 단위 VMCS 메모리 영역의 무결성을 검증합니다.\n지정된 식별자 `hypervisor_vmcs_virtual_machine_control_structure_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_vmcs_virtual_machine_control_structure_audit_v1\") 앞 20자리}",
+      "en": "Audit the 4KB aligned physical page VMCS comprising Guest-State, Host-State, and VM-Execution controls governing virtualization execution.\nCompute the first 20 hex characters of SHA256(\"hypervisor_vmcs_virtual_machine_control_structure_audit_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_vmcs_virtual_machine_control_structure_audit_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_vmcs_virtual_machine_control_structure_audit_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_vmcs_virtual_machine_control_structure_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_vmcs_virtual_machine_control_structure_audit_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_vmcs_virtual_machine_control_structure_audit_v1\")."
+      ]
+    },
+    "hash": "652f698c6b3477ef04587d8456ae6c7c9e5bd00bd284a6deec226af673f0d15a"
+  },
+  {
+    "id": "t1_hypervisor_ept_violation_mmio_trapping_flow",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "EPT Violation 유도 및 MMIO 주변장치 트랩 분석",
+      "en": "EPT Violation Triggering & MMIO Peripheral Trapping"
+    },
+    "prompt": {
+      "ko": "매핑되지 않은 게스트 물리 주소 접근 시 발생하는 EPT Violation(VM-Exit 이유 48)을 활용하여 가상 MMIO 장치로 입출력을 포워딩하는 흐름을 학습합니다.\n지정된 식별자 `hypervisor_ept_violation_mmio_trapping_flow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_ept_violation_mmio_trapping_flow_v1\") 앞 20자리}",
+      "en": "Learn how EPT Violation traps (VM-Exit Reason 48) on unmapped physical addresses forward memory-mapped I/O transactions to emulated peripherals.\nCompute the first 20 hex characters of SHA256(\"hypervisor_ept_violation_mmio_trapping_flow_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_ept_violation_mmio_trapping_flow_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_ept_violation_mmio_trapping_flow_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_ept_violation_mmio_trapping_flow_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_ept_violation_mmio_trapping_flow_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_ept_violation_mmio_trapping_flow_v1\")."
+      ]
+    },
+    "hash": "d504ac4d4ac3019e674cfb45269986d14d3a42cbe5c4f3bf94fc28e214ca43c5"
+  },
+  {
+    "id": "t1_hypervisor_virtqueue_split_vring_descriptor_inspection",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Virtqueue 디스크립터 테이블 및 split 링 구조",
+      "en": "Virtqueue Split Vring Descriptor Table Inspection"
+    },
+    "prompt": {
+      "ko": "디스크립터 테이블, Available 링, Used 링으로 구성된 split vring 구조에서 플래그와 다음 디스크립터 인덱스 체이닝 방식을 분석합니다.\n지정된 식별자 `hypervisor_virtqueue_split_vring_descriptor_inspection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_virtqueue_split_vring_descriptor_inspection_v1\") 앞 20자리}",
+      "en": "Inspect split virtqueue architecture consisting of descriptor table, available ring, and used ring managing asynchronous data buffer transfers.\nCompute the first 20 hex characters of SHA256(\"hypervisor_virtqueue_split_vring_descriptor_inspection_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_virtqueue_split_vring_descriptor_inspection_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_virtqueue_split_vring_descriptor_inspection_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_virtqueue_split_vring_descriptor_inspection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_virtqueue_split_vring_descriptor_inspection_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_virtqueue_split_vring_descriptor_inspection_v1\")."
+      ]
+    },
+    "hash": "2a4844c969155624a712d10205c62790821e196470a851a91606af8f658a696a"
+  },
+  {
+    "id": "t1_hypervisor_kvm_vcpu_ioctl_state_transitions",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "KVM_GET_REGS / KVM_SET_SREGS vCPU 상태 전이 분석",
+      "en": "KVM_GET_REGS & KVM_SET_SREGS vCPU State Transitions"
+    },
+    "prompt": {
+      "ko": "KVM_RUN ioctl 루프 및 범용 레지스터/특수 레지스터(CR0, CR3, CR4) 설정 ioctl을 통한 가상 CPU 초기화 및 런타임 제어 메커니즘을 파악합니다.\n지정된 식별자 `hypervisor_kvm_vcpu_ioctl_state_transitions_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_kvm_vcpu_ioctl_state_transitions_v1\") 앞 20자리}",
+      "en": "Study virtual CPU initialization and execution state transitions using KVM_RUN, KVM_GET_REGS, and KVM_SET_SREGS ioctls.\nCompute the first 20 hex characters of SHA256(\"hypervisor_kvm_vcpu_ioctl_state_transitions_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_kvm_vcpu_ioctl_state_transitions_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_kvm_vcpu_ioctl_state_transitions_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_kvm_vcpu_ioctl_state_transitions_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_kvm_vcpu_ioctl_state_transitions_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_kvm_vcpu_ioctl_state_transitions_v1\")."
+      ]
+    },
+    "hash": "824359012d4c1af9d7dcc81d968f7b47added8ba5e4464418ff5165ec2226aaf"
+  },
+  {
+    "id": "t1_hypervisor_device_emulation_handler_flaws_qemu",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "QEMU 및 VMM 디바이스 에뮬레이션 취약점 분석",
+      "en": "VMM Device Emulation Handler Vulnerability Analysis"
+    },
+    "prompt": {
+      "ko": "가상 플로피 디스크(VENOM) 및 네트워크 어댑터(e1000) 등 복잡한 하드웨어 에뮬레이션 코드에서 발생하는 버퍼 오버플로우 패턴을 점검합니다.\n지정된 식별자 `hypervisor_device_emulation_handler_flaws_qemu_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_device_emulation_handler_flaws_qemu_v1\") 앞 20자리}",
+      "en": "Examine buffer overflow attack surfaces in legacy device emulation codebases including virtual floppy (VENOM) and virtual NIC handlers.\nCompute the first 20 hex characters of SHA256(\"hypervisor_device_emulation_handler_flaws_qemu_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_device_emulation_handler_flaws_qemu_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_device_emulation_handler_flaws_qemu_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_device_emulation_handler_flaws_qemu_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_device_emulation_handler_flaws_qemu_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_device_emulation_handler_flaws_qemu_v1\")."
+      ]
+    },
+    "hash": "6518775d2eee734f0a6cb866f0ae7a5c834cda0c2c09249d45b96e5cc562da04"
+  },
+  {
+    "id": "t1_hypervisor_virtio_net_packet_rx_tx_boundary_checks",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Virtio-Net 패킷 송수신 버퍼 경계 검증",
+      "en": "Virtio-Net Packet RX/TX Buffer Boundary Verification"
+    },
+    "prompt": {
+      "ko": "virtio-net 디바이스에서 수신 패킷 크기가 사전 할당된 디스크립터 길이(len)를 초과할 때 발생하는 경계 검사 누락 결함을 분석합니다.\n지정된 식별자 `hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1\") 앞 20자리}",
+      "en": "Analyze boundary validation flaws occurring when incoming network packet payloads exceed allocated virtio descriptor length boundaries.\nCompute the first 20 hex characters of SHA256(\"hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_virtio_net_packet_rx_tx_boundary_checks_v1\")."
+      ]
+    },
+    "hash": "4d4be4da1c7d7b5950c30ea26cb30612919ed0528f4a16d4fb83f16a9a801678"
+  },
+  {
+    "id": "t1_hypervisor_pci_bar_remapping_and_io_port_trapping",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가상 PCI BAR 리매핑 및 I/O 포트 트래핑 분석",
+      "en": "Virtual PCI BAR Remapping & I/O Port Trapping"
+    },
+    "prompt": {
+      "ko": "게스트 OS가 가상 PCI 장치의 Base Address Register(BAR)를 임의의 주소로 재할당할 때 VMM이 주소 충돌을 방어하는 메커니즘을 학습합니다.\n지정된 식별자 `hypervisor_pci_bar_remapping_and_io_port_trapping_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_pci_bar_remapping_and_io_port_trapping_v1\") 앞 20자리}",
+      "en": "Examine how VMMs arbitrate physical address collisions when guest operating systems dynamically reprogram virtual PCI Base Address Registers.\nCompute the first 20 hex characters of SHA256(\"hypervisor_pci_bar_remapping_and_io_port_trapping_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_pci_bar_remapping_and_io_port_trapping_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_pci_bar_remapping_and_io_port_trapping_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_pci_bar_remapping_and_io_port_trapping_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_pci_bar_remapping_and_io_port_trapping_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_pci_bar_remapping_and_io_port_trapping_v1\")."
+      ]
+    },
+    "hash": "e24e4f04a2255cdae905b8101ff7fa34265b4759cf0b40e56b13734902f1a766"
+  },
+  {
+    "id": "t2_hypervisor_virtio_vring_oob_heap_corruption",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Virtio vring 공유 메모리 OOB 힙 메모리 변조",
+      "en": "Virtio vring Shared Memory OOB Heap Corruption"
+    },
+    "prompt": {
+      "ko": "공유 vring 디스크립터 체인의 next 인덱스를 의도적으로 조작하여 호스트 VMM 프로세스의 힙 청크 경계를 넘는 Out-of-Bounds 쓰기를 유도합니다.\n지정된 식별자 `hypervisor_virtio_vring_oob_heap_corruption_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_virtio_vring_oob_heap_corruption_v1\") 앞 20자리}",
+      "en": "Manipulate shared vring descriptor next pointers to induce Out-of-Bounds heap writes across host VMM memory boundaries.\nCompute the first 20 hex characters of SHA256(\"hypervisor_virtio_vring_oob_heap_corruption_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_virtio_vring_oob_heap_corruption_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_virtio_vring_oob_heap_corruption_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_virtio_vring_oob_heap_corruption_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_virtio_vring_oob_heap_corruption_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_virtio_vring_oob_heap_corruption_v1\")."
+      ]
+    },
+    "hash": "08322ed114b7b1dd411a10a96ef16f1d26a30e70a85bb2dde4707b03f0e65e40"
+  },
+  {
+    "id": "t2_hypervisor_hpet_apic_mmio_emulation_race_condition",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가상 HPET/APIC 타이머 에뮬레이션 경합 조건",
+      "en": "Virtual HPET/APIC Timer Emulation Race Conditions"
+    },
+    "prompt": {
+      "ko": "멀티 vCPU 환경에서 고정밀 이벤트 타이머(HPET) 또는 로컬 APIC의 MMIO 레지스터를 동시 갱신할 때 발생하는 락 결함 및 Use-After-Free를 분석합니다.\n지정된 식별자 `hypervisor_hpet_apic_mmio_emulation_race_condition_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_hpet_apic_mmio_emulation_race_condition_v1\") 앞 20자리}",
+      "en": "Analyze race conditions and Use-After-Free defects arising from concurrent multi-vCPU MMIO updates to emulated HPET and Local APIC registers.\nCompute the first 20 hex characters of SHA256(\"hypervisor_hpet_apic_mmio_emulation_race_condition_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_hpet_apic_mmio_emulation_race_condition_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_hpet_apic_mmio_emulation_race_condition_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_hpet_apic_mmio_emulation_race_condition_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_hpet_apic_mmio_emulation_race_condition_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_hpet_apic_mmio_emulation_race_condition_v1\")."
+      ]
+    },
+    "hash": "e48185d89d0baee0a030e3ab56845b8090264c7cb08cf677450c838e5b3b50eb"
+  },
+  {
+    "id": "t2_hypervisor_kvm_msr_lstar_syscall_smuggling_leak",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "IA32_LSTAR MSR 레지스터 스머글링 커널 베이스 유출",
+      "en": "IA32_LSTAR MSR Register Smuggling Host Kernel Leak"
+    },
+    "prompt": {
+      "ko": "KVM vCPU MSR 읽기 핸들러 결함을 이용하여 호스트 커널의 시스템 콜 엔트리포인트(IA32_LSTAR: 0xC0000082) 주소를 추출해 KASLR을 무력화합니다.\n지정된 식별자 `hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1\") 앞 20자리}",
+      "en": "Exploit KVM vCPU MSR handling flaws to leak host IA32_LSTAR (0xC0000082) syscall entrypoint defeating host Kernel ASLR.\nCompute the first 20 hex characters of SHA256(\"hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_kvm_msr_lstar_syscall_smuggling_leak_v1\")."
+      ]
+    },
+    "hash": "29ed2814dfb42f5beb3d34209a724a73bd2ef24bdeeb153c7e16d3db2d6179ce"
+  },
+  {
+    "id": "t2_hypervisor_guest_physical_to_host_virtual_translation",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPA에서 HVA 가상 주소 매핑 검증 결함",
+      "en": "GPA-to-HVA Address Mapping Verification Flaws"
+    },
+    "prompt": {
+      "ko": "VMM의 kvm_userspace_memory_region 슬롯 계산 로직에서 정수 오버플로우를 유발하여 임의의 호스트 가상 메모리에 읽기/쓰기를 시도합니다.\n지정된 식별자 `hypervisor_guest_physical_to_host_virtual_translation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_guest_physical_to_host_virtual_translation_v1\") 앞 20자리}",
+      "en": "Trigger integer overflows in VMM kvm_userspace_memory_region slot calculators to map arbitrary host virtual addresses into guest space.\nCompute the first 20 hex characters of SHA256(\"hypervisor_guest_physical_to_host_virtual_translation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_guest_physical_to_host_virtual_translation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_guest_physical_to_host_virtual_translation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_guest_physical_to_host_virtual_translation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_guest_physical_to_host_virtual_translation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_guest_physical_to_host_virtual_translation_v1\")."
+      ]
+    },
+    "hash": "1d18897084000f64f6f62b02cb5dd73d9e35e340b5138d224bf3e4d1a54879c7"
+  },
+  {
+    "id": "t2_hypervisor_virtual_dma_descriptor_unvalidated_memory",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가상 DMA 디스크립터 역참조 무결성 파괴",
+      "en": "Virtual DMA Descriptor Dereference Integrity Violations"
+    },
+    "prompt": {
+      "ko": "에뮬레이트된 스토리지 컨트롤러(Virtio-Blk/NVMe)의 Scatter-Gather 리스트에서 유효하지 않은 DMA 주소를 주입하여 호스트 메모리를 오염시킵니다.\n지정된 식별자 `hypervisor_virtual_dma_descriptor_unvalidated_memory_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_virtual_dma_descriptor_unvalidated_memory_v1\") 앞 20자리}",
+      "en": "Inject malicious Scatter-Gather list descriptors into virtual storage controllers to compromise host DMA buffer integrity.\nCompute the first 20 hex characters of SHA256(\"hypervisor_virtual_dma_descriptor_unvalidated_memory_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_virtual_dma_descriptor_unvalidated_memory_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_virtual_dma_descriptor_unvalidated_memory_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_virtual_dma_descriptor_unvalidated_memory_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_virtual_dma_descriptor_unvalidated_memory_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_virtual_dma_descriptor_unvalidated_memory_v1\")."
+      ]
+    },
+    "hash": "896fefc3681c6f69df23e41cc976077ab028b7a74df252321a68788905abad81"
+  },
+  {
+    "id": "t2_hypervisor_cross_vm_cache_timing_side_channel_audit",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "크로스-VM L3 캐시 타이밍 부채널 공격 분석",
+      "en": "Cross-VM L3 Cache Timing Side-Channel Analysis"
+    },
+    "prompt": {
+      "ko": "동일 물리 CPU 코어를 공유하는 이웃 테넌트 VM의 암호화 키 또는 개인정보를 Prime+Probe L3 라스트 레벨 캐시 타이밍으로 복원하는 기법을 학습합니다.\n지정된 식별자 `hypervisor_cross_vm_cache_timing_side_channel_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_cross_vm_cache_timing_side_channel_audit_v1\") 앞 20자리}",
+      "en": "Audit Prime+Probe L3 cache timing side channels extracting cryptographic keys across co-located tenant VMs sharing physical CPU cores.\nCompute the first 20 hex characters of SHA256(\"hypervisor_cross_vm_cache_timing_side_channel_audit_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_cross_vm_cache_timing_side_channel_audit_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_cross_vm_cache_timing_side_channel_audit_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_cross_vm_cache_timing_side_channel_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_cross_vm_cache_timing_side_channel_audit_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_cross_vm_cache_timing_side_channel_audit_v1\")."
+      ]
+    },
+    "hash": "6f545604c9806929949cf4f224c5ef5582ceb82f38770ea79c7cbc217ab1a06c"
+  },
+  {
+    "id": "t2_hypervisor_io_instruction_emulation_buffer_overflow",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "I/O 포트 명령어 에뮬레이션 버퍼 오버플로우",
+      "en": "I/O Port Instruction Emulation Buffer Overflow"
+    },
+    "prompt": {
+      "ko": "x86 IN/OUT 또는 string I/O(INS/OUTS) 명령어 에뮬레이션 시 카운트 레지스터(RCX) 검증 누락으로 발생하는 VMM 스택/힙 버퍼 오버플로우를 분석합니다.\n지정된 식별자 `hypervisor_io_instruction_emulation_buffer_overflow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_io_instruction_emulation_buffer_overflow_v1\") 앞 20자리}",
+      "en": "Analyze buffer overflows in x86 IN/OUT and string I/O instruction emulators caused by unvalidated repeat count (RCX) registers.\nCompute the first 20 hex characters of SHA256(\"hypervisor_io_instruction_emulation_buffer_overflow_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_io_instruction_emulation_buffer_overflow_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_io_instruction_emulation_buffer_overflow_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_io_instruction_emulation_buffer_overflow_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_io_instruction_emulation_buffer_overflow_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_io_instruction_emulation_buffer_overflow_v1\")."
+      ]
+    },
+    "hash": "a70970c49fdbc934ef6070c20710a1ba9564e06a230b760b9a1ef2df0107696b"
+  },
+  {
+    "id": "t3_hypervisor_hypervisor_escape_to_host_code_execution",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MicroVM 격리 돌파 및 호스트 링 3 코드 실행",
+      "en": "MicroVM Boundary Bypass & Host Ring 3 Code Execution"
+    },
+    "prompt": {
+      "ko": "Virtio vring 힙 오염과 함수 포인터 덮어쓰기를 연쇄하여 게스트 VM에서 호스트 VMM 프로세스 컨텍스트로 임의 코드를 실행(RCE)합니다.\n지정된 식별자 `hypervisor_hypervisor_escape_to_host_code_execution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_hypervisor_escape_to_host_code_execution_v1\") 앞 20자리}",
+      "en": "Chain virtio-net vring heap corruption and function pointer overwrites to achieve arbitrary code execution in host VMM userland.\nCompute the first 20 hex characters of SHA256(\"hypervisor_hypervisor_escape_to_host_code_execution_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_hypervisor_escape_to_host_code_execution_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_hypervisor_escape_to_host_code_execution_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_hypervisor_escape_to_host_code_execution_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_hypervisor_escape_to_host_code_execution_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_hypervisor_escape_to_host_code_execution_v1\")."
+      ]
+    },
+    "hash": "fa54ccf08d18f47342db898a29cd9714ad0cac07b9f2678c57b26f6c61a53eb7"
+  },
+  {
+    "id": "t3_hypervisor_kvm_dirty_ring_memory_logging_race",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "KVM Dirty Ring 메모리 로깅 취약점 레이스 윈도우",
+      "en": "KVM Dirty Ring Memory Logging Synchronization Flaws"
+    },
+    "prompt": {
+      "ko": "라이브 마이그레이션용 KVM Dirty Ring 버퍼와 vCPU 스레드 간의 락-프리 동기화 결함을 악용하여 호스트 메모리 이중 해제(Double Free)를 유도합니다.\n지정된 식별자 `hypervisor_kvm_dirty_ring_memory_logging_race_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_kvm_dirty_ring_memory_logging_race_v1\") 앞 20자리}",
+      "en": "Exploit synchronization windows between KVM Dirty Ring buffers and vCPU worker threads to trigger host heap double frees.\nCompute the first 20 hex characters of SHA256(\"hypervisor_kvm_dirty_ring_memory_logging_race_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_kvm_dirty_ring_memory_logging_race_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_kvm_dirty_ring_memory_logging_race_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_kvm_dirty_ring_memory_logging_race_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_kvm_dirty_ring_memory_logging_race_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_kvm_dirty_ring_memory_logging_race_v1\")."
+      ]
+    },
+    "hash": "f3edecc43c2ebd5f04cc2ba71c3bb2c2db4a470b540f074ec06ac44b4cd99708"
+  },
+  {
+    "id": "t3_hypervisor_nested_virtualization_vmcs12_shadowing",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "중첩 가상화 VMCS12 섀도잉 탈출 기법",
+      "en": "Nested Virtualization VMCS12 Shadowing Exploitation"
+    },
+    "prompt": {
+      "ko": "L0 하이퍼바이저가 L1 게스트의 VMCS12를 에뮬레이트하는 Shadow VMCS 구조의 필드 유효성 검증 결함을 통해 L0 호스트를 장악합니다.\n지정된 식별자 `hypervisor_nested_virtualization_vmcs12_shadowing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_nested_virtualization_vmcs12_shadowing_v1\") 앞 20자리}",
+      "en": "Exploit validation discrepancies in L0 hypervisors emulating L1 VMCS12 structures via Shadow VMCS to break nested isolation.\nCompute the first 20 hex characters of SHA256(\"hypervisor_nested_virtualization_vmcs12_shadowing_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_nested_virtualization_vmcs12_shadowing_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_nested_virtualization_vmcs12_shadowing_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_nested_virtualization_vmcs12_shadowing_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_nested_virtualization_vmcs12_shadowing_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_nested_virtualization_vmcs12_shadowing_v1\")."
+      ]
+    },
+    "hash": "ac238dac9016bfdf585e9cc44dbcfa58795d84530c1e6938f8d21aab0066ea93"
+  },
+  {
+    "id": "t3_hypervisor_virtio_gpu_shmem_blob_heap_spray",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Virtio-GPU 공유 메모리 블롭 하이퍼바이저 힙 스프레이",
+      "en": "Virtio-GPU Shared Memory Blob Hypervisor Heap Spray"
+    },
+    "prompt": {
+      "ko": "Virtio-GPU 가상 장치에 3D 렌더링 리소스 블롭을 대량 할당하여 호스트 VMM 메모리 레이아웃을 결정론적으로 조작하는 힙 스프레이 기법을 분석합니다.\n지정된 식별자 `hypervisor_virtio_gpu_shmem_blob_heap_spray_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_virtio_gpu_shmem_blob_heap_spray_v1\") 앞 20자리}",
+      "en": "Perform deterministic host heap spraying by allocating 3D rendering resource blobs inside emulated Virtio-GPU shared memory.\nCompute the first 20 hex characters of SHA256(\"hypervisor_virtio_gpu_shmem_blob_heap_spray_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_virtio_gpu_shmem_blob_heap_spray_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_virtio_gpu_shmem_blob_heap_spray_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_virtio_gpu_shmem_blob_heap_spray_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_virtio_gpu_shmem_blob_heap_spray_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_virtio_gpu_shmem_blob_heap_spray_v1\")."
+      ]
+    },
+    "hash": "30c7232c953a7340a9b95f238cc072eb24fd1c567793f94c8ef143ea5806b2b4"
+  },
+  {
+    "id": "t3_hypervisor_iommu_passthrough_device_isolation_bypass",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "IOMMU 디바이스 패스스루 게스트 격리 우회",
+      "en": "IOMMU Passthrough Device Isolation Bypass"
+    },
+    "prompt": {
+      "ko": "PCIe 패스스루된 물리 NIC/GPU 장치의 DMA 트래픽이 IOMMU(VT-d) 보호 도메인을 우회하여 호스트 커널 메모리를 직접 변조하는 취약점을 규명합니다.\n지정된 식별자 `hypervisor_iommu_passthrough_device_isolation_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_iommu_passthrough_device_isolation_bypass_v1\") 앞 20자리}",
+      "en": "Analyze how DMA traffic from PCIe passthrough NICs/GPUs bypasses IOMMU (VT-d) protection domains to directly corrupt host kernel memory.\nCompute the first 20 hex characters of SHA256(\"hypervisor_iommu_passthrough_device_isolation_bypass_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_iommu_passthrough_device_isolation_bypass_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_iommu_passthrough_device_isolation_bypass_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_iommu_passthrough_device_isolation_bypass_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_iommu_passthrough_device_isolation_bypass_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_iommu_passthrough_device_isolation_bypass_v1\")."
+      ]
+    },
+    "hash": "573dbcef1dfd28c573b9a37223e71fbf2ec08428a91025611f80b19bb7b9b90d"
+  },
+  {
+    "id": "t3_hypervisor_host_kernel_privilege_escalation_from_vmm",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "호스트 사용자 공간에서 링 0 커널 권한 상승 연쇄",
+      "en": "Host Ring 3 to Ring 0 Privilege Escalation Chaining"
+    },
+    "prompt": {
+      "ko": "호스트 VMM(Firecracker/QEMU) 권한을 획득한 후 잔존 특권(CAP_SYS_ADMIN, /dev/kvm)을 악용하여 호스트 리눅스 커널(Ring 0) 권한을 탈취합니다.\n지정된 식별자 `hypervisor_host_kernel_privilege_escalation_from_vmm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_host_kernel_privilege_escalation_from_vmm_v1\") 앞 20자리}",
+      "en": "Chain post-escape host userland execution with residual host capabilities (CAP_SYS_ADMIN, /dev/kvm) to achieve host Linux kernel Ring 0 root.\nCompute the first 20 hex characters of SHA256(\"hypervisor_host_kernel_privilege_escalation_from_vmm_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_host_kernel_privilege_escalation_from_vmm_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_host_kernel_privilege_escalation_from_vmm_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_host_kernel_privilege_escalation_from_vmm_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_host_kernel_privilege_escalation_from_vmm_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_host_kernel_privilege_escalation_from_vmm_v1\")."
+      ]
+    },
+    "hash": "aee6a3f52b50cae5e245ab9f10314553ca69cbf6ce37111136b2b601c049b845"
+  },
+  {
+    "id": "t3_hypervisor_hypercall_interface_fuzzing_vulnerabilities",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VMM 하이퍼콜 인터페이스 퍼징 및 결함 분석",
+      "en": "VMM Hypercall Interface Fuzzing & Anomaly Injection"
+    },
+    "prompt": {
+      "ko": "VMCALL/VMMCALL 하이퍼콜 인자에 경계값 및 특수 포인터를 주입하는 커널 퍼징을 통해 하이퍼바이저 패닉 및 크래시 취약점을 색출합니다.\n지정된 식별자 `hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1\") 앞 20자리}",
+      "en": "Fuzz VMCALL/VMMCALL hypercall handlers with boundary conditions and invalid pointer inputs to uncover hypervisor kernel panic vulnerabilities.\nCompute the first 20 hex characters of SHA256(\"hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_hypercall_interface_fuzzing_vulnerabilities_v1\")."
+      ]
+    },
+    "hash": "471c597162b1a0f61f3dab255dca51b3d2ef079aab400a09436c2b288d4bdac0"
+  },
+  {
+    "id": "t4_hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Seccomp BPF 기반 KVM ioctl 엄격 화이트리스트 봉쇄",
+      "en": "Seccomp BPF Strict KVM ioctl Whitelisting Confinement"
+    },
+    "prompt": {
+      "ko": "호스트 VMM 프로세스에 엄격한 Seccomp BPF 필터를 적용하여 KVM 실행에 필수적인 ioctl만을 허용하고 비정상 시스템 콜을 즉시 차단합니다.\n지정된 식별자 `hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1\") 앞 20자리}",
+      "en": "Enforce strict Seccomp BPF filtering on the host VMM process restricting ioctls strictly to verified KVM primitives and blocking arbitrary calls.\nCompute the first 20 hex characters of SHA256(\"hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_seccomp_bpf_kvm_ioctl_strict_whitelist_v1\")."
+      ]
+    },
+    "hash": "75d298d81b7011282e77cb0262469eb20d7a3a2fce684af640aa21aa6a17ef2c"
+  },
+  {
+    "id": "t4_hypervisor_landlock_lsm_hypervisor_unprivileged_fs",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Landlock LSM 비특권 파일시스템 접근 제한 및 격리",
+      "en": "Landlock LSM Unprivileged Filesystem Confinement"
+    },
+    "prompt": {
+      "ko": "루트 권한 탈취 시에도 호스트 파일시스템(`/`, `/etc`, `/root`)을 일체 열람하거나 조작하지 못하도록 Landlock LSM 읽기/쓰기 차단막을 형성합니다.\n지정된 식별자 `hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1\") 앞 20자리}",
+      "en": "Deploy unprivileged Landlock LSM barriers preventing compromised hypervisors from reading or writing host system files.\nCompute the first 20 hex characters of SHA256(\"hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_landlock_lsm_hypervisor_unprivileged_fs_v1\")."
+      ]
+    },
+    "hash": "77636b0a88a36fd4423e48dfbe3cc7e22d5cb6c28ceed39db9dd65c7b87c2db8"
+  },
+  {
+    "id": "t4_hypervisor_arm_mte_intel_lam_memory_tagging_defense",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 메모리 태깅(MTE/LAM) 기반 힙 보호",
+      "en": "Hardware Memory Tagging (MTE/LAM) Heap Protection"
+    },
+    "prompt": {
+      "ko": "ARM Memory Tagging Extension(MTE) 및 Intel Linear Address Masking(LAM)을 가상화 스택에 활성화하여 OOB 힙 메모리 변조 공격을 하드웨어 수준에서 차단합니다.\n지정된 식별자 `hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1\") 앞 20자리}",
+      "en": "Enable ARM MTE and Intel LAM hardware memory tagging across hypervisor allocations to mathematically thwart heap corruption exploits.\nCompute the first 20 hex characters of SHA256(\"hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_arm_mte_intel_lam_memory_tagging_defense_v1\")."
+      ]
+    },
+    "hash": "d08b74ecd6d527d1bb5f0c89de0fd07d0fb19280ad2d70087c48a5cbfa474556"
+  },
+  {
+    "id": "t4_hypervisor_chroot_cgroup_namespace_microvm_sandbox",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Chroot·Cgroup v2·User Namespace 다층 MicroVM 격리",
+      "en": "Chroot, Cgroup v2 & User Namespace Multi-Layer Sandbox"
+    },
+    "prompt": {
+      "ko": "독립된 cgroup v2 리소스 제한, 전용 마운트 네임스페이스, chroot 감옥, unprivileged user namespace를 결합한 철통 방어 샌드박스를 구축합니다.\n지정된 식별자 `hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1\") 앞 20자리}",
+      "en": "Engineer multi-layered hypervisor isolation combining Cgroups v2 quotas, mount namespaces, chroot jails, and unprivileged user namespaces.\nCompute the first 20 hex characters of SHA256(\"hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_chroot_cgroup_namespace_microvm_sandbox_v1\")."
+      ]
+    },
+    "hash": "28426622ecd126d568b7e074f56e41c27a853ece59c4f284319255ec9a39af26"
+  },
+  {
+    "id": "t4_hypervisor_confidential_computing_sev_snp_tdx_enclaves",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AMD SEV-SNP 및 Intel TDX 기밀 컴퓨팅 기반 하이퍼바이저 불신",
+      "en": "Confidential Computing (SEV-SNP / Intel TDX) Hardware Enclaves"
+    },
+    "prompt": {
+      "ko": "하이퍼바이저가 악성 코드로 오염되더라도 게스트 메모리를 하드웨어 키로 자동 암호화하여 호스트가 게스트 메모리를 들여다보지 못하게 만듭니다.\n지정된 식별자 `hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1\") 앞 20자리}",
+      "en": "Implement AMD SEV-SNP and Intel TDX confidential computing isolating guest memory with hardware AES keys against compromised hypervisors.\nCompute the first 20 hex characters of SHA256(\"hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_confidential_computing_sev_snp_tdx_enclaves_v1\")."
+      ]
+    },
+    "hash": "ef2070049b7a3bd9b94c3c474a7a682d9a811b833459ddbb88ffd91aabcfb670"
+  },
+  {
+    "id": "t4_hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 기반 VM-Exit 비정상 빈도 탐지 및 능동 차단",
+      "en": "eBPF Hypervisor Telemetry & VM-Exit Anomaly Guard"
+    },
+    "prompt": {
+      "ko": "kvm:kvm_exit 커널 트레이스포인트에 eBPF 프로그램을 부착하여 짧은 시간 내 비정상적으로 급증하는 EPT Violation 탈출 시도를 탐지하고 즉시 격리합니다.\n지정된 식별자 `hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1\") 앞 20자리}",
+      "en": "Attach eBPF probes to kvm:kvm_exit tracepoints monitoring anomalous spikes in EPT violation frequencies to trigger automated VM isolation.\nCompute the first 20 hex characters of SHA256(\"hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_ebpf_hypervisor_telemetry_vm_exit_guard_v1\")."
+      ]
+    },
+    "hash": "6500b21147cc2dcb47e5bb34be411d85e13a2cc31b9db630505362c6c9cd4217"
+  },
+  {
+    "id": "t4_hypervisor_capstone_full_spectrum_microvm_defense",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "hypervisor",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MicroVM 및 하이퍼바이저 가상화 탈출 방어 풀 스펙트럼 캡스톤",
+      "en": "Capstone: Full-Spectrum MicroVM & Hypervisor Escape Defense"
+    },
+    "prompt": {
+      "ko": "VM-Exit EPT 인터셉트 방어, Virtio vring 경계 검증, KVM ioctl Seccomp BPF 봉쇄, Landlock 파일시스템 격리를 통합하여 엔터프라이즈급 완벽한 MicroVM 보안 방벽을 완성합니다.\n지정된 식별자 `hypervisor_capstone_full_spectrum_microvm_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"hypervisor_capstone_full_spectrum_microvm_defense_v1\") 앞 20자리}",
+      "en": "Synthesize all hypervisor defense disciplines: VM-Exit interception defense, Virtio vring verification, KVM ioctl Seccomp BPF confinement, and Landlock LSM into an enterprise virtualization mastery capstone.\nCompute the first 20 hex characters of SHA256(\"hypervisor_capstone_full_spectrum_microvm_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"hypervisor_capstone_full_spectrum_microvm_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `hypervisor_capstone_full_spectrum_microvm_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `hypervisor_capstone_full_spectrum_microvm_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `hypervisor_capstone_full_spectrum_microvm_defense_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"hypervisor_capstone_full_spectrum_microvm_defense_v1\")."
+      ]
+    },
+    "hash": "b68fe3624dddadb35bbce98ce6847a13eaf08eb3648273161565a6e05fed9832"
   }
 ];

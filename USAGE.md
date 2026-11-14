@@ -682,7 +682,7 @@ root@vibe:/perimeter$ submit FLAG{...}   # 정답 제출 → ACCESS GRANTED
 | `hint` | 힌트 공개 (점수 −20%/개) |
 | `status` / `lang` / `sound` | 진행도 / 한·영 전환 / 사운드 토글 |
 
-- **5계층 2415 문제**, 한 계층의 요구 개수를 풀면 `LAYER BREACHED` 로 다음 계층이 열립니다.
+- **5계층 2450 문제**, 한 계층의 요구 개수를 풀면 `LAYER BREACHED` 로 다음 계층이 열립니다.
 - 정답은 **SHA-256 해시로만** 저장되어(평문 없음) 브라우저 안에서 검증됩니다 — 교육용, 외부 시스템 공격 금지.
 - 각 문제는 본 레포의 75개 섹션 주제와 연결됩니다. 자세한 안내는 [`wargame/README.md`](wargame/README.md) 참고.
 - 💡 첫 플래그는 페이지 소스(`Ctrl+U`)에 숨어 있습니다. AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
@@ -691,7 +691,7 @@ root@vibe:/perimeter$ submit FLAG{...}   # 정답 제출 → ACCESS GRANTED
 
 ## 12. vhack dashboard (status) — 통합 관제 대시보드
 
-시스템 리소스, 53개 랩 실행 상태, 65개 트랙 워게임 진행도, 보안 지표를 종합적으로 시각화하는 터미널 대시보드입니다.
+시스템 리소스, 58개 랩 실행 상태, 70개 트랙 워게임 진행도, 보안 지표를 종합적으로 시각화하는 터미널 대시보드입니다.
 
 ```bash
 # ANSI 터미널 시각화 대시보드 출력
@@ -885,7 +885,7 @@ root@vibe:/perimeter$ submit FLAG{...} # submit → ACCESS GRANTED
 | `hint` | reveal a hint (−20% each) |
 | `status` / `lang` / `sound` | progress / toggle language / toggle sound |
 
-- **5 layers, 2415 challenges.** Clearing a layer's quota fires `LAYER BREACHED` and unlocks the next.
+- **5 layers, 2450 challenges.** Clearing a layer's quota fires `LAYER BREACHED` and unlocks the next.
 - Answers are stored as **SHA-256 hashes only** (no plaintext) and verified in the browser — educational, never attack external systems.
 - Each challenge maps to a topic from the repo's 75 sections. See [`wargame/README.md`](wargame/README.md) for details.
 - 💡 The first flag hides in the page source (`Ctrl+U`). You can even ask an AI CLI for "just a hint on wargame #N".

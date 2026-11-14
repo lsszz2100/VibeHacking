@@ -2,7 +2,7 @@
   "product": {
     "name": "VibeHacking",
     "tagline": "AI-Driven Cybersecurity & Hands-on Reverse Engineering Platform",
-    "description": "VibeHacking is an open-source, comprehensive cybersecurity education platform featuring 75 modular curriculum sections, 57 interactive Docker labs, 69 guided roadmap tracks, and 2,415 zero-defect wargame challenges spanning Web, Cloud, Binary/Pwnable, AI Security, Cryptography, and Forensics.",
+    "description": "VibeHacking is an open-source, comprehensive cybersecurity education platform featuring 75 modular curriculum sections, 58 interactive Docker labs, 70 guided roadmap tracks, and 2,450 zero-defect wargame challenges spanning Web, Cloud, Binary/Pwnable, AI Security, Cryptography, and Forensics.",
     "links": {
       "website": "https://lsszz2100.github.io/vibe-hacking/",
       "github": "https://github.com/lsszz2100/vibe-hacking",
@@ -15,7 +15,7 @@
       "Education",
       "Artificial Intelligence"
     ],
-    "first_comment": "Hello Product Hunt community! 👋\n\nWe are excited to share VibeHacking — an open-source cybersecurity and reverse engineering platform designed for engineers, security researchers, and students.\n\nKey Highlights:\n- 🛡️ 75 Complete Sections across Offensive & Defensive Security\n- 🐳 57 Hands-on Docker Environments (127.0.0.1 isolated)\n- 🗺️ 69 Strategic Career Roadmap Tracks (Offensive, Cloud, AppSec, RE)\n- 🧩 2,415 Zero-Defect Wargame Challenges with deterministic verification\n- 🤖 Autonomous AI Agent Skills (wargame builder, lab creator, remote publisher, compliance reporter)\n\nEverything is 100% open source under Apache-2.0. We'd love your feedback and contributions!",
+    "first_comment": "Hello Product Hunt community! 👋\n\nWe are excited to share VibeHacking — an open-source cybersecurity and reverse engineering platform designed for engineers, security researchers, and students.\n\nKey Highlights:\n- 🛡️ 75 Complete Sections across Offensive & Defensive Security\n- 🐳 58 Hands-on Docker Environments (127.0.0.1 isolated)\n- 🗺️ 70 Strategic Career Roadmap Tracks (Offensive, Cloud, AppSec, RE)\n- 🧩 2,450 Zero-Defect Wargame Challenges with deterministic verification\n- 🤖 Autonomous AI Agent Skills (wargame builder, lab creator, remote publisher, compliance reporter)\n\nEverything is 100% open source under Apache-2.0. We'd love your feedback and contributions!",
     "media": {
       "thumbnail": "assets/promo/producthunt_thumbnail_square.png",
       "gallery": [

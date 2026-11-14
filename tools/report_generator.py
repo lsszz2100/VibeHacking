@@ -573,6 +573,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A08:2021",
         "owasp_name": "Software and Data Integrity Failures (Tamper-Resistance & Binary Protections)",
     },
+    "58": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "클라우드 및 가상화 보안 (하이퍼바이저 탈출 및 MicroVM 격리 통제)",
+        "nist_csf_id": "PR.AC-05",
+        "nist_csf_name": "Network & Virtualization Integrity Protected (MicroVM Isolation & MMIO Protection)",
+        "owasp_id": "A05:2021",
+        "owasp_name": "Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)",
+    },
 }
 
 @dataclass
@@ -1640,6 +1648,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Lack of kernel-level integrity verification and multi-layered tamper-resistance enables byte patching of debug traps and dynamic resolution of sensitive memory allocation APIs.",
                 "affected_component": "AntiReversingShield Binary Protection Gateway (Port 8057)",
                 "remediation": "Implement hardware-enforced Control Flow Guard (CFG), cryptographic code signing with sealed enclaves, runtime tamper-detection with eBPF LSM, and multi-algorithm dynamic API hashing."
+            }
+        ]
+    },
+    "58": {
+        "title": "58 MicrovmHypervisorEscapeLab MicroVM & Hypervisor Escape Defense",
+        "category": "Cloud Virtualization, MicroVM Isolation & Hypervisor Escape",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5801",
+                "name": "MicroVM Hypervisor Escape via Virtio Ring Buffer Heap Corruption & MMIO Emulation Flaw",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1611",
+                "mitre_technique": "Escape to Host: MicroVM & Hypervisor Escape",
+                "mitre_tactic": "Privilege Escalation / Defense Evasion",
+                "impact": "Guest adversary corrupts virtio-net shared ring buffer heap memory, extracts host kernel base address via KVM vCPU register smuggling, and achieves full host root privileges outside MicroVM boundary.",
+                "description": "Flaws in MMIO emulation handler and unbounded virtio-net shared memory descriptors permit guest virtual machines to escape isolation, leak host kernel pointers via KVM vCPU register smuggling, and achieve host root confinement bypass.",
+                "affected_component": "MicrovmHypervisorEscapeLab Host Daemon (Port 8058)",
+                "remediation": "Apply Seccomp BPF ioctl whitelisting for /dev/kvm, configure Landlock LSM unprivileged host filesystem barriers, drop CAP_SYS_ADMIN and CAP_SYS_PTRACE, and validate all virtqueue descriptor boundaries."
             }
         ]
     }

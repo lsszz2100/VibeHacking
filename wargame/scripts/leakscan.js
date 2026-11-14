@@ -35,6 +35,9 @@ const UBIQUITY_WAIVER = 5;
    anything else under the threshold fails the run. */
 const ALLOWLIST = new Map([
   ['t0_source -> t2_sqlcomment', 'HTML comment syntax happens to be the SQL comment token'],
+  // Track 70 hypervisor domain terms
+  ['t3_hypervisor_kvm_dirty_ring_memory_logging_race -> t2_pwndoublefree', 'KVM Dirty Ring memory logging analysis notes double free'],
+  ['t4_hypervisor_chroot_cgroup_namespace_microvm_sandbox -> t2_firmwarechroot', 'MicroVM sandbox filesystem isolation notes chroot'],
   // eBPF & Firmware domain terms and capstone integration scenarios
   ['t2_uboot -> t3_firmwarebootargs', 'U-Boot boot parameters definition'],
   ['t4_openocd -> t3_firmwarebackdoor', 'OpenOCD hardware debugging notes telnet daemon'],

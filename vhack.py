@@ -607,6 +607,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [2, 7, 26, 46],
     },
+    "58": {
+        "name": "MicroVM 하이퍼바이저 탈출 & 격리 하드닝 실습 랩",
+        "dir":  "58_hypervisor_escape_lab",
+        "desc": "MicrovmHypervisorEscapeLab: VM-Exit EPT 위반 & MMIO 에뮬레이션 인터셉트 · Virtio-Net vring OOB 힙 오염 · KVM vCPU MSR_LSTAR 레지스터 스머글링 및 호스트 주소 유출 · Seccomp BPF & Landlock MicroVM 능동 하드닝",
+        "url":  "웹 콘솔 & 하이퍼바이저 격리 제어기: http://localhost:8058",
+        "difficulty": "★★★★★",
+        "related": [4, 10, 17, 46, 54],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2232,7 +2240,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_drill = sub.add_parser("drill", help="10대 보안 기술팀 공방전 자동 훈련 엔진 (Red vs Blue 시뮬레이션 & Purple Team 점수 산출)")
     p_drill.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     p_drill.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 57개 랩 종합 공방전 실행")
+    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 58개 랩 종합 공방전 실행")
     p_drill.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")

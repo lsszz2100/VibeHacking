@@ -95,7 +95,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "40": "dfir", "41": "supplychain", "42": "cloud", "43": "cloud",
     "44": "web", "45": "crypto", "46": "endpoint",
     "47": "ai", "48": "iot", "49": "crypto", "50": "dfir", "51": "endpoint", "52": "network",
-    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing",
+    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud",
 }
 
 
@@ -477,7 +477,7 @@ def get_team_labs_status(team_id: str):
 
 @app.get("/api/compliance/summary")
 def get_compliance_summary():
-    """57개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
+    """58개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
     try:
         from tools.report_generator import SecurityReportGenerator
         gen = SecurityReportGenerator()

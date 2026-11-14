@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  hypervisor_escape_lab:
+    build: .
+    container_name: vhack_lab_58
+    ports:
+      - "127.0.0.1:8058:8058"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

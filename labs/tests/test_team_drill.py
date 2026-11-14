@@ -74,6 +74,16 @@ def test_team_drill_single_lab():
     assert drill_56["mitre"] == "T1014"
     assert drill_56["kisa"] == "2.10.1"
 
+    res_58 = run_drill(lab_id="58")
+    assert res_58["status"] == "SUCCESS"
+    assert len(res_58["drills"]) == 1
+    drill_58 = res_58["drills"][0]
+    assert drill_58["lab_id"] == "58"
+    assert drill_58["detection_rate"] == 100.0
+    assert drill_58["mitre"] == "T1611"
+    assert drill_58["kisa"] == "2.6.5"
+    assert len(drill_58["stages"]) == 4
+
 
 def test_team_drill_invalid_team():
     """존재하지 않는 팀 예외 처리 검증."""

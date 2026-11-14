@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-14 19:30:57",
+  "timestamp": "2026-11-14 20:08:45",
   "teams_tested": [
     "red",
     "blue",
@@ -13,10 +13,10 @@
     "re",
     "antire"
   ],
-  "total_drills": 65,
-  "total_attacks_executed": 188,
-  "total_attacks_detected": 188,
-  "total_attacks_blocked": 188,
+  "total_drills": 67,
+  "total_attacks_executed": 196,
+  "total_attacks_detected": 196,
+  "total_attacks_blocked": 196,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 5,
-      "attacks": 15,
-      "detected": 15,
-      "blocked": 15,
+      "labs_tested": 6,
+      "attacks": 19,
+      "detected": 19,
+      "blocked": 19,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -73,10 +73,10 @@
     },
     "green": {
       "team_name": "그린팀",
-      "labs_tested": 7,
-      "attacks": 19,
-      "detected": 19,
-      "blocked": 19,
+      "labs_tested": 8,
+      "attacks": 23,
+      "detected": 23,
+      "blocked": 23,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.12
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "07",
@@ -572,7 +572,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -605,7 +605,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -660,7 +660,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "26",
@@ -715,7 +715,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "40",
@@ -847,7 +847,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "51",
@@ -913,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -1089,7 +1089,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -1122,7 +1122,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -1177,7 +1177,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "38",
@@ -1243,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "50",
@@ -1309,7 +1309,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -1375,7 +1375,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "02",
@@ -1584,7 +1584,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "54",
@@ -1650,7 +1650,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.03
+    },
+    {
+      "lab_id": "58",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "MicroVM 하이퍼바이저 탈출 & 격리 하드닝 실습 랩 (Hypervisor Escape Lab)",
+      "cve": "VIBE-2026-5801",
+      "cvss": 8.8,
+      "mitre": "T1611",
+      "kisa": "2.6.5",
+      "nist": "PR.AC-05",
+      "owasp": "A05:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "MicroVM KVM Seccomp BPF & Landlock LSM Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "EPT Violation 트리거 및 MMIO 에뮬레이션 인터셉트",
+          "red_attack": "확장 페이지 테이블(EPT) 위반을 고의로 유도하여 VM-Exit을 발생시키고, HPET(0xFED00000) MMIO 에뮬레이션 핸들러를 가로채 호스트 하이퍼바이저 컨텍스트 트랩을 확보합니다.",
+          "blue_defense": "MMIO 주소 범위 엄격 검증 및 비신뢰 게스트 VM-Exit 호출 제한.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "Virtio-Net 가상 링(vring) 공유 메모리 오버플로우",
+          "red_attack": "호스트와 게스트 간의 Virtio 디스크립터 체인 공유 메모리 버퍼를 4096바이트 초과 할당하여 OOB 힙 메모리를 오염시키고 호스트 프로세스 제어권을 획득합니다.",
+          "blue_defense": "Virtqueue 디스크립터 경계 검증 및 게스트 메모리 IOMMU 격리.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "KVM vCPU MSR_LSTAR 레지스터 상태 스머글링 및 호스트 커널 베이스 유출",
+          "red_attack": "KVM ioctl 핸들러 취약점을 통해 vCPU의 IA32_LSTAR MSR(0xC0000082) 시스템 콜 엔트리포인트를 스머글링하여 호스트의 커널 베이스 주소를 유출합니다.",
+          "blue_defense": "vCPU MSR 읽기/쓰기 화이트리스트 및 KVM ioctl 파라미터 세니타이징.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "Seccomp BPF & Landlock LSM 기반 MicroVM 능동 봉쇄 및 하드닝",
+          "red_attack": "KVM ioctl 화이트리스트 Seccomp BPF 정책을 적용하고, Landlock LSM 파일시스템 격리, CAP_SYS_ADMIN/CAP_SYS_PTRACE 기능 박탈 및 메모리 태깅(MTE)을 적용하여 탈출 공격을 원천 차단합니다.",
+          "blue_defense": "MicroVM 최소 권한 격리 및 하이퍼바이저 샌드박싱 강제 집행.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "01",
@@ -1694,7 +1760,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "18",
@@ -1727,7 +1793,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "22",
@@ -1782,7 +1848,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "24",
@@ -1837,7 +1903,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "31",
@@ -1892,7 +1958,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "41",
@@ -1958,7 +2024,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "53",
@@ -2024,7 +2090,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "04",
@@ -2145,7 +2211,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.47
     },
     {
       "lab_id": "32",
@@ -2200,7 +2266,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "35",
@@ -2321,7 +2387,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "55",
@@ -2387,7 +2453,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
+    },
+    {
+      "lab_id": "58",
+      "team_id": "green",
+      "team_name": "그린팀",
+      "lab_title": "MicroVM 하이퍼바이저 탈출 & 격리 하드닝 실습 랩 (Hypervisor Escape Lab)",
+      "cve": "VIBE-2026-5801",
+      "cvss": 8.8,
+      "mitre": "T1611",
+      "kisa": "2.6.5",
+      "nist": "PR.AC-05",
+      "owasp": "A05:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "MicroVM KVM Seccomp BPF & Landlock LSM Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "EPT Violation 트리거 및 MMIO 에뮬레이션 인터셉트",
+          "red_attack": "확장 페이지 테이블(EPT) 위반을 고의로 유도하여 VM-Exit을 발생시키고, HPET(0xFED00000) MMIO 에뮬레이션 핸들러를 가로채 호스트 하이퍼바이저 컨텍스트 트랩을 확보합니다.",
+          "blue_defense": "MMIO 주소 범위 엄격 검증 및 비신뢰 게스트 VM-Exit 호출 제한.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "Virtio-Net 가상 링(vring) 공유 메모리 오버플로우",
+          "red_attack": "호스트와 게스트 간의 Virtio 디스크립터 체인 공유 메모리 버퍼를 4096바이트 초과 할당하여 OOB 힙 메모리를 오염시키고 호스트 프로세스 제어권을 획득합니다.",
+          "blue_defense": "Virtqueue 디스크립터 경계 검증 및 게스트 메모리 IOMMU 격리.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "KVM vCPU MSR_LSTAR 레지스터 상태 스머글링 및 호스트 커널 베이스 유출",
+          "red_attack": "KVM ioctl 핸들러 취약점을 통해 vCPU의 IA32_LSTAR MSR(0xC0000082) 시스템 콜 엔트리포인트를 스머글링하여 호스트의 커널 베이스 주소를 유출합니다.",
+          "blue_defense": "vCPU MSR 읽기/쓰기 화이트리스트 및 KVM ioctl 파라미터 세니타이징.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "Seccomp BPF & Landlock LSM 기반 MicroVM 능동 봉쇄 및 하드닝",
+          "red_attack": "KVM ioctl 화이트리스트 Seccomp BPF 정책을 적용하고, Landlock LSM 파일시스템 격리, CAP_SYS_ADMIN/CAP_SYS_PTRACE 기능 박탈 및 메모리 태깅(MTE)을 적용하여 탈출 공격을 원천 차단합니다.",
+          "blue_defense": "MicroVM 최소 권한 격리 및 하이퍼바이저 샌드박싱 강제 집행.",
+          "detection_rule": "HYPERVISOR-KVM-VIRTIO-GUARD-5801-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "01",
@@ -2431,7 +2563,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.16
     },
     {
       "lab_id": "06",
@@ -2464,7 +2596,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "33",
@@ -2585,7 +2717,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.14
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "43",
@@ -2651,7 +2783,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "44",
@@ -2717,7 +2849,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.15
     },
     {
       "lab_id": "13",
@@ -2805,7 +2937,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "33",
@@ -2926,7 +3058,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "48",
@@ -2992,7 +3124,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "55",
@@ -3058,7 +3190,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.17
     },
     {
       "lab_id": "56",
@@ -3124,7 +3256,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "03",
@@ -3157,7 +3289,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "20",
@@ -3201,7 +3333,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "21",
@@ -3245,7 +3377,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "30",
@@ -3300,7 +3432,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "47",
@@ -3366,7 +3498,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "57",
@@ -3432,7 +3564,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "36",
@@ -3487,7 +3619,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "51",
@@ -3553,7 +3685,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "57",
@@ -3619,7 +3751,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.11
     }
   ]
 }

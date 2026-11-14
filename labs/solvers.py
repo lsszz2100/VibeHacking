@@ -1706,6 +1706,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "⚔️ Anti-VM timing defenses neutralized -> Execution permitted in sandbox -> FLAG{ANTI_VM_RDTSC_TIMING_DEFENSE_NEUTRALIZED_5704}"
             }
         ]
+    },
+    "58": {
+        "title": "MicroVM 하이퍼바이저 탈출 & 격리 하드닝 실습 랩 (Hypervisor Escape Lab)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "EPT Violation 트리거 및 MMIO 에뮬레이션 인터셉트",
+                "target": "POST /api/stage1/intercept_vm_exit (exit_reason, mmio_address, emulation_handler)",
+                "poc_explanation": "확장 페이지 테이블(EPT) 위반을 고의로 유도하여 VM-Exit을 발생시키고, HPET(0xFED00000) MMIO 에뮬레이션 핸들러를 가로채 호스트 하이퍼바이저 컨텍스트 트랩을 확보합니다.",
+                "exploit_payload": '{"exit_reason": "EXIT_REASON_EPT_VIOLATION", "mmio_address": "0xFED00000", "emulation_handler": "hpet_mmio_read"}',
+                "defense": "MMIO 주소 범위 엄격 검증 및 비신뢰 게스트 VM-Exit 호출 제한.",
+                "sample_output": "⚡ VM-Exit intercepted successfully via EXIT_REASON_EPT_VIOLATION at 0xFED00000 (hpet_mmio_read) -> FLAG{VM_EXIT_MMIO_EMULATION_INTERCEPTED_5801}"
+            },
+            {
+                "step": 2,
+                "name": "Virtio-Net 가상 링(vring) 공유 메모리 오버플로우",
+                "target": "POST /api/stage2/virtio_vring_overflow (vring_idx, descriptor_len, corrupt_next_offset, payload_type)",
+                "poc_explanation": "호스트와 게스트 간의 Virtio 디스크립터 체인 공유 메모리 버퍼를 4096바이트 초과 할당하여 OOB 힙 메모리를 오염시키고 호스트 프로세스 제어권을 획득합니다.",
+                "exploit_payload": '{"vring_idx": 1, "descriptor_len": 4096, "corrupt_next_offset": "0x1000", "payload_type": "scatter_gather_oob"}',
+                "defense": "Virtqueue 디스크립터 경계 검증 및 게스트 메모리 IOMMU 격리.",
+                "sample_output": "💥 Virtio-Net vring[1] corrupted! Shared descriptor chain exceeded host boundary at offset 0x1000 -> FLAG{VIRTIO_VRING_SHARED_MEMORY_CORRUPTED_5802}"
+            },
+            {
+                "step": 3,
+                "name": "KVM vCPU MSR_LSTAR 레지스터 상태 스머글링 및 호스트 커널 베이스 유출",
+                "target": "POST /api/stage3/kvm_vcpu_smuggling (vcpu_id, smuggle_register, target_msr, leak_host_kernel_base)",
+                "poc_explanation": "KVM ioctl 핸들러 취약점을 통해 vCPU의 IA32_LSTAR MSR(0xC0000082) 시스템 콜 엔트리포인트를 스머글링하여 호스트의 커널 베이스 주소를 유출합니다.",
+                "exploit_payload": '{"vcpu_id": 0, "smuggle_register": "CR3_AND_MSR_LSTAR", "target_msr": "0xC0000082", "leak_host_kernel_base": true}',
+                "defense": "vCPU MSR 읽기/쓰기 화이트리스트 및 KVM ioctl 파라미터 세니타이징.",
+                "sample_output": "🔓 KVM vCPU[0] register context smuggled! IA32_LSTAR leaked host syscall handler -> Host Kernel Base: 0xffffffff81000000 -> FLAG{KVM_VCPU_REGISTER_STATE_HOST_LEAKED_5803}"
+            },
+            {
+                "step": 4,
+                "name": "Seccomp BPF & Landlock LSM 기반 MicroVM 능동 봉쇄 및 하드닝",
+                "target": "POST /api/stage4/enforce_hypervisor_hardening (seccomp_bpf_policy, landlock_fs_confinement, drop_caps, enforce_memory_tagging)",
+                "poc_explanation": "KVM ioctl 화이트리스트 Seccomp BPF 정책을 적용하고, Landlock LSM 파일시스템 격리, CAP_SYS_ADMIN/CAP_SYS_PTRACE 기능 박탈 및 메모리 태깅(MTE)을 적용하여 탈출 공격을 원천 차단합니다.",
+                "exploit_payload": '{"seccomp_bpf_policy": "strict_kvm_ioctl_whitelist", "landlock_fs_confinement": true, "drop_caps": ["CAP_SYS_ADMIN", "CAP_SYS_PTRACE"], "enforce_memory_tagging": true}',
+                "defense": "MicroVM 최소 권한 격리 및 하이퍼바이저 샌드박싱 강제 집행.",
+                "sample_output": "🛡️ MicroVM Hardening active! Strict KVM ioctl Seccomp BPF applied, Landlock LSM locked, caps dropped -> FLAG{MICROVM_HYPERVISOR_CONFINEMENT_ENFORCED_5804}"
+            }
+        ]
     }
 }
 
