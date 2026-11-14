@@ -28,7 +28,7 @@ When API credentials are not available or 2FA prevents token generation:
 2. Open target subreddit submission URL:
    `https://www.reddit.com/r/{target_sub}/submit`
 3. DevTools fills:
-   - Title: `[Release/Free Tool] VibeHacking - Open Source 55+ Docker Labs & 2,345 Wargames Platform`
+   - Title: `[Release/Free Tool] VibeHacking - Open Source 56 Docker Labs & 2,380 Wargames Platform`
    - Body/URL: Technical breakdown and GitHub repository link.
    - Flair selection: `Tool` or `Resource`.
 4. Capture screenshot before posting.
