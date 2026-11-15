@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VibeHacking Security Diagnostic Report Generator (보안 진단 보고서 생성기)
-45개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
+61개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
 - CVSS 3.1 Base Score & Vector 계산기
 - MITRE ATT&CK 프레임워크 전술(Tactics) 및 기법(Techniques) 매핑
 - 다중 출력 포맷: Markdown (.md), HTML5 (.html, 모던 반응형 테마), JSON (.json)
@@ -596,6 +596,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "nist_csf_name": "Data-at-Rest & In-Transit Protected (Post-Quantum Cryptography & Hybrid KEM)",
         "owasp_id": "A02:2021",
         "owasp_name": "Cryptographic Failures (Quantum-Vulnerable Asymmetric Ciphers & Period Finding)",
+    },
+    "61": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근 통제 (제로 트러스트 API 게이트웨이 및 워크로드 상호 인증)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Access Control (Zero Trust Architecture, Workload Attestation & DPoP Token Binding)",
+        "owasp_id": "API1:2023",
+        "owasp_name": "Broken Object Level Authorization & Spoofed Identity Headers",
     },
 }
 
@@ -1747,7 +1755,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """45개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """61개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

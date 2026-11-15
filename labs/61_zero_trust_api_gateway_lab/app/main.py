@@ -208,6 +208,9 @@ def stage3_dpop_replay(req: Stage3Request):
             "message": f"DPoP proof replay detected: jti '{jti}' has already been consumed."
         }
 
+    # Bounded cache size to prevent memory exhaustion
+    if len(DPOP_JTI_CACHE) > 10000:
+        DPOP_JTI_CACHE.clear()
     DPOP_JTI_CACHE.add(jti)
     token_ath = hashlib.sha256(req.access_token.encode("utf-8")).hexdigest()[:24]
 

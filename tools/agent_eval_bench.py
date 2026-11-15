@@ -626,13 +626,15 @@ def main() -> None:
     json_path = ROOT_DIR / args.output_json
     md_path = ROOT_DIR / args.output_md
 
+    lab_samples = 0 if args.samples == 0 else max(5, args.samples // 2)
+
     if args.compare:
         if not args.quiet and not args.json:
             print("[+] Mode: MULTI-MODEL COMPARISON LEADERBOARD")
         leaderboard = run_comparator(
             target=args.target,
             wargame_samples=args.samples,
-            lab_samples=max(5, args.samples // 2),
+            lab_samples=lab_samples,
         )
         export_reports(leaderboard, json_path, md_path)
 
@@ -653,7 +655,7 @@ def main() -> None:
         results = engine.run_full_benchmark(
             target=args.target,
             wargame_samples=args.samples,
-            lab_samples=max(5, args.samples // 2),
+            lab_samples=lab_samples,
             filter_tier=args.tier,
             filter_track=args.track,
             filter_lab=args.lab,

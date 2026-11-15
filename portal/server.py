@@ -110,7 +110,7 @@ class BatchLabRequest(BaseModel):
 
 @app.get("/api/labs/categories")
 def get_lab_categories():
-    """44개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
+    """61개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
     stats: Dict[str, dict] = {}
     for lid, meta in LABS.items():
         cat = get_lab_category(lid)
@@ -131,7 +131,7 @@ def get_lab_categories():
 
 @app.get("/api/labs")
 def list_labs(category: Optional[str] = None):
-    """44개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
+    """61개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
     result = []
     target_cat = category.strip().lower() if category else None
     for lid, meta in sorted(LABS.items()):
