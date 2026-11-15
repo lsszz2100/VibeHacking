@@ -1,12 +1,12 @@
 {
   "report_title": "VibeHacking Enterprise Security Diagnostic & Threat Assessment Report",
   "metadata": {
-    "total_labs": 58,
-    "total_findings": 58,
+    "total_labs": 59,
+    "total_findings": 59,
     "average_cvss": 8.7,
     "severity_counts": {
       "Critical": 29,
-      "High": 23,
+      "High": 24,
       "Medium": 6,
       "Low": 0,
       "None": 0
@@ -25,7 +25,8 @@
       "Execution / Privilege Escalation": 1,
       "Credential Access / Collection": 1,
       "Defense Evasion / Privilege Escalation": 1,
-      "Privilege Escalation / Defense Evasion": 1
+      "Privilege Escalation / Defense Evasion": 1,
+      "Discovery / Defense Evasion": 1
     },
     "category_counts": {
       "Web Security": 3,
@@ -71,7 +72,8 @@
       "Applied Cryptography & Post-Quantum Security": 1,
       "Kernel Security, eBPF & Runtime Defense": 1,
       "Reverse Engineering, Binary Protection & Anti-Analysis": 1,
-      "Cloud Virtualization, MicroVM Isolation & Hypervisor Escape": 1
+      "Cloud Virtualization, MicroVM Isolation & Hypervisor Escape": 1,
+      "Confidential Computing, Hardware TEE & Memory Encryption": 1
     },
     "kisa_counts": {
       "2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)": 1,
@@ -131,7 +133,8 @@
       "2.8.1 암호통제 (NIST FIPS 203 ML-KEM-768 격자 KEM & SNDL 방어)": 1,
       "2.10.1 시스템 보안 (eBPF 커널 시스콜 텔레메트리 & 루트킷 은닉 차단)": 1,
       "2.10.2 시스템 보안 (바이너리 역공학 방지 및 안티디버깅/난독화 보호 통제)": 1,
-      "2.6.5 클라우드 및 가상화 보안 (하이퍼바이저 탈출 및 MicroVM 격리 통제)": 1
+      "2.6.5 클라우드 및 가상화 보안 (하이퍼바이저 탈출 및 MicroVM 격리 통제)": 1,
+      "2.6.5 클라우드 및 가상화 보안 (기밀 컴퓨팅 TEE 및 하드웨어 메모리 암호화 통제)": 1
     },
     "nist_csf_counts": {
       "PR.PS-01 Platform Security / PR.DS-01 Data Security": 2,
@@ -189,7 +192,8 @@
       "PR.DS-02 Data in Transit Cryptographic Protection (Post-Quantum Hybrid TLS 1.3)": 1,
       "DE.CM-01 Networks & Kernel Computing Physical Environment Monitored (eBPF LSM Runtime Defense)": 1,
       "PR.IP-01 Baseline Configuration & Binary Protection Mechanisms (Anti-Reversing & VM Evasion Defense)": 1,
-      "PR.AC-05 Network & Virtualization Integrity Protected (MicroVM Isolation & MMIO Protection)": 1
+      "PR.AC-05 Network & Virtualization Integrity Protected (MicroVM Isolation & MMIO Protection)": 1,
+      "PR.DS-01 Data-at-Rest & In-Use Protected (Confidential Computing Memory Encryption & Attestation)": 1
     },
     "owasp_counts": {
       "A03:2021 Injection": 4,
@@ -212,10 +216,11 @@
       "A02:2021 Cryptographic Failures (Store-Now-Decrypt-Later & Quantum Vulnerable Primitives)": 1,
       "A05:2021 Security Misconfiguration (Kernel Unprivileged eBPF & Process Masquerading)": 1,
       "A08:2021 Software and Data Integrity Failures (Tamper-Resistance & Binary Protections)": 1,
-      "A05:2021 Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)": 1
+      "A05:2021 Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)": 1,
+      "A02:2021 Cryptographic Failures (Hardware Memory Encryption & Enclave Measurement Verification)": 1
     },
     "live_active_labs": 0,
-    "generated_at": "2026-11-14 21:04:58"
+    "generated_at": "2026-11-15 01:10:06"
   },
   "findings": [
     {
@@ -1609,6 +1614,30 @@
       "nist_csf_name": "Network & Virtualization Integrity Protected (MicroVM Isolation & MMIO Protection)",
       "owasp_id": "A05:2021",
       "owasp_name": "Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)"
+    },
+    {
+      "vuln_id": "VIBE-2026-5901",
+      "lab_id": "59",
+      "lab_title": "59 ConfidentialComputingLab TEE & AMD SEV-SNP Hardware Memory Defense",
+      "name": "Confidential Computing TEE Memory Sniffing & Attestation Bypass via Cold Boot DMA Probe",
+      "category": "Confidential Computing, Hardware TEE & Memory Encryption",
+      "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:H/UI:N/S:C/C:H/I:H/A:H",
+      "mitre_id": "T1580",
+      "mitre_technique": "Cloud Infrastructure Discovery: Memory Encryption & Attestation Bypass",
+      "mitre_tactic": "Discovery / Defense Evasion",
+      "impact": "Host root or DMA adversary dumps guest physical memory to extract cryptographic secrets, circumvents unverified remote attestation, or tampers with page mapping via hypervisor splicing.",
+      "description": "Lack of hardware-enforced memory encryption engine (MEE) or improper remote attestation allows malicious cloud host administrators to inspect guest RAM, inject untrusted enclave code, and alter page tables.",
+      "affected_component": "ConfidentialComputingLab TEE Controller (Port 8059)",
+      "remediation": "Enable AMD SEV-SNP or Intel TDX hardware memory encryption (AES-256-XTS), enforce ECDSA P-384 hardware remote attestation with MRENCLAVE measurement validation, activate Reverse Map Table (RMP) page ownership enforcement, and encrypt vCPU register state (VMSA).",
+      "calculated_score": 7.5,
+      "severity": "High",
+      "live_active": false,
+      "kisa_id": "2.6.5",
+      "kisa_name": "클라우드 및 가상화 보안 (기밀 컴퓨팅 TEE 및 하드웨어 메모리 암호화 통제)",
+      "nist_csf_id": "PR.DS-01",
+      "nist_csf_name": "Data-at-Rest & In-Use Protected (Confidential Computing Memory Encryption & Attestation)",
+      "owasp_id": "A02:2021",
+      "owasp_name": "Cryptographic Failures (Hardware Memory Encryption & Enclave Measurement Verification)"
     }
   ]
 }

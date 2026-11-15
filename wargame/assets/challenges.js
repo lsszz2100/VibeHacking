@@ -616,6 +616,14 @@ const TRACKS = [
     "en": "Hypervisor & MicroVM Virtualization Security",
     "desc_ko": "VM-Exit EPT 위반 & MMIO 에뮬레이션 인터셉트 · Virtio-Net vring OOB 힙 메모리 변조 · KVM vCPU MSR_LSTAR 레지스터 상태 스머글링 및 호스트 주소 유출 · Seccomp BPF & Landlock LSM MicroVM 능동 격리 하드닝.",
     "desc_en": "VM-Exit EPT violation & MMIO emulation interception, Virtio-Net vring OOB heap corruption, KVM vCPU MSR_LSTAR register state smuggling & host kernel leak, and Seccomp BPF & Landlock LSM MicroVM active confinement."
+  },
+  {
+    "id": "teeconfidential",
+    "icon": "🔒",
+    "ko": "기밀 컴퓨팅 & TEE 하드웨어 메모리 방어",
+    "en": "Confidential Computing & TEE Hardware Memory Defense",
+    "desc_ko": "AMD SEV-SNP & Intel TDX 하드웨어 메모리 암호화(AES-256-XTS) · 보안 프로세서 원격 증명(Remote Attestation) & MRENCLAVE 서명 검증 · 역방향 매핑 테이블(RMP) 페이지 스플라이싱 차단 · vCPU 레지스터 상태(VMSA) 암호화 및 캐시 타이밍 격리.",
+    "desc_en": "AMD SEV-SNP & Intel TDX hardware memory encryption (AES-256-XTS), hardware remote attestation & MRENCLAVE signature verification, Reverse Map Table (RMP) page splicing defense, and vCPU state save area (VMSA) encryption & cache timing confinement."
   }
 ];
 
@@ -69276,5 +69284,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "b68fe3624dddadb35bbce98ce6847a13eaf08eb3648273161565a6e05fed9832"
+  },
+  {
+    "id": "t0_teeconfidential_fundamentals",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기밀 컴퓨팅 및 TEE 아키텍처 개요",
+      "en": "Confidential Computing & TEE Architecture Fundamentals"
+    },
+    "prompt": {
+      "ko": "기밀 컴퓨팅 및 TEE 아키텍처 개요 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_fundamentals_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_fundamentals_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Confidential Computing & TEE Architecture Fundamentals.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_fundamentals_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_fundamentals_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_fundamentals_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_fundamentals_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_fundamentals_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_fundamentals_v1\")."
+      ]
+    },
+    "hash": "d45d55f1bcad9fb20a0e5de7c186cc0b7e6a1e4eada29d83be9f30b258793268"
+  },
+  {
+    "id": "t0_teeconfidential_hardware_root_of_trust",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 신뢰 루트(RoT)와 암호화 엔진",
+      "en": "Hardware Root of Trust & Encryption Engine"
+    },
+    "prompt": {
+      "ko": "하드웨어 신뢰 루트(RoT)와 암호화 엔진 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_hardware_root_of_trust_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_hardware_root_of_trust_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Hardware Root of Trust & Encryption Engine.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_hardware_root_of_trust_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_hardware_root_of_trust_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_hardware_root_of_trust_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_hardware_root_of_trust_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_hardware_root_of_trust_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_hardware_root_of_trust_v1\")."
+      ]
+    },
+    "hash": "c64a05c882fd3161b9a249ce37b42d0307c685bcc82bb462e3291a4f95935556"
+  },
+  {
+    "id": "t0_teeconfidential_memory_encryption_engine",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메모리 암호화 엔진(MEE)과 버스 스누핑 차단",
+      "en": "Memory Encryption Engine (MEE) & Bus Snooping Defense"
+    },
+    "prompt": {
+      "ko": "메모리 암호화 엔진(MEE)과 버스 스누핑 차단 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_memory_encryption_engine_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_memory_encryption_engine_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Memory Encryption Engine (MEE) & Bus Snooping Defense.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_memory_encryption_engine_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_memory_encryption_engine_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_memory_encryption_engine_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_memory_encryption_engine_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_memory_encryption_engine_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_memory_encryption_engine_v1\")."
+      ]
+    },
+    "hash": "d1658392d7ba036c6e02f765b22a2de0948036fef2bafe33a41588e722224f63"
+  },
+  {
+    "id": "t0_teeconfidential_intel_sgx_enclave",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel SGX Enclave 및 EPC 페이지 구조",
+      "en": "Intel SGX Enclave & Enclave Page Cache Structure"
+    },
+    "prompt": {
+      "ko": "Intel SGX Enclave 및 EPC 페이지 구조 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_intel_sgx_enclave_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_intel_sgx_enclave_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Intel SGX Enclave & Enclave Page Cache Structure.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_intel_sgx_enclave_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_intel_sgx_enclave_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_intel_sgx_enclave_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_intel_sgx_enclave_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_intel_sgx_enclave_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_intel_sgx_enclave_v1\")."
+      ]
+    },
+    "hash": "a30b1c3f6918dca96a201a7582e388396825c90a6d9262cb2dd53090fa56087a"
+  },
+  {
+    "id": "t0_teeconfidential_amd_sev_snp_intro",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AMD SEV-SNP 가상화 암호화 및 무결성 보호",
+      "en": "AMD SEV-SNP Encrypted Virtualization & Integrity"
+    },
+    "prompt": {
+      "ko": "AMD SEV-SNP 가상화 암호화 및 무결성 보호 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_amd_sev_snp_intro_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_amd_sev_snp_intro_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for AMD SEV-SNP Encrypted Virtualization & Integrity.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_amd_sev_snp_intro_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_amd_sev_snp_intro_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_amd_sev_snp_intro_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_amd_sev_snp_intro_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_amd_sev_snp_intro_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_amd_sev_snp_intro_v1\")."
+      ]
+    },
+    "hash": "654848149d8e88e503fb5d478276892984a3b4345bcdbef2ebb270ce1bc5d07d"
+  },
+  {
+    "id": "t0_teeconfidential_intel_tdx_trust_domain",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel TDX Trust Domain 및 하드웨어 격리",
+      "en": "Intel TDX Trust Domain & Hardware Confinement"
+    },
+    "prompt": {
+      "ko": "Intel TDX Trust Domain 및 하드웨어 격리 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_intel_tdx_trust_domain_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_intel_tdx_trust_domain_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Intel TDX Trust Domain & Hardware Confinement.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_intel_tdx_trust_domain_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_intel_tdx_trust_domain_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_intel_tdx_trust_domain_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_intel_tdx_trust_domain_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_intel_tdx_trust_domain_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_intel_tdx_trust_domain_v1\")."
+      ]
+    },
+    "hash": "a3eba5847fb1a58da207dc348632587a08ae6718c0f219ab32fb6f77a97b1c9e"
+  },
+  {
+    "id": "t0_teeconfidential_aws_nitro_enclaves",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AWS Nitro Enclaves 비신뢰 호스트 격리 원리",
+      "en": "AWS Nitro Enclaves Untrusted Host Confinement"
+    },
+    "prompt": {
+      "ko": "AWS Nitro Enclaves 비신뢰 호스트 격리 원리 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_aws_nitro_enclaves_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_aws_nitro_enclaves_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for AWS Nitro Enclaves Untrusted Host Confinement.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_aws_nitro_enclaves_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_aws_nitro_enclaves_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_aws_nitro_enclaves_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_aws_nitro_enclaves_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_aws_nitro_enclaves_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_aws_nitro_enclaves_v1\")."
+      ]
+    },
+    "hash": "5fbf9b1c423c29a2950af75f121b5b8762ac1e29b65d00e8772aa644184b9a07"
+  },
+  {
+    "id": "t1_teeconfidential_cold_boot_protection",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cold Boot 물리 메모리 덤프 하드웨어 암호화 방어",
+      "en": "Cold Boot Physical Memory Dump Encryption Defense"
+    },
+    "prompt": {
+      "ko": "Cold Boot 물리 메모리 덤프 하드웨어 암호화 방어 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_cold_boot_protection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_cold_boot_protection_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Cold Boot Physical Memory Dump Encryption Defense.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_cold_boot_protection_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_cold_boot_protection_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_cold_boot_protection_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_cold_boot_protection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_cold_boot_protection_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_cold_boot_protection_v1\")."
+      ]
+    },
+    "hash": "be8b575171edf583dd7e664f9964630fe9b9df4f560193badeee267067041bb2"
+  },
+  {
+    "id": "t1_teeconfidential_mrenclave_measurement",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "초기 엔클레이브 로딩 측정값(MRENCLAVE) 계산",
+      "en": "Initial Enclave Loading Measurement (MRENCLAVE) Computation"
+    },
+    "prompt": {
+      "ko": "초기 엔클레이브 로딩 측정값(MRENCLAVE) 계산 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_mrenclave_measurement_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_mrenclave_measurement_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Initial Enclave Loading Measurement (MRENCLAVE) Computation.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_mrenclave_measurement_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_mrenclave_measurement_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_mrenclave_measurement_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_mrenclave_measurement_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_mrenclave_measurement_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_mrenclave_measurement_v1\")."
+      ]
+    },
+    "hash": "dc1208ced87aa43f0d71d10a00c73687d3897043e8cada543389e2ab2846a4cf"
+  },
+  {
+    "id": "t1_teeconfidential_quoting_enclave",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Quoting Enclave 기반 하드웨어 ECDSA P-384 서명",
+      "en": "Quoting Enclave Hardware ECDSA P-384 Attestation Signing"
+    },
+    "prompt": {
+      "ko": "Quoting Enclave 기반 하드웨어 ECDSA P-384 서명 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_quoting_enclave_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_quoting_enclave_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Quoting Enclave Hardware ECDSA P-384 Attestation Signing.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_quoting_enclave_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_quoting_enclave_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_quoting_enclave_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_quoting_enclave_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_quoting_enclave_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_quoting_enclave_v1\")."
+      ]
+    },
+    "hash": "6b70b808850129b9f3ebe78b1c0e2ffc7f056adb25332e7e5f9d684cced80107"
+  },
+  {
+    "id": "t1_teeconfidential_asid_isolation",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ASID 기반 다중 TEE 가상머신 주소 공간 격리",
+      "en": "ASID-Based Multi-TEE Address Space Separation"
+    },
+    "prompt": {
+      "ko": "ASID 기반 다중 TEE 가상머신 주소 공간 격리 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_asid_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_asid_isolation_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for ASID-Based Multi-TEE Address Space Separation.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_asid_isolation_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_asid_isolation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_asid_isolation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_asid_isolation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_asid_isolation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_asid_isolation_v1\")."
+      ]
+    },
+    "hash": "3b7e6d3645d0f68dc35d0bf32a918a3e136ea4117849ced9fd52bdf293f88626"
+  },
+  {
+    "id": "t1_teeconfidential_aes_xts_tweak",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AES-XTS 주소 바인딩 트윅을 통한 블록 치환 공격 방어",
+      "en": "AES-XTS Physical Address Tweak Block Substitution Defense"
+    },
+    "prompt": {
+      "ko": "AES-XTS 주소 바인딩 트윅을 통한 블록 치환 공격 방어 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_aes_xts_tweak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_aes_xts_tweak_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for AES-XTS Physical Address Tweak Block Substitution Defense.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_aes_xts_tweak_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_aes_xts_tweak_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_aes_xts_tweak_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_aes_xts_tweak_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_aes_xts_tweak_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_aes_xts_tweak_v1\")."
+      ]
+    },
+    "hash": "eb139b8e600576dfe54fea6182a67ecc604d48ee927b16b6f797e080ea863311"
+  },
+  {
+    "id": "t1_teeconfidential_epc_page_paging",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "EPC 암호화 페이징 및 무결성 태그 보존",
+      "en": "EPC Encrypted Paging & Integrity Tag Preservation"
+    },
+    "prompt": {
+      "ko": "EPC 암호화 페이징 및 무결성 태그 보존 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_epc_page_paging_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_epc_page_paging_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for EPC Encrypted Paging & Integrity Tag Preservation.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_epc_page_paging_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_epc_page_paging_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_epc_page_paging_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_epc_page_paging_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_epc_page_paging_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_epc_page_paging_v1\")."
+      ]
+    },
+    "hash": "1f9aecc80810d342aaaacef8cbebb1b0c130ea3f915486fe090cb83ccf3574a0"
+  },
+  {
+    "id": "t1_teeconfidential_attestation_nonce",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "재전송 방지 Attestation Nonce 및 챌린지 검증",
+      "en": "Anti-Replay Attestation Nonce & Challenge Verification"
+    },
+    "prompt": {
+      "ko": "재전송 방지 Attestation Nonce 및 챌린지 검증 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_attestation_nonce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_attestation_nonce_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Anti-Replay Attestation Nonce & Challenge Verification.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_attestation_nonce_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_attestation_nonce_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_attestation_nonce_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_attestation_nonce_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_attestation_nonce_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_attestation_nonce_v1\")."
+      ]
+    },
+    "hash": "60fdee0d0aa3363f6d397e0190e8c47d0f5fa7e21666784dbfcfb86d850bad9f"
+  },
+  {
+    "id": "t2_teeconfidential_rmp_page_ownership",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Reverse Map Table (RMP) 기반 페이지 소유권 강제",
+      "en": "Reverse Map Table (RMP) Page Ownership Enforcement"
+    },
+    "prompt": {
+      "ko": "Reverse Map Table (RMP) 기반 페이지 소유권 강제 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_rmp_page_ownership_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_rmp_page_ownership_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Reverse Map Table (RMP) Page Ownership Enforcement.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_rmp_page_ownership_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_rmp_page_ownership_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_rmp_page_ownership_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_rmp_page_ownership_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_rmp_page_ownership_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_rmp_page_ownership_v1\")."
+      ]
+    },
+    "hash": "55bff5f408ab50cc603d513bf44ae20f53db9df236de244899f12f58279f56d1"
+  },
+  {
+    "id": "t2_teeconfidential_vmsa_register_protection",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Virtual Machine Save Area (VMSA) vCPU 상태 암호화",
+      "en": "Virtual Machine Save Area (VMSA) Register State Encryption"
+    },
+    "prompt": {
+      "ko": "Virtual Machine Save Area (VMSA) vCPU 상태 암호화 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_vmsa_register_protection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_vmsa_register_protection_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Virtual Machine Save Area (VMSA) Register State Encryption.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_vmsa_register_protection_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_vmsa_register_protection_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_vmsa_register_protection_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_vmsa_register_protection_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_vmsa_register_protection_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_vmsa_register_protection_v1\")."
+      ]
+    },
+    "hash": "d868c913a2e2a59530f03e3db1e92d6e19f0d5ddb26050011348432230dde5de"
+  },
+  {
+    "id": "t2_teeconfidential_measurement_pcr_extend",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TPM/vTPM PCR 레지스터 체인 확장 및 신뢰 부팅",
+      "en": "TPM/vTPM PCR Register Chain Extension & Measured Boot"
+    },
+    "prompt": {
+      "ko": "TPM/vTPM PCR 레지스터 체인 확장 및 신뢰 부팅 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_measurement_pcr_extend_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_measurement_pcr_extend_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for TPM/vTPM PCR Register Chain Extension & Measured Boot.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_measurement_pcr_extend_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_measurement_pcr_extend_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_measurement_pcr_extend_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_measurement_pcr_extend_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_measurement_pcr_extend_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_measurement_pcr_extend_v1\")."
+      ]
+    },
+    "hash": "bef550407f70cf2b1687ae8ae2350ecee4780fbbf400140fcc3cec03b82a8ac7"
+  },
+  {
+    "id": "t2_teeconfidential_side_channel_flush",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VM-Exit 컨텍스트 스위칭 시 IBPB 및 WBINVD 캐시 플러시",
+      "en": "IBPB & WBINVD Cache Line Flush on VM-Exit Context Transition"
+    },
+    "prompt": {
+      "ko": "VM-Exit 컨텍스트 스위칭 시 IBPB 및 WBINVD 캐시 플러시 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_side_channel_flush_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_side_channel_flush_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for IBPB & WBINVD Cache Line Flush on VM-Exit Context Transition.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_side_channel_flush_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_side_channel_flush_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_side_channel_flush_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_side_channel_flush_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_side_channel_flush_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_side_channel_flush_v1\")."
+      ]
+    },
+    "hash": "44867608fc11f798e40616c4c6ee9eceb77fcf83c2cc3bc4b6d3aabb900d402f"
+  },
+  {
+    "id": "t2_teeconfidential_dma_protection_iommu",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TEE 전용 IOMMU 페이지 테이블 격리 및 DMA 스누핑 차단",
+      "en": "TEE-Dedicated IOMMU Table Isolation & DMA Snooping Guard"
+    },
+    "prompt": {
+      "ko": "TEE 전용 IOMMU 페이지 테이블 격리 및 DMA 스누핑 차단 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_dma_protection_iommu_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_dma_protection_iommu_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for TEE-Dedicated IOMMU Table Isolation & DMA Snooping Guard.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_dma_protection_iommu_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_dma_protection_iommu_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_dma_protection_iommu_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_dma_protection_iommu_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_dma_protection_iommu_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_dma_protection_iommu_v1\")."
+      ]
+    },
+    "hash": "674d9abe5d0d327a8c7a2e69a95c843569652efe5ec6954fa69d588551a09976"
+  },
+  {
+    "id": "t2_teeconfidential_memory_replay_counter",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "안티 리플레이 카운터 및 메모리 버전 태그 무결성",
+      "en": "Anti-Replay Counter Tree & Memory Version Tag Integrity"
+    },
+    "prompt": {
+      "ko": "안티 리플레이 카운터 및 메모리 버전 태그 무결성 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_memory_replay_counter_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_memory_replay_counter_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Anti-Replay Counter Tree & Memory Version Tag Integrity.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_memory_replay_counter_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_memory_replay_counter_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_memory_replay_counter_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_memory_replay_counter_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_memory_replay_counter_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_memory_replay_counter_v1\")."
+      ]
+    },
+    "hash": "2072ef4166f2611e5915b928b2dcde671a36258fa47a1133e20f7064c89b75eb"
+  },
+  {
+    "id": "t2_teeconfidential_certificate_chain_snp",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AMD VCEK 및 KDS 하드웨어 인증서 체인 검증",
+      "en": "AMD VCEK & KDS Hardware Certificate Chain Verification"
+    },
+    "prompt": {
+      "ko": "AMD VCEK 및 KDS 하드웨어 인증서 체인 검증 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_certificate_chain_snp_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_certificate_chain_snp_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for AMD VCEK & KDS Hardware Certificate Chain Verification.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_certificate_chain_snp_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_certificate_chain_snp_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_certificate_chain_snp_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_certificate_chain_snp_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_certificate_chain_snp_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_certificate_chain_snp_v1\")."
+      ]
+    },
+    "hash": "ba6a41f22b095ca6f3e377edbfa16c28c7f38046b1b4b0449ab94e8349145b30"
+  },
+  {
+    "id": "t3_teeconfidential_remapping_attack_defense",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "악성 하이퍼바이저 페이지 스플라이싱 및 RMP #NPF 인터셉트",
+      "en": "Malicious Hypervisor Splicing & RMP #NPF Interception"
+    },
+    "prompt": {
+      "ko": "악성 하이퍼바이저 페이지 스플라이싱 및 RMP #NPF 인터셉트 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_remapping_attack_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_remapping_attack_defense_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Malicious Hypervisor Splicing & RMP #NPF Interception.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_remapping_attack_defense_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_remapping_attack_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_remapping_attack_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_remapping_attack_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_remapping_attack_defense_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_remapping_attack_defense_v1\")."
+      ]
+    },
+    "hash": "115da859825e409b2dbeabc02c9a0e6cf61708caa670ba587f4d0b3384e64697"
+  },
+  {
+    "id": "t3_teeconfidential_fault_injection_glitch",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "전압/클럭 글리칭 결함 주입 공격 하드웨어 센서 방어",
+      "en": "Voltage/Clock Glitching Fault Injection Sensor Defense"
+    },
+    "prompt": {
+      "ko": "전압/클럭 글리칭 결함 주입 공격 하드웨어 센서 방어 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_fault_injection_glitch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_fault_injection_glitch_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Voltage/Clock Glitching Fault Injection Sensor Defense.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_fault_injection_glitch_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_fault_injection_glitch_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_fault_injection_glitch_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_fault_injection_glitch_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_fault_injection_glitch_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_fault_injection_glitch_v1\")."
+      ]
+    },
+    "hash": "d9a79180d00df975418b3d21029b9d566daf403bdeaf4e5e75ad66d4ceadb47b"
+  },
+  {
+    "id": "t3_teeconfidential_secure_channel_apic",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "보안 가상 인터럽트(Secure AVIC) 및 신뢰 채널 제어",
+      "en": "Secure AVIC Virtual Interrupt & Trusted Channel Control"
+    },
+    "prompt": {
+      "ko": "보안 가상 인터럽트(Secure AVIC) 및 신뢰 채널 제어 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_secure_channel_apic_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_secure_channel_apic_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Secure AVIC Virtual Interrupt & Trusted Channel Control.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_secure_channel_apic_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_secure_channel_apic_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_secure_channel_apic_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_secure_channel_apic_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_secure_channel_apic_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_secure_channel_apic_v1\")."
+      ]
+    },
+    "hash": "226822b18291b8f112b2dc4df4e58bf98ea7a61f7e95d5932789995e9078ba26"
+  },
+  {
+    "id": "t3_teeconfidential_enclave_page_cache_mac",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Bonsai Merkle Tree 기반 엔클레이브 페이지 암호 무결성",
+      "en": "Bonsai Merkle Tree Enclave Page MAC Integrity Verification"
+    },
+    "prompt": {
+      "ko": "Bonsai Merkle Tree 기반 엔클레이브 페이지 암호 무결성 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_enclave_page_cache_mac_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_enclave_page_cache_mac_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Bonsai Merkle Tree Enclave Page MAC Integrity Verification.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_enclave_page_cache_mac_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_enclave_page_cache_mac_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_enclave_page_cache_mac_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_enclave_page_cache_mac_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_enclave_page_cache_mac_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_enclave_page_cache_mac_v1\")."
+      ]
+    },
+    "hash": "65d6d07a00f0c2da387c22137c3d1557d8b8679669350d8f80e0c42a0f7da7af"
+  },
+  {
+    "id": "t3_teeconfidential_sgx_aep_trampoline",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비동기 엔클레이브 탈출(AEX) 시 레지스터 합성 상태 치환",
+      "en": "Synthetic State Substitution on Asynchronous Enclave Exit (AEX)"
+    },
+    "prompt": {
+      "ko": "비동기 엔클레이브 탈출(AEX) 시 레지스터 합성 상태 치환 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_sgx_aep_trampoline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_sgx_aep_trampoline_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Synthetic State Substitution on Asynchronous Enclave Exit (AEX).\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_sgx_aep_trampoline_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_sgx_aep_trampoline_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_sgx_aep_trampoline_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_sgx_aep_trampoline_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_sgx_aep_trampoline_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_sgx_aep_trampoline_v1\")."
+      ]
+    },
+    "hash": "2901434049b34bc320621d3aeda0122ee2f402ff69bc8c98763b1dffec268d0a"
+  },
+  {
+    "id": "t3_teeconfidential_attestation_verification_service",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "독립적 증명 검증 서비스(IHS/MAA) 기반 신뢰 토큰 발급",
+      "en": "Independent Attestation Service (IHS/MAA) Token Issuance"
+    },
+    "prompt": {
+      "ko": "독립적 증명 검증 서비스(IHS/MAA) 기반 신뢰 토큰 발급 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_attestation_verification_service_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_attestation_verification_service_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Independent Attestation Service (IHS/MAA) Token Issuance.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_attestation_verification_service_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_attestation_verification_service_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_attestation_verification_service_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_attestation_verification_service_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_attestation_verification_service_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_attestation_verification_service_v1\")."
+      ]
+    },
+    "hash": "345f7cf3c2a1c5bafcdeb0087b158be93504c50bc0126e0409423b5f4e389ee0"
+  },
+  {
+    "id": "t3_teeconfidential_zero_trust_operator",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비신뢰 클라우드 운영자 경계 분리 및 원격 기밀 프로비저닝",
+      "en": "Untrusted Cloud Operator Separation & Secret Provisioning"
+    },
+    "prompt": {
+      "ko": "비신뢰 클라우드 운영자 경계 분리 및 원격 기밀 프로비저닝 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_zero_trust_operator_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_zero_trust_operator_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Untrusted Cloud Operator Separation & Secret Provisioning.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_zero_trust_operator_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_zero_trust_operator_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_zero_trust_operator_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_zero_trust_operator_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_zero_trust_operator_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_zero_trust_operator_v1\")."
+      ]
+    },
+    "hash": "3736a864dcc822cf29085d716b88849340f4a300fc1906e2712f70381520928f"
+  },
+  {
+    "id": "t4_teeconfidential_speculative_execution_shield",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "투기적 실행 부채널(L1TF/MDS) TEE 하드웨어 분리 완화",
+      "en": "Speculative Execution Side-Channel (L1TF/MDS) TEE Shield"
+    },
+    "prompt": {
+      "ko": "투기적 실행 부채널(L1TF/MDS) TEE 하드웨어 분리 완화 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_speculative_execution_shield_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_speculative_execution_shield_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Speculative Execution Side-Channel (L1TF/MDS) TEE Shield.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_speculative_execution_shield_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_speculative_execution_shield_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_speculative_execution_shield_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_speculative_execution_shield_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_speculative_execution_shield_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_speculative_execution_shield_v1\")."
+      ]
+    },
+    "hash": "fff2eee7691d1b868a8e6bd4b62fd40aca7acd4a29109c3e2a306a26fa0a9d55"
+  },
+  {
+    "id": "t4_teeconfidential_snp_guest_request_secret",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SEV-SNP Guest Request VMPCK 유도 암호화 키 교환",
+      "en": "SEV-SNP Guest Request VMPCK Derived Key Exchange Protocol"
+    },
+    "prompt": {
+      "ko": "SEV-SNP Guest Request VMPCK 유도 암호화 키 교환 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_snp_guest_request_secret_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_snp_guest_request_secret_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for SEV-SNP Guest Request VMPCK Derived Key Exchange Protocol.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_snp_guest_request_secret_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_snp_guest_request_secret_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_snp_guest_request_secret_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_snp_guest_request_secret_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_snp_guest_request_secret_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_snp_guest_request_secret_v1\")."
+      ]
+    },
+    "hash": "47bea0c4996638eb84b46bfdc3d60308087384bf1303e745ee434437840799f5"
+  },
+  {
+    "id": "t4_teeconfidential_tdx_seam_module",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel TDX-SEAM 가상화 관리 모듈 무결성 및 암호 서명",
+      "en": "Intel TDX-SEAM Module Integrity & Cryptographic Seal"
+    },
+    "prompt": {
+      "ko": "Intel TDX-SEAM 가상화 관리 모듈 무결성 및 암호 서명 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_tdx_seam_module_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_tdx_seam_module_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Intel TDX-SEAM Module Integrity & Cryptographic Seal.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_tdx_seam_module_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_tdx_seam_module_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_tdx_seam_module_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_tdx_seam_module_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_tdx_seam_module_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_tdx_seam_module_v1\")."
+      ]
+    },
+    "hash": "921ad109620547a764b65c83d619c7f75846d47d47fab2812d37b0d9e4b41ecf"
+  },
+  {
+    "id": "t4_teeconfidential_multi_party_confidential_ml",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다자간 기밀 연산(Confidential ML) 가중치 암호화 보호",
+      "en": "Multi-Party Confidential ML Weights Enclave Protection"
+    },
+    "prompt": {
+      "ko": "다자간 기밀 연산(Confidential ML) 가중치 암호화 보호 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_multi_party_confidential_ml_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_multi_party_confidential_ml_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Multi-Party Confidential ML Weights Enclave Protection.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_multi_party_confidential_ml_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_multi_party_confidential_ml_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_multi_party_confidential_ml_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_multi_party_confidential_ml_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_multi_party_confidential_ml_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_multi_party_confidential_ml_v1\")."
+      ]
+    },
+    "hash": "2e87cb43aac9eb4b371d2f755f2d66c437ab19ae8c35586301dd29388a6d3bab"
+  },
+  {
+    "id": "t4_teeconfidential_full_memory_encryption_xts",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "인라인 AES-XTS-256 하드웨어 메모리 암호화 파이프라인",
+      "en": "Inline AES-XTS-256 Hardware Memory Pipeline Defense"
+    },
+    "prompt": {
+      "ko": "인라인 AES-XTS-256 하드웨어 메모리 암호화 파이프라인 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_full_memory_encryption_xts_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_full_memory_encryption_xts_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Inline AES-XTS-256 Hardware Memory Pipeline Defense.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_full_memory_encryption_xts_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_full_memory_encryption_xts_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_full_memory_encryption_xts_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_full_memory_encryption_xts_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_full_memory_encryption_xts_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_full_memory_encryption_xts_v1\")."
+      ]
+    },
+    "hash": "3dc37d6a795423b67ab94ab6762c159cd02bff9bbb99ea09356d2acc72035210"
+  },
+  {
+    "id": "t4_teeconfidential_cross_cloud_attestation",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이기종 클라우드 TEE(SEV-SNP <-> TDX) 상호 증명 페더레이션",
+      "en": "Cross-Cloud TEE Mutual Attestation Federation Protocol"
+    },
+    "prompt": {
+      "ko": "이기종 클라우드 TEE(SEV-SNP <-> TDX) 상호 증명 페더레이션 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_cross_cloud_attestation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_cross_cloud_attestation_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Cross-Cloud TEE Mutual Attestation Federation Protocol.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_cross_cloud_attestation_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_cross_cloud_attestation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_cross_cloud_attestation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_cross_cloud_attestation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_cross_cloud_attestation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_cross_cloud_attestation_v1\")."
+      ]
+    },
+    "hash": "49592d22ee6cd447ba5d647436f53c0a24c9ab7f372eec9c84ada1b7d0238564"
+  },
+  {
+    "id": "t4_teeconfidential_capstone_enterprise_tee",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "teeconfidential",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 기밀 컴퓨팅 및 TEE 하드웨어 방어 캡스톤",
+      "en": "Capstone: Enterprise Confidential Computing & TEE Defense"
+    },
+    "prompt": {
+      "ko": "엔터프라이즈 기밀 컴퓨팅 및 TEE 하드웨어 방어 캡스톤 원리를 학습하고 기밀 컴퓨팅 보안 규격을 분석합니다.\\n지정된 식별자 `teeconfidential_capstone_enterprise_tee_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\\n\\n형식: FLAG{SHA256(\"teeconfidential_capstone_enterprise_tee_v1\") 앞 20자리}",
+      "en": "Analyze confidential computing specifications for Capstone: Enterprise Confidential Computing & TEE Defense.\\nCompute the first 20 hex characters of SHA256(\"teeconfidential_capstone_enterprise_tee_v1\").\\n\\nFormat: FLAG{first 20 hex of SHA256(\"teeconfidential_capstone_enterprise_tee_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `teeconfidential_capstone_enterprise_tee_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `teeconfidential_capstone_enterprise_tee_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `teeconfidential_capstone_enterprise_tee_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"teeconfidential_capstone_enterprise_tee_v1\")."
+      ]
+    },
+    "hash": "4bd5dd6c36b50e7232ac5e9a32dc88ea8f87f460b93d823a103e2b2764946af5"
   }
 ];

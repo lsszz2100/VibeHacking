@@ -914,6 +914,7 @@
     renderAntiRev("dbg_probe");
     renderEbpfShield("priv_esc");
     renderHypervisorEscape("ept_guard");
+    renderConfidential("cold_boot");
   }
 
   function hidePlayground(){
@@ -924,7 +925,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate", "antirev", "ebpfshield", "hypervisorescape"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate", "antirev", "ebpfshield", "hypervisorescape", "confidential"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -941,6 +942,7 @@
     if (tabName === "antirev") renderAntiRev();
     if (tabName === "ebpfshield") renderEbpfShield();
     if (tabName === "hypervisorescape") renderHypervisorEscape();
+    if (tabName === "confidential") renderConfidential();
   }
 
   // --- 1. CAN Bus Simulator ---
@@ -6185,6 +6187,192 @@
       sLaser();
       const p = btn.getAttribute("data-hypervisor-preset");
       renderHypervisorEscape(p);
+    });
+  });
+
+  // --- 27. Confidential Computing & TEE Attestation Inspector ---
+  let currentConfidentialScenario = "cold_boot";
+
+  function renderConfidential(scenario){
+    const archSelect = document.getElementById("confidentialArchSelect");
+    const probeSelect = document.getElementById("confidentialProbeSelect");
+    const wireBadge = document.getElementById("confidentialWireBadge");
+    const auditBadge = document.getElementById("confidentialAuditBadge");
+    const wireView = document.getElementById("confidentialWireView");
+    const auditView = document.getElementById("confidentialAuditView");
+
+    if (!archSelect || !probeSelect || !wireBadge || !auditBadge || !wireView || !auditView) return;
+
+    if (scenario) {
+      currentConfidentialScenario = scenario;
+      if (scenario === "cold_boot") {
+        archSelect.value = "amd_sev_snp";
+        probeSelect.value = "host_dma";
+      } else if (scenario === "attestation") {
+        archSelect.value = "amd_sev_snp";
+        probeSelect.value = "attest_forge";
+      } else if (scenario === "rmp_defense") {
+        archSelect.value = "amd_sev_snp";
+        probeSelect.value = "page_splicing";
+      } else if (scenario === "vmsa_protect") {
+        archSelect.value = "intel_tdx";
+        probeSelect.value = "vmsa_snoop";
+      }
+    }
+
+    const arch = archSelect.value;
+    const probe = probeSelect.value;
+
+    let wireText = "";
+    let auditText = "";
+
+    if (probe === "host_dma") {
+      wireBadge.textContent = "MEE: AES-256-XTS ACTIVE";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "COLD BOOT: 0 LEAK";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║       Hardware Memory Encryption Engine (MEE) Telemetry Wire       ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Host Root Physical Address Space DMA Probe]\n" +
+        "  - Target HPA: 0x1000a000 (Guest Confidential Enclave Memory)\n" +
+        "  - Probe Method: Host kernel cold boot memory dump & PCIe DMA tap\n" +
+        "  - Bus Controller: Non-TEE Host Context (C-bit = 0)\n\n" +
+        "[Hardware Memory Controller Response (" + arch.toUpperCase() + ")]\n" +
+        "  - Cipher: Hardware-accelerated AES-256-XTS with ephemeral key\n" +
+        "  - Address Tweak: Cryptographically bound to physical address (Prevents block relocation)\n" +
+        "  - Raw Bus Data Returned: 0x4b7f8c12a9e03d4411bbcf8892147702... (Ciphertext)\n" +
+        "  - Plaintext Recovery: 0 BITS (Hardware memory cipher impenetrable)";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          Confidential Computing Hardware Defense Audit             ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK VECTOR: Cold Boot DMA Extraction / Cloud Hypervisor Memory Sniffing\n" +
+        "  - Threat: Host admin inspecting RAM chips to steal TLS/Database master keys\n\n" +
+        "■ TEE HARDWARE BARRIER EVALUATION:\n" +
+        "  1. Ephemeral memory encryption key generated inside on-die Secure Processor\n" +
+        "  2. Memory Encryption Engine (MEE) transparently encrypts data at memory controller\n" +
+        "  3. Even physical bus analyzers observe only pseudorandom AES-XTS ciphertext\n\n" +
+        "■ AUDIT VERDICT: HIGHEST HARDWARE DATA-IN-USE PROTECTION ENFORCED";
+
+    } else if (probe === "attest_forge") {
+      wireBadge.textContent = "ATTESTATION: VERIFIED";
+      wireBadge.style.background = "#2563eb";
+      auditBadge.textContent = "IMAGE: TAMPER-PROOF";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║        Hardware Remote Attestation & Signature Verification        ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[TEE Remote Attestation Report Submission]\n" +
+        "  - Challenger Nonce: 0x9f81a7b034e2c1 (Replay Attack Barrier)\n" +
+        "  - Enclave Measurement (MRENCLAVE): e3b0c44298fc1c149afbf4c8996fb92427ae...\n" +
+        "  - Hardware Chip Root Key: VCEK (Versioned Chip Endorsement Key)\n\n" +
+        "[Hardware Security Processor Signature Check]\n" +
+        "  - Signature Algorithm: ECDSA P-384 with SHA-384 digest\n" +
+        "  - CA Trust Chain: AMD KDS / Intel Root CA -> Validated Genuine Silicon\n" +
+        "  - Image Hash Comparison: Expected == Observed (100% Match)\n" +
+        "  - Verdict: Authorized Golden Image confirmed. Counterfeits blocked!";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          Confidential Computing Hardware Defense Audit             ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK VECTOR: Forged Enclave Injection / Backdoored Guest OS Bootstrap\n" +
+        "  - Threat: Cloud operator booting modified VM to bypass application authorization\n\n" +
+        "■ ATTESTATION DEFENSE VERIFICATION:\n" +
+        "  1. Remote verifier receives unforgeable cryptographic hardware proof\n" +
+        "  2. Nonce binding guarantees attestation report freshness (Anti-replay)\n" +
+        "  3. Secret provisioning occurs ONLY after hardware measurement passes\n\n" +
+        "■ AUDIT VERDICT: ZERO-TRUST REMOTE PROVISIONING SECURED";
+
+    } else if (probe === "page_splicing") {
+      wireBadge.textContent = "RMP: TRAPPED (#NPF)";
+      wireBadge.style.background = "#dc2626";
+      auditBadge.textContent = "SPLICING: INTERCEPTED";
+      auditBadge.style.background = "#16a34a";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║        Reverse Map Table (RMP) Splicing Defense Telemetry Wire     ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[Hypervisor Malicious Memory Remapping Attempt]\n" +
+        "  - Target Guest Page (GPA): 0x204000 (Authentication token storage)\n" +
+        "  - Adversary Nested Page Table (NPT): Spliced to Malicious HPA 0x884000\n" +
+        "  - Attack Objective: Induce state confusion by swapping guest memory frames\n\n" +
+        "[Hardware MMU RMP Table Validation]\n" +
+        "  - Looked Up RMP Entry: HPA 0x884000 -> Expected ASID: 42, GPA: 0x204000\n" +
+        "  - RMP State Evaluation: OWNERSHIP MISMATCH (Attempted aliasing detected!)\n" +
+        "  - Hardware Action: Triggered #NPF (Nested Page Fault with RMP Violation)\n" +
+        "  - Hypervisor Access: TERMINATED AT HARDWARE SILICON LEVEL";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          Confidential Computing Hardware Defense Audit             ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK VECTOR: Hypervisor Page Remapping / Splicing / Memory Replay\n" +
+        "  - Threat: Corrupting guest state by silently reordering encrypted memory pages\n\n" +
+        "■ RMP ARCHITECTURE ENFORCEMENT:\n" +
+        "  1. Reverse Map Table assigns 1:1 hardware ownership to every physical page\n" +
+        "  2. Hypervisor is strictly forbidden from aliasing or remapping guest pages\n" +
+        "  3. Integrity tree prevents historic page replays\n\n" +
+        "■ AUDIT VERDICT: PAGE INTEGRITY & EXCLUSIVE OWNERSHIP VERIFIED";
+
+    } else { // vmsa_snoop
+      wireBadge.textContent = "VMSA: ENCRYPTED";
+      wireBadge.style.background = "#16a34a";
+      auditBadge.textContent = "vCPU REGS: ISOLATED";
+      auditBadge.style.background = "#2563eb";
+
+      wireText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║       Virtual Machine Save Area (VMSA) Register Guard Wire         ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "[KVM vCPU VM-Exit Context Transition]\n" +
+        "  - Exit Reason: I/O or Timer Intercept to Host Hypervisor\n" +
+        "  - Host Context Memory View: VMSA Page encrypted with ASID hardware key\n" +
+        "  - Register Exposure: RIP, RSP, RAX, RBX, RDX, CR3 -> ENCRYPTED BLOB\n\n" +
+        "[Hardware Context Switching Barrier]\n" +
+        "  - Register Save: Hardware AES-128/256-GCM authenticated encryption\n" +
+        "  - Speculative Mitigation: IBPB (Indirect Branch Predictor Barrier) engaged\n" +
+        "  - Cache Line Flush: WBINVD applied on sensitive cache sets\n" +
+        "  - Plaintext Host Read: 0 bytes exposed. Hypervisor registers blinded!";
+
+      auditText =
+        "╔════════════════════════════════════════════════════════════════════╗\n" +
+        "║          Confidential Computing Hardware Defense Audit             ║\n" +
+        "╚════════════════════════════════════════════════════════════════════╝\n\n" +
+        "■ ATTACK VECTOR: VM-Exit Register Snooping & Cache Timing Side-Channel\n" +
+        "  - Threat: Intercepting guest register values during context exit to host\n\n" +
+        "■ VMSA & SIDE-CHANNEL HARDENING:\n" +
+        "  1. All vCPU architectural registers sealed into encrypted VMSA page\n" +
+        "  2. Hypervisor can only inspect non-confidential exit reasons, never registers\n" +
+        "  3. Branch predictor and cache state flushed between context switches\n\n" +
+        "■ AUDIT VERDICT: FULL vCPU HARDWARE ENCLAVE ISOLATION ACTIVE";
+    }
+
+    wireView.textContent = wireText;
+    auditView.textContent = auditText;
+  }
+
+  const confidentialExecuteBtn = document.getElementById("confidentialExecuteBtn");
+  if (confidentialExecuteBtn) confidentialExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderConfidential(); });
+  const confidentialResetBtn = document.getElementById("confidentialResetBtn");
+  if (confidentialResetBtn) confidentialResetBtn.addEventListener("click", () => { audio(); renderConfidential("cold_boot"); });
+  const confidentialArchSelect = document.getElementById("confidentialArchSelect");
+  if (confidentialArchSelect) confidentialArchSelect.addEventListener("change", () => { audio(); renderConfidential(); });
+  const confidentialProbeSelect = document.getElementById("confidentialProbeSelect");
+  if (confidentialProbeSelect) confidentialProbeSelect.addEventListener("change", () => { audio(); renderConfidential(); });
+  document.querySelectorAll("[data-confidential-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-confidential-preset");
+      renderConfidential(p);
     });
   });
 

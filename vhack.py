@@ -615,6 +615,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [4, 10, 17, 46, 54],
     },
+    "59": {
+        "name": "기밀 컴퓨팅 TEE & 하드웨어 메모리 암호화 방어 랩",
+        "dir":  "59_confidential_computing_lab",
+        "desc": "ConfidentialComputingLab: AMD SEV-SNP & Intel TDX 하드웨어 메모리 암호화 엔진(AES-256-XTS) · 하드웨어 보안 프로세서 원격 증명(Attestation) & MRENCLAVE 서명 검증 · 역방향 매핑 테이블(RMP) 페이지 스플라이싱 차단 · vCPU 레지스터 상태(VMSA) 암호화 및 캐시 타이밍 완화",
+        "url":  "웹 콘솔 & TEE 보안 제어기: http://localhost:8059",
+        "difficulty": "★★★★★",
+        "related": [4, 14, 26, 46, 55, 58],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2240,7 +2248,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_drill = sub.add_parser("drill", help="10대 보안 기술팀 공방전 자동 훈련 엔진 (Red vs Blue 시뮬레이션 & Purple Team 점수 산출)")
     p_drill.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     p_drill.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 58개 랩 종합 공방전 실행")
+    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 59개 랩 종합 공방전 실행")
     p_drill.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")

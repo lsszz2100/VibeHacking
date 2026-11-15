@@ -581,6 +581,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A05:2021",
         "owasp_name": "Security Misconfiguration (Hypervisor Emulation & Virtio Memory Isolation Flaws)",
     },
+    "59": {
+        "kisa_id": "2.6.5",
+        "kisa_name": "클라우드 및 가상화 보안 (기밀 컴퓨팅 TEE 및 하드웨어 메모리 암호화 통제)",
+        "nist_csf_id": "PR.DS-01",
+        "nist_csf_name": "Data-at-Rest & In-Use Protected (Confidential Computing Memory Encryption & Attestation)",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures (Hardware Memory Encryption & Enclave Measurement Verification)",
+    },
 }
 
 @dataclass
@@ -1666,6 +1674,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Flaws in MMIO emulation handler and unbounded virtio-net shared memory descriptors permit guest virtual machines to escape isolation, leak host kernel pointers via KVM vCPU register smuggling, and achieve host root confinement bypass.",
                 "affected_component": "MicrovmHypervisorEscapeLab Host Daemon (Port 8058)",
                 "remediation": "Apply Seccomp BPF ioctl whitelisting for /dev/kvm, configure Landlock LSM unprivileged host filesystem barriers, drop CAP_SYS_ADMIN and CAP_SYS_PTRACE, and validate all virtqueue descriptor boundaries."
+            }
+        ]
+    },
+    "59": {
+        "title": "59 ConfidentialComputingLab TEE & AMD SEV-SNP Hardware Memory Defense",
+        "category": "Confidential Computing, Hardware TEE & Memory Encryption",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-5901",
+                "name": "Confidential Computing TEE Memory Sniffing & Attestation Bypass via Cold Boot DMA Probe",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:H/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1580",
+                "mitre_technique": "Cloud Infrastructure Discovery: Memory Encryption & Attestation Bypass",
+                "mitre_tactic": "Discovery / Defense Evasion",
+                "impact": "Host root or DMA adversary dumps guest physical memory to extract cryptographic secrets, circumvents unverified remote attestation, or tampers with page mapping via hypervisor splicing.",
+                "description": "Lack of hardware-enforced memory encryption engine (MEE) or improper remote attestation allows malicious cloud host administrators to inspect guest RAM, inject untrusted enclave code, and alter page tables.",
+                "affected_component": "ConfidentialComputingLab TEE Controller (Port 8059)",
+                "remediation": "Enable AMD SEV-SNP or Intel TDX hardware memory encryption (AES-256-XTS), enforce ECDSA P-384 hardware remote attestation with MRENCLAVE measurement validation, activate Reverse Map Table (RMP) page ownership enforcement, and encrypt vCPU register state (VMSA)."
             }
         ]
     }

@@ -30,16 +30,16 @@ def test_system_status(client):
     data = res.json()
     assert "cpu_usage_percent" in data
     assert "total_labs" in data
-    assert data["total_labs"] == 58
+    assert data["total_labs"] == 59
 
 
 def test_list_labs(client):
     res = client.get("/api/labs")
     assert res.status_code == 200
     data = res.json()
-    assert data["total"] == 58
-    assert len(data["labs"]) == 58
-    # Check Lab 19~58 presence
+    assert data["total"] == 59
+    assert len(data["labs"]) == 59
+    # Check Lab 19~59 presence
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
@@ -48,6 +48,7 @@ def test_list_labs(client):
     assert "56" in ids
     assert "57" in ids
     assert "58" in ids
+    assert "59" in ids
     assert "21" in ids
     assert "22" in ids
     assert "23" in ids
@@ -137,7 +138,7 @@ def test_get_lab_categories(client):
     res = client.get("/api/labs/categories")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 58
+    assert data["total_labs"] == 59
     assert "ai" in data["categories"]
     assert "54" in data["categories"]["ai"]["labs"]
     assert "crypto" in data["categories"]
@@ -233,8 +234,8 @@ def test_portal_compliance_summary(client):
     res = client.get("/api/compliance/summary")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 58
-    assert data["total_findings"] >= 58
+    assert data["total_labs"] == 59
+    assert data["total_findings"] >= 59
     assert data["average_cvss"] > 0
     assert "Critical" in data["severity_counts"]
     assert "High" in data["severity_counts"]
@@ -263,5 +264,12 @@ def test_portal_drill_run_api(client):
     data_58 = res_58.json()
     assert data_58["status"] == "SUCCESS"
     assert data_58["drills"][0]["lab_id"] == "58"
+
+    # Test Lab 59 drill
+    res_59 = client.post("/api/drill/run", json={"lab_id": "59"})
+    assert res_59.status_code == 200
+    data_59 = res_59.json()
+    assert data_59["status"] == "SUCCESS"
+    assert data_59["drills"][0]["lab_id"] == "59"
 
 

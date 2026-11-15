@@ -1747,6 +1747,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ MicroVM Hardening active! Strict KVM ioctl Seccomp BPF applied, Landlock LSM locked, caps dropped -> FLAG{MICROVM_HYPERVISOR_CONFINEMENT_ENFORCED_5804}"
             }
         ]
+    },
+    "59": {
+        "title": "Lab 59: ConfidentialComputingLab (기밀 컴퓨팅 TEE & AMD SEV-SNP 메모리 암호화 방어 랩)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Cold Boot & Host DMA 물리 메모리 스누핑 시도 및 AES-XTS 하드웨어 암호화 검증",
+                "target": "POST /api/stage1/memory-probe",
+                "poc_explanation": "호스트 root 권한으로 게스트 물리 메모리 주소를 직접 덤프하여 메모리에 상주하는 비밀키 유출을 시도합니다. 하드웨어 메모리 암호화 엔진(MEE)이 이를 암호화하여 평문 누출을 원천 차단합니다.",
+                "exploit_payload": '{"physical_address": "0x1000a000", "probe_context": "host_root"}',
+                "defense": "AMD SEV-SNP / Intel TDX AES-256-XTS 하드웨어 메모리 암호화 강제 활성화.",
+                "sample_output": "🔒 Hardware Memory Encryption Engine active! Plaintext leak: False -> FLAG{sev_snp_hardware_aes_xts_memory_encryption_active}"
+            },
+            {
+                "step": 2,
+                "name": "하드웨어 보안 프로세서 원격 증명 및 MRENCLAVE 무결성 검증",
+                "target": "POST /api/stage2/remote-attestation",
+                "poc_explanation": "보안 프로세서(PSP)의 하드웨어 루트 인증서 기반 ECDSA P-384 서명과 측정값(MRENCLAVE)을 검증하여 위조된 엔클레이브 이미지 주입을 차단합니다.",
+                "exploit_payload": '{"measurement_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "report_data_nonce": "nonce_vibe_5902", "chip_id": "AMD-EPYC-SEV-SNP-GEN3"}',
+                "defense": "하드웨어 기반 원격 증명(Remote Attestation) 보고서 서명 및 측정값 검증.",
+                "sample_output": "🔒 Remote Attestation VERIFIED_GENUINE! Counterfeit enclave blocked -> FLAG{tee_attestation_report_mrenclave_signature_verified}"
+            },
+            {
+                "step": 3,
+                "name": "악성 하이퍼바이저 페이지 재매핑 공격 및 RMP 테이블 소유권 봉쇄",
+                "target": "POST /api/stage3/rmp-remapping",
+                "poc_explanation": "하이퍼바이저가 게스트 물리 페이지를 임의 HPA로 바꿔치기(Remapping/Splicing)하려는 시도를 하드웨어 RMP(Reverse Map Table)가 탐지하여 #NPF 인터럽트를 발생시키고 봉쇄합니다.",
+                "exploit_payload": '{"guest_physical_page": "0x204000", "malicious_hpa": "0x884000", "operation": "verify_entry"}',
+                "defense": "하드웨어 레벨 Reverse Map Table(RMP) 페이지 소유권 및 독점 매핑 강제.",
+                "sample_output": "🔒 RMP Table ENFORCED! Page remapping detected -> #NPF violation -> FLAG{rmp_table_enforces_page_ownership_and_prevents_remapping}"
+            },
+            {
+                "step": 4,
+                "name": "vCPU 상태 레지스터 암호화(VMSA) 및 캐시 타이밍 완화 검증",
+                "target": "POST /api/stage4/vmsa-state-encrypt",
+                "poc_explanation": "VM-Exit 발생 시 하이퍼바이저에 게스트 vCPU 레지스터가 노출되지 않도록 VMSA 영역을 하드웨어 암호화하고, 컨텍스트 스위칭 시 캐시 라인 플러시(WBINVD)를 수행합니다.",
+                "exploit_payload": '{"action": "encrypt_vmsa", "inject_side_channel": false}',
+                "defense": "Virtual Machine Save Area(VMSA) 하드웨어 암호화 및 IBPB/WBINVD 장벽 적용.",
+                "sample_output": "🔒 VMSA register encryption ACTIVE! Host plaintext exposed: 0 bytes -> FLAG{vmsa_register_encryption_and_cache_flush_safeguard}"
+            }
+        ]
     }
 }
 

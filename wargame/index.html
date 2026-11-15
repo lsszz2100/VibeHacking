@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2450</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2485</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -174,6 +174,7 @@
         <button class="pg-tab" data-tab="antirev">🛡️ Anti-Reversing &amp; BLA Shield</button>
         <button class="pg-tab" data-tab="ebpfshield">🐝 eBPF Kernel Shield</button>
         <button class="pg-tab" data-tab="hypervisorescape">⚡ MicroVM &amp; Hypervisor Escape</button>
+        <button class="pg-tab" data-tab="confidential">🔒 Confidential Computing &amp; TEE</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -1344,6 +1345,56 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="hypervisorAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: HOST PROTECTED</span>
                 </div>
                 <div id="hypervisorAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 27. Confidential Computing & TEE Attestation Inspector Panel -->
+        <div id="pgPanel-confidential" class="pg-panel">
+          <div class="confidential-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn success" data-confidential-preset="cold_boot">1. Cold Boot &amp; DMA Memory Sniffing (AES-XTS)</button>
+              <button class="pg-btn success" data-confidential-preset="attestation">2. Hardware Remote Attestation (ECDSA P-384)</button>
+              <button class="pg-btn success" data-confidential-preset="rmp_defense">3. Reverse Map Table (RMP) Splicing Intercept</button>
+              <button class="pg-btn success" data-confidential-preset="vmsa_protect">4. vCPU State Save Area (VMSA) Register Guard</button>
+            </div>
+            <div class="confidential-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="confidential-ctrl-group">
+                <label class="dim" style="font-size:11px;">TEE Hardware Architecture:</label>
+                <select id="confidentialArchSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="amd_sev_snp" selected>AMD SEV-SNP (Secure Encrypted Virtualization-SNP)</option>
+                  <option value="intel_tdx">Intel TDX (Trust Domain Extensions)</option>
+                  <option value="aws_nitro">AWS Nitro Enclaves (Isolated PCIe Vsock Channel)</option>
+                </select>
+              </div>
+              <div class="confidential-ctrl-group">
+                <label class="dim" style="font-size:11px;">Adversary Probe Vector:</label>
+                <select id="confidentialProbeSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="host_dma" selected>Host Root Physical Memory DMA Probe</option>
+                  <option value="attest_forge">Forged Enclave Measurement Hash Injection</option>
+                  <option value="page_splicing">Hypervisor Page Remapping / Splicing Attack</option>
+                  <option value="vmsa_snoop">VM-Exit vCPU Register State Snooping</option>
+                </select>
+              </div>
+              <button id="confidentialExecuteBtn" class="pg-btn">Simulate TEE Defense</button>
+              <button id="confidentialResetBtn" class="pg-btn dim">Reset Simulation</button>
+            </div>
+            <div class="confidential-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="confidential-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🔒 Hardware Memory Encryption &amp; Attestation Telemetry Wire</span>
+                  <span id="confidentialWireBadge" class="token-tag token-lit" style="background:#16a34a;color:#fff;">MEE: ACTIVE</span>
+                </div>
+                <div id="confidentialWireView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="confidential-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🛡️ Confidential Computing Isolation &amp; Integrity Audit</span>
+                  <span id="confidentialAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: TEE ENFORCED</span>
+                </div>
+                <div id="confidentialAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
               </div>
             </div>
           </div>

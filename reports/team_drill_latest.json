@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-14 20:08:45",
+  "timestamp": "2026-11-15 16:29:04",
   "teams_tested": [
     "red",
     "blue",
@@ -13,10 +13,10 @@
     "re",
     "antire"
   ],
-  "total_drills": 67,
-  "total_attacks_executed": 196,
-  "total_attacks_detected": 196,
-  "total_attacks_blocked": 196,
+  "total_drills": 69,
+  "total_attacks_executed": 204,
+  "total_attacks_detected": 204,
+  "total_attacks_blocked": 204,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 6,
-      "attacks": 19,
-      "detected": 19,
-      "blocked": 19,
+      "labs_tested": 7,
+      "attacks": 23,
+      "detected": 23,
+      "blocked": 23,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -73,10 +73,10 @@
     },
     "green": {
       "team_name": "그린팀",
-      "labs_tested": 8,
-      "attacks": 23,
-      "detected": 23,
-      "blocked": 23,
+      "labs_tested": 9,
+      "attacks": 27,
+      "detected": 27,
+      "blocked": 27,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "05",
@@ -231,7 +231,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "07",
@@ -572,7 +572,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "13",
@@ -660,7 +660,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "26",
@@ -715,7 +715,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "40",
@@ -781,7 +781,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "50",
@@ -847,7 +847,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -913,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "56",
@@ -979,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -1023,7 +1023,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "03",
@@ -1056,7 +1056,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "05",
@@ -1089,7 +1089,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "13",
@@ -1122,7 +1122,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "23",
@@ -1177,7 +1177,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "38",
@@ -1243,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "50",
@@ -1309,7 +1309,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "56",
@@ -1375,7 +1375,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "02",
@@ -1419,7 +1419,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "10",
@@ -1452,7 +1452,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "39",
@@ -1518,7 +1518,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "49",
@@ -1584,7 +1584,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "54",
@@ -1650,7 +1650,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "58",
@@ -1716,7 +1716,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.05
+    },
+    {
+      "lab_id": "59",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "Lab 59: ConfidentialComputingLab (기밀 컴퓨팅 TEE & AMD SEV-SNP 메모리 암호화 방어 랩)",
+      "cve": "VIBE-2026-5901",
+      "cvss": 7.5,
+      "mitre": "T1580",
+      "kisa": "2.6.5",
+      "nist": "PR.DS-01",
+      "owasp": "A02:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "AMD SEV-SNP & Intel TDX TEE Memory Controller",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Cold Boot & Host DMA 물리 메모리 스누핑 시도 및 AES-XTS 하드웨어 암호화 검증",
+          "red_attack": "호스트 root 권한으로 게스트 물리 메모리 주소를 직접 덤프하여 메모리에 상주하는 비밀키 유출을 시도합니다. 하드웨어 메모리 암호화 엔진(MEE)이 이를 암호화하여 평문 누출을 원천 차단합니다.",
+          "blue_defense": "AMD SEV-SNP / Intel TDX AES-256-XTS 하드웨어 메모리 암호화 강제 활성화.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "하드웨어 보안 프로세서 원격 증명 및 MRENCLAVE 무결성 검증",
+          "red_attack": "보안 프로세서(PSP)의 하드웨어 루트 인증서 기반 ECDSA P-384 서명과 측정값(MRENCLAVE)을 검증하여 위조된 엔클레이브 이미지 주입을 차단합니다.",
+          "blue_defense": "하드웨어 기반 원격 증명(Remote Attestation) 보고서 서명 및 측정값 검증.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "악성 하이퍼바이저 페이지 재매핑 공격 및 RMP 테이블 소유권 봉쇄",
+          "red_attack": "하이퍼바이저가 게스트 물리 페이지를 임의 HPA로 바꿔치기(Remapping/Splicing)하려는 시도를 하드웨어 RMP(Reverse Map Table)가 탐지하여 #NPF 인터럽트를 발생시키고 봉쇄합니다.",
+          "blue_defense": "하드웨어 레벨 Reverse Map Table(RMP) 페이지 소유권 및 독점 매핑 강제.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "vCPU 상태 레지스터 암호화(VMSA) 및 캐시 타이밍 완화 검증",
+          "red_attack": "VM-Exit 발생 시 하이퍼바이저에 게스트 vCPU 레지스터가 노출되지 않도록 VMSA 영역을 하드웨어 암호화하고, 컨텍스트 스위칭 시 캐시 라인 플러시(WBINVD)를 수행합니다.",
+          "blue_defense": "Virtual Machine Save Area(VMSA) 하드웨어 암호화 및 IBPB/WBINVD 장벽 적용.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -1760,7 +1826,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "18",
@@ -1793,7 +1859,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "22",
@@ -1848,7 +1914,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "24",
@@ -1903,7 +1969,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "31",
@@ -1958,7 +2024,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -2024,7 +2090,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "53",
@@ -2090,7 +2156,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "04",
@@ -2123,7 +2189,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "10",
@@ -2156,7 +2222,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "28",
@@ -2211,7 +2277,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.47
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "32",
@@ -2266,7 +2332,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "35",
@@ -2321,7 +2387,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "46",
@@ -2387,7 +2453,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "55",
@@ -2453,7 +2519,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "58",
@@ -2519,7 +2585,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
+    },
+    {
+      "lab_id": "59",
+      "team_id": "green",
+      "team_name": "그린팀",
+      "lab_title": "Lab 59: ConfidentialComputingLab (기밀 컴퓨팅 TEE & AMD SEV-SNP 메모리 암호화 방어 랩)",
+      "cve": "VIBE-2026-5901",
+      "cvss": 7.5,
+      "mitre": "T1580",
+      "kisa": "2.6.5",
+      "nist": "PR.DS-01",
+      "owasp": "A02:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "AMD SEV-SNP & Intel TDX TEE Memory Controller",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Cold Boot & Host DMA 물리 메모리 스누핑 시도 및 AES-XTS 하드웨어 암호화 검증",
+          "red_attack": "호스트 root 권한으로 게스트 물리 메모리 주소를 직접 덤프하여 메모리에 상주하는 비밀키 유출을 시도합니다. 하드웨어 메모리 암호화 엔진(MEE)이 이를 암호화하여 평문 누출을 원천 차단합니다.",
+          "blue_defense": "AMD SEV-SNP / Intel TDX AES-256-XTS 하드웨어 메모리 암호화 강제 활성화.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "하드웨어 보안 프로세서 원격 증명 및 MRENCLAVE 무결성 검증",
+          "red_attack": "보안 프로세서(PSP)의 하드웨어 루트 인증서 기반 ECDSA P-384 서명과 측정값(MRENCLAVE)을 검증하여 위조된 엔클레이브 이미지 주입을 차단합니다.",
+          "blue_defense": "하드웨어 기반 원격 증명(Remote Attestation) 보고서 서명 및 측정값 검증.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "악성 하이퍼바이저 페이지 재매핑 공격 및 RMP 테이블 소유권 봉쇄",
+          "red_attack": "하이퍼바이저가 게스트 물리 페이지를 임의 HPA로 바꿔치기(Remapping/Splicing)하려는 시도를 하드웨어 RMP(Reverse Map Table)가 탐지하여 #NPF 인터럽트를 발생시키고 봉쇄합니다.",
+          "blue_defense": "하드웨어 레벨 Reverse Map Table(RMP) 페이지 소유권 및 독점 매핑 강제.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "vCPU 상태 레지스터 암호화(VMSA) 및 캐시 타이밍 완화 검증",
+          "red_attack": "VM-Exit 발생 시 하이퍼바이저에 게스트 vCPU 레지스터가 노출되지 않도록 VMSA 영역을 하드웨어 암호화하고, 컨텍스트 스위칭 시 캐시 라인 플러시(WBINVD)를 수행합니다.",
+          "blue_defense": "Virtual Machine Save Area(VMSA) 하드웨어 암호화 및 IBPB/WBINVD 장벽 적용.",
+          "detection_rule": "TEE-SNP-RMP-VMSA-GUARD-5901-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "01",
@@ -2563,7 +2695,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.16
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "06",
@@ -2596,7 +2728,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -2651,7 +2783,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "42",
@@ -2717,7 +2849,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "43",
@@ -2783,7 +2915,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "44",
@@ -2849,7 +2981,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.15
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -2882,7 +3014,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -2937,7 +3069,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -2992,7 +3124,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -3058,7 +3190,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "48",
@@ -3124,7 +3256,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "55",
@@ -3190,7 +3322,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.17
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "56",
@@ -3256,7 +3388,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "03",
@@ -3289,7 +3421,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "20",
@@ -3333,7 +3465,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "21",
@@ -3377,7 +3509,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "30",
@@ -3432,7 +3564,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "47",
@@ -3498,7 +3630,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "57",
@@ -3564,7 +3696,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "36",
@@ -3619,7 +3751,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -3685,7 +3817,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "57",
@@ -3751,7 +3883,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.11
+      "elapsed_ms": 0.01
     }
   ]
 }

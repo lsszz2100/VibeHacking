@@ -68,9 +68,9 @@
         <header>
             <h1>🛡️ VibeHacking Enterprise Security Diagnostic Report</h1>
             <div class="header-meta">
-                <span><b>Generated:</b> 2026-11-14 21:04:58</span>
-                <span><b>Assessment Scope:</b> 58 Labs</span>
-                <span><b>Total Vulnerabilities:</b> 58 Findings</span>
+                <span><b>Generated:</b> 2026-11-15 01:10:03</span>
+                <span><b>Assessment Scope:</b> 59 Labs</span>
+                <span><b>Total Vulnerabilities:</b> 59 Findings</span>
                 <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
@@ -80,7 +80,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Assessed Labs</div>
-                    <div class="stat-value">58</div>
+                    <div class="stat-value">59</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Average CVSS</div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">High Findings</div>
-                    <div class="stat-value" style="color: var(--high-color)">23</div>
+                    <div class="stat-value" style="color: var(--high-color)">24</div>
                 </div>
             </div>
         </section>
@@ -102,28 +102,28 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">KISA ISMS-P Controls</div>
-                    <div class="stat-value" style="color: #34d399">58</div>
+                    <div class="stat-value" style="color: #34d399">59</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">NIST CSF 2.0 Categories</div>
-                    <div class="stat-value" style="color: var(--accent-blue)">56</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">57</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">OWASP Top 10 Categories</div>
-                    <div class="stat-value" style="color: var(--med-color)">21</div>
+                    <div class="stat-value" style="color: var(--med-color)">22</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2 class="section-title">3. Detailed Findings (58 Findings)</h2>
-            
+            <h2 class="section-title">3. Detailed Findings (59 Findings)</h2>
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#1</span>
                         <span class="badge critical">CRITICAL 9.8</span>
-                        
+
                         <h3 class="finding-title">SQL Injection &amp; Stored Cross-Site Scripting (XSS)</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0101</span>
@@ -145,13 +145,13 @@
                     <pre>Apply parameterized prepared statements (PDO/PreparedStatement) and context-aware HTML entity encoding (DOMPurify).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#2</span>
                         <span class="badge critical">CRITICAL 9.8</span>
-                        
+
                         <h3 class="finding-title">Stack-based Buffer Overflow &amp; ROP Chain Hijack</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0201</span>
@@ -173,13 +173,13 @@
                     <pre>Enable compiler mitigations (Canary -fstack-protector-all, PIE, Full RELRO) and bounds-checked string functions.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#3</span>
                         <span class="badge high">HIGH 8.5</span>
-                        
+
                         <h3 class="finding-title">Insecure Service Configuration &amp; Lateral Pivoting</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0301</span>
@@ -201,13 +201,13 @@
                     <pre>Disable anonymous DNS zone transfer, enforce public key SSH authentication, and segment network VLANs.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card medium">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#4</span>
                         <span class="badge medium">MEDIUM 6.3</span>
-                        
+
                         <h3 class="finding-title">Dynamic Analysis Detection &amp; Evasion Routines</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0401</span>
@@ -229,13 +229,13 @@
                     <pre>Deploy kernel-level hypervisor tracing and automated symbolic execution disassemblers.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#5</span>
                         <span class="badge high">HIGH 7.8</span>
-                        
+
                         <h3 class="finding-title">Insecure SUID Binary &amp; Cron Job Root Escalation</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0501</span>
@@ -257,13 +257,13 @@
                     <pre>Remove unneeded SUID flags (chmod u-s), audit crontab file permissions, and restrict sudo privileges.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#6</span>
                         <span class="badge high">HIGH 8.8</span>
-                        
+
                         <h3 class="finding-title">VBA AutoOpen Macro Execution &amp; Payload Drop</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0601</span>
@@ -285,13 +285,13 @@
                     <pre>Block macros across all untrusted Office documents via Group Policy (Block macros from running in Office files from the Internet).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card medium">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#7</span>
                         <span class="badge medium">MEDIUM 5.7</span>
-                        
+
                         <h3 class="finding-title">In-Memory Reflective DLL Injection &amp; Process Hollowing</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0701</span>
@@ -313,13 +313,13 @@
                     <pre>Enforce kernel driver signature verification, EDR memory threat protection, and periodic memory volatility triage.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#8</span>
                         <span class="badge critical">CRITICAL 9.8</span>
-                        
+
                         <h3 class="finding-title">Insecure Pickle Deserialization Remote Code Execution</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0801</span>
@@ -341,13 +341,13 @@
                     <pre>Replace pickle with safe serializers (JSON, Protocol Buffers, or HMAC-signed tokens).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#9</span>
                         <span class="badge high">HIGH 7.4</span>
-                        
+
                         <h3 class="finding-title">Glibc Tcache Poisoning &amp; Arbitrary Write-What-Where</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-0901</span>
@@ -369,13 +369,13 @@
                     <pre>Upgrade glibc to &gt;= 2.32 (with safe-linking pointer mangling) and nullify pointers immediately after free.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#10</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Weak Domain Controller Delegation &amp; AS-REP Roasting</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1001</span>
@@ -397,13 +397,13 @@
                     <pre>Enforce Kerberos pre-authentication across all domain accounts and mandate 25+ character complex passwords.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#11</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Indirect Prompt Injection &amp; Tool Calling Hijack</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1101</span>
@@ -425,13 +425,13 @@
                     <pre>Implement dual-LLM verification, strict JSON schema parameter validation, and user confirmation gates for critical tools.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#12</span>
                         <span class="badge high">HIGH 8.1</span>
-                        
+
                         <h3 class="finding-title">Insecure Direct Object Reference (IDOR) &amp; Race Condition</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1201</span>
@@ -453,13 +453,13 @@
                     <pre>Enforce object-level access control (ABAC/RBAC) and database pessimistic locking (SELECT FOR UPDATE).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#13</span>
                         <span class="badge high">HIGH 7.1</span>
-                        
+
                         <h3 class="finding-title">Log Evasion &amp; Unmonitored PowerShell Downgrade</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1301</span>
@@ -481,13 +481,13 @@
                     <pre>Uninstall PowerShell 2.0 feature (Disable-WindowsOptionalFeature) and enforce AppLocker Constrained Language Mode.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#14</span>
                         <span class="badge high">HIGH 8.8</span>
-                        
+
                         <h3 class="finding-title">Privileged Container Host Escape via cgroups release_agent</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1401</span>
@@ -509,13 +509,13 @@
                     <pre>Disallow privileged containers via Kubernetes Pod Security Admission (restricted profile) and drop CAP_SYS_ADMIN.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card medium">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#15</span>
                         <span class="badge medium">MEDIUM 5.3</span>
-                        
+
                         <h3 class="finding-title">WPA3 Transition Mode SAE Downgrade &amp; Side-Channel Leak</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1501</span>
@@ -537,13 +537,13 @@
                     <pre>Disable transition mode; enforce WPA3-Enterprise 192-bit only with 802.11w Protected Management Frames (PMF).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card medium">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#16</span>
                         <span class="badge medium">MEDIUM 5.9</span>
-                        
+
                         <h3 class="finding-title">Weak Diffie-Hellman Group &amp; Small Subgroup Confinement</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1601</span>
@@ -565,13 +565,13 @@
                     <pre>Mandate standardized RFC 7919 FFDHE groups (&gt;= 3072-bit) or Curve25519 / NIST P-256.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#17</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Domain Fronting &amp; HTTPS Malleable C2 Beaconing</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1701</span>
@@ -593,13 +593,13 @@
                     <pre>Deploy TLS interception with SNI-Host header consistency checks and high-entropy DNS/HTTP inspection.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#18</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">GitHub Actions Workflow Poisoning (Pwn Request)</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1801</span>
@@ -621,13 +621,13 @@
                     <pre>Never checkout pull request code with write tokens; use standard pull_request trigger or separate triage pipelines.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#19</span>
                         <span class="badge high">HIGH 7.4</span>
-                        
+
                         <h3 class="finding-title">Return-to-CSU &amp; JOP (Jump-Oriented Programming)</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-1901</span>
@@ -649,13 +649,13 @@
                     <pre>Compile with GCC 11+ which eliminates unused CSU stub routines, or enforce Intel CET / Shadow Stack.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#20</span>
                         <span class="badge high">HIGH 7.8</span>
-                        
+
                         <h3 class="finding-title">Unquoted Variable Expansion &amp; Argument Injection</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2001</span>
@@ -677,13 +677,13 @@
                     <pre>Always quote shell variables (&quot;$var&quot;), avoid passing wildcards to external commands, and use absolute paths.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#21</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">ZeroLogon (CVE-2020-1472) &amp; Pass-the-Hash</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2101</span>
@@ -705,13 +705,13 @@
                     <pre>Apply Microsoft security update MS-NRPC, enforce Secure RPC for all machine accounts, and monitor Event ID 5829.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#22</span>
                         <span class="badge high">HIGH 8.7</span>
-                        
+
                         <h3 class="finding-title">LSASS Memory Dumping &amp; DCSync Replication Abuse</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2201</span>
@@ -733,13 +733,13 @@
                     <pre>Enable LSA RunAsPPL (Protected Process Light) and Credential Guard (Virtualization-based Security).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#23</span>
                         <span class="badge critical">CRITICAL 9.1</span>
-                        
+
                         <h3 class="finding-title">Database Superuser Misconfiguration &amp; xp_cmdshell</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2301</span>
@@ -761,13 +761,13 @@
                     <pre>Disable xp_cmdshell, enforce least privilege database service accounts, and revoke sa login.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#24</span>
                         <span class="badge critical">CRITICAL 9.6</span>
-                        
+
                         <h3 class="finding-title">VLAN Hopping &amp; STP Topology Manipulation</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2401</span>
@@ -789,13 +789,13 @@
                     <pre>Disable DTP (switchport nonegotiate), enable BPDU Guard, Port Security, and Dynamic ARP Inspection (DAI).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#25</span>
                         <span class="badge high">HIGH 7.7</span>
-                        
+
                         <h3 class="finding-title">Indicator Poisoning &amp; TAXII Server Impersonation</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2501</span>
@@ -817,13 +817,13 @@
                     <pre>Enforce strict TLS certificate pinning and cryptographic signature verification on all incoming STIX bundles.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#26</span>
                         <span class="badge high">HIGH 7.8</span>
-                        
+
                         <h3 class="finding-title">CIS Benchmark Non-Compliance &amp; Insecure Sysctl Settings</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2601</span>
@@ -845,13 +845,13 @@
                     <pre>Apply CIS Distribution-Independent Linux Benchmark Level 2 Hardening profile.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#27</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Hardcoded Firmware Backdoor &amp; Unauthenticated Telnet</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2701</span>
@@ -873,13 +873,13 @@
                     <pre>Remove default credentials, disable unencrypted telnet, and mandate unique per-device bootstrap passwords.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#28</span>
                         <span class="badge high">HIGH 7.7</span>
-                        
+
                         <h3 class="finding-title">Exported Activity &amp; Insecure Broadcast Receiver</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2801</span>
@@ -901,13 +901,13 @@
                     <pre>Set android:exported=&quot;false&quot; on internal components or enforce custom signature-level permissions.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#29</span>
                         <span class="badge critical">CRITICAL 9.9</span>
-                        
+
                         <h3 class="finding-title">AD CS ESC1 SAN Injection &amp; Domain Admin Takeover</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-2901</span>
@@ -929,13 +929,13 @@
                     <pre>Disable CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT_ALT_NAME on templates and require Manager Approval.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card medium">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#30</span>
                         <span class="badge medium">MEDIUM 6.3</span>
-                        
+
                         <h3 class="finding-title">Control Flow Flattening &amp; Opaque Predicate Tampering</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3001</span>
@@ -957,13 +957,13 @@
                     <pre>Adopt virtualization-based obfuscation (VMProtect) and server-side hardware-backed attestation.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#31</span>
                         <span class="badge critical">CRITICAL 9.3</span>
-                        
+
                         <h3 class="finding-title">Loose Regex Redirect URI &amp; JWT Algorithm Confusion</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3101</span>
@@ -985,13 +985,13 @@
                     <pre>Enforce strict exact string match on redirect_uri and enforce asymmetric RS256/ES256 verification only.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#32</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">BGP Sub-Prefix Hijacking &amp; AS-Path Forgery</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3201</span>
@@ -1013,13 +1013,13 @@
                     <pre>Deploy RPKI Route Origin Authorization (ROA) and drop RPKI Invalid routes at all border routers.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#33</span>
                         <span class="badge critical">CRITICAL 9.8</span>
-                        
+
                         <h3 class="finding-title">KISA Major Infrastructure Audit U-01~U-44 Failures</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3301</span>
@@ -1041,13 +1041,13 @@
                     <pre>Execute automated KISA U-01~U-72 baseline remediation script (PermitRootLogin no, Anonymous FTP disabled).</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#34</span>
                         <span class="badge high">HIGH 7.5</span>
-                        
+
                         <h3 class="finding-title">Exposed Shadow Database &amp; Git History Secret Leakage</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3401</span>
@@ -1069,13 +1069,13 @@
                     <pre>Implement External Attack Surface Management (EASM), restrict cloud security groups, and run trufflehog in CI/CD.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#35</span>
                         <span class="badge critical">CRITICAL 9.9</span>
-                        
+
                         <h3 class="finding-title">iam:PassRole &amp; ec2:RunInstances Escalation Chain</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3501</span>
@@ -1097,13 +1097,13 @@
                     <pre>Enforce strict IAM Permissions Boundaries and Service Control Policies (SCPs) preventing unauthorized role assumption.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#36</span>
                         <span class="badge critical">CRITICAL 9.1</span>
-                        
+
                         <h3 class="finding-title">MySQL User-Defined Function (UDF) Dynamic Library Injection</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3601</span>
@@ -1125,13 +1125,13 @@
                     <pre>Run database under dedicated non-root account, enable secure_file_priv, and revoke FILE / CREATE FUNCTION privileges.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#37</span>
                         <span class="badge high">HIGH 8.1</span>
-                        
+
                         <h3 class="finding-title">BLE Legacy Just Works TK Cracking &amp; Unauthorized Unlock</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3701</span>
@@ -1153,13 +1153,13 @@
                     <pre>Enforce Bluetooth 5.x Secure Connections (LESC ECDH pairing) and cryptographic application-layer nonce challenges.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#38</span>
                         <span class="badge high">HIGH 7.8</span>
-                        
+
                         <h3 class="finding-title">AMSI/ETW In-Memory Patching &amp; Indirect Syscall Evasion</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3801</span>
@@ -1181,13 +1181,13 @@
                     <pre>Deploy kernel-level telemetry (ELAM / Microsoft-Windows-Threat-Intelligence ETW-TI) and synthetic stack trace verification.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#39</span>
                         <span class="badge critical">CRITICAL 9.1</span>
-                        
+
                         <h3 class="finding-title">AES-CBC Padding Oracle &amp; RSA Bleichenbacher Signature Forgery</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-3901</span>
@@ -1209,13 +1209,13 @@
                     <pre>Migrate to authenticated AEAD encryption (AES-256-GCM / ChaCha20-Poly1305) and enforce strict RSA-PSS signatures.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#40</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Ransomware Encryption Artifacts &amp; Active C2 Beaconing</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4001</span>
@@ -1237,13 +1237,13 @@
                     <pre>Trigger SOAR automated network host isolation, preserve volume shadow copies, and rotate KRBTGT credentials.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#41</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Dependency Confusion &amp; Unsigned Third-Party Artifact Injection</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4101</span>
@@ -1265,13 +1265,13 @@
                     <pre>Scope internal namespaces (@corp), generate CycloneDX SBOMs, and enforce SLSA Level 3 with Sigstore Cosign verification.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#42</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">S3 Event Notification Command Injection &amp; Ephemeral Secret Theft</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4201</span>
@@ -1293,13 +1293,13 @@
                     <pre>Never invoke shell=True; use read-only root filesystems and enforce IAM least-privilege scoping.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#43</span>
                         <span class="badge critical">CRITICAL 9.9</span>
-                        
+
                         <h3 class="finding-title">Unauthorized CloudTrail Policy Escalation &amp; STS Exfiltration</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4301</span>
@@ -1321,13 +1321,13 @@
                     <pre>Automate GuardDuty ASFF alert ingestion and trigger SOAR Lambda to revoke STS sessions and detach malicious policies.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#44</span>
                         <span class="badge high">HIGH 8.1</span>
-                        
+
                         <h3 class="finding-title">Manifest V3 Overprivileged Wildcard &amp; WAR Token Leakage</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4401</span>
@@ -1349,13 +1349,13 @@
                     <pre>Replace webRequestBlocking with Declarative Net Request (DNR), scope WAR matches strictly, and remove DOM innerHTML sinks.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#45</span>
                         <span class="badge high">HIGH 7.4</span>
-                        
+
                         <h3 class="finding-title">Harvest Now Decrypt Later (HNDL) Hazard &amp; Hybrid KEM Downgrade</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4501</span>
@@ -1377,13 +1377,13 @@
                     <pre>Enforce NIST FIPS 203 ML-KEM-768 &amp; FIPS 204 ML-DSA-65 with strict non-downgradable hybrid KDF policy.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#46</span>
                         <span class="badge high">HIGH 8.8</span>
-                        
+
                         <h3 class="finding-title">Unrestricted Syscall Attack Surface &amp; Cross-Process Memory Tampering</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4601</span>
@@ -1405,13 +1405,13 @@
                     <pre>Deploy Seccomp-BPF filter pinning AUDIT_ARCH_X86_64, Landlock LSM filesystem confinement, and IMA appraisal.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#47</span>
                         <span class="badge critical">CRITICAL 9.6</span>
-                        
+
                         <h3 class="finding-title">Indirect Prompt Injection leading to Arbitrary Tool Invocation</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4701</span>
@@ -1433,13 +1433,13 @@
                     <pre>Deploy Dual LLM guardrail filters, HITL approval gates, and Landlock capability sandboxing.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#48</span>
                         <span class="badge critical">CRITICAL 9.8</span>
-                        
+
                         <h3 class="finding-title">Unauthenticated Remote Command Injection in Embedded Web CGI</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4801</span>
@@ -1461,13 +1461,13 @@
                     <pre>Replace system() with execve() parameter arrays and enforce DM-Verity read-only rootfs.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card medium">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#49</span>
                         <span class="badge medium">MEDIUM 5.9</span>
-                        
+
                         <h3 class="finding-title">Harvest-Now-Decrypt-Later (HNDL) Threat in Classical TLS Key Exchange</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-4901</span>
@@ -1489,13 +1489,13 @@
                     <pre>Deploy X25519 + ML-KEM-768 hybrid key exchange and enforce strict FIPS 203 policy.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#50</span>
                         <span class="badge critical">CRITICAL 9.9</span>
-                        
+
                         <h3 class="finding-title">Undetected Fileless Memory Injection via DKOM and Reflective RWX Stager</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5001</span>
@@ -1517,13 +1517,13 @@
                     <pre>Implement Volatility 3/Rekall psscan automation, LSA PPL enforcement, and SOAR supertimeline network containment.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#51</span>
                         <span class="badge critical">CRITICAL 9.9</span>
-                        
+
                         <h3 class="finding-title">Host Namespace Breakout and Arbitrary Credential Access via Unrestricted Privileged Container</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5101</span>
@@ -1545,13 +1545,13 @@
                     <pre>Deploy Cilium Tetragon eBPF LSM synchronous SIGKILL enforcement and drop CAP_SYS_ADMIN capabilities.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#52</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Covert Data Exfiltration and Lateral Pivoting via Unrestricted DNS/SOCKS5 Tunneling</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5201</span>
@@ -1573,13 +1573,13 @@
                     <pre>Deploy recursive DNS Shannon entropy filtering, enforce egress firewall whitelisting, and activate Suricata/Zeek inline DPI drop rules.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#53</span>
                         <span class="badge critical">CRITICAL 9.9</span>
-                        
+
                         <h3 class="finding-title">Active Directory Domain Privilege Escalation via Abusable Object DACLs and Transitive Permissions</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5301</span>
@@ -1601,13 +1601,13 @@
                     <pre>Audit and prune abusable ACEs using BloodHound, enroll administrative identities into the Protected Users security group, and enforce Microsoft 3-Tier Administration.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card critical">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#54</span>
                         <span class="badge critical">CRITICAL 10.0</span>
-                        
+
                         <h3 class="finding-title">Autonomous AI Agent Subprocess Escape via Model Context Protocol Tool Poisoning and Confused Deputy Abuse</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5401</span>
@@ -1629,13 +1629,13 @@
                     <pre>Enforce Linux Landlock LSM unprivileged filesystem sandboxing (restricting access to /workspace/safe) and integrate eBPF Dual-LLM runtime syscall filters with real-time SIGKILL actions.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#55</span>
                         <span class="badge high">HIGH 8.7</span>
-                        
+
                         <h3 class="finding-title">Store-Now-Decrypt-Later (SNDL) Exposure via Classical Public-Key Cryptography and Forced TLS Downgrade Vulnerability</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5501</span>
@@ -1657,13 +1657,13 @@
                     <pre>Deploy NIST FIPS 203 ML-KEM-768 hybrid key exchange (X25519Kyber768Draft00) with strict anti-downgrade policies and Constant-Time implicit rejection decapsulation.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#56</span>
                         <span class="badge high">HIGH 8.2</span>
-                        
+
                         <h3 class="finding-title">Kernel eBPF Telemetry Blindspot &amp; Rogue kprobe Rootkit Execution</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5601</span>
@@ -1685,13 +1685,13 @@
                     <pre>Deploy eBPF LSM (Linux Security Module) hooks with strict -EPERM execution barriers, restrict /proc/sys/kernel/unprivileged_bpf_disabled=1, and enforce cryptographic BPF signature verification.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#57</span>
                         <span class="badge high">HIGH 7.7</span>
-                        
+
                         <h3 class="finding-title">Unprotected Binary Execution &amp; Dynamic Anti-Analysis Defenses Bypass</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5701</span>
@@ -1713,13 +1713,13 @@
                     <pre>Implement hardware-enforced Control Flow Guard (CFG), cryptographic code signing with sealed enclaves, runtime tamper-detection with eBPF LSM, and multi-algorithm dynamic API hashing.</pre>
                 </div>
             </div>
-            
+
             <div class="finding-card high">
                 <div class="finding-header">
                     <div class="finding-title-group">
                         <span class="finding-num">#58</span>
                         <span class="badge high">HIGH 8.8</span>
-                        
+
                         <h3 class="finding-title">MicroVM Hypervisor Escape via Virtio Ring Buffer Heap Corruption &amp; MMIO Emulation Flaw</h3>
                     </div>
                     <span class="vuln-id">VIBE-2026-5801</span>
@@ -1741,7 +1741,35 @@
                     <pre>Apply Seccomp BPF ioctl whitelisting for /dev/kvm, configure Landlock LSM unprivileged host filesystem barriers, drop CAP_SYS_ADMIN and CAP_SYS_PTRACE, and validate all virtqueue descriptor boundaries.</pre>
                 </div>
             </div>
-            
+
+            <div class="finding-card high">
+                <div class="finding-header">
+                    <div class="finding-title-group">
+                        <span class="finding-num">#59</span>
+                        <span class="badge high">HIGH 7.5</span>
+
+                        <h3 class="finding-title">Confidential Computing TEE Memory Sniffing &amp; Attestation Bypass via Cold Boot DMA Probe</h3>
+                    </div>
+                    <span class="vuln-id">VIBE-2026-5901</span>
+                </div>
+                <div class="finding-meta">
+                    <span class="meta-item"><b>Target:</b> 59 ConfidentialComputingLab TEE &amp; AMD SEV-SNP Hardware Memory Defense</span>
+                    <span class="meta-item"><b>Category:</b> Confidential Computing, Hardware TEE &amp; Memory Encryption</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">T1580</span> Cloud Infrastructure Discovery: Memory Encryption &amp; Attestation Bypass (Discovery / Defense Evasion)</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P 2.6.5</span> <span class="tag comp-nist">NIST PR.DS-01</span> <span class="tag comp-owasp">A02:2021</span></span>
+                </div>
+                <div class="vector-box"><code>CVSS:3.1/AV:L/AC:H/PR:H/UI:N/S:C/C:H/I:H/A:H</code></div>
+                <div class="finding-body">
+                    <p><b>🔍 취약점 분석:</b> Lack of hardware-enforced memory encryption engine (MEE) or improper remote attestation allows malicious cloud host administrators to inspect guest RAM, inject untrusted enclave code, and alter page tables.</p>
+                    <p><b>💥 영향도:</b> Host root or DMA adversary dumps guest physical memory to extract cryptographic secrets, circumvents unverified remote attestation, or tampers with page mapping via hypervisor splicing.</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>ConfidentialComputingLab TEE Controller (Port 8059)</code></p>
+                </div>
+                <div class="remediation-box">
+                    <b>🛡️ 대응 권고사항 (Remediation):</b>
+                    <pre>Enable AMD SEV-SNP or Intel TDX hardware memory encryption (AES-256-XTS), enforce ECDSA P-384 hardware remote attestation with MRENCLAVE measurement validation, activate Reverse Map Table (RMP) page ownership enforcement, and encrypt vCPU register state (VMSA).</pre>
+                </div>
+            </div>
+
         </section>
     </div>
 </body>

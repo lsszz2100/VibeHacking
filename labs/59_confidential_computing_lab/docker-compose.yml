@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  confidential_computing_lab:
+    build: .
+    container_name: vhack_lab_59
+    ports:
+      - "127.0.0.1:8059:8059"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
