@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-15 16:29:04",
+  "timestamp": "2026-11-15 19:07:51",
   "teams_tested": [
     "red",
     "blue",
@@ -13,10 +13,10 @@
     "re",
     "antire"
   ],
-  "total_drills": 69,
-  "total_attacks_executed": 204,
-  "total_attacks_detected": 204,
-  "total_attacks_blocked": 204,
+  "total_drills": 71,
+  "total_attacks_executed": 212,
+  "total_attacks_detected": 212,
+  "total_attacks_blocked": 212,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 7,
-      "attacks": 23,
-      "detected": 23,
-      "blocked": 23,
+      "labs_tested": 8,
+      "attacks": 27,
+      "detected": 27,
+      "blocked": 27,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -73,10 +73,10 @@
     },
     "green": {
       "team_name": "그린팀",
-      "labs_tested": 9,
-      "attacks": 27,
-      "detected": 27,
-      "blocked": 27,
+      "labs_tested": 10,
+      "attacks": 31,
+      "detected": 31,
+      "blocked": 31,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "05",
@@ -231,7 +231,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "25",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "07",
@@ -572,7 +572,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -660,7 +660,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.17
     },
     {
       "lab_id": "26",
@@ -715,7 +715,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "40",
@@ -781,7 +781,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "50",
@@ -847,7 +847,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "51",
@@ -913,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -1056,7 +1056,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "05",
@@ -1089,7 +1089,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -1122,7 +1122,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -1243,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "50",
@@ -1518,7 +1518,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "49",
@@ -1650,7 +1650,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "58",
@@ -1716,7 +1716,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "59",
@@ -1783,6 +1783,72 @@
         }
       ],
       "elapsed_ms": 0.02
+    },
+    {
+      "lab_id": "60",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "Lab 60: QuantumCryptanalysisLab (양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 실습 랩)",
+      "cve": "VIBE-2026-6001",
+      "cvss": 7.4,
+      "mitre": "T1600.001",
+      "kisa": "2.7.1",
+      "nist": "PR.DS-01",
+      "owasp": "A02:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Post-Quantum Cryptanalysis & Hybrid KEM Controller",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "쇼어 알고리즘 양자 위상 추정(QPE) 주기 탐색 및 하이브리드 KEM 능동 방어",
+          "red_attack": "4096개 논리 큐비트를 모의하여 RSA-2048 / ECDSA P-256 공개키의 주기를 역산하려는 양자 알고리즘 공격을 시도합니다. 하이브리드 KEM(X25519+ML-KEM-768)이 이를 포착하고 방어합니다.",
+          "blue_defense": "NIST FIPS 203 ML-KEM-768 격자 기반 KEM 및 X25519 하이브리드 키 캡슐화 강제.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "BKZ-40 격자 기저 축소 공격 및 FIPS 203 모듈 차원(k=3) 난제 검증",
+          "red_attack": "BKZ-40 격자 기저 축소 알고리즘으로 Ring-LWE 최단 벡터(SVP/CVP)를 추정하여 비밀 다항식 복원을 시도하지만, FIPS 203 768차원 격자 난제에 의해 복원이 차단됩니다.",
+          "blue_defense": "FIPS 203 표준 모듈 차원(k=3, dim=768) 및 중심 이항 분포(η=2) 보안 매개변수 적용.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "SNDL (Store Now, Decrypt Later) 도청 공격 시도 및 완전 순방향 비밀성(PFS) 방어",
+          "red_attack": "공격자가 10년간 보관한 네트워크 세션 암호문을 미래 양자컴퓨터(CRQC)로 사후 복호화하려 시도하지만, 임시(Ephemeral) ML-KEM-768 PFS 키교환으로 인해 복호화가 불가능합니다.",
+          "blue_defense": "에페머럴(Ephemeral) 포스트 양자 키 교환 및 IND-CCA2 안전성 보장.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "양자 게이트 오류 주입 및 상수시간 NTT 다항식 마스킹 검증",
+          "red_attack": "양자 게이트 지터 및 다항식 곱셈 사이드채널 타이밍 공격을 시도하여 비밀키 누출을 노리지만, 상수시간 NTT 마스킹과 거절 샘플링 실드로 원천 차단됩니다.",
+          "blue_defense": "상수시간 NTT 다항식 마스킹 연산 및 결함 감지 거절 샘플링(Rejection Sampling) 하드닝.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "01",
@@ -1859,7 +1925,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "22",
@@ -1969,7 +2035,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "31",
@@ -2156,7 +2222,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "04",
@@ -2453,7 +2519,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "55",
@@ -2519,7 +2585,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "58",
@@ -2585,7 +2651,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "59",
@@ -2654,6 +2720,72 @@
       "elapsed_ms": 0.01
     },
     {
+      "lab_id": "60",
+      "team_id": "green",
+      "team_name": "그린팀",
+      "lab_title": "Lab 60: QuantumCryptanalysisLab (양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 실습 랩)",
+      "cve": "VIBE-2026-6001",
+      "cvss": 7.4,
+      "mitre": "T1600.001",
+      "kisa": "2.7.1",
+      "nist": "PR.DS-01",
+      "owasp": "A02:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Post-Quantum Cryptanalysis & Hybrid KEM Controller",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "쇼어 알고리즘 양자 위상 추정(QPE) 주기 탐색 및 하이브리드 KEM 능동 방어",
+          "red_attack": "4096개 논리 큐비트를 모의하여 RSA-2048 / ECDSA P-256 공개키의 주기를 역산하려는 양자 알고리즘 공격을 시도합니다. 하이브리드 KEM(X25519+ML-KEM-768)이 이를 포착하고 방어합니다.",
+          "blue_defense": "NIST FIPS 203 ML-KEM-768 격자 기반 KEM 및 X25519 하이브리드 키 캡슐화 강제.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "BKZ-40 격자 기저 축소 공격 및 FIPS 203 모듈 차원(k=3) 난제 검증",
+          "red_attack": "BKZ-40 격자 기저 축소 알고리즘으로 Ring-LWE 최단 벡터(SVP/CVP)를 추정하여 비밀 다항식 복원을 시도하지만, FIPS 203 768차원 격자 난제에 의해 복원이 차단됩니다.",
+          "blue_defense": "FIPS 203 표준 모듈 차원(k=3, dim=768) 및 중심 이항 분포(η=2) 보안 매개변수 적용.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "SNDL (Store Now, Decrypt Later) 도청 공격 시도 및 완전 순방향 비밀성(PFS) 방어",
+          "red_attack": "공격자가 10년간 보관한 네트워크 세션 암호문을 미래 양자컴퓨터(CRQC)로 사후 복호화하려 시도하지만, 임시(Ephemeral) ML-KEM-768 PFS 키교환으로 인해 복호화가 불가능합니다.",
+          "blue_defense": "에페머럴(Ephemeral) 포스트 양자 키 교환 및 IND-CCA2 안전성 보장.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "양자 게이트 오류 주입 및 상수시간 NTT 다항식 마스킹 검증",
+          "red_attack": "양자 게이트 지터 및 다항식 곱셈 사이드채널 타이밍 공격을 시도하여 비밀키 누출을 노리지만, 상수시간 NTT 마스킹과 거절 샘플링 실드로 원천 차단됩니다.",
+          "blue_defense": "상수시간 NTT 다항식 마스킹 연산 및 결함 감지 거절 샘플링(Rejection Sampling) 하드닝.",
+          "detection_rule": "PQC-HYBRID-KEM-SHOR-GUARD-6001-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.01
+    },
+    {
       "lab_id": "01",
       "team_id": "orange",
       "team_name": "오렌지팀",
@@ -2695,7 +2827,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "06",
@@ -2728,7 +2860,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "33",
@@ -2783,7 +2915,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "42",
@@ -2981,7 +3113,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "13",
@@ -3014,7 +3146,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "25",
@@ -3465,7 +3597,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "21",
@@ -3509,7 +3641,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "30",
@@ -3564,7 +3696,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "47",
@@ -3630,7 +3762,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -3696,7 +3828,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "36",
@@ -3751,7 +3883,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "51",
@@ -3817,7 +3949,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -3883,7 +4015,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     }
   ]
 }

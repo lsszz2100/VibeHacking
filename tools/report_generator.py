@@ -589,6 +589,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "A02:2021",
         "owasp_name": "Cryptographic Failures (Hardware Memory Encryption & Enclave Measurement Verification)",
     },
+    "60": {
+        "kisa_id": "2.7.1",
+        "kisa_name": "암호정책 적용 (양자 컴퓨팅 위협 대응 및 포스트 양자 암호 전환)",
+        "nist_csf_id": "PR.DS-01",
+        "nist_csf_name": "Data-at-Rest & In-Transit Protected (Post-Quantum Cryptography & Hybrid KEM)",
+        "owasp_id": "A02:2021",
+        "owasp_name": "Cryptographic Failures (Quantum-Vulnerable Asymmetric Ciphers & Period Finding)",
+    },
 }
 
 @dataclass
@@ -1692,6 +1700,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Lack of hardware-enforced memory encryption engine (MEE) or improper remote attestation allows malicious cloud host administrators to inspect guest RAM, inject untrusted enclave code, and alter page tables.",
                 "affected_component": "ConfidentialComputingLab TEE Controller (Port 8059)",
                 "remediation": "Enable AMD SEV-SNP or Intel TDX hardware memory encryption (AES-256-XTS), enforce ECDSA P-384 hardware remote attestation with MRENCLAVE measurement validation, activate Reverse Map Table (RMP) page ownership enforcement, and encrypt vCPU register state (VMSA)."
+            }
+        ]
+    },
+    "60": {
+        "title": "60 QuantumCryptanalysisLab Quantum Cryptanalysis & Post-Quantum Active Defense",
+        "category": "Quantum Cryptanalysis, Post-Quantum Cryptography & Lattice Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6001",
+                "name": "Quantum Period Finding & Lattice Reduction Vulnerability in Legacy Asymmetric Infrastructure",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N",
+                "mitre_id": "T1600.001",
+                "mitre_technique": "Reduce Key Space: Quantum Period Finding & Lattice Reduction",
+                "mitre_tactic": "Credential Access / Defense Evasion",
+                "impact": "CRQC or state-sponsored quantum adversary computes discrete logarithms and factors 2048-bit RSA/ECC keys via Shor algorithm, or harvests encrypted sessions for retrospective decryption (SNDL).",
+                "description": "Legacy public key infrastructure lacks post-quantum hybrid KEM and constant-time masked NTT polynomial arithmetic, leaving communications vulnerable to Shor factorization and side-channel fault injection.",
+                "affected_component": "QuantumCryptanalysisLab Quantum Security Controller (Port 8060)",
+                "remediation": "Migrate to NIST FIPS 203 ML-KEM-768 hybrid key exchange (X25519+ML-KEM-768), enforce Ephemeral PFS, apply FIPS 204 ML-DSA signatures, and implement constant-time masked NTT arithmetic with rejection sampling."
             }
         ]
     }

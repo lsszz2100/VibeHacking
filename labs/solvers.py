@@ -1788,6 +1788,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🔒 VMSA register encryption ACTIVE! Host plaintext exposed: 0 bytes -> FLAG{vmsa_register_encryption_and_cache_flush_safeguard}"
             }
         ]
+    },
+    "60": {
+        "title": "Lab 60: QuantumCryptanalysisLab (양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 실습 랩)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "쇼어 알고리즘 양자 위상 추정(QPE) 주기 탐색 및 하이브리드 KEM 능동 방어",
+                "target": "POST /api/stage1/quantum-period-probe",
+                "poc_explanation": "4096개 논리 큐비트를 모의하여 RSA-2048 / ECDSA P-256 공개키의 주기를 역산하려는 양자 알고리즘 공격을 시도합니다. 하이브리드 KEM(X25519+ML-KEM-768)이 이를 포착하고 방어합니다.",
+                "exploit_payload": '{"target_modulus": "rsa_2048_n", "circuit_qubits": 4096, "qpe_precision": "high"}',
+                "defense": "NIST FIPS 203 ML-KEM-768 격자 기반 KEM 및 X25519 하이브리드 키 캡슐화 강제.",
+                "sample_output": "✓ Quantum Period Finding neutralized by Hybrid Post-Quantum KEM! -> FLAG{shor_qpe_quantum_period_finding_neutralized_by_hybrid_kem}"
+            },
+            {
+                "step": 2,
+                "name": "BKZ-40 격자 기저 축소 공격 및 FIPS 203 모듈 차원(k=3) 난제 검증",
+                "target": "POST /api/stage2/lattice-reduction-attack",
+                "poc_explanation": "BKZ-40 격자 기저 축소 알고리즘으로 Ring-LWE 최단 벡터(SVP/CVP)를 추정하여 비밀 다항식 복원을 시도하지만, FIPS 203 768차원 격자 난제에 의해 복원이 차단됩니다.",
+                "exploit_payload": '{"lattice_dimension": 768, "reduction_algorithm": "BKZ_40", "error_distribution_eta": 2}',
+                "defense": "FIPS 203 표준 모듈 차원(k=3, dim=768) 및 중심 이항 분포(η=2) 보안 매개변수 적용.",
+                "sample_output": "✓ BKZ-40 Lattice Reduction failed against 768-dim Ring-LWE -> FLAG{bkz_lattice_reduction_svp_fails_against_fips203_dimension768}"
+            },
+            {
+                "step": 3,
+                "name": "SNDL (Store Now, Decrypt Later) 도청 공격 시도 및 완전 순방향 비밀성(PFS) 방어",
+                "target": "POST /api/stage3/sndl-harvest-defense",
+                "poc_explanation": "공격자가 10년간 보관한 네트워크 세션 암호문을 미래 양자컴퓨터(CRQC)로 사후 복호화하려 시도하지만, 임시(Ephemeral) ML-KEM-768 PFS 키교환으로 인해 복호화가 불가능합니다.",
+                "exploit_payload": '{"intercepted_traffic_age_years": 10, "harvest_context": "sndl_nation_state", "hybrid_kem_active": true}',
+                "defense": "에페머럴(Ephemeral) 포스트 양자 키 교환 및 IND-CCA2 안전성 보장.",
+                "sample_output": "✓ Harvested session immune to retrospective quantum decryption! -> FLAG{sndl_harvest_attack_foiled_by_ephemeral_ml_kem_pfs}"
+            },
+            {
+                "step": 4,
+                "name": "양자 게이트 오류 주입 및 상수시간 NTT 다항식 마스킹 검증",
+                "target": "POST /api/stage4/quantum-fault-defense",
+                "poc_explanation": "양자 게이트 지터 및 다항식 곱셈 사이드채널 타이밍 공격을 시도하여 비밀키 누출을 노리지만, 상수시간 NTT 마스킹과 거절 샘플링 실드로 원천 차단됩니다.",
+                "exploit_payload": '{"fault_injection_type": "quantum_gate_jitter", "side_channel_probe": "polynomial_ntt_timing", "masked_arithmetic": true}',
+                "defense": "상수시간 NTT 다항식 마스킹 연산 및 결함 감지 거절 샘플링(Rejection Sampling) 하드닝.",
+                "sample_output": "✓ Masked NTT polynomial arithmetic prevents quantum fault injection -> FLAG{masked_ntt_arithmetic_prevents_quantum_fault_injection}"
+            }
+        ]
     }
 }
 

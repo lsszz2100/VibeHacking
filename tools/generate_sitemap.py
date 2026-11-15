@@ -46,8 +46,8 @@ def generate_root_sitemap():
         ET.SubElement(u, "changefreq").text = "weekly"
         ET.SubElement(u, "priority").text = "0.8"
 
-    # 38 Labs
-    for p in sorted(REPO_ROOT.glob("labs/lab[0-9][0-9]/README.md")):
+    # 60 Labs
+    for p in sorted(REPO_ROOT.glob("labs/[0-9][0-9]_*/README.md")):
         rel = p.relative_to(REPO_ROOT)
         loc = f"{BASE_URL}/#/{rel.parent}/README"
         u = ET.SubElement(urlset, "url")

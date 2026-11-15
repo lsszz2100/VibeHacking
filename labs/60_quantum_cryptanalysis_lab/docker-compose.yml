@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  quantum_cryptanalysis_lab_lab:
+    build: .
+    container_name: vhack_lab_60
+    ports:
+      - "127.0.0.1:8060:8060"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

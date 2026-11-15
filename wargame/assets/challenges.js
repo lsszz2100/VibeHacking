@@ -625,6 +625,15 @@ const TRACKS = [
     "desc_ko": "AMD SEV-SNP & Intel TDX 하드웨어 메모리 암호화(AES-256-XTS) · 보안 프로세서 원격 증명(Remote Attestation) & MRENCLAVE 서명 검증 · 역방향 매핑 테이블(RMP) 페이지 스플라이싱 차단 · vCPU 레지스터 상태(VMSA) 암호화 및 캐시 타이밍 격리.",
     "desc_en": "AMD SEV-SNP & Intel TDX hardware memory encryption (AES-256-XTS), hardware remote attestation & MRENCLAVE signature verification, Reverse Map Table (RMP) page splicing defense, and vCPU state save area (VMSA) encryption & cache timing confinement."
   }
+,
+  {
+    "id": "quantumcrypt",
+    "icon": "⚛️",
+    "ko": "양자 암호 분석 & 포스트 양자 암호 방어",
+    "en": "Quantum Cryptanalysis & Post-Quantum Cryptography Defense",
+    "desc_ko": "쇼어 알고리즘 양자 위상 추정(QPE) 인수분해 시도 · 하이브리드 KEM(X25519+ML-KEM-768) 결합 캡슐화 능동 방어 · BKZ-40 격자 기저 축소 SVP 공격 및 FIPS 203 모듈 격자 난제(k=3) 방어 · SNDL 장기 도청 차단 Ephemeral PFS · 상수시간 NTT 다항식 마스킹.",
+    "desc_en": "Shor QPE quantum period finding factorization, Hybrid KEM (X25519+ML-KEM-768) active encapsulation, BKZ-40 lattice reduction SVP attacks and FIPS 203 module lattice hardness (k=3), SNDL harvest mitigation via ephemeral PFS, and constant-time masked NTT polynomial arithmetic."
+  }
 ];
 
 const CHALLENGES = [
@@ -70264,5 +70273,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "4bd5dd6c36b50e7232ac5e9a32dc88ea8f87f460b93d823a103e2b2764946af5"
+  },
+  {
+    "id": "t0_quantumcrypt_fundamentals_quantum_supremacy_cryptography",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 우월성과 현대 비대칭 암호의 위협",
+      "en": "Quantum Supremacy & Asymmetric Cryptography Threats"
+    },
+    "prompt": {
+      "ko": "양자 컴퓨팅의 양자 우월성 달성이 기존 RSA 및 ECC 비대칭 공개키 암호 체계에 미치는 파괴적 위협과 포스트 양자 암호 전환의 필요성을 학습합니다.\n지정된 식별자 `quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1\") 앞 20자리}",
+      "en": "Understand the disruptive cryptographic threat that quantum supremacy poses to legacy RSA and ECC asymmetric systems and the necessity of post-quantum migration.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_fundamentals_quantum_supremacy_cryptography_v1\")."
+      ]
+    },
+    "hash": "b69c29ebab8192f06ae10a0c752e32177079a2bc5b2337bda02d4f52173c301a"
+  },
+  {
+    "id": "t0_quantumcrypt_qubits_superposition_and_entanglement",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "큐비트 중첩과 얽힘의 물리 계층 원리",
+      "en": "Qubits, Superposition & Entanglement Principles"
+    },
+    "prompt": {
+      "ko": "고전 비트와 달리 0과 1의 양자 중첩(|ψ⟩ = α|0⟩ + β|1⟩)과 다자간 양자 얽힘을 활용하여 지수 함수적 병렬 연산 공간을 구성하는 원리를 이해합니다.\n지정된 식별자 `quantumcrypt_qubits_superposition_and_entanglement_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_qubits_superposition_and_entanglement_v1\") 앞 20자리}",
+      "en": "Examine how quantum superposition and multi-qubit entanglement construct exponential computational state spaces contrasting classical binary bits.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_qubits_superposition_and_entanglement_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_qubits_superposition_and_entanglement_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_qubits_superposition_and_entanglement_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_qubits_superposition_and_entanglement_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_qubits_superposition_and_entanglement_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_qubits_superposition_and_entanglement_v1\")."
+      ]
+    },
+    "hash": "1528411253ce87900f5d7eddb41614b6fbd91abce7809c35a8477d5446629bdb"
+  },
+  {
+    "id": "t0_quantumcrypt_shor_algorithm_order_finding_principles",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "쇼어 알고리즘 위수 주기 탐색 기본 원리",
+      "en": "Shor's Algorithm & Order Finding Principles"
+    },
+    "prompt": {
+      "ko": "쇼어 알고리즘이 모듈러 거듭제곱의 주기(r)를 양자 푸리에 변환(QFT)으로 다항 시간 내에 찾아내어 거대 소인수분해를 해결하는 메커니즘을 분석합니다.\n지정된 식별자 `quantumcrypt_shor_algorithm_order_finding_principles_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_shor_algorithm_order_finding_principles_v1\") 앞 20자리}",
+      "en": "Analyze how Shor's algorithm leverages the Quantum Fourier Transform to locate modular exponentiation periods in polynomial time to factor large composites.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_shor_algorithm_order_finding_principles_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_shor_algorithm_order_finding_principles_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_shor_algorithm_order_finding_principles_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_shor_algorithm_order_finding_principles_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_shor_algorithm_order_finding_principles_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_shor_algorithm_order_finding_principles_v1\")."
+      ]
+    },
+    "hash": "77f968783e945600b8472c42251fa4f8ea8ebcd30d69f617243a44e8f0fa406d"
+  },
+  {
+    "id": "t0_quantumcrypt_grover_algorithm_symmetric_key_search",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "그로버 알고리즘 대칭키 탐색 및 AES-256 보안성",
+      "en": "Grover's Algorithm & AES-256 Security Margin"
+    },
+    "prompt": {
+      "ko": "비정렬 데이터 검색에서 제곱근 가속(O(√N))을 제공하는 그로버 알고리즘에 대응하여 대칭키 길이를 256비트(AES-256)로 유지해야 하는 이유를 학습합니다.\n지정된 식별자 `quantumcrypt_grover_algorithm_symmetric_key_search_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_grover_algorithm_symmetric_key_search_v1\") 앞 20자리}",
+      "en": "Explore why AES key sizes must be doubled to 256 bits to counter Grover's quadratic speedup (O(sqrt(N))) on unstructured brute-force key searches.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_grover_algorithm_symmetric_key_search_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_grover_algorithm_symmetric_key_search_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_grover_algorithm_symmetric_key_search_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_grover_algorithm_symmetric_key_search_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_grover_algorithm_symmetric_key_search_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_grover_algorithm_symmetric_key_search_v1\")."
+      ]
+    },
+    "hash": "0325c893765ee79a95772d7390a0b6d0e78a4e6d83bcd6e42a027eef1ab65724"
+  },
+  {
+    "id": "t0_quantumcrypt_discrete_logarithm_quantum_vulnerability",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이산대수 및 타원곡선 양자 취약점 분석",
+      "en": "Quantum Vulnerability of Discrete Logarithms & ECC"
+    },
+    "prompt": {
+      "ko": "디피-헬만(Diffie-Hellman) 및 타원곡선 암호(ECDSA / Ed25519)의 이산대수 문제가 아벨군 위수 탐색 양자 알고리즘에 의해 다항 시간 내 파괴되는 취약성을 규명합니다.\n지정된 식별자 `quantumcrypt_discrete_logarithm_quantum_vulnerability_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_discrete_logarithm_quantum_vulnerability_v1\") 앞 20자리}",
+      "en": "Examine how abelian hidden subgroup quantum algorithms resolve discrete logarithm problems in polynomial time breaking legacy ECDSA and Ed25519.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_discrete_logarithm_quantum_vulnerability_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_discrete_logarithm_quantum_vulnerability_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_discrete_logarithm_quantum_vulnerability_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_discrete_logarithm_quantum_vulnerability_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_discrete_logarithm_quantum_vulnerability_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_discrete_logarithm_quantum_vulnerability_v1\")."
+      ]
+    },
+    "hash": "cd4d696926b4c1cbb5ae51cf13db32727c8d48f4e2c707209884d3c39f84759e"
+  },
+  {
+    "id": "t0_quantumcrypt_nist_post_quantum_standardization_roadmap",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NIST 포스트 양자 표준화 로드맵",
+      "en": "NIST Post-Quantum Standardization Roadmap"
+    },
+    "prompt": {
+      "ko": "FIPS 203(ML-KEM/Kyber), FIPS 204(ML-DSA/Dilithium), FIPS 205(SLH-DSA/SPHINCS+)로 공식화된 미국 NIST 포스트 양자 암호 표준화 규격을 학습합니다.\n지정된 식별자 `quantumcrypt_nist_post_quantum_standardization_roadmap_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_nist_post_quantum_standardization_roadmap_v1\") 앞 20자리}",
+      "en": "Review the finalized NIST post-quantum cryptographic standards: FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), and FIPS 205 (SLH-DSA).\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_nist_post_quantum_standardization_roadmap_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_nist_post_quantum_standardization_roadmap_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_nist_post_quantum_standardization_roadmap_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_nist_post_quantum_standardization_roadmap_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_nist_post_quantum_standardization_roadmap_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_nist_post_quantum_standardization_roadmap_v1\")."
+      ]
+    },
+    "hash": "7f4beae90ba188f9f5ceb911e1a6081a4b5b50a0134b579a0db101504717ee9a"
+  },
+  {
+    "id": "t0_quantumcrypt_quantum_readiness_cryptographic_inventory",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 대비 암호화 자산 명세서 수립",
+      "en": "Quantum Readiness & Cryptographic Inventory CBOM"
+    },
+    "prompt": {
+      "ko": "조직 내 모든 TLS 인증서, VPN 터널, 코드 서명 키의 알고리즘과 키 길이를 목록화하는 암호 자산 명세서(CBOM: Cryptography Bill of Materials) 수립 절차를 이해합니다.\n지정된 식별자 `quantumcrypt_quantum_readiness_cryptographic_inventory_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_quantum_readiness_cryptographic_inventory_v1\") 앞 20자리}",
+      "en": "Understand procedures for establishing a Cryptography Bill of Materials (CBOM) auditing all certificates, VPN tunnels, and code signing keys across enterprise infrastructure.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_quantum_readiness_cryptographic_inventory_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_quantum_readiness_cryptographic_inventory_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_quantum_readiness_cryptographic_inventory_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_quantum_readiness_cryptographic_inventory_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_quantum_readiness_cryptographic_inventory_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_quantum_readiness_cryptographic_inventory_v1\")."
+      ]
+    },
+    "hash": "ca30d1844ba36d9df076a255f8f55c4a2b00fbf61538b7fe8246d69575f2dc1e"
+  },
+  {
+    "id": "t1_quantumcrypt_quantum_phase_estimation_circuit_analysis",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 위상 추정 양자 회로 게이트 깊이 분석",
+      "en": "Quantum Phase Estimation Circuit & Gate Depth Analysis"
+    },
+    "prompt": {
+      "ko": "유니터리 연산자의 고유값을 추출하는 양자 위상 추정(QPE) 회로에서 하다마드 게이트 및 제어 모듈러 덧셈 회로의 T-게이트 깊이와 큐비트 자원 소비를 계산합니다.\n지정된 식별자 `quantumcrypt_quantum_phase_estimation_circuit_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_quantum_phase_estimation_circuit_analysis_v1\") 앞 20자리}",
+      "en": "Calculate T-gate depth and logical qubit footprint across Quantum Phase Estimation circuits utilizing controlled modular exponentiation gates.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_quantum_phase_estimation_circuit_analysis_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_quantum_phase_estimation_circuit_analysis_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_quantum_phase_estimation_circuit_analysis_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_quantum_phase_estimation_circuit_analysis_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_quantum_phase_estimation_circuit_analysis_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_quantum_phase_estimation_circuit_analysis_v1\")."
+      ]
+    },
+    "hash": "7327aead608c5c93a4fd9df27b905e848de6760735bd86ca54eb3a448210674a"
+  },
+  {
+    "id": "t1_quantumcrypt_classical_continued_fractions_period_recovery",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "고전 연분수 전개 주기 복원 알고리즘",
+      "en": "Classical Continued Fractions Period Recovery"
+    },
+    "prompt": {
+      "ko": "QPE 측정 레지스터로부터 획득한 위상 근사치 s/2^m을 연분수 전개(Continued Fractions)하여 분모의 미지 주기 r을 결정론적으로 도출하는 과정을 실습합니다.\n지정된 식별자 `quantumcrypt_classical_continued_fractions_period_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_classical_continued_fractions_period_recovery_v1\") 앞 20자리}",
+      "en": "Derive unknown order periods r deterministically through continued fraction expansion over quantum measured phase approximations s/2^m.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_classical_continued_fractions_period_recovery_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_classical_continued_fractions_period_recovery_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_classical_continued_fractions_period_recovery_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_classical_continued_fractions_period_recovery_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_classical_continued_fractions_period_recovery_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_classical_continued_fractions_period_recovery_v1\")."
+      ]
+    },
+    "hash": "3f95e3cd12152c648ea463a0313f16e3c8fbd924ef69d422251646c8235b8206"
+  },
+  {
+    "id": "t1_quantumcrypt_lattice_cryptography_learning_with_errors",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "격자 기반 암호 Learning with Errors 수학적 기초",
+      "en": "Lattice Cryptography & Learning with Errors LWE"
+    },
+    "prompt": {
+      "ko": "다차원 격자에서 비밀 벡터 s와 오류 e가 가미된 연립일차방정식 b = As + e (mod q)로부터 s를 분리해내는 것이 양자 컴퓨터로도 어려운 원리를 분석합니다.\n지정된 식별자 `quantumcrypt_lattice_cryptography_learning_with_errors_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_lattice_cryptography_learning_with_errors_v1\") 앞 20자리}",
+      "en": "Analyze mathematical foundations of Learning with Errors (LWE) where isolating secret vector s from b = As + e mod q remains quantum-intractable.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_lattice_cryptography_learning_with_errors_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_lattice_cryptography_learning_with_errors_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_lattice_cryptography_learning_with_errors_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_lattice_cryptography_learning_with_errors_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_lattice_cryptography_learning_with_errors_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_lattice_cryptography_learning_with_errors_v1\")."
+      ]
+    },
+    "hash": "2e543f5cbd178a1fab288ee8e9d2aebfca9da647a45af6ad01a66520b29cc439"
+  },
+  {
+    "id": "t1_quantumcrypt_ring_lwe_polynomial_rings_and_modulus",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Ring-LWE 다항식 링 R_q와 모듈러스 q 연산",
+      "en": "Ring-LWE Polynomial Rings & Modulus Arithmetic"
+    },
+    "prompt": {
+      "ko": "행렬 크기를 대폭 축소하는 다항식 환 R_q = Z_q[X]/(X^n + 1) 구조에서 n=256, q=3329 파라미터가 제공하는 계산 효율성과 격자 보안성을 학습합니다.\n지정된 식별자 `quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1\") 앞 20자리}",
+      "en": "Study polynomial ring structures R_q = Z_q[X]/(X^n + 1) with n=256 and q=3329 providing compact key representation and hardness guarantees in Ring-LWE.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_ring_lwe_polynomial_rings_and_modulus_v1\")."
+      ]
+    },
+    "hash": "9b26cbde922848cbbb5abe5f92c2db6ef56d12adba01268cf9efa64461198574"
+  },
+  {
+    "id": "t1_quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하이브리드 키 교환 X25519 + ML-KEM-768 핸드셰이크",
+      "en": "Hybrid Key Exchange X25519 + ML-KEM-768 Handshake"
+    },
+    "prompt": {
+      "ko": "고전 타원곡선 X25519 ECDH 공유 비밀과 NIST FIPS 203 ML-KEM-768 캡슐화 비밀을 HKDF로 결합하여 양방향 보안성을 동시 보장하는 하이브리드 KEM을 구성합니다.\n지정된 식별자 `quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1\") 앞 20자리}",
+      "en": "Construct a hybrid key encapsulation mechanism combining classical X25519 ECDH and FIPS 203 ML-KEM-768 shared secrets via dual HKDF extraction.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_hybrid_key_exchange_x25519_kyber_handshake_v1\")."
+      ]
+    },
+    "hash": "1ce28d2216a6f4b18cba8eb9a16b8871e87d2ec247baac48423f6293ca814f16"
+  },
+  {
+    "id": "t1_quantumcrypt_sndl_harvest_now_decrypt_later_telemetry",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SNDL 장기 도청 위협 모델링 및 수명 주기 분석",
+      "en": "Store Now Decrypt Later SNDL Threat Modeling"
+    },
+    "prompt": {
+      "ko": "현재 암호화된 전송 계층 트래픽을 대량 수집 및 저장한 후 미래 양자 컴퓨터로 사후 해독하려는 SNDL 공격 시나리오와 데이터 수명(Data Retention) 한계를 평가합니다.\n지정된 식별자 `quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1\") 앞 20자리}",
+      "en": "Evaluate Store Now Decrypt Later (SNDL) attack scenarios where adversaries harvest encrypted network telemetry today for retrospective quantum decryption.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_sndl_harvest_now_decrypt_later_telemetry_v1\")."
+      ]
+    },
+    "hash": "9e5ff7955cb71d6e2aab66ccc6eca7a5c9dbd9c07203829f795f03d991dfa89b"
+  },
+  {
+    "id": "t1_quantumcrypt_post_quantum_fips204_mldsa_digital_signatures",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 204 ML-DSA 전자서명 구조 분석",
+      "en": "FIPS 204 ML-DSA Dilithium Digital Signatures"
+    },
+    "prompt": {
+      "ko": "Fiat-Shamir with Aborts 기법을 적용하여 거절 샘플링(Rejection Sampling)으로 비밀 벡터의 정보 누출을 차단하는 FIPS 204 격자 기반 전자서명 메커니즘을 분석합니다.\n지정된 식별자 `quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1\") 앞 20자리}",
+      "en": "Analyze FIPS 204 lattice digital signatures employing the Fiat-Shamir with Aborts framework and rejection sampling to prevent secret vector leakage.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_post_quantum_fips204_mldsa_digital_signatures_v1\")."
+      ]
+    },
+    "hash": "e1e1b7794e4cb0ee6a2ffdf529a51b2a4aeb3bb3de9b9ea47b762951fbd87507"
+  },
+  {
+    "id": "t2_quantumcrypt_lll_lattice_basis_reduction_analysis",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "LLL 격자 기저 축소 분석 및 그람-슈미트 직교화",
+      "en": "LLL Lattice Basis Reduction Analysis"
+    },
+    "prompt": {
+      "ko": "Lenstra-Lenstra-Lovász(LLL) 알고리즘이 그람-슈미트 직교화(GSO)와 Lovász 조건을 만족하는 거의 직교하는 기저 벡터를 다항 시간 내에 산출하는 원리를 학습합니다.\n지정된 식별자 `quantumcrypt_lll_lattice_basis_reduction_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_lll_lattice_basis_reduction_analysis_v1\") 앞 20자리}",
+      "en": "Examine how the LLL algorithm computes quasi-orthogonal basis vectors in polynomial time utilizing Gram-Schmidt Orthogonalization and Lovasz criteria.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_lll_lattice_basis_reduction_analysis_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_lll_lattice_basis_reduction_analysis_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_lll_lattice_basis_reduction_analysis_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_lll_lattice_basis_reduction_analysis_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_lll_lattice_basis_reduction_analysis_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_lll_lattice_basis_reduction_analysis_v1\")."
+      ]
+    },
+    "hash": "c632da483dddd461bf0dd06031680e14c128680509e53d42bd01e1c391d8b2df"
+  },
+  {
+    "id": "t2_quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BKZ 격자 축소와 최단 벡터 문제 난이도",
+      "en": "BKZ Basis Reduction & Shortest Vector Problem Hardness"
+    },
+    "prompt": {
+      "ko": "블록 크기 β를 사용하는 Block Korkine-Zolotarev(BKZ-40/60) 격자 축소 알고리즘의 에르미트 인자 수렴 속도와 최단 벡터 문제(SVP) 해결 지수 복잡도를 분석합니다.\n지정된 식별자 `quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1\") 앞 20자리}",
+      "en": "Analyze Hermite factor convergence rates and exponential SVP hardness across Block Korkine-Zolotarev (BKZ) basis reduction with varying block sizes.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_bkz_block_korkine_zolotarev_svp_hardness_v1\")."
+      ]
+    },
+    "hash": "fc0ee555a57ea3d44804a927f9913cf65b93c56922adb2c7ed83a27ef9128e75"
+  },
+  {
+    "id": "t2_quantumcrypt_ring_lwe_hermite_factor_security_estimate",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Ring-LWE 에르미트 인자 보안 강도 산출",
+      "en": "Ring-LWE Hermite Factor Security Estimation"
+    },
+    "prompt": {
+      "ko": "루트 에르미트 인자 δ_0 ≤ 1.0062를 달성하는 데 필요한 격자 기저 축소 연산 비용을 코어-SVP 모델(Core-SVP Hardness)로 정량화하여 192비트 양자 보안성을 검증합니다.\n지정된 식별자 `quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1\") 앞 20자리}",
+      "en": "Quantify Core-SVP classical and quantum gate counts required to achieve root Hermite factors delta_0 <= 1.0062 validating 192-bit quantum security.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_ring_lwe_hermite_factor_security_estimate_v1\")."
+      ]
+    },
+    "hash": "ba70b3e1a62c1970e413c2617b61346af897f82c59c631b4ca8d5df0c5d3c3c0"
+  },
+  {
+    "id": "t2_quantumcrypt_hybrid_tls13_pq_kem_cipher_suites",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS 1.3 양자 내성 KEM 암호 슈트 연동 실증",
+      "en": "TLS 1.3 Hybrid PQ KEM Cipher Suites"
+    },
+    "prompt": {
+      "ko": "IETF 드래프트 규격의 X25519MLKEM768(코드포인트 0x11ec) 키 공유 그룹을 클라이언트 헬로(ClientHello)에 주입하여 양자 안전 세션을 수립합니다.\n지정된 식별자 `quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1\") 앞 20자리}",
+      "en": "Deploy IETF-standardized X25519MLKEM768 (codepoint 0x11ec) NamedGroup extensions in TLS 1.3 ClientHello messages establishing quantum-safe handshakes.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_hybrid_tls13_pq_kem_cipher_suites_v1\")."
+      ]
+    },
+    "hash": "7e1ae2d4795b0603d2fc17cb76ad065b08c3b0ea42914af9e14ba692bb3ac11b"
+  },
+  {
+    "id": "t2_quantumcrypt_ephemeral_pfs_replay_harvest_neutralization",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "임시 키 교환을 통한 SNDL 무력화 실증",
+      "en": "Ephemeral PFS Replay & Harvest Neutralization"
+    },
+    "prompt": {
+      "ko": "매 연결마다 단회성(Ephemeral) 다항식 키페어를 동적 생성하고 폐기함으로써 장기 보관된 세션 암호문 도청 공격(SNDL)을 수학적으로 원천 무력화합니다.\n지정된 식별자 `quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1\") 앞 20자리}",
+      "en": "Demonstrate complete neutralization of SNDL harvest attacks by generating ephemeral ML-KEM polynomial keypairs for each session enforcing Perfect Forward Secrecy.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_ephemeral_pfs_replay_harvest_neutralization_v1\")."
+      ]
+    },
+    "hash": "7db739206619bcbb95491fe6f304b7d6c73d6011bae58157c50e6d262a282b1e"
+  },
+  {
+    "id": "t2_quantumcrypt_rejection_sampling_gaussian_noise_centering",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 203 중심 이항 분포와 거절 샘플링",
+      "en": "Centered Binomial Distribution & Rejection Sampling"
+    },
+    "prompt": {
+      "ko": "이산 가우시안 분포 대신 하드웨어 구현이 용이한 중심 이항 분포(CBD, η=2)에서 노이즈 다항식을 샘플링하고 거절 임계값을 검증하는 절차를 분석합니다.\n지정된 식별자 `quantumcrypt_rejection_sampling_gaussian_noise_centering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_rejection_sampling_gaussian_noise_centering_v1\") 앞 20자리}",
+      "en": "Analyze noise sampling from Centered Binomial Distributions (CBD, eta=2) replacing discrete Gaussians and verify rejection bounds for uniform security.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_rejection_sampling_gaussian_noise_centering_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_rejection_sampling_gaussian_noise_centering_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_rejection_sampling_gaussian_noise_centering_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_rejection_sampling_gaussian_noise_centering_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_rejection_sampling_gaussian_noise_centering_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_rejection_sampling_gaussian_noise_centering_v1\")."
+      ]
+    },
+    "hash": "b5602e3321a69e6b3fa09515dd68b8a856b8558ac4171e4f0494c55ecd537628"
+  },
+  {
+    "id": "t2_quantumcrypt_ntt_number_theoretic_transform_speedup",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "넘버 이론 변환 다항식 고속 곱셈과 사이드채널",
+      "en": "Number Theoretic Transform NTT & Side-Channel Risks"
+    },
+    "prompt": {
+      "ko": "O(n^2) 다항식 곱셈을 O(n log n)으로 가속하는 Number Theoretic Transform(NTT)에서 쿨리-튜키(Cooley-Tukey) 나비 연산 중 발생하는 부채널 타이밍 누출을 진단합니다.\n지정된 식별자 `quantumcrypt_ntt_number_theoretic_transform_speedup_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_ntt_number_theoretic_transform_speedup_v1\") 앞 20자리}",
+      "en": "Investigate side-channel timing leaks during Cooley-Tukey butterfly operations in Number Theoretic Transform (NTT) accelerating polynomial ring multiplications.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_ntt_number_theoretic_transform_speedup_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_ntt_number_theoretic_transform_speedup_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_ntt_number_theoretic_transform_speedup_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_ntt_number_theoretic_transform_speedup_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_ntt_number_theoretic_transform_speedup_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_ntt_number_theoretic_transform_speedup_v1\")."
+      ]
+    },
+    "hash": "932d6d5b789012668e1ee7db2b356e17add233348f09cca939e81bdbf55d2e50"
+  },
+  {
+    "id": "t3_quantumcrypt_quantum_gate_fault_injection_attack_simulation",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 게이트 지터 및 위상 플립 오류 주입 시뮬레이션",
+      "en": "Quantum Gate Fault Injection Attack Simulation"
+    },
+    "prompt": {
+      "ko": "초전도 양자 프로세서의 마이크로파 펄스 위상 지터(Phase Jitter) 및 비트 플립 오류를 유발하여 결함 허용 큐비트의 양자 오류 정정(QEC) 임계값을 교란합니다.\n지정된 식별자 `quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1\") 앞 20자리}",
+      "en": "Simulate microwave pulse phase jitter and bit-flip faults disrupting quantum error correction (QEC) fault-tolerance thresholds in physical qubits.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_quantum_gate_fault_injection_attack_simulation_v1\")."
+      ]
+    },
+    "hash": "f141bb91925faf5c8fc920f4ce17c65e2a24767c32858070b9432e942b9f2798"
+  },
+  {
+    "id": "t3_quantumcrypt_masked_ntt_constant_time_side_channel_defense",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "마스킹된 상수 시간 NTT 다항식 곱셈 방어",
+      "en": "Masked Constant-Time NTT Polynomial Multiplication"
+    },
+    "prompt": {
+      "ko": "불리언 마스킹(Boolean Masking)과 산술 마스킹(Arithmetic Masking)을 교차 변환하여 NTT 내부 계수와 다항식의 비밀 정보가 전력/시간으로 누출되지 않도록 하드닝합니다.\n지정된 식별자 `quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1\") 앞 20자리}",
+      "en": "Implement cross-conversion between Boolean and Arithmetic masking across NTT butterfly coefficients eliminating power and execution timing side-channels.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_masked_ntt_constant_time_side_channel_defense_v1\")."
+      ]
+    },
+    "hash": "907f4228e927de7aa5caa2385c185e2289b4a6af8445a55782b7534be19028e5"
+  },
+  {
+    "id": "t3_quantumcrypt_fips203_kyber768_ind_cca2_security_proof",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 203 ML-KEM-768 IND-CCA2 보안성 증명",
+      "en": "FIPS 203 ML-KEM-768 IND-CCA2 Fujisaki-Okamoto Transform"
+    },
+    "prompt": {
+      "ko": "선택 암호문 공격에 취약한 IND-CPA 원시 KEM을 변형된 후지사키-오카모토(Fujisaki-Okamoto) 변환을 적용하여 완전한 IND-CCA2 능동 보안성을 확보하는 메커니즘을 규명합니다.\n지정된 식별자 `quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1\") 앞 20자리}",
+      "en": "Evaluate the modified Fujisaki-Okamoto transform elevating IND-CPA raw lattice encryption into an actively secure IND-CCA2 Key Encapsulation Mechanism.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_fips203_kyber768_ind_cca2_security_proof_v1\")."
+      ]
+    },
+    "hash": "f7635c759e50399ab1f1108844e4a384269a6435d44558c57951a117d6eef3ff"
+  },
+  {
+    "id": "t3_quantumcrypt_downgrade_attack_detection_hybrid_negotiation",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS 1.3 고전 암호 강제 다운그레이드 공격 차단",
+      "en": "Downgrade Attack Detection in Hybrid PQC Negotiation"
+    },
+    "prompt": {
+      "ko": "중간자 공격자(MITM)가 ClientHello의 PQC 확장 필드를 변조하여 취약한 고전 RSA/ECDHE로 강제 다운그레이드하려는 시도를 TLS 1.3 Transcript 해시 검증으로 탐지합니다.\n지정된 식별자 `quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1\") 앞 20자리}",
+      "en": "Detect and terminate TLS 1.3 man-in-the-middle downgrade attempts stripping PQC extensions via cryptographic Transcript-Hash authentication.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_downgrade_attack_detection_hybrid_negotiation_v1\")."
+      ]
+    },
+    "hash": "da86f04ae2ac0fdebe5a4e2e591861bc12bae518b55c822dec8adc6f4867c461"
+  },
+  {
+    "id": "t3_quantumcrypt_cross_tenant_quantum_memory_side_channel",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "클라우드 가상화 환경 양자 메모리 캐시 부채널 방어",
+      "en": "Cross-Tenant Quantum Memory Side-Channel Defense"
+    },
+    "prompt": {
+      "ko": "멀티 테넌트 클라우드 환경에서 이웃 VM이 실행하는 격자 다항식 전치 연산의 L3 캐시 라인을 Flush+Reload 기법으로 관측하지 못하도록 캐시 파티셔닝(CAT)을 적용합니다.\n지정된 식별자 `quantumcrypt_cross_tenant_quantum_memory_side_channel_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_cross_tenant_quantum_memory_side_channel_v1\") 앞 20자리}",
+      "en": "Deploy Intel CAT cache allocation technology and page coloring preventing co-located tenant VMs from probing lattice polynomial transpose memory access patterns.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_cross_tenant_quantum_memory_side_channel_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_cross_tenant_quantum_memory_side_channel_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_cross_tenant_quantum_memory_side_channel_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_cross_tenant_quantum_memory_side_channel_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_cross_tenant_quantum_memory_side_channel_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_cross_tenant_quantum_memory_side_channel_v1\")."
+      ]
+    },
+    "hash": "4391af735041a9074f315868158e2fe3d4a2f449c37ab9e663ec694b916cfc63"
+  },
+  {
+    "id": "t3_quantumcrypt_hash_based_signatures_slh_dsa_sphincs",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "해시 기반 전자서명 FIPS 205 SLH-DSA 상태 관리",
+      "en": "Hash-Based Signatures FIPS 205 SLH-DSA State Management"
+    },
+    "prompt": {
+      "ko": "격자 난제에 의존하지 않고 해시 함수(SHAKE-256)의 일방향성만을 신뢰하는 FIPS 205 SLH-DSA(SPHINCS+) 상태 비저장(Stateless) 하이퍼트리 서명 체계를 구축합니다.\n지정된 식별자 `quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1\") 앞 20자리}",
+      "en": "Architect a stateless hypertree signature scheme under FIPS 205 SLH-DSA (SPHINCS+) relying solely on the collision resistance of cryptographic hash functions.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_hash_based_signatures_slh_dsa_sphincs_v1\")."
+      ]
+    },
+    "hash": "49c7bc866ad121adb425279d7e541377d1fdb3fc7fe9dc1db755a6876d0ee999"
+  },
+  {
+    "id": "t3_quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "제로 트러스트 IKEv2 / IPsec 양자 내성 암호 전환",
+      "en": "Zero Trust IKEv2 / IPsec Post-Quantum Migration"
+    },
+    "prompt": {
+      "ko": "IKEv2 RFC 9370 복합 키 교환(Multiple Key Exchanges) 확장을 적용하여 엔터프라이즈 사이트 간 IPsec VPN 터널을 ML-KEM 기반 양자 내성 암호로 마이그레이션합니다.\n지정된 식별자 `quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1\") 앞 20자리}",
+      "en": "Migrate enterprise site-to-site IPsec VPN tunnels to post-quantum hybrid KEMs utilizing IKEv2 Multiple Key Exchanges (RFC 9370) extensions.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_pqc_zero_trust_vpn_and_ipsec_migration_v1\")."
+      ]
+    },
+    "hash": "e584f560919481735791bd4710402dc15de26f83b66a7922e2654421c9ffb61e"
+  },
+  {
+    "id": "t4_quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CRQC 도래 대비 국가급 장기 기밀 방어 프레임워크",
+      "en": "CRQC Cryptanalytically Relevant Quantum Defense Framework"
+    },
+    "prompt": {
+      "ko": "암호학적으로 유의미한 양자 컴퓨터(CRQC: Cryptanalytically Relevant Quantum Computer)의 물리적 큐비트 수명 및 결함 허용(Fault-Tolerant) 아키텍처에 대응하는 국가급 기밀 방어 전략을 수립합니다.\n지정된 식별자 `quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1\") 앞 20자리}",
+      "en": "Formulate defense frameworks against Cryptanalytically Relevant Quantum Computers (CRQCs) projecting logical qubit thresholds and physical coherence requirements.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_crqc_cryptanalytically_relevant_quantum_threat_v1\")."
+      ]
+    },
+    "hash": "509b442037a43fdfc5012e0b758b8d7983d508f3b4a11be20496819560c7393d"
+  },
+  {
+    "id": "t4_quantumcrypt_dual_signature_x509_pki_cross_validation",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "X.509 복합 하이브리드 전자서명 교차 검증",
+      "en": "Dual-Signature X.509 PKI Cross-Validation"
+    },
+    "prompt": {
+      "ko": "기존 고전 인증기관(CA) 생태계와의 하위 호환성을 유지하면서 RSA/ECDSA와 ML-DSA를 다중 인증서 확장(Composite Signatures)으로 묶어 교차 검증하는 PKI 시스템을 구축합니다.\n지정된 식별자 `quantumcrypt_dual_signature_x509_pki_cross_validation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_dual_signature_x509_pki_cross_validation_v1\") 앞 20자리}",
+      "en": "Construct composite X.509 PKI certificate chains encapsulating both classical ECDSA and post-quantum ML-DSA signatures for backward-compatible cross-validation.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_dual_signature_x509_pki_cross_validation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_dual_signature_x509_pki_cross_validation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_dual_signature_x509_pki_cross_validation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_dual_signature_x509_pki_cross_validation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_dual_signature_x509_pki_cross_validation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_dual_signature_x509_pki_cross_validation_v1\")."
+      ]
+    },
+    "hash": "1e97e47c253518f98be8bded664b23a4634bb347d54a9e00a691e74eefb2e027"
+  },
+  {
+    "id": "t4_quantumcrypt_lattice_side_channel_power_analysis_dpa",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "격자 암호 차분 전력 분석 및 부채널 누출 방어",
+      "en": "Lattice Side-Channel Differential Power Analysis DPA Defense"
+    },
+    "prompt": {
+      "ko": "하드웨어 암호 가속기의 전력 소비 파형(Trace)을 수집하여 상관 전력 분석(CPA)으로 비밀 다항식 계수를 유출하려는 공격을 셔플링(Shuffling)과 1차 마스킹으로 방어합니다.\n지정된 식별자 `quantumcrypt_lattice_side_channel_power_analysis_dpa_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_lattice_side_channel_power_analysis_dpa_v1\") 앞 20자리}",
+      "en": "Neutralize Correlation Power Analysis (CPA) on hardware lattice accelerators through algorithmic shuffling and first-order masking of intermediate polynomial states.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_lattice_side_channel_power_analysis_dpa_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_lattice_side_channel_power_analysis_dpa_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_lattice_side_channel_power_analysis_dpa_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_lattice_side_channel_power_analysis_dpa_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_lattice_side_channel_power_analysis_dpa_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_lattice_side_channel_power_analysis_dpa_v1\")."
+      ]
+    },
+    "hash": "481791a1aaf0cbc16a82fb5816f3d210977bae3ff79056ec0cf1b499a3a47694"
+  },
+  {
+    "id": "t4_quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 보안 모듈 PQC 가속기 격리 검증",
+      "en": "Hardware Crypto Accelerator & Enclave Isolation"
+    },
+    "prompt": {
+      "ko": "FIPS 140-3 Level 4 하드웨어 보안 모듈 내부 격리된 암호 가속 코어에서 ML-KEM 개인키 디캡슐레이션을 안전하게 수행하고 템퍼 방지(Tamper Resistance)를 실증합니다.\n지정된 식별자 `quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1\") 앞 20자리}",
+      "en": "Validate isolated ML-KEM decapsulation within FIPS 140-3 Level 4 Hardware Security Enclaves verifying physical tamper protection and secure key enclave boundaries.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_hardware_hsm_pqc_acceleration_and_isolation_v1\")."
+      ]
+    },
+    "hash": "19dbb81f45a18cda993b1a977e78ef9d903bd0e8a6e8cc248e7eb413024057b4"
+  },
+  {
+    "id": "t4_quantumcrypt_pqc_crypto_agility_automated_cbom_governance",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "암호 민첩성 및 자동화된 CBOM 거버넌스",
+      "en": "Cryptographic Agility & Automated CBOM Governance"
+    },
+    "prompt": {
+      "ko": "특정 포스트 양자 알고리즘에 새로운 수학적 결함이 발견될 경우 소스 코드 재작성 없이 설정 변경만으로 알고리즘을 즉시 대체하는 암호 민첩성(Crypto Agility) 프레임워크를 구현합니다.\n지정된 식별자 `quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1\") 앞 20자리}",
+      "en": "Implement cryptographic agility architecture enabling hot-swapping between lattice, code-based, and hash-based algorithms without recompilation or service downtime.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_pqc_crypto_agility_automated_cbom_governance_v1\")."
+      ]
+    },
+    "hash": "0d988c803cd115c6afb1566c12ba462fa4b379a6c25357460a70263b40d3b087"
+  },
+  {
+    "id": "t4_quantumcrypt_quantum_safe_secure_boot_and_firmware_signing",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 안전 보안 부팅 및 펌웨어 코드 서명 체계",
+      "en": "Quantum-Safe Verified Boot & Firmware Signing Chain"
+    },
+    "prompt": {
+      "ko": "UEFI 보안 부팅(Verified Boot)과 하드웨어 RoT(Root of Trust) 펌웨어 서명을 FIPS 204 ML-DSA로 전환하여 공격자가 미래 양자 컴퓨터로 악성 펌웨어를 위조하는 사태를 영구 차단합니다.\n지정된 식별자 `quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1\") 앞 20자리}",
+      "en": "Transition UEFI Verified Boot and hardware Root of Trust signature chains to FIPS 204 ML-DSA preventing retrospective quantum forgery of critical host firmware.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_quantum_safe_secure_boot_and_firmware_signing_v1\")."
+      ]
+    },
+    "hash": "f613b72eee914a6ecda6e8113db16896dad8c81c8b853828b1adbcfebb676493"
+  },
+  {
+    "id": "t4_quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "quantumcrypt",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포스트 양자 암호 분석 및 능동 방어 풀 스펙트럼 캡스톤",
+      "en": "Capstone: Full-Spectrum Quantum Cryptanalysis & PQC Defense"
+    },
+    "prompt": {
+      "ko": "쇼어 QPE 주기 탐색 방어, BKZ-40 격자 기저 축소 무력화, SNDL 도청 차단 Ephemeral KEM, 상수시간 NTT 마스킹을 망라하여 완벽한 엔터프라이즈 포스트 양자 능동 방어 체계를 완성합니다.\n지정된 식별자 `quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1\") 앞 20자리}",
+      "en": "Synthesize all post-quantum disciplines: Shor QPE defense, BKZ lattice reduction mitigation, SNDL harvest prevention via ephemeral KEM, and constant-time masked NTT into a master enterprise quantum defense capstone.\nCompute the first 20 hex characters of SHA256(\"quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1\")}"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+        "식별자 `quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Derive the target flag deterministically using SHA-256 over identifier `quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1`.",
+        "Extract the first 20 hex characters of SHA256(\"quantumcrypt_capstone_full_spectrum_quantum_cryptanalysis_v1\")."
+      ]
+    },
+    "hash": "15239188c6f65f3aa7fe724a0d9b75fb377fff09fa3a0a8b2a5bf1f95b4ca85d"
   }
 ];

@@ -623,6 +623,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [4, 14, 26, 46, 55, 58],
     },
+    "60": {
+        "name": "양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 실습 랩",
+        "dir":  "60_quantum_cryptanalysis_lab",
+        "desc": "QuantumCryptanalysisLab: 쇼어(Shor) QPE 주기 탐색 인수분해 시도 · 하이브리드 KEM(X25519+ML-KEM-768) 캡슐화 능동 방어 · BKZ-40 격자 기저 축소 SVP 공격 및 FIPS 203 모듈 격자 난제(k=3) 방어 · SNDL 장기 도청 차단 Ephemeral PFS · 상수시간 NTT 다항식 마스킹",
+        "url":  "웹 콘솔 & 양자 보안 제어기: http://localhost:8060",
+        "difficulty": "★★★★★",
+        "related": [4, 14, 26, 46, 49, 55, 59],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2248,7 +2256,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_drill = sub.add_parser("drill", help="10대 보안 기술팀 공방전 자동 훈련 엔진 (Red vs Blue 시뮬레이션 & Purple Team 점수 산출)")
     p_drill.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     p_drill.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 59개 랩 종합 공방전 실행")
+    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 60개 랩 종합 공방전 실행")
     p_drill.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")
