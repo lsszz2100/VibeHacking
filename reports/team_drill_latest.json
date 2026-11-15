@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-15 19:07:51",
+  "timestamp": "2026-11-15 20:51:42",
   "teams_tested": [
     "red",
     "blue",
@@ -13,10 +13,10 @@
     "re",
     "antire"
   ],
-  "total_drills": 71,
-  "total_attacks_executed": 212,
-  "total_attacks_detected": 212,
-  "total_attacks_blocked": 212,
+  "total_drills": 73,
+  "total_attacks_executed": 220,
+  "total_attacks_detected": 220,
+  "total_attacks_blocked": 220,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 8,
-      "attacks": 27,
-      "detected": 27,
-      "blocked": 27,
+      "labs_tested": 9,
+      "attacks": 31,
+      "detected": 31,
+      "blocked": 31,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -73,10 +73,10 @@
     },
     "green": {
       "team_name": "그린팀",
-      "labs_tested": 10,
-      "attacks": 31,
-      "detected": 31,
-      "blocked": 31,
+      "labs_tested": 11,
+      "attacks": 35,
+      "detected": 35,
+      "blocked": 35,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -231,7 +231,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "38",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "07",
@@ -660,7 +660,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.17
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "26",
@@ -781,7 +781,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "50",
@@ -847,7 +847,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "51",
@@ -913,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -979,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "01",
@@ -1023,7 +1023,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "03",
@@ -1177,7 +1177,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "38",
@@ -1243,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "50",
@@ -1309,7 +1309,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -1375,7 +1375,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "02",
@@ -1419,7 +1419,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "10",
@@ -1518,7 +1518,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "49",
@@ -1584,7 +1584,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "54",
@@ -1650,7 +1650,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.17
     },
     {
       "lab_id": "58",
@@ -1716,7 +1716,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "59",
@@ -1782,7 +1782,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "60",
@@ -1848,7 +1848,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
+    },
+    {
+      "lab_id": "61",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "Lab 61: ZeroTrustApiGatewayLab (제로 트러스트 API 게이트웨이 & SPIFFE/SPIRE 워크로드 방어 실습 랩)",
+      "cve": "VIBE-2026-6101",
+      "cvss": 9.4,
+      "mitre": "T1190",
+      "kisa": "2.10.1",
+      "nist": "PR.IP-01",
+      "owasp": "A01:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Envoy WASM & SPIRE Zero Trust Workload Engine",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Envoy WASM 헤더 스머글링 주입 및 mTLS SAN URI 상호 인증 방어",
+          "red_attack": "상위 프록시 헤더(X-Authenticated-User: admin)를 조작하여 Envoy 게이트웨이 인가를 우회하려 시도합니다. WASM 필터가 헤더를 제거하고 mTLS SAN URI를 강제 검증합니다.",
+          "blue_defense": "비신뢰 상위 헤더 전면 스트리핑 및 X.509 SVID SAN URI 검증 강제.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "위조된 SPIFFE SVID 워크로드 토큰 주입 및 SPIRE 커널 증명 방어",
+          "red_attack": "임의의 신뢰 도메인으로 위조된 SPIFFE SVID 토큰으로 API 호출을 시도하지만, SPIRE Workload API의 커널 cgroup/k8s 파드 증명 검증으로 차단됩니다.",
+          "blue_defense": "SPIRE Workload API 커널 레벨 증명 및 vibe.corp 신뢰 도메인 일치성 강제.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "탈취된 Bearer 토큰 횡적 재전송(Replay) 및 RFC 9449 DPoP 증명 바인딩 방어",
+          "red_attack": "탈취한 Bearer 토큰을 다른 엔드포인트에 재사용하려 하지만, HTTP 메서드/URI 및 단일 사용 jti 논스가 바인딩된 RFC 9449 DPoP 증명에 의해 재전송이 차단됩니다.",
+          "blue_defense": "RFC 9449 OAuth 2.0 DPoP 암호 바인딩 및 jti 논스 단일 사용 캐시 적용.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "GraphQL AST 순환 중첩 복잡도 폭탄(DoW) 및 쿼리 심도 제한 방어",
+          "red_attack": "깊게 중첩된 객체 순환 질의를 주입하여 게이트웨이 스레드 풀 고갈을 시도하지만, AST 심도 제한(Max Depth 5) 및 복잡도 예산(Max Score 100) 필터에 의해 거부됩니다.",
+          "blue_defense": "GraphQL AST 정적 쿼리 심도 분석 및 복잡도 예산 통제, SPIFFE 기반 레이트 리미팅.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -1925,7 +1991,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "22",
@@ -1980,7 +2046,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "24",
@@ -2035,7 +2101,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "31",
@@ -2090,7 +2156,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "41",
@@ -2156,7 +2222,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "53",
@@ -2222,7 +2288,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "04",
@@ -2255,7 +2321,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "10",
@@ -2288,7 +2354,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "28",
@@ -2343,7 +2409,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "32",
@@ -2398,7 +2464,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "35",
@@ -2453,7 +2519,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "46",
@@ -2519,7 +2585,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "55",
@@ -2585,7 +2651,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "58",
@@ -2651,7 +2717,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "59",
@@ -2717,7 +2783,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "60",
@@ -2783,7 +2849,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
+    },
+    {
+      "lab_id": "61",
+      "team_id": "green",
+      "team_name": "그린팀",
+      "lab_title": "Lab 61: ZeroTrustApiGatewayLab (제로 트러스트 API 게이트웨이 & SPIFFE/SPIRE 워크로드 방어 실습 랩)",
+      "cve": "VIBE-2026-6101",
+      "cvss": 9.4,
+      "mitre": "T1190",
+      "kisa": "2.10.1",
+      "nist": "PR.IP-01",
+      "owasp": "A01:2021",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Envoy WASM & SPIRE Zero Trust Workload Engine",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Envoy WASM 헤더 스머글링 주입 및 mTLS SAN URI 상호 인증 방어",
+          "red_attack": "상위 프록시 헤더(X-Authenticated-User: admin)를 조작하여 Envoy 게이트웨이 인가를 우회하려 시도합니다. WASM 필터가 헤더를 제거하고 mTLS SAN URI를 강제 검증합니다.",
+          "blue_defense": "비신뢰 상위 헤더 전면 스트리핑 및 X.509 SVID SAN URI 검증 강제.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "위조된 SPIFFE SVID 워크로드 토큰 주입 및 SPIRE 커널 증명 방어",
+          "red_attack": "임의의 신뢰 도메인으로 위조된 SPIFFE SVID 토큰으로 API 호출을 시도하지만, SPIRE Workload API의 커널 cgroup/k8s 파드 증명 검증으로 차단됩니다.",
+          "blue_defense": "SPIRE Workload API 커널 레벨 증명 및 vibe.corp 신뢰 도메인 일치성 강제.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "탈취된 Bearer 토큰 횡적 재전송(Replay) 및 RFC 9449 DPoP 증명 바인딩 방어",
+          "red_attack": "탈취한 Bearer 토큰을 다른 엔드포인트에 재사용하려 하지만, HTTP 메서드/URI 및 단일 사용 jti 논스가 바인딩된 RFC 9449 DPoP 증명에 의해 재전송이 차단됩니다.",
+          "blue_defense": "RFC 9449 OAuth 2.0 DPoP 암호 바인딩 및 jti 논스 단일 사용 캐시 적용.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "GraphQL AST 순환 중첩 복잡도 폭탄(DoW) 및 쿼리 심도 제한 방어",
+          "red_attack": "깊게 중첩된 객체 순환 질의를 주입하여 게이트웨이 스레드 풀 고갈을 시도하지만, AST 심도 제한(Max Depth 5) 및 복잡도 예산(Max Score 100) 필터에 의해 거부됩니다.",
+          "blue_defense": "GraphQL AST 정적 쿼리 심도 분석 및 복잡도 예산 통제, SPIFFE 기반 레이트 리미팅.",
+          "detection_rule": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "01",
@@ -2827,7 +2959,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "06",
@@ -2860,7 +2992,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -2915,7 +3047,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "42",
@@ -2981,7 +3113,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "43",
@@ -3047,7 +3179,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "44",
@@ -3113,7 +3245,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "13",
@@ -3146,7 +3278,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -3201,7 +3333,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "33",
@@ -3256,7 +3388,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "41",
@@ -3322,7 +3454,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "48",
@@ -3388,7 +3520,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "55",
@@ -3454,7 +3586,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -3520,7 +3652,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "03",
@@ -3553,7 +3685,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -3597,7 +3729,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "21",
@@ -3641,7 +3773,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "30",
@@ -3696,7 +3828,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "47",
@@ -3762,7 +3894,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "57",
@@ -3828,7 +3960,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "36",
@@ -3949,7 +4081,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "57",
@@ -4015,7 +4147,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     }
   ]
 }

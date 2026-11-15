@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  zero_trust_api_gateway_lab:
+    build: .
+    container_name: vhack-lab61-ztna-gateway
+    ports:
+      - "127.0.0.1:8061:8061"
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - LAB_ID=61
+      - LAB_NAME=ZeroTrustApiGatewayLab

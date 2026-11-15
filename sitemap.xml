@@ -858,4 +858,10 @@
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
+  <url>
+    <loc>https://lsszz2100.github.io/VibeHacking/#/labs/61_zero_trust_api_gateway_lab/README</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
 </urlset>

@@ -1829,6 +1829,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Masked NTT polynomial arithmetic prevents quantum fault injection -> FLAG{masked_ntt_arithmetic_prevents_quantum_fault_injection}"
             }
         ]
+    },
+    "61": {
+        "title": "Lab 61: ZeroTrustApiGatewayLab (제로 트러스트 API 게이트웨이 & SPIFFE/SPIRE 워크로드 방어 실습 랩)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Envoy WASM 헤더 스머글링 주입 및 mTLS SAN URI 상호 인증 방어",
+                "target": "POST /api/stage1/envoy-wasm-bypass",
+                "poc_explanation": "상위 프록시 헤더(X-Authenticated-User: admin)를 조작하여 Envoy 게이트웨이 인가를 우회하려 시도합니다. WASM 필터가 헤더를 제거하고 mTLS SAN URI를 강제 검증합니다.",
+                "exploit_payload": '{"proxy_header": "X-Authenticated-User: admin", "client_cert_san": "spiffe://vibe.corp/ns/prod/sa/payment-service", "mtls_verified": true, "use_wasm_mtls_shield": true}',
+                "defense": "비신뢰 상위 헤더 전면 스트리핑 및 X.509 SVID SAN URI 검증 강제.",
+                "sample_output": "✓ Untrusted upstream headers stripped. Client authenticated via mTLS X.509 SVID SAN URI -> FLAG{ENVOY_WASM_MTLS_SAN_VERIFIED_7491}"
+            },
+            {
+                "step": 2,
+                "name": "위조된 SPIFFE SVID 워크로드 토큰 주입 및 SPIRE 커널 증명 방어",
+                "target": "POST /api/stage2/spiffe-svid-forgery",
+                "poc_explanation": "임의의 신뢰 도메인으로 위조된 SPIFFE SVID 토큰으로 API 호출을 시도하지만, SPIRE Workload API의 커널 cgroup/k8s 파드 증명 검증으로 차단됩니다.",
+                "exploit_payload": '{"spiffe_id": "spiffe://vibe.corp/ns/prod/sa/payment-service", "workload_token": "valid_attested_jwt_token_spire_credentials_99", "use_spire_attestation": true}',
+                "defense": "SPIRE Workload API 커널 레벨 증명 및 vibe.corp 신뢰 도메인 일치성 강제.",
+                "sample_output": "✓ Workload attested successfully via SPIRE -> FLAG{SPIFFE_SPIRE_SVID_WORKLOAD_ATTESTED_8302}"
+            },
+            {
+                "step": 3,
+                "name": "탈취된 Bearer 토큰 횡적 재전송(Replay) 및 RFC 9449 DPoP 증명 바인딩 방어",
+                "target": "POST /api/stage3/dpop-replay-attack",
+                "poc_explanation": "탈취한 Bearer 토큰을 다른 엔드포인트에 재사용하려 하지만, HTTP 메서드/URI 및 단일 사용 jti 논스가 바인딩된 RFC 9449 DPoP 증명에 의해 재전송이 차단됩니다.",
+                "exploit_payload": '{"access_token": "stolen_bearer_token_xyz", "dpop_proof": {"jti": "nonce_unique_7712", "htm": "POST", "htu": "/api/v1/transfer", "iat": 1700000000}, "http_method": "POST", "http_uri": "/api/v1/transfer", "use_dpop_enforcement": true}',
+                "defense": "RFC 9449 OAuth 2.0 DPoP 암호 바인딩 및 jti 논스 단일 사용 캐시 적용.",
+                "sample_output": "✓ DPoP Proof-of-Possession verified and cryptographically bound -> FLAG{DPOP_RFC9449_PROOF_OF_POSSESSION_BOUND_9154}"
+            },
+            {
+                "step": 4,
+                "name": "GraphQL AST 순환 중첩 복잡도 폭탄(DoW) 및 쿼리 심도 제한 방어",
+                "target": "POST /api/stage4/graphql-ast-bomb",
+                "poc_explanation": "깊게 중첩된 객체 순환 질의를 주입하여 게이트웨이 스레드 풀 고갈을 시도하지만, AST 심도 제한(Max Depth 5) 및 복잡도 예산(Max Score 100) 필터에 의해 거부됩니다.",
+                "exploit_payload": '{"query": "{ user { id name email } }", "client_spiffe_id": "spiffe://vibe.corp/ns/prod/sa/frontend", "use_ast_complexity_limiter": true}',
+                "defense": "GraphQL AST 정적 쿼리 심도 분석 및 복잡도 예산 통제, SPIFFE 기반 레이트 리미팅.",
+                "sample_output": "✓ Query inspected and approved within Zero Trust budget -> FLAG{GRAPHQL_AST_DEPTH_COMPLEXITY_CONTAINED_6283}"
+            }
+        ]
     }
 }
 

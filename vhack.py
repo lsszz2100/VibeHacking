@@ -631,6 +631,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [4, 14, 26, 46, 49, 55, 59],
     },
+    "61": {
+        "name": "제로 트러스트 API 게이트웨이 & SPIFFE/SPIRE 워크로드 방어 실습 랩",
+        "dir":  "61_zero_trust_api_gateway_lab",
+        "desc": "ZeroTrustApiGatewayLab: Envoy WASM 헤더 스머글링 주입 및 mTLS SAN URI 상호 인증 방어 · 위조 SPIFFE SVID 워크로드 토큰 주입 및 SPIRE 커널 증명 방어 · 탈취된 Bearer 토큰 횡적 재전송 차단 via RFC 9449 DPoP 증명 바인딩 · GraphQL AST 순환 중첩 복잡도 폭탄(DoW) 및 쿼리 심도 제한",
+        "url":  "웹 콘솔 & ZTNA 제어기: http://localhost:8061",
+        "difficulty": "★★★★★",
+        "related": [22, 31, 35, 42, 54, 58],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2106,6 +2114,8 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py alias remove       alias 제거
           python3 vhack.py alias status       설치 현황 확인
           python3 vhack.py doctor             자가 진단 및 포트 충돌 점검
+          python3 vhack.py bench-agent        AI 보안 에이전트 역량 평가 및 벤치마크
+          python3 vhack.py eval --compare     전체 AI 보안 모델 비교 리더보드 생성
           python3 vhack.py disclaimer         법적 고지 및 면책조항 확인
           python3 vhack.py wargame            브라우저 워게임 로컬 서버 실행
           python3 vhack.py docs               75개 챕터 웹 리더 포털 로컬 서버 실행
@@ -2261,10 +2271,55 @@ def build_parser() -> argparse.ArgumentParser:
     p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")
 
+    # bench-agent / eval
+    p_agent_bench = sub.add_parser("bench-agent", aliases=["eval"], help="AI 보안 에이전트 역량 평가 및 벤치마크 엔진 (Pass@1, 공방/솔버 평가, 리더보드)")
+    p_agent_bench.add_argument("--target", choices=["all", "wargame", "labs"], default="all", help="평가 대상 (all, wargame, labs)")
+    p_agent_bench.add_argument("--model", default="supersec", help="평가 대상 모델 프로필 (supersec, sec-expert, sec-analyst, junior-agent, baseline-llm)")
+    p_agent_bench.add_argument("--compare", action="store_true", help="지원 모델 전체 리더보드 비교 벤치마크 실행")
+    p_agent_bench.add_argument("--samples", type=int, default=25, help="평가 샘플 수 (0: 전체, 기본값: 25)")
+    p_agent_bench.add_argument("--tier", type=int, choices=range(5), help="워게임 특정 티어 필터 (0-4)")
+    p_agent_bench.add_argument("--track", type=str, help="워게임 특정 트랙 필터")
+    p_agent_bench.add_argument("--lab", type=str, help="특정 랩 번호 필터")
+    p_agent_bench.add_argument("--output-json", default="reports/agent_eval_latest.json", help="JSON 결과 파일 저장 경로")
+    p_agent_bench.add_argument("--output-md", default="reports/agent_eval_benchmark.md", help="Markdown 리더보드 보고서 저장 경로")
+    p_agent_bench.add_argument("--json", action="store_true", help="결과를 JSON 포맷으로 표준 출력")
+    p_agent_bench.add_argument("--quiet", action="store_true", help="진행 상태 출력 생략")
+
     # update
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
     return p
+
+
+def cmd_bench_agent(args: argparse.Namespace) -> None:
+    bench_script = REPO_ROOT / "tools" / "agent_eval_bench.py"
+    cmd = [sys.executable, str(bench_script)]
+    if getattr(args, "target", None):
+        cmd.extend(["--target", args.target])
+    if getattr(args, "model", None):
+        cmd.extend(["--model", args.model])
+    if getattr(args, "compare", False):
+        cmd.append("--compare")
+    if getattr(args, "samples", None) is not None:
+        cmd.extend(["--samples", str(args.samples)])
+    if getattr(args, "tier", None) is not None:
+        cmd.extend(["--tier", str(args.tier)])
+    if getattr(args, "track", None):
+        cmd.extend(["--track", args.track])
+    if getattr(args, "lab", None):
+        cmd.extend(["--lab", args.lab])
+    if getattr(args, "output_json", None):
+        cmd.extend(["--output-json", args.output_json])
+    if getattr(args, "output_md", None):
+        cmd.extend(["--output-md", args.output_md])
+    if getattr(args, "json", False):
+        cmd.append("--json")
+    if getattr(args, "quiet", False):
+        cmd.append("--quiet")
+
+    res = subprocess.run(cmd)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
 
 
 def cmd_bundle(args: argparse.Namespace) -> None:
@@ -2811,6 +2866,8 @@ def main() -> None:
         "status":       cmd_dashboard,
         "stats":        cmd_dashboard,
         "benchmark":    cmd_benchmark,
+        "bench-agent":  cmd_bench_agent,
+        "eval":         cmd_bench_agent,
         "disclaimer":   cmd_disclaimer,
         "legal":        cmd_disclaimer,
         "logs":         lambda a: _lab_logs(a.lab_id, getattr(a, "follow", False), getattr(a, "tail", 50)),

@@ -13,12 +13,16 @@ echo "=================================================================="
 echo "[+] Target Root: ${ROOT_DIR}"
 
 # 1. Check SHA256SUMS if release archive exists
-if [ -f "${ROOT_DIR}/release/SHA256SUMS" ]; then
-    echo "[1/7] Verifying release package SHA256 checksums..."
+if [ -f "${ROOT_DIR}/release/v2.13.0/SHA256SUMS" ]; then
+    echo "[1/7] Verifying release package SHA256 checksums (release/v2.13.0)..."
+    (cd "${ROOT_DIR}/release/v2.13.0" && sha256sum -c SHA256SUMS)
+    echo "  ✓ Checksum verified."
+elif [ -f "${ROOT_DIR}/release/SHA256SUMS" ]; then
+    echo "[1/7] Verifying release package SHA256 checksums (release)..."
     (cd "${ROOT_DIR}/release" && sha256sum -c SHA256SUMS)
     echo "  ✓ Checksum verified."
 else
-    echo "[1/7] No release/SHA256SUMS found, skipping archive checksum (run bundle_offline.py --tar first)."
+    echo "[1/7] No release checksums found, skipping archive checksum (run bundle_offline.py --tar first)."
 fi
 
 # 2. Check offline vendor assets

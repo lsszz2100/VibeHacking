@@ -1720,6 +1720,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Migrate to NIST FIPS 203 ML-KEM-768 hybrid key exchange (X25519+ML-KEM-768), enforce Ephemeral PFS, apply FIPS 204 ML-DSA signatures, and implement constant-time masked NTT arithmetic with rejection sampling."
             }
         ]
+    },
+    "61": {
+        "title": "61 ZeroTrustApiGatewayLab Zero Trust API Gateway & SPIFFE/SPIRE Workload Defense",
+        "category": "Zero Trust Architecture, API Gateway Security & Workload Identity",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6101",
+                "name": "Untrusted Upstream Proxy Header Injection & Missing DPoP Binding in Microservice API Gateway",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:L",
+                "mitre_id": "T1190",
+                "mitre_technique": "Exploit Public-Facing Application: Zero Trust API Gateway Bypass",
+                "mitre_tactic": "Initial Access / Privilege Escalation",
+                "impact": "Adversary bypasses gateway authorization via spoofed upstream headers, injects forged SPIFFE SVIDs, replays intercepted bearer tokens across internal microservices, and triggers gateway thread exhaustion via nested GraphQL AST bombs.",
+                "description": "API Gateway blindly trusts upstream identification headers, lacks SPIRE workload attestation for SVIDs, omits RFC 9449 DPoP proof-of-possession binding, and has no query complexity budget enforcement.",
+                "affected_component": "ZeroTrustApiGatewayLab ZTNA Gateway Controller (Port 8061)",
+                "remediation": "Strip untrusted upstream client headers, enforce Envoy mTLS SAN URI verification against SPIRE root CA, validate workload SVID attestation, mandate RFC 9449 DPoP token binding with single-use jti caching, and enforce static GraphQL AST depth/complexity limiting."
+            }
+        ]
     }
 }
 
