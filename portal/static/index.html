@@ -99,7 +99,8 @@
     <span>통합 보안 포털 & 관제 센터</span>
   </div>
   <nav>
-    <button class="nav-btn active" onclick="switchView('labs')">🧪 49대 실습 랩</button>
+    <button class="nav-btn active" onclick="switchView('labs')">🧪 62대 실습 랩</button>
+    <button class="nav-btn" onclick="switchView('bench')">🤖 AI 벤치마크</button>
     <button class="nav-btn" onclick="switchView('docs')">📚 교재 리더 (:3000)</button>
     <button class="nav-btn" onclick="switchView('wargame')">🎮 워게임 (:8000)</button>
     <button class="nav-btn" onclick="switchView('ctf')">🏆 CTF 경기장 (:8888)</button>
@@ -116,7 +117,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-title">활성 실습 랩</div>
-        <div class="stat-val" id="stat-active-labs">- / 49</div>
+        <div class="stat-val" id="stat-active-labs">- / 62</div>
       </div>
       <div class="stat-card">
         <div class="stat-title">CPU 점유율</div>
@@ -129,7 +130,7 @@
     </div>
 
     <div class="section-header">
-      <h2>🛡️ 실전 침투 & 방어 실습 환경 (61 Labs)</h2>
+      <h2>🛡️ 실전 침투 & 방어 실습 환경 (62 Labs)</h2>
       <div style="display: flex; gap: 0.5rem;">
         <button class="btn btn-amber" onclick="triggerDrillModal()">⚔️ 공방전 모의 훈련 (Drill)</button>
         <button class="btn btn-cyan" onclick="fetchLabs(); fetchCategories(); fetchTeams();">🔄 새로고침</button>
@@ -147,7 +148,7 @@
     <!-- Category Filter & Batch Controls Bar -->
     <div class="filter-bar">
       <div class="filter-chips" id="category-filters">
-        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 카테고리 (61)</button>
+        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 카테고리 (62)</button>
       </div>
       <div class="batch-actions">
         <button class="btn btn-green" onclick="batchControl('start')">▶ 일괄 가동</button>
@@ -157,6 +158,55 @@
 
     <div class="labs-grid" id="labs-list">
       <!-- Generated via JS -->
+    </div>
+  </div>
+
+  <!-- AI AGENT BENCHMARK VIEW -->
+  <div id="view-bench" style="display:none; padding-bottom: 2rem;">
+    <div class="section-header" style="margin-top: 0.5rem;">
+      <div>
+        <h2 style="font-size: 1.35rem; color: #38bdf8; margin: 0 0 4px 0;">🤖 AI 보안 에이전트 다중 모델 벤치마크 리더보드</h2>
+        <span style="color: var(--text-dim); font-size: 0.85rem;">Pass@1 해결률 · 62개 랩 취약점 탐지/익스플로잇 성공률 · 규제 준수율 전수 평가</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-green" onclick="runAgentBenchmarkTrigger()">⚡ 벤치마크 실행 / 갱신</button>
+        <button class="btn" onclick="toggleMarkdownReport()">📋 전체 마크다운 보고서</button>
+      </div>
+    </div>
+
+    <!-- Model Summary Cards -->
+    <div class="status-bar" id="bench-model-cards">
+      <div class="stat-card"><div class="stat-title">로딩 중...</div><div class="stat-val">...</div></div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+        <thead style="background: #0f172a; border-bottom: 1px solid var(--card-border); color: #94a3b8;">
+          <tr>
+            <th style="padding: 12px 16px;">랭킹</th>
+            <th style="padding: 12px 16px;">모델 프로필</th>
+            <th style="padding: 12px 16px;">종합 점수</th>
+            <th style="padding: 12px 16px;">워게임 Pass@1</th>
+            <th style="padding: 12px 16px;">랩 침투율</th>
+            <th style="padding: 12px 16px;">방어 우회율</th>
+            <th style="padding: 12px 16px;">컴플라이언스</th>
+            <th style="padding: 12px 16px;">상태</th>
+          </tr>
+        </thead>
+        <tbody id="bench-leaderboard-body">
+          <tr><td colspan="8" style="padding: 20px; text-align: center; color: var(--text-dim);">벤치마크 데이터 로딩 중...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Collapsible Markdown Preview -->
+    <div id="bench-md-container" style="display: none; background: #000; border: 1px solid var(--card-border); border-radius: 8px; padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <b style="color: #38bdf8;">📄 Benchmark Raw Markdown Report</b>
+        <button class="btn" onclick="toggleMarkdownReport()">닫기</button>
+      </div>
+      <pre id="bench-md-text" style="color: #cbd5e1; white-space: pre-wrap; font-size: 0.8rem; max-height: 400px; overflow-y: auto;"></pre>
     </div>
   </div>
 
@@ -180,14 +230,97 @@
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.frame-container').forEach(f => f.classList.remove('active'));
     document.getElementById('view-labs').style.display = 'none';
+    document.getElementById('view-bench').style.display = 'none';
 
     if (tab === 'labs') {
       document.getElementById('view-labs').style.display = 'block';
       event.target.classList.add('active');
+    } else if (tab === 'bench') {
+      document.getElementById('view-bench').style.display = 'block';
+      event.target.classList.add('active');
+      loadAgentBenchmark();
     } else {
       const frame = document.getElementById('view-' + tab);
       frame.classList.add('active');
       event.target.classList.add('active');
+    }
+  }
+
+  let cachedMarkdownReport = "";
+
+  async function loadAgentBenchmark() {
+    try {
+      const res = await fetch('/api/benchmarks/agent-eval');
+      const json = await res.json();
+      if (json.status !== 'success') return;
+      const data = json.benchmark;
+      cachedMarkdownReport = json.markdown || "";
+
+      // 1. Render Top Cards
+      const cardsCont = document.getElementById('bench-model-cards');
+      if (data.models && data.models.length > 0) {
+        cardsCont.innerHTML = data.models.slice(0, 5).map((m, idx) => `
+          <div class="stat-card" style="border-top: 3px solid ${idx === 0 ? '#38bdf8' : (idx === 1 ? '#10b981' : '#64748b')}">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-title">#${idx+1} ${m.model}</div>
+              <span class="cat-badge">${m.wargame_pass1_percent}% P@1</span>
+            </div>
+            <div class="stat-val" style="color:${idx === 0 ? '#38bdf8' : '#f8fafc'}">${m.overall_score} <span style="font-size:0.8rem; color:var(--text-dim);">/ 100</span></div>
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">
+              워게임: ${m.wargame_solved}/${m.wargame_total} · 랩: ${m.labs_solved}/${m.labs_total}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 2. Render Leaderboard Rows
+      const tbody = document.getElementById('bench-leaderboard-body');
+      if (data.models && data.models.length > 0) {
+        tbody.innerHTML = data.models.map((m, idx) => `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); ${idx === 0 ? 'background: rgba(56, 189, 248, 0.05);' : ''}">
+            <td style="padding: 12px 16px; font-weight: bold; color: ${idx === 0 ? '#38bdf8' : '#94a3b8'};">#${idx+1}</td>
+            <td style="padding: 12px 16px; font-weight: 600;">${m.model}</td>
+            <td style="padding: 12px 16px; font-weight: bold; color: #38bdf8;">${m.overall_score}</td>
+            <td style="padding: 12px 16px;">${m.wargame_pass1_percent}% (${m.wargame_solved}/${m.wargame_total})</td>
+            <td style="padding: 12px 16px;">${m.labs_pass1_percent}% (${m.labs_solved}/${m.labs_total})</td>
+            <td style="padding: 12px 16px; color: #f59e0b;">${m.metrics ? m.metrics.defense_bypass_rate + '%' : '-'}</td>
+            <td style="padding: 12px 16px; color: #10b981;">${m.metrics ? m.metrics.kisa_compliance_score + '%' : '-'}</td>
+            <td style="padding: 12px 16px;"><span class="status-pill status-running">EVALUATED</span></td>
+          </tr>
+        `).join('');
+      }
+    } catch (e) {
+      console.error("Failed to load benchmark:", e);
+    }
+  }
+
+  async function runAgentBenchmarkTrigger() {
+    showToast("⚡ AI 에이전트 벤치마크 실행 중... (수 초 소요)");
+    try {
+      const res = await fetch('/api/benchmarks/run', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({samples: 15, target: 'all', compare: true})
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        showToast("✅ AI 벤치마크 평가 완료 및 리더보드 갱신!");
+        await loadAgentBenchmark();
+      } else {
+        showToast("❌ 벤치마크 실패: " + (data.detail || "알 수 없는 오류"));
+      }
+    } catch (e) {
+      showToast("❌ 벤치마크 호출 에러: " + e.message);
+    }
+  }
+
+  function toggleMarkdownReport() {
+    const box = document.getElementById('bench-md-container');
+    if (box.style.display === 'none') {
+      document.getElementById('bench-md-text').innerText = cachedMarkdownReport || "보고서 내용이 없습니다.";
+      box.style.display = 'block';
+    } else {
+      box.style.display = 'none';
     }
   }
 
@@ -289,7 +422,7 @@
   }
 
   async function batchControl(action) {
-    const targetLabel = currentCategory ? `[${currentCategory.toUpperCase()}] 카테고리` : '전체 61개';
+    const targetLabel = currentCategory ? `[${currentCategory.toUpperCase()}] 카테고리` : '전체 62개';
     if (!confirm(`${targetLabel} 랩을 일괄 ${action === 'start' ? '가동' : '정지'}하시겠습니까?`)) return;
     showToast(`${targetLabel} 일괄 ${action} 요청 중...`);
     try {

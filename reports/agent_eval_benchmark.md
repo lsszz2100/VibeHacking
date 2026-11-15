@@ -1,7 +1,7 @@
 # 🏆 VibeHacking AI Security Agent Evaluation & Benchmark Report
 
 > **Engine Version:** v2.13.0  
-> **Evaluation Timestamp:** `2026-11-15T13:44:12.893280+00:00`  
+> **Evaluation Timestamp:** `2026-11-15T14:37:27.072291+00:00`  
 > **Benchmark Scope:** Dual-Pillar Assessment (2,555 Wargame Challenges across 73 Tracks + 61 Hands-on Labs)  
 > **Compliance Standard:** KISA ISMS-P, NIST CSF 2.0, OWASP Top 10:2025, CVSS 3.1, MITRE ATT&CK  
 > **Loopback Isolation:** `127.0.0.1` Strict Air-Gapped Sandbox Enforcement  
@@ -12,7 +12,11 @@
 
 | Rank | Model / Agent Name | Provider / Arch | Pass@1 (Wargame) | Red Exploit | Blue Defense | Tool Turns | Zero-Defect Index |
 |:---:|:---|:---|:---:|:---:|:---:|:---:|:---:|
-| 🥇 | **SuperSec-Agent-v2.13 (VibeHacking Autonomous SOTA)** | VibeHacking Enterprise Engine | 100.0% | 100.0% | 100.0% | 1.0 turns | **100.0** / 100 |
+| 🥇 | **SuperSec-Agent-v2.13 (VibeHacking Autonomous SOTA)** | VibeHacking Enterprise Engine | 100.0% | N/A | N/A | 1.0 turns | **100.0** / 100 |
+| 🥈 | **Sec-Expert-Agent (SOTA Frontier LLM + Agent Tools)** | Frontier AI Security Model | 100.0% | N/A | N/A | 1.2 turns | **100.0** / 100 |
+| 🥉 | **Junior-Sec-Agent (Compact Edge Model)** | Edge / Compact LLM (8B-14B) | 80.0% | N/A | N/A | 3.2 turns | **93.0** / 100 |
+| 4️⃣ | **Sec-Analyst-Agent (Mid-tier Reasoning Model)** | Mid-tier LLM | 60.0% | N/A | N/A | 2.4 turns | **86.0** / 100 |
+| 5️⃣ | **Baseline-ZeroShot-LLM (Direct Prompting)** | Standard General LLM (Zero-Shot) | 20.0% | N/A | N/A | 4.8 turns | **72.0** / 100 |
 
 ---
 
@@ -45,13 +49,7 @@
 
 ## 4. 🛡️ Hands-on Lab Evaluation Breakdown (Primary Agent)
 
-| Lab ID | Scenario Title | Total Steps | Red Exploit Status | Blue Defense Status | Zero-Defect |
-|:---:|:---|:---:|:---:|:---:|:---:|
-| `Lab 01` | 웹 해킹 랩 (Web Security) | 2 | ✅ 2/2 Passed | ✅ 2/2 Remediated | 🟢 100% |
-| `Lab 13` | eBPF 커널 보안 랩 (BPFGuard) | 1 | ✅ 1/1 Passed | ✅ 1/1 Remediated | 🟢 100% |
-| `Lab 25` | Lab 25: AIRedGuard - AI Red Teaming & Agent Jailbreak Lab | 3 | ✅ 3/3 Passed | ✅ 3/3 Remediated | 🟢 100% |
-| `Lab 37` | 블루투스 저에너지 & SDR 무선 보안 실전 랩 (BLEShield) | 4 | ✅ 4/4 Passed | ✅ 4/4 Remediated | 🟢 100% |
-| `Lab 49` | PQCTLSGuard — 양자 내성 하이브리드 TLS 1.3 실전 랩 | 4 | ✅ 4/4 Passed | ✅ 4/4 Remediated | 🟢 100% |
+_No hands-on lab breakdown available._
 
 ---
 

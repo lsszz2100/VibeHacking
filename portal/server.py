@@ -6,6 +6,7 @@ import subprocess
 import socket
 import shutil
 import re
+import json
 try:
     import psutil
 except ImportError:
@@ -95,7 +96,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "40": "dfir", "41": "supplychain", "42": "cloud", "43": "cloud",
     "44": "web", "45": "crypto", "46": "endpoint",
     "47": "ai", "48": "iot", "49": "crypto", "50": "dfir", "51": "endpoint", "52": "network",
-    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud", "59": "cloud", "60": "crypto", "61": "zerotrust",
+    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud", "59": "cloud", "60": "crypto", "61": "zerotrust", "62": "ai",
 }
 
 
@@ -110,7 +111,7 @@ class BatchLabRequest(BaseModel):
 
 @app.get("/api/labs/categories")
 def get_lab_categories():
-    """61개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
+    """62개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
     stats: Dict[str, dict] = {}
     for lid, meta in LABS.items():
         cat = get_lab_category(lid)
@@ -131,7 +132,7 @@ def get_lab_categories():
 
 @app.get("/api/labs")
 def list_labs(category: Optional[str] = None):
-    """61개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
+    """62개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
     result = []
     target_cat = category.strip().lower() if category else None
     for lid, meta in sorted(LABS.items()):
@@ -477,7 +478,7 @@ def get_team_labs_status(team_id: str):
 
 @app.get("/api/compliance/summary")
 def get_compliance_summary():
-    """61개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
+    """62개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
     try:
         from tools.report_generator import SecurityReportGenerator
         gen = SecurityReportGenerator()
@@ -512,6 +513,75 @@ def run_team_drill_api(req: DrillRequest = DrillRequest()):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Drill execution error: {str(e)}")
 
+
+class AgentBenchmarkRequest(BaseModel):
+    samples: int = 15
+    target: str = "all"
+    compare: bool = True
+
+
+@app.get("/api/benchmarks/agent-eval")
+def get_agent_eval_benchmark():
+    """최신 AI 에이전트 다중 모델 보안 벤치마크 리더보드 데이터 반환"""
+    report_json_path = REPO_ROOT / "reports" / "agent_eval_latest.json"
+    report_md_path = REPO_ROOT / "reports" / "agent_eval_benchmark.md"
+
+    if not report_json_path.exists():
+        try:
+            from tools.agent_eval_bench import run_comparator, export_reports
+            data = run_comparator(target="all", wargame_samples=15, lab_samples=5)
+            export_reports(data, report_json_path, report_md_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to generate benchmark: {e}")
+
+    try:
+        with open(report_json_path, "r", encoding="utf-8") as f:
+            bench_data = json.load(f)
+        md_text = ""
+        if report_md_path.exists():
+            with open(report_md_path, "r", encoding="utf-8") as f:
+                md_text = f.read()
+
+        if isinstance(bench_data, list):
+            norm_benchmark = {"models": bench_data}
+        elif isinstance(bench_data, dict) and "models" not in bench_data:
+            norm_benchmark = {"models": [bench_data]}
+        else:
+            norm_benchmark = bench_data or {"models": []}
+        return {
+            "status": "success",
+            "benchmark": norm_benchmark,
+            "markdown": md_text
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read benchmark report: {e}")
+
+
+@app.post("/api/benchmarks/run")
+def run_agent_eval_benchmark(req: AgentBenchmarkRequest = AgentBenchmarkRequest()):
+    """웹 포털에서 AI 에이전트 보안 벤치마크 즉시 트리거 실행"""
+    try:
+        from tools.agent_eval_bench import run_comparator, export_reports
+        report_json_path = REPO_ROOT / "reports" / "agent_eval_latest.json"
+        report_md_path = REPO_ROOT / "reports" / "agent_eval_benchmark.md"
+
+        w_samples = max(2, req.samples)
+        l_samples = max(2, req.samples // 2) if req.target in ["all", "labs"] else 0
+
+        leaderboard = run_comparator(
+            target=req.target,
+            wargame_samples=w_samples,
+            lab_samples=l_samples
+        )
+        export_reports(leaderboard, report_json_path, report_md_path)
+
+        return {
+            "status": "success",
+            "message": f"Successfully evaluated {len(leaderboard)} models on target '{req.target}'",
+            "leaderboard": leaderboard
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Benchmark execution failed: {e}")
 
 
 @app.get("/")

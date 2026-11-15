@@ -605,6 +605,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "API1:2023",
         "owasp_name": "Broken Object Level Authorization & Spoofed Identity Headers",
     },
+    "62": {
+        "kisa_id": "2.6.1",
+        "kisa_name": "네트워크 접근 통제 (AI 에이전트 MCP 도구 샌드박스 및 권한 통제)",
+        "nist_csf_id": "PR.DS-01",
+        "nist_csf_name": "Data-at-Rest & In-Transit Protected (MCP Tool Parameter Integrity & HMAC Signing)",
+        "owasp_id": "LLM07:2025",
+        "owasp_name": "Insecure Plugin & Tool Design (Confused Deputy & Indirect Prompt Injection)",
+    },
 }
 
 @dataclass
@@ -1746,6 +1754,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Strip untrusted upstream client headers, enforce Envoy mTLS SAN URI verification against SPIRE root CA, validate workload SVID attestation, mandate RFC 9449 DPoP token binding with single-use jti caching, and enforce static GraphQL AST depth/complexity limiting."
             }
         ]
+    },
+    "62": {
+        "title": "62 AiAgentMcpSecurityLab AI Agent MCP Security & Zero Trust Tool Defense",
+        "category": "AI Security, Model Context Protocol (MCP) & Zero Trust Tool Execution",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6201",
+                "name": "Tool Schema Poisoning, Confused Deputy Tool Execution & Indirect Prompt Injection in AI Agent MCP Server",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "mitre_id": "T1059",
+                "mitre_technique": "Command and Scripting Interpreter: AI Tool Parameter Execution",
+                "mitre_tactic": "Execution / Defense Evasion / Exfiltration",
+                "impact": "Adversary injects malicious parameters into MCP schema, forces agent to read host files outside sandbox jail (/etc/shadow), executes SSRF against cloud metadata, hijacks agent execution via indirect prompt injection in tool payloads, and triggers unauthenticated destructive tools.",
+                "description": "MCP Tool Server lacks strict schema parameter filtering, omits safe path canonicalization and SSRF filters, passes untrusted tool payloads into LLM context without DLP sanitization, and has no cryptographic HMAC attestation for destructive operations.",
+                "affected_component": "AiAgentMcpSecurityLab MCP Security Controller (Port 8062)",
+                "remediation": "Enforce strict Pydantic JSON Schema validation (forbid extra fields), implement Chroot/Sandbox jail with safe path canonicalization and SSRF IP filters, deploy DLP prompt injection sanitizers and secret redactors, and mandate HMAC-SHA256 tool call attestation with G1-G3 human approval."
+            }
+        ]
     }
 }
 
@@ -1755,7 +1781,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """61개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """62개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

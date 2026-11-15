@@ -35,6 +35,12 @@ const UBIQUITY_WAIVER = 5;
    anything else under the threshold fails the run. */
 const ALLOWLIST = new Map([
   ['t0_source -> t2_sqlcomment', 'HTML comment syntax happens to be the SQL comment token'],
+  // Track 74 aimcp domain terms
+  ['t1_aimcp_prototype_pollution_via_json_arguments -> t3_proto', 'Prototype pollution analysis references __proto__ property'],
+  ['t1_aimcp_parameter_type_confusion_and_coercion -> t4_pwntypeconfusion', 'Tool argument type confusion evaluation'],
+  ['t2_aimcp_ssrf_exploitation_against_cloud_imds -> t0_loopback', 'SSRF containment filters internal loopback addresses'],
+  ['t2_aimcp_subprocess_shell_spawning_injection -> t3_firmwarecmdinj', 'Tool execution parameter handling addresses command injection risk'],
+  ['t4_aimcp_multi_tenant_agent_rbac_and_least_privilege -> t2_k8sauthz', 'Multi-tenant agent access governance applies RBAC authorization'],
   // Track 70 hypervisor domain terms
   ['t3_hypervisor_kvm_dirty_ring_memory_logging_race -> t2_pwndoublefree', 'KVM Dirty Ring memory logging analysis notes double free'],
   ['t4_hypervisor_chroot_cgroup_namespace_microvm_sandbox -> t2_firmwarechroot', 'MicroVM sandbox filesystem isolation notes chroot'],

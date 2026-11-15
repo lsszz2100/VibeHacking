@@ -642,6 +642,14 @@ const TRACKS = [
     "en": "Zero Trust API & SPIFFE/SPIRE Workload Defense",
     "desc_ko": "Envoy WASM 인가 필터·mTLS SAN·SPIFFE/SPIRE 워크로드 증명·RFC 9449 DPoP 바인딩·GraphQL AST 복잡도 폭탄 방어.",
     "desc_en": "Envoy WASM auth filters, mTLS SAN validation, SPIFFE/SPIRE workload attestation, RFC 9449 DPoP binding, and GraphQL AST bomb containment."
+  },
+  {
+    "id": "aimcp",
+    "icon": "🤖",
+    "ko": "AI 에이전트 MCP 보안 & 제로 트러스트 도구 방어",
+    "en": "AI Agent MCP Security & Zero Trust Tool Defense",
+    "desc_ko": "Model Context Protocol(MCP) 도구 스키마 오염·Confused Deputy 권한 탈취·간접 프롬프트 인젝션·HMAC 증명 도구 방화벽 방어.",
+    "desc_en": "Model Context Protocol (MCP) tool schema poisoning, confused deputy privilege abuse, indirect prompt injection, and HMAC attestation tool firewall defense."
   }
 ];
 
@@ -72242,5 +72250,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "3a7a25521e471579007542f2f994ab91f077b2739d76deeef77796d1d93b398e"
-  }
+  },
+{
+  "id": "t0_aimcp_protocol_architecture_and_jsonrpc",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 프로토콜 아키텍처 및 JSON-RPC 2.0 구조",
+    "en": "MCP Protocol Architecture & JSON-RPC 2.0"
+  },
+  "prompt": {
+    "ko": "자율형 AI 에이전트와 외부 도구/데이터 소스를 연결하는 Model Context Protocol(MCP)의 JSON-RPC 2.0 메시지 규격과 클라이언트-서버 핸드셰이크 구조를 분석합니다.\n지정된 식별자 `aimcp_protocol_architecture_and_jsonrpc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_protocol_architecture_and_jsonrpc_v1\") 앞 20자리}",
+    "en": "Examine the Model Context Protocol (MCP) JSON-RPC 2.0 framing and client-server capability negotiation connecting autonomous AI agents with tools.\nCompute the first 20 hex characters of SHA256(\"aimcp_protocol_architecture_and_jsonrpc_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_protocol_architecture_and_jsonrpc_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_protocol_architecture_and_jsonrpc_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_protocol_architecture_and_jsonrpc_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_protocol_architecture_and_jsonrpc_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_protocol_architecture_and_jsonrpc_v1\")."
+    ]
+  },
+  "hash": "6b2754ce9b49935ad36a44ca0b61d08da978235861445f172419f90e2663b038"
+},
+{
+  "id": "t0_aimcp_tool_schema_definition_and_capabilities",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 도구 정의 스키마와 기능 선언 규격",
+    "en": "MCP Tool Schema Definition & Capabilities"
+  },
+  "prompt": {
+    "ko": "에이전트에게 노출되는 도구의 이름, 설명, 입력 JSON Schema 매개변수 선언 및 기능(Capabilities) 협상 프로토콜의 구조적 안전성을 점검합니다.\n지정된 식별자 `aimcp_tool_schema_definition_and_capabilities_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_tool_schema_definition_and_capabilities_v1\") 앞 20자리}",
+    "en": "Audit MCP tool definition schemas, input parameter JSON Schema specifications, and capability negotiation security for exposed agent tools.\nCompute the first 20 hex characters of SHA256(\"aimcp_tool_schema_definition_and_capabilities_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_tool_schema_definition_and_capabilities_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_tool_schema_definition_and_capabilities_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_tool_schema_definition_and_capabilities_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_tool_schema_definition_and_capabilities_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_tool_schema_definition_and_capabilities_v1\")."
+    ]
+  },
+  "hash": "a3d6b903911d115edd7bd8624cb7f04a132fc1efed6e8da072e0a3dbd3d8d7f0"
+},
+{
+  "id": "t0_aimcp_resource_uri_templates_and_subscriptions",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 리소스 URI 템플릿 및 동적 구독 메커니즘",
+    "en": "MCP Resource URI Templates & Dynamic Subscriptions"
+  },
+  "prompt": {
+    "ko": "정적/동적 자원 조회를 위한 MCP Resource URI 템플릿 규격과 클라이언트 상태 갱신을 통지하는 구독(Subscription) 채널의 접근 제어 구조를 파악합니다.\n지정된 식별자 `aimcp_resource_uri_templates_and_subscriptions_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_resource_uri_templates_and_subscriptions_v1\") 앞 20자리}",
+    "en": "Analyze MCP Resource URI templates for static/dynamic assets and the access controls governing real-time resource subscription notifications.\nCompute the first 20 hex characters of SHA256(\"aimcp_resource_uri_templates_and_subscriptions_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_resource_uri_templates_and_subscriptions_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_resource_uri_templates_and_subscriptions_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_resource_uri_templates_and_subscriptions_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_resource_uri_templates_and_subscriptions_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_resource_uri_templates_and_subscriptions_v1\")."
+    ]
+  },
+  "hash": "472046d56d76cdfb494c0ef1aff3d77e95ef33b1c5866f8335a5a5399412b61a"
+},
+{
+  "id": "t0_aimcp_transport_stdio_vs_sse_security_model",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 전송 계층 보안 모델: Stdio vs SSE",
+    "en": "MCP Transport Security Model: Stdio vs SSE"
+  },
+  "prompt": {
+    "ko": "로컬 파이프 기반 표준 입출력(Stdio) 전송과 네트워크 기반 Server-Sent Events(SSE) 전송 방식의 공격 표면 및 상호 인증 한계를 비교 평가합니다.\n지정된 식별자 `aimcp_transport_stdio_vs_sse_security_model_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_transport_stdio_vs_sse_security_model_v1\") 앞 20자리}",
+    "en": "Compare the attack surface, authentication boundaries, and transport security between local Stdio pipes and network-exposed SSE HTTP streams.\nCompute the first 20 hex characters of SHA256(\"aimcp_transport_stdio_vs_sse_security_model_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_transport_stdio_vs_sse_security_model_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_transport_stdio_vs_sse_security_model_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_transport_stdio_vs_sse_security_model_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_transport_stdio_vs_sse_security_model_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_transport_stdio_vs_sse_security_model_v1\")."
+    ]
+  },
+  "hash": "a9661b939d20f128473a812f560351659d103c9448464ce237a978264d365218"
+},
+{
+  "id": "t0_aimcp_prompt_template_injection_fundamentals",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 프롬프트 템플릿 인젝션 기본 원리",
+    "en": "MCP Prompt Template Injection Fundamentals"
+  },
+  "prompt": {
+    "ko": "MCP Prompts API를 통해 제공되는 사전 정의 템플릿 인자에 악성 페이로드가 결합될 때 발생하는 프롬프트 템플릿 인젝션 취약점을 진단합니다.\n지정된 식별자 `aimcp_prompt_template_injection_fundamentals_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_prompt_template_injection_fundamentals_v1\") 앞 20자리}",
+    "en": "Investigate prompt template injection vulnerabilities arising when user-controlled arguments pollute MCP Prompts API parameterized templates.\nCompute the first 20 hex characters of SHA256(\"aimcp_prompt_template_injection_fundamentals_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_prompt_template_injection_fundamentals_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_prompt_template_injection_fundamentals_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_prompt_template_injection_fundamentals_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_prompt_template_injection_fundamentals_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_prompt_template_injection_fundamentals_v1\")."
+    ]
+  },
+  "hash": "0e01c24f22f0580ef252f22de7bb9fd55d81efa01ac47241a8347120a1752788"
+},
+{
+  "id": "t0_aimcp_agent_tool_calling_lifecycle_and_execution",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에이전트 도구 호출 라이프사이클 및 오케스트레이션",
+    "en": "Agent Tool Calling Lifecycle & Orchestration"
+  },
+  "prompt": {
+    "ko": "LLM 추론, 도구 선택, 인자 생성, RPC 전송, 결과 수신, 컨텍스트 반영으로 이어지는 에이전트 실행 루프 전반의 보안 취약 접점을 분석합니다.\n지정된 식별자 `aimcp_agent_tool_calling_lifecycle_and_execution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_agent_tool_calling_lifecycle_and_execution_v1\") 앞 20자리}",
+    "en": "Map the security checkpoints across the full agent tool execution loop: LLM reasoning, argument formatting, RPC execution, and observation ingestion.\nCompute the first 20 hex characters of SHA256(\"aimcp_agent_tool_calling_lifecycle_and_execution_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_agent_tool_calling_lifecycle_and_execution_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_agent_tool_calling_lifecycle_and_execution_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_agent_tool_calling_lifecycle_and_execution_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_agent_tool_calling_lifecycle_and_execution_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_agent_tool_calling_lifecycle_and_execution_v1\")."
+    ]
+  },
+  "hash": "a0563bc21ef85b9514fdc4dc9c0d251bccb32010d96c357a164783d6798c37f5"
+},
+{
+  "id": "t0_aimcp_owasp_llm07_insecure_plugin_and_tool_design",
+  "tier": 0,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OWASP LLM07 취약한 도구 설계 보안 표준",
+    "en": "OWASP LLM07 Insecure Plugin & Tool Design Standard"
+  },
+  "prompt": {
+    "ko": "OWASP Top 10 for LLM의 LLM07:2025 표준을 바탕으로 에이전트 도구 설계 시 요구되는 최소 권한, 입력 검증, 다중 단계 인가 가이드라인을 학습합니다.\n지정된 식별자 `aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1\") 앞 20자리}",
+    "en": "Study OWASP Top 10 for LLM LLM07:2025 guidelines mandating least privilege, strict input schema validation, and multi-factor authorization for agent tools.\nCompute the first 20 hex characters of SHA256(\"aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_owasp_llm07_insecure_plugin_and_tool_design_v1\")."
+    ]
+  },
+  "hash": "52ad0d9ccb0883eab1f7668068e329ff519056339f3f9155a8a564df423e31fc"
+},
+{
+  "id": "t1_aimcp_schema_poisoning_and_extra_fields",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 스키마 오염 및 미승인 필드 주입 공격",
+    "en": "Tool Schema Poisoning & Extra Fields Injection"
+  },
+  "prompt": {
+    "ko": "MCP 서버가 도구 인자의 추가 속성(additionalProperties)을 허용할 때 공격자가 임의의 제어 파라미터를 은닉 주입하여 실행 흐름을 왜곡하는 공격을 분석합니다.\n지정된 식별자 `aimcp_schema_poisoning_and_extra_fields_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_schema_poisoning_and_extra_fields_v1\") 앞 20자리}",
+    "en": "Analyze tool schema poisoning where permissive additionalProperties in MCP tool schemas allow attackers to inject undeclared control parameters.\nCompute the first 20 hex characters of SHA256(\"aimcp_schema_poisoning_and_extra_fields_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_schema_poisoning_and_extra_fields_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_schema_poisoning_and_extra_fields_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_schema_poisoning_and_extra_fields_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_schema_poisoning_and_extra_fields_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_schema_poisoning_and_extra_fields_v1\")."
+    ]
+  },
+  "hash": "9a540833ba668e8e3ef2ae8d4480a8489faeb0011414c8debb5538b14f0afa77"
+},
+{
+  "id": "t1_aimcp_prototype_pollution_via_json_arguments",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JSON 인자 파싱을 악용한 프로토타입 오염",
+    "en": "Prototype Pollution via JSON Tool Arguments"
+  },
+  "prompt": {
+    "ko": "에이전트 도구 실행 엔진이 역직렬화된 JSON 인자를 처리할 때 __proto__ 키를 통해 객체 프로토타입을 변조하여 전역 런타임을 오염시키는 기법을 분석합니다.\n지정된 식별자 `aimcp_prototype_pollution_via_json_arguments_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_prototype_pollution_via_json_arguments_v1\") 앞 20자리}",
+    "en": "Evaluate prototype pollution attacks where malicious __proto__ properties in JSON tool arguments pollute the underlying agent runtime context.\nCompute the first 20 hex characters of SHA256(\"aimcp_prototype_pollution_via_json_arguments_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_prototype_pollution_via_json_arguments_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_prototype_pollution_via_json_arguments_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_prototype_pollution_via_json_arguments_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_prototype_pollution_via_json_arguments_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_prototype_pollution_via_json_arguments_v1\")."
+    ]
+  },
+  "hash": "5371c4ff694adf4d06343c2de85fb36653865ad14032a4941baa3ac79a64a745"
+},
+{
+  "id": "t1_aimcp_parameter_type_confusion_and_coercion",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 인자 타입 혼돈 및 묵시적 형변환 악용",
+    "en": "Parameter Type Confusion & Coercion Exploitation"
+  },
+  "prompt": {
+    "ko": "정수 또는 부울형으로 예상된 인자에 배열이나 복합 객체를 전달하여 도구 내부 검증 로직을 무력화하고 임의 동작을 유도하는 타입 혼돈 기법을 점검합니다.\n지정된 식별자 `aimcp_parameter_type_confusion_and_coercion_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_parameter_type_confusion_and_coercion_v1\") 앞 20자리}",
+    "en": "Assess parameter type confusion and coercion vulnerabilities where complex objects bypass primitive type expectations in tool execution handlers.\nCompute the first 20 hex characters of SHA256(\"aimcp_parameter_type_confusion_and_coercion_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_parameter_type_confusion_and_coercion_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_parameter_type_confusion_and_coercion_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_parameter_type_confusion_and_coercion_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_parameter_type_confusion_and_coercion_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_parameter_type_confusion_and_coercion_v1\")."
+    ]
+  },
+  "hash": "e459e3226952e51f4ad5de226615ea5f9894621f5be0a8e384c7b062f98a6298"
+},
+{
+  "id": "t1_aimcp_tool_shadowing_and_namespace_collision",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "동명 도구 등록을 통한 도구 섀도잉 공격",
+    "en": "Tool Shadowing & Namespace Collision Attack"
+  },
+  "prompt": {
+    "ko": "악의적인 MCP 서버가 기존 승인된 시스템 도구와 동일한 이름으로 고권한 섀도우 도구를 등록하여 에이전트의 호출을 가로채는 네임스페이스 충돌을 분석합니다.\n지정된 식별자 `aimcp_tool_shadowing_and_namespace_collision_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_tool_shadowing_and_namespace_collision_v1\") 앞 20자리}",
+    "en": "Investigate tool shadowing where an untrusted MCP server registers identical tool names to hijack agent tool dispatching via namespace collisions.\nCompute the first 20 hex characters of SHA256(\"aimcp_tool_shadowing_and_namespace_collision_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_tool_shadowing_and_namespace_collision_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_tool_shadowing_and_namespace_collision_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_tool_shadowing_and_namespace_collision_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_tool_shadowing_and_namespace_collision_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_tool_shadowing_and_namespace_collision_v1\")."
+    ]
+  },
+  "hash": "db773d834a1f919d9e49e9be14645acd163668a57b4ddc49abd3692550253e01"
+},
+{
+  "id": "t1_aimcp_schema_description_jailbreak_luring",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 설명문 조작을 통한 모델 탈옥 유도",
+    "en": "Schema Description Jailbreak Luring"
+  },
+  "prompt": {
+    "ko": "도구 설명(Description) 필드 내에 유도 지시문(Luring Prompt)을 삽입하여 LLM이 시스템 안전 가드레일을 무시하고 특정 도구를 강제 호출하도록 유도하는 기법을 분석합니다.\n지정된 식별자 `aimcp_schema_description_jailbreak_luring_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_schema_description_jailbreak_luring_v1\") 앞 20자리}",
+    "en": "Examine schema description luring where adversarial tool descriptions manipulate LLM reasoning to bypass system guardrails and force tool dispatch.\nCompute the first 20 hex characters of SHA256(\"aimcp_schema_description_jailbreak_luring_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_schema_description_jailbreak_luring_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_schema_description_jailbreak_luring_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_schema_description_jailbreak_luring_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_schema_description_jailbreak_luring_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_schema_description_jailbreak_luring_v1\")."
+    ]
+  },
+  "hash": "e073cc1ec1e618717c15541aa6606ecc6a824f5053d7ad5d4e85ef73b28828ea"
+},
+{
+  "id": "t1_aimcp_dynamic_enum_expansion_boundary_bypass",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "동적 Enum 필드 확장 및 유효값 검증 경계 우회",
+    "en": "Dynamic Enum Expansion & Boundary Bypass"
+  },
+  "prompt": {
+    "ko": "사전 정의된 Enum 집합 외의 임의 문자열이 런타임에 통과되는 결함을 분석하고 엄격한 화이트리스트 기반 Enum 유효성 강제 방안을 수립합니다.\n지정된 식별자 `aimcp_dynamic_enum_expansion_boundary_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_dynamic_enum_expansion_boundary_bypass_v1\") 앞 20자리}",
+    "en": "Audit dynamic enum validation flaws where arbitrary strings bypass fixed enumeration boundaries during runtime tool argument evaluation.\nCompute the first 20 hex characters of SHA256(\"aimcp_dynamic_enum_expansion_boundary_bypass_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_dynamic_enum_expansion_boundary_bypass_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_dynamic_enum_expansion_boundary_bypass_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_dynamic_enum_expansion_boundary_bypass_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_dynamic_enum_expansion_boundary_bypass_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_dynamic_enum_expansion_boundary_bypass_v1\")."
+    ]
+  },
+  "hash": "ca45d61b77bfaded12911717ac39f4626368b26c5f5f0eaf2c721cd7a744372e"
+},
+{
+  "id": "t1_aimcp_pydantic_strict_schema_validation_shield",
+  "tier": 1,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Pydantic Strict 스키마 검증 및 미인가 필드 차단 방어",
+    "en": "Pydantic Strict Schema Validation Shield"
+  },
+  "prompt": {
+    "ko": "Pydantic의 extra=forbid 정책과 엄격한 정규식 타입 제약을 적용하여 도구 스키마 오염 및 임의 매개변수 주입을 원천 차단하는 방어 아키텍처를 구현합니다.\n지정된 식별자 `aimcp_pydantic_strict_schema_validation_shield_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_pydantic_strict_schema_validation_shield_v1\") 앞 20자리}",
+    "en": "Implement Pydantic strict schema shields enforcing extra=forbid and strict regex validation to neutralize tool schema parameter tampering.\nCompute the first 20 hex characters of SHA256(\"aimcp_pydantic_strict_schema_validation_shield_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_pydantic_strict_schema_validation_shield_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_pydantic_strict_schema_validation_shield_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_pydantic_strict_schema_validation_shield_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_pydantic_strict_schema_validation_shield_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_pydantic_strict_schema_validation_shield_v1\")."
+    ]
+  },
+  "hash": "690f0e69eb8f1988d8461eebbce442f803702eced60550455fad72c0c0066114"
+},
+{
+  "id": "t2_aimcp_confused_deputy_host_privilege_escalation",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Confused Deputy 권한 승계를 악용한 호스트 자원 탈취",
+    "en": "Confused Deputy Host Privilege Escalation"
+  },
+  "prompt": {
+    "ko": "저권한 사용자가 AI 에이전트의 상위 시스템 권한을 유도하여 호스트의 민감 설정 파일 및 시스템 비밀키를 대리 조회하도록 유도하는 공격을 분석합니다.\n지정된 식별자 `aimcp_confused_deputy_host_privilege_escalation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_confused_deputy_host_privilege_escalation_v1\") 앞 20자리}",
+    "en": "Analyze confused deputy exploits where unprivileged users leverage agent permissions to exfiltrate host credentials and system configuration files.\nCompute the first 20 hex characters of SHA256(\"aimcp_confused_deputy_host_privilege_escalation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_confused_deputy_host_privilege_escalation_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_confused_deputy_host_privilege_escalation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_confused_deputy_host_privilege_escalation_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_confused_deputy_host_privilege_escalation_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_confused_deputy_host_privilege_escalation_v1\")."
+    ]
+  },
+  "hash": "2fa6775415154c7fb0f27416f4a52a339f5289798bca7aad93133fbcb07f23eb"
+},
+{
+  "id": "t2_aimcp_directory_traversal_via_canonicalization_gap",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "경로 정규화 누락을 악용한 도구 샌드박스 탈출",
+    "en": "Directory Traversal via Canonicalization Gap"
+  },
+  "prompt": {
+    "ko": "파일 읽기/쓰기 도구에서 상대 경로 및 심볼릭 링크 정규화가 미흡할 때 샌드박스 격리 디렉터리 상위로 탈출하여 호스트 루트를 조회하는 기법을 분석합니다.\n지정된 식별자 `aimcp_directory_traversal_via_canonicalization_gap_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_directory_traversal_via_canonicalization_gap_v1\") 앞 20자리}",
+    "en": "Evaluate directory traversal vulnerabilities where missing path canonicalization allows agent file tools to escape designated sandbox roots.\nCompute the first 20 hex characters of SHA256(\"aimcp_directory_traversal_via_canonicalization_gap_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_directory_traversal_via_canonicalization_gap_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_directory_traversal_via_canonicalization_gap_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_directory_traversal_via_canonicalization_gap_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_directory_traversal_via_canonicalization_gap_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_directory_traversal_via_canonicalization_gap_v1\")."
+    ]
+  },
+  "hash": "561b9b806b35720cc19e40ce515badc739d4b8e13977d612c0cd7026276e9d46"
+},
+{
+  "id": "t2_aimcp_ssrf_exploitation_against_cloud_imds",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 URL Fetch 기능을 악용한 클라우드 IMDS 탈취",
+    "en": "SSRF Exploitation via Tool Fetch against Cloud IMDS"
+  },
+  "prompt": {
+    "ko": "에이전트 웹 조회 도구(fetch_url)를 조작하여 내부 루프백 및 클라우드 메타데이터 서비스(169.254.169.254)에 접근, 임시 IAM 자격증명을 탈취하는 공격을 진단합니다.\n지정된 식별자 `aimcp_ssrf_exploitation_against_cloud_imds_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_ssrf_exploitation_against_cloud_imds_v1\") 앞 20자리}",
+    "en": "Assess SSRF vulnerabilities where agent URL fetching tools access internal loopback addresses and cloud IMDS to exfiltrate IAM role credentials.\nCompute the first 20 hex characters of SHA256(\"aimcp_ssrf_exploitation_against_cloud_imds_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_ssrf_exploitation_against_cloud_imds_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_ssrf_exploitation_against_cloud_imds_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_ssrf_exploitation_against_cloud_imds_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_ssrf_exploitation_against_cloud_imds_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_ssrf_exploitation_against_cloud_imds_v1\")."
+    ]
+  },
+  "hash": "33ed64776b0cf50fe2f78539273b4081cd28e62c5480b346d989d7829acd42d3"
+},
+{
+  "id": "t2_aimcp_subprocess_shell_spawning_injection",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 실행기 내부 Subprocess Shell 인젝션",
+    "en": "Subprocess Shell Spawning Injection in Tool Handlers"
+  },
+  "prompt": {
+    "ko": "도구 인자가 쉘 커맨드 문자열로 직접 결합되어 subprocess shell=True로 실행될 때 발생하는 임의 명령어 인젝션 취약점을 분석하고 안전한 인자 격리를 실습합니다.\n지정된 식별자 `aimcp_subprocess_shell_spawning_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_subprocess_shell_spawning_injection_v1\") 앞 20자리}",
+    "en": "Investigate command injection in tool handlers concatenating arguments into shell commands without safe list-based subprocess isolation.\nCompute the first 20 hex characters of SHA256(\"aimcp_subprocess_shell_spawning_injection_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_subprocess_shell_spawning_injection_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_subprocess_shell_spawning_injection_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_subprocess_shell_spawning_injection_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_subprocess_shell_spawning_injection_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_subprocess_shell_spawning_injection_v1\")."
+    ]
+  },
+  "hash": "db7108f68b8da1bb4c88aa156e0179e20d3bbc330a4194019403cb60a133d39a"
+},
+{
+  "id": "t2_aimcp_proc_filesystem_memory_and_env_carving",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "/proc 파일시스템 조회를 통한 에이전트 비밀키 추출",
+    "en": "/proc Filesystem Memory & Environment Carving"
+  },
+  "prompt": {
+    "ko": "격리되지 않은 도구 컨테이너에서 /proc/self/environ 및 메모리 맵 조회를 통해 런타임에 로드된 LLM API 키와 토큰을 추출하는 위협을 분석합니다.\n지정된 식별자 `aimcp_proc_filesystem_memory_and_env_carving_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_proc_filesystem_memory_and_env_carving_v1\") 앞 20자리}",
+    "en": "Audit /proc/self/environ and memory carving vectors allowing compromised tool executions to recover active LLM API keys and secrets.\nCompute the first 20 hex characters of SHA256(\"aimcp_proc_filesystem_memory_and_env_carving_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_proc_filesystem_memory_and_env_carving_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_proc_filesystem_memory_and_env_carving_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_proc_filesystem_memory_and_env_carving_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_proc_filesystem_memory_and_env_carving_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_proc_filesystem_memory_and_env_carving_v1\")."
+    ]
+  },
+  "hash": "bdd6db10c3d00e4f9631e85f8508e624784b6078d5daeebd3c5500c8478536bd"
+},
+{
+  "id": "t2_aimcp_landlock_lsm_path_beneath_sandbox_containment",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Linux Landlock LSM 기반 도구 실행 디렉터리 강제 구속",
+    "en": "Linux Landlock LSM Sandbox Containment"
+  },
+  "prompt": {
+    "ko": "비특권 프로세스에서도 파일시스템 접근 범위를 지정 디렉터리로 엄격히 제한하는 Linux Landlock LSM 보안 모듈을 MCP 도구 실행기에 적용합니다.\n지정된 식별자 `aimcp_landlock_lsm_path_beneath_sandbox_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_landlock_lsm_path_beneath_sandbox_containment_v1\") 앞 20자리}",
+    "en": "Enforce Linux Landlock LSM security rulesets restricting unprivileged MCP tool processes strictly to authorized workspace directory trees.\nCompute the first 20 hex characters of SHA256(\"aimcp_landlock_lsm_path_beneath_sandbox_containment_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_landlock_lsm_path_beneath_sandbox_containment_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_landlock_lsm_path_beneath_sandbox_containment_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_landlock_lsm_path_beneath_sandbox_containment_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_landlock_lsm_path_beneath_sandbox_containment_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_landlock_lsm_path_beneath_sandbox_containment_v1\")."
+    ]
+  },
+  "hash": "02c96d82f41f15d43f5c93046ec3a9488c695e43dafdba055f60303cc167f545"
+},
+{
+  "id": "t2_aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers",
+  "tier": 2,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "seccomp-BPF 기반 MCP 워커 시스템 콜 필터링 격리",
+    "en": "seccomp-BPF Syscall Filtering for MCP Workers"
+  },
+  "prompt": {
+    "ko": "도구 실행 프로세스에 seccomp-BPF 필터를 부착하여 fork, execve, ptrace, socket 등 위험 시스템 콜을 원천 차단하는 커널 레벨 샌드박스를 구축합니다.\n지정된 식별자 `aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1\") 앞 20자리}",
+    "en": "Deploy seccomp-BPF syscall filters neutralizing fork, execve, ptrace, and network sockets within ephemeral MCP worker process environments.\nCompute the first 20 hex characters of SHA256(\"aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_seccomp_bpf_syscall_filtering_for_mcp_workers_v1\")."
+    ]
+  },
+  "hash": "30184687b34cf5d060f8f25a90a3a5d6d947002092d0a0fdbd4416ae838d4751"
+},
+{
+  "id": "t3_aimcp_indirect_prompt_injection_in_tool_payloads",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 반환 페이로드 내 은닉 간접 프롬프트 인젝션",
+    "en": "Indirect Prompt Injection in Tool Return Payloads"
+  },
+  "prompt": {
+    "ko": "웹 크롤링, 이메일 조회 등 외부 도구 결과물에 은닉된 악성 프롬프트 지시문이 에이전트 추론 루프를 장악하여 의도하지 않은 도구를 연쇄 실행하는 위협을 분석합니다.\n지정된 식별자 `aimcp_indirect_prompt_injection_in_tool_payloads_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_indirect_prompt_injection_in_tool_payloads_v1\") 앞 20자리}",
+    "en": "Analyze indirect prompt injection embedded in external tool return payloads hijacking agent reasoning and triggering unauthorized secondary actions.\nCompute the first 20 hex characters of SHA256(\"aimcp_indirect_prompt_injection_in_tool_payloads_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_indirect_prompt_injection_in_tool_payloads_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_indirect_prompt_injection_in_tool_payloads_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_indirect_prompt_injection_in_tool_payloads_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_indirect_prompt_injection_in_tool_payloads_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_indirect_prompt_injection_in_tool_payloads_v1\")."
+    ]
+  },
+  "hash": "e62a3b2c8ec9ed643d51a5986c9b7c85a1e1da7c0498f90bfac069aec040ee53"
+},
+{
+  "id": "t3_aimcp_context_smuggling_and_system_token_exfiltration",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "컨텍스트 은닉을 통한 시스템 프롬프트 및 API 키 유출",
+    "en": "Context Smuggling & System Token Exfiltration"
+  },
+  "prompt": {
+    "ko": "도구 관찰(Observation) 출력에 포함된 인젝션이 에이전트의 시스템 프롬프트와 보안 키를 외부 C2 엔드포인트로 유출하도록 유도하는 컨텍스트 탈취를 분석합니다.\n지정된 식별자 `aimcp_context_smuggling_and_system_token_exfiltration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_context_smuggling_and_system_token_exfiltration_v1\") 앞 20자리}",
+    "en": "Evaluate context smuggling techniques coercing agents to append secret system instructions and API keys to outbound tool network calls.\nCompute the first 20 hex characters of SHA256(\"aimcp_context_smuggling_and_system_token_exfiltration_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_context_smuggling_and_system_token_exfiltration_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_context_smuggling_and_system_token_exfiltration_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_context_smuggling_and_system_token_exfiltration_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_context_smuggling_and_system_token_exfiltration_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_context_smuggling_and_system_token_exfiltration_v1\")."
+    ]
+  },
+  "hash": "61f004bdaf3710b08082b748119ab449bcecadae73205b6b781e227bfa98e25c"
+},
+{
+  "id": "t3_aimcp_chain_of_thought_hijacking_and_covert_steering",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "사고 사슬(Chain-of-Thought) 조작 및 은밀한 행동 편향",
+    "en": "Chain-of-Thought Hijacking & Covert Steering"
+  },
+  "prompt": {
+    "ko": "도구 결과 포맷에 인위적인 중간 추론 토큰(<thought> 태그 등)을 삽입하여 에이전트의 후속 판단을 공격자가 원하는 방향으로 은밀히 편향시키는 공격을 진단합니다.\n지정된 식별자 `aimcp_chain_of_thought_hijacking_and_covert_steering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_chain_of_thought_hijacking_and_covert_steering_v1\") 앞 20자리}",
+    "en": "Assess Chain-of-Thought hijacking where forged intermediate reasoning tokens steer the agent toward adversarial tool selection.\nCompute the first 20 hex characters of SHA256(\"aimcp_chain_of_thought_hijacking_and_covert_steering_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_chain_of_thought_hijacking_and_covert_steering_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_chain_of_thought_hijacking_and_covert_steering_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_chain_of_thought_hijacking_and_covert_steering_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_chain_of_thought_hijacking_and_covert_steering_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_chain_of_thought_hijacking_and_covert_steering_v1\")."
+    ]
+  },
+  "hash": "2959cfe654c3936eedec9c57f534aee0dc954dd0f9173eff6d084edbb00c5162"
+},
+{
+  "id": "t3_aimcp_bpe_token_splitting_and_guardrail_evasion",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BPE 토큰 분할을 악용한 프롬프트 가드레일 우회",
+    "en": "BPE Token Splitting & Prompt Guardrail Evasion"
+  },
+  "prompt": {
+    "ko": "바이트 페어 인코딩(BPE)의 토큰 경계를 교묘하게 분할하여 문자열 기반 금지어 탐지 필터를 무력화하고 악성 페이로드를 조립하는 기법을 분석합니다.\n지정된 식별자 `aimcp_bpe_token_splitting_and_guardrail_evasion_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_bpe_token_splitting_and_guardrail_evasion_v1\") 앞 20자리}",
+    "en": "Investigate BPE token boundary fragmentation bypassing naive string pattern matchers to reconstruct blocked malicious injection prompts.\nCompute the first 20 hex characters of SHA256(\"aimcp_bpe_token_splitting_and_guardrail_evasion_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_bpe_token_splitting_and_guardrail_evasion_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_bpe_token_splitting_and_guardrail_evasion_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_bpe_token_splitting_and_guardrail_evasion_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_bpe_token_splitting_and_guardrail_evasion_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_bpe_token_splitting_and_guardrail_evasion_v1\")."
+    ]
+  },
+  "hash": "72ce54d4d86f83838bdf46994e39338e0c42e53e2e2daab7b180c84515eef780"
+},
+{
+  "id": "t3_aimcp_dual_llm_intent_arbitration_and_sanitizer",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Dual-LLM 의도 검증 및 페이로드 살균 방어 아키텍처",
+    "en": "Dual-LLM Intent Arbitration & Payload Sanitizer"
+  },
+  "prompt": {
+    "ko": "외부 도구 반환값이 에이전트 메인 컨텍스트로 진입하기 전, 전용 보안 검증 LLM이 페이로드의 인젝션 유무를 독립 판정하고 살균하는 방어 구조를 설계합니다.\n지정된 식별자 `aimcp_dual_llm_intent_arbitration_and_sanitizer_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_dual_llm_intent_arbitration_and_sanitizer_v1\") 앞 20자리}",
+    "en": "Design a Dual-LLM intent arbitration pipeline where an isolated verifier model sanitizes external tool returns prior to main context ingestion.\nCompute the first 20 hex characters of SHA256(\"aimcp_dual_llm_intent_arbitration_and_sanitizer_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_dual_llm_intent_arbitration_and_sanitizer_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_dual_llm_intent_arbitration_and_sanitizer_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_dual_llm_intent_arbitration_and_sanitizer_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_dual_llm_intent_arbitration_and_sanitizer_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_dual_llm_intent_arbitration_and_sanitizer_v1\")."
+    ]
+  },
+  "hash": "bf3a92ac1c803e547187b290bfcbed548d6d3d35f9e0861b31c6dfedff2fdf15"
+},
+{
+  "id": "t3_aimcp_dlp_secret_redaction_and_leakage_containment",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DLP 패턴 기반 실시간 비밀키 마스킹 및 유출 방어",
+    "en": "DLP Secret Redaction & Leakage Containment"
+  },
+  "prompt": {
+    "ko": "에이전트의 모든 인바운드/아웃바운드 도구 통신에 정규식 및 엔트로피 기반 DLP 엔진을 결합하여 API 키, 비밀번호, PII 정보를 실시간 마스킹합니다.\n지정된 식별자 `aimcp_dlp_secret_redaction_and_leakage_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_dlp_secret_redaction_and_leakage_containment_v1\") 앞 20자리}",
+    "en": "Deploy regex and entropy-based DLP redactor filters across all agent-tool communication channels to mask sensitive tokens and credentials.\nCompute the first 20 hex characters of SHA256(\"aimcp_dlp_secret_redaction_and_leakage_containment_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_dlp_secret_redaction_and_leakage_containment_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_dlp_secret_redaction_and_leakage_containment_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_dlp_secret_redaction_and_leakage_containment_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_dlp_secret_redaction_and_leakage_containment_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_dlp_secret_redaction_and_leakage_containment_v1\")."
+    ]
+  },
+  "hash": "f8571da4908e2f3d5f2e6298e95c80389286b050a14dbe3238f98a8b0c582ca5"
+},
+{
+  "id": "t3_aimcp_ebpf_kprobe_runtime_tool_observability",
+  "tier": 3,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF kprobe 기반 에이전트 도구 프로세스 런타임 추적",
+    "en": "eBPF kprobe Runtime Tool Observability"
+  },
+  "prompt": {
+    "ko": "sys_enter_execve 및 security_file_open 커널 프로브를 통해 에이전트 도구 프로세스의 비정상 바이너리 실행과 민감 파일 접근을 실시간 감시합니다.\n지정된 식별자 `aimcp_ebpf_kprobe_runtime_tool_observability_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_ebpf_kprobe_runtime_tool_observability_v1\") 앞 20자리}",
+    "en": "Implement eBPF kprobe observability capturing sys_enter_execve and security_file_open events to detect unauthorized tool execution anomalies.\nCompute the first 20 hex characters of SHA256(\"aimcp_ebpf_kprobe_runtime_tool_observability_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_ebpf_kprobe_runtime_tool_observability_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_ebpf_kprobe_runtime_tool_observability_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_ebpf_kprobe_runtime_tool_observability_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_ebpf_kprobe_runtime_tool_observability_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_ebpf_kprobe_runtime_tool_observability_v1\")."
+    ]
+  },
+  "hash": "679144a46db7065aec323b5a58890913cbf1840a980e8e37efe5fe00c4b51321"
+},
+{
+  "id": "t4_aimcp_hmac_sha256_tool_call_attestation",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "HMAC-SHA256 기반 MCP 도구 RPC 호출 암호학적 서명 증명",
+    "en": "HMAC-SHA256 Tool Call Attestation"
+  },
+  "prompt": {
+    "ko": "에이전트와 원격 MCP 서버 간 RPC 통신 시 공유 비밀키 기반 HMAC-SHA256 서명을 필수 검증하여 매개변수 변조 및 위조 도구 호출을 차단합니다.\n지정된 식별자 `aimcp_hmac_sha256_tool_call_attestation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_hmac_sha256_tool_call_attestation_v1\") 앞 20자리}",
+    "en": "Enforce HMAC-SHA256 cryptographic attestation signatures over all agent-to-server MCP RPC payloads to prevent argument tampering and spoofed dispatches.\nCompute the first 20 hex characters of SHA256(\"aimcp_hmac_sha256_tool_call_attestation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_hmac_sha256_tool_call_attestation_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_hmac_sha256_tool_call_attestation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_hmac_sha256_tool_call_attestation_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_hmac_sha256_tool_call_attestation_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_hmac_sha256_tool_call_attestation_v1\")."
+    ]
+  },
+  "hash": "2c7be36dd0d3c6caf1f327969bd54e445228f7e7a8117ef3cf4bf29d141adcec"
+},
+{
+  "id": "t4_aimcp_single_use_nonce_replay_mitigation",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "단일 사용 Nonce 캐시 기반 도구 Replay 공격 차단",
+    "en": "Single-Use Nonce Replay Mitigation"
+  },
+  "prompt": {
+    "ko": "모든 도구 호출 요청에 단일 사용 암호학적 Nonce와 타임스탬프 윈도우를 강제하고, 메모리 제한 캐시를 통해 중복 Replay 공격을 원천 무력화합니다.\n지정된 식별자 `aimcp_single_use_nonce_replay_mitigation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_single_use_nonce_replay_mitigation_v1\") 앞 20자리}",
+    "en": "Implement bounded single-use cryptographic nonce caches and timestamp window validation neutralizing intercepted tool call replay attacks.\nCompute the first 20 hex characters of SHA256(\"aimcp_single_use_nonce_replay_mitigation_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_single_use_nonce_replay_mitigation_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_single_use_nonce_replay_mitigation_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_single_use_nonce_replay_mitigation_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_single_use_nonce_replay_mitigation_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_single_use_nonce_replay_mitigation_v1\")."
+    ]
+  },
+  "hash": "4792b436d850c4d8cc2f69796bc961a021b5741627803735a4232ed4195303d0"
+},
+{
+  "id": "t4_aimcp_human_in_the_loop_g_approval_governance",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "고위험 도구 호출에 대한 G1-G3 인간 개입 승인 거버넌스",
+    "en": "Human-in-the-Loop G1-G3 Approval Governance"
+  },
+  "prompt": {
+    "ko": "데이터 삭제, 외부 배포, 권한 변경 등 고위험/파괴적 도구 실행 시 암호학적 서명된 G3 최고 경영진 승인 토큰이 제시되어야만 실행을 허용하는 체계를 구축합니다.\n지정된 식별자 `aimcp_human_in_the_loop_g_approval_governance_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_human_in_the_loop_g_approval_governance_v1\") 앞 20자리}",
+    "en": "Require cryptographically signed G3 Human Executive Approval tokens before executing destructive, persistence-modifying, or egress agent tools.\nCompute the first 20 hex characters of SHA256(\"aimcp_human_in_the_loop_g_approval_governance_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_human_in_the_loop_g_approval_governance_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_human_in_the_loop_g_approval_governance_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_human_in_the_loop_g_approval_governance_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_human_in_the_loop_g_approval_governance_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_human_in_the_loop_g_approval_governance_v1\")."
+    ]
+  },
+  "hash": "7531d43a1c8bc3fe1b03475599da1e2b3a176da3d1bf83f73f6748384b7d3e14"
+},
+{
+  "id": "t4_aimcp_spiffe_spire_mcp_worker_identity_binding",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SPIFFE SVID 기반 MCP 서버 워커 신원 증명 및 mTLS",
+    "en": "SPIFFE SVID Identity Binding for MCP Workers"
+  },
+  "prompt": {
+    "ko": "분산 환경의 각 MCP 도구 워커에 SPIFFE ID를 부여하고 SPIRE 커널 증명을 거친 mTLS 상호 인증으로 신뢰 도메인 경계를 확립합니다.\n지정된 식별자 `aimcp_spiffe_spire_mcp_worker_identity_binding_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_spiffe_spire_mcp_worker_identity_binding_v1\") 앞 20자리}",
+    "en": "Bind cryptographic SPIFFE SVIDs and SPIRE kernel workload attestation to MCP tool servers, enforcing strict mutual TLS across trust domains.\nCompute the first 20 hex characters of SHA256(\"aimcp_spiffe_spire_mcp_worker_identity_binding_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_spiffe_spire_mcp_worker_identity_binding_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_spiffe_spire_mcp_worker_identity_binding_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_spiffe_spire_mcp_worker_identity_binding_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_spiffe_spire_mcp_worker_identity_binding_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_spiffe_spire_mcp_worker_identity_binding_v1\")."
+    ]
+  },
+  "hash": "c72228f60f10346444b2db633d83070367949af56051a260dfbaf55edf5fe1c0"
+},
+{
+  "id": "t4_aimcp_kernel_level_ebpf_lsm_mcp_firewall",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF LSM 기반 커널 레벨 MCP 도구 실행 방화벽",
+    "en": "eBPF LSM Kernel-Level MCP Tool Firewall"
+  },
+  "prompt": {
+    "ko": "LSM bprm_check_security 훅을 통해 승인되지 않은 도구 하위 프로세스 생성을 커널 레벨에서 즉각 동기적으로 차단(SIGKILL)하는 무결점 방화벽을 구축합니다.\n지정된 식별자 `aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1\") 앞 20자리}",
+    "en": "Deploy eBPF LSM bprm_check_security hooks to synchronously terminate unapproved tool child processes at the kernel boundary.\nCompute the first 20 hex characters of SHA256(\"aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_kernel_level_ebpf_lsm_mcp_firewall_v1\")."
+    ]
+  },
+  "hash": "fb548edb243af143a337135f75445af5b482b3e3c1e0c18fe6a4da7f9706ee5c"
+},
+{
+  "id": "t4_aimcp_multi_tenant_agent_rbac_and_least_privilege",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "멀티 테넌트 환경 에이전트 RBAC 및 최소 권한 도구 격리",
+    "en": "Multi-Tenant Agent RBAC & Least Privilege Tool Isolation"
+  },
+  "prompt": {
+    "ko": "역할 기반 접근 제어(RBAC)와 테넌트별 가상 네임스페이스를 결합하여 에이전트가 부여받은 최소 필수 도구 외에는 스키마 열람조차 불가능하도록 격리합니다.\n지정된 식별자 `aimcp_multi_tenant_agent_rbac_and_least_privilege_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_multi_tenant_agent_rbac_and_least_privilege_v1\") 앞 20자리}",
+    "en": "Enforce multi-tenant role-based access control and namespace fencing ensuring agents possess zero visibility over unassigned tool schemas.\nCompute the first 20 hex characters of SHA256(\"aimcp_multi_tenant_agent_rbac_and_least_privilege_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_multi_tenant_agent_rbac_and_least_privilege_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_multi_tenant_agent_rbac_and_least_privilege_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_multi_tenant_agent_rbac_and_least_privilege_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_multi_tenant_agent_rbac_and_least_privilege_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_multi_tenant_agent_rbac_and_least_privilege_v1\")."
+    ]
+  },
+  "hash": "b11078469eea7ffe69d624faec74b5487566452ddbcfb9b66a31b0802b064ad2"
+},
+{
+  "id": "t4_aimcp_capstone_full_spectrum_zero_trust_mcp_defense",
+  "tier": 4,
+  "cat": "ai",
+  "track": "aimcp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 전방위 AI 에이전트 MCP 보안 종합 방어 캡스톤",
+    "en": "Capstone: Full-Spectrum Enterprise Zero Trust MCP Defense"
+  },
+  "prompt": {
+    "ko": "Pydantic 엄격 스키마 검증, Landlock/seccomp 샌드박스, Dual-LLM 살균기, HMAC 서명, G3 인간 승인, eBPF 감시를 통합 연계한 제로 트러스트 도구 방어를 완성합니다.\n지정된 식별자 `aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: FLAG{SHA256(\"aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1\") 앞 20자리}",
+    "en": "Synthesize Pydantic strict schemas, Landlock containment, Dual-LLM sanitizers, HMAC signatures, G3 approval gates, and eBPF monitoring into an enterprise capstone.\nCompute the first 20 hex characters of SHA256(\"aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1\").\n\nFormat: FLAG{first 20 hex of SHA256(\"aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1\")}"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1`의 암호화 해시를 통해 플래그를 정확하게 산출할 수 있습니다.",
+      "식별자 `aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Derive the target flag deterministically using SHA-256 over identifier `aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1`.",
+      "Extract the first 20 hex characters of SHA256(\"aimcp_capstone_full_spectrum_zero_trust_mcp_defense_v1\")."
+    ]
+  },
+  "hash": "b3a343a263e84ed9b4da5a0dfe3bdc44cd4f8dcf2768198cb8ce9900f751981b"
+}
 ];

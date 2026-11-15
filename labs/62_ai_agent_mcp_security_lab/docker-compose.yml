@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ai_agent_mcp_security_lab:
+    build: .
+    container_name: vhack-lab62-mcp-security
+    ports:
+      - "127.0.0.1:8062:8062"
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - LAB_ID=62
+      - LAB_NAME=AiAgentMcpSecurityLab
