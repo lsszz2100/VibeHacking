@@ -17,7 +17,7 @@
 <br/>
 
 > 从理论到实践，涵盖CTF、漏洞赏金、渗透测试、红队行动的网络安全知识库。
-> 全面覆盖**2026年Claude・GPT-4o时代**的AI漏洞研究、云安全、无线安全与密码学。
+> 全面覆盖**2026年Claude・GPT-6.1/GPT-5.6时代**的AI漏洞研究、云安全、无线安全与密码学。
 
 **🌐 Language / 言語 / 语言:**
 [한국어](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [中文](README.zh.md)
@@ -34,8 +34,8 @@
 **VibeHacking的特点：**
 
 - **代码优先** — 每个章节均包含可直接复制粘贴的命令和代码
-- **AI集成** — 介绍如何将Claude/GPT-4o作为安全分析工具使用
-- **紧跟前沿** — 涵盖2026年AI安全生态系统，包括Anthropic Claude和OpenAI GPT-4o
+- **AI集成** — 介绍如何将Claude与GPT-6.1/GPT-5.6作为安全分析工具使用
+- **紧跟前沿** — 涵盖2026年AI安全生态系统，包括Anthropic Claude、OpenAI GPT-6.1/GPT-5.6与Google Gemini
 - **多语言支持** — 提供韩语、英语、日语和中文版本
 - **全面覆盖** — 漏洞赏金、SOC、云安全、WiFi、密码学、红队等全领域
 
@@ -176,7 +176,7 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 | 08 | [Python黑客技术](#08-python黑客技术) | 工具开发、网络扫描器、Web自动化 | 6 |
 | 09 | [漏洞利用技术](#09-漏洞利用技术) | ROP Chain、SEH、Linux BOF、提权 | 6 |
 | 10 | [渗透测试方法论](#10-渗透测试方法论) | 渗透流程、OSINT侦察、报告撰写 | 6 |
-| 11 | [**AI驱动的网络安全**](#11-ai驱动的网络安全) | Claude Opus 4、GPT-4o、LLM漏洞研究、CTF自动化 | 6 |
+| 11 | [**AI驱动的网络安全**](#11-ai驱动的网络安全) | Claude Opus 5.5、Fable 5.2、GPT-6.1 / 5.6、Gemini 4 Pro / 3.8 Flash、Carbon | 6 |
 | 12 | [**漏洞赏金**](#12-漏洞赏金) | 方法论、Burp Suite进阶、自动化工具 | 6 |
 | 13 | [**SOC & 蓝队**](#13-soc--蓝队) | SOC运营、Splunk分析、威胁狩猎 | 6 |
 | 14 | [**云安全**](#14-云安全) | AWS/Azure/GCP攻击向量、渗透测试、清单 | 6 |
@@ -274,7 +274,7 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 | 靶机环境 | Metasploitable2、DVWA、HackTheBox、TryHackMe、CloudGoat |
 | 分析工具 | Wireshark、Burp Suite、IDA Pro / Ghidra、x64dbg |
 | 编程语言 | Python 3.x、Bash、pwntools |
-| AI工具 | Claude Opus 4.6、GPT-4o（） |
+| AI工具 | Claude Opus 5.5、Fable 5.2、GPT-6.1 / 5.6、Gemini 4 Pro / 3.8 Flash、Carbon |
 | 无线网卡 | Alfa AWUS036ACH（支持2.4/5GHz监听模式） |
 | 云平台 | AWS Free Tier、CloudGoat |
 
@@ -446,11 +446,11 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Claude・GPT-4o・내부 연구 프로그램全景图
+├── 01_ai_security_landscape_2026.md   ← Claude・GPT-6.1/5.6・Google Gemini安全全景图
 ├── 02_llm_vulnerability_research.md   ← 用LLM发现零日漏洞、AI模糊测试、代码分析自动化
 ├── 03_ai_assisted_pentesting.md       ← AI辅助渗透测试工作流、提示词工程
 ├── 04_ai_ctf_automation.md            ← CTF自动化AI智能体、密码/Web/取证专业子智能体
-├── 05_claude_gpt_cyber_integration.md ← AI集成 — Claude + GPT-4o安全分析工具指南
+├── 05_claude_gpt_cyber_integration.md ← AI集成 — Claude + GPT-6.1-Codex / GPT-5.6安全分析工具指南
 └── 06_ai_security_ctf_lab.md          ← CTF风格AI安全实验室
 ```
 
@@ -458,9 +458,12 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 | 模型 | 机构 | 能力 | 访问方式 |
 |-----|------|------|---------|
-| **Claude Opus 4** | Anthropic | 自主发现17年历史FreeBSD RCE漏洞，数千个零日 | 내부 연구 프로그램（仅12家合作伙伴） |
-| **GPT-4o** | OpenAI | 二进制逆向、76%自主解决CTF、YARA生成 | （openai.com） |
-| **Claude Opus 4.6** | Anthropic | 代码漏洞分析、CTF辅助、YARA自动化 | 公开可用 |
+| **Claude Opus 5.5** | Anthropic | 大规模代码库漏洞深度分析、CTF自动化、自主安全智能体 | 公开可用（API / claude.ai） |
+| **Claude Fable 5.2 / Mythos 5.1** | Anthropic | 自主发现17年历史FreeBSD RCE漏洞，深度威胁推理与零日挖掘 | 公开可用(Fable 5.2) / Glasswing(Mythos 5.1) |
+| **GPT-6.1 / GPT-5.6 / Codex** | OpenAI | 二进制深度逆向工程、76%+自主解决CTF、漏洞分类与YARA/Sigma自动生成 | 公开可用（API / ChatGPT） / TAC |
+| **Gemini 4 Pro** | Google | 深度复杂推理、超大规模仓库零日漏洞全数审计与逻辑分析 | 公开可用（API / AI Studio） |
+| **Gemini 3.8 Flash** | Google | 超高速实时流式分析、极速模糊测试及多子智能体并行 | 公开可用（API / AI Studio） |
+| **Gemini Carbon / Hydrogen** | Google | 多模态超大上下文及分布式智能体威胁分析 | 公开可用（API / AI Studio） |
 
 **核心内容：** AI安全生态系统完整分析、基于Claude API的漏洞扫描器实现、AI辅助渗透测试自动化、CTF解题AI智能体（密码学/Web/取证/逆向专业子智能体）
 

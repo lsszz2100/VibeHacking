@@ -13,7 +13,7 @@
 | [04_adversarial_attacks_on_llm.md](./04_adversarial_attacks_on_llm.md) | **LLM 적대적 공격** — 비유: 정지 표지판에 작은 스티커를 붙이면 사람 눈에는 정지 표지판이지만, AI 카메라는 "속도 제한 45" 표지판으로 인식한다. LLM에서도 사람이 인식하기 어려운... |
 | [05_llm_security_defense.md](./05_llm_security_defense.md) | **LLM 보안 방어 전략** — 비유: LLM을 은행 금고에 비유하면, 방어 레이어는 금고 앞의 보안 검색대(입력 필터), 은행 직원의 신분 확인(출력 검증), CCTV 로깅(감사 로그)과 같다. ... |
 | [06_llm_security_ctf_lab.md](./06_llm_security_ctf_lab.md) | **LLM 보안 CTF 실습 랩** — 이 랩은 실제 LLM API 없이 로컬에서 LLM 보안 공격 기법을 실습한다. llm_ctf.py 스크립트가 챌린지 로직을 시뮬레이션하며, 플래그를 발견하면 SHA-256 해시로 검증한다. |
-| [07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md](./07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md) | **제69장 LLM 보안 심층: AI 에이전트 & MCP 툴 포이즈닝·탈취 및 샌드박싱 방어 (Deep-dive)** — 2026년 현재 Claude Opus 4, GPT-4o, 오픈소스 에이전트 프레임워크는 단순 질의응답을 넘어 Model Context Protocol (MCP) 및 Function C... |
+| [07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md](./07_mcp_agent_tool_poisoning_and_sandbox_deepdive.md) | **제69장 LLM 보안 심층: AI 에이전트 & MCP 툴 포이즈닝·탈취 및 샌드박싱 방어 (Deep-dive)** — 2026년 현재 Claude Opus 5.5, Claude Fable 5.2, GPT-6.1, Gemini 4 Pro, Gemini 3.8 Flash, Gemini Carbon 등 최신 프론티어 AI 에이전트 프레임워크는 단순 질의응답을 넘어 Model Context Protocol (MCP) 및 Function C... |
 | [08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md](./08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md) | **제69장 LLM 보안 심층: AI 에이전트 탈출 공격·Landlock LSM 비특권 샌드박스 & eBPF 듀얼 런타임 방어 (Deep-dive)** — 2026년 기업 환경에 배포되는 자율 AI 에이전트(Autonomous AI Agents)는 단순한 텍스트 생성을 넘어, Model Context Protocol (MCP) 및 표준 ... |
 
 ## 🎯 학습 목표

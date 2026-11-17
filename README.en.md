@@ -17,7 +17,7 @@
 <br/>
 
 > A practical security knowledge repository — from theory to hands-on labs — ready for CTF, Bug Bounty, Penetration Testing, and Red Team operations.
-> Complete coverage from AI-driven vulnerability research to cloud, wireless, and cryptography in the **2026 era of Claude & GPT-4o**.
+> Complete coverage from AI-driven vulnerability research to cloud, wireless, and cryptography in the **2026 era of Claude & GPT-6.1/GPT-5.6**.
 
 **🌐 Language / 言語 / 语言:**
 [한국어](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [中文](README.zh.md)
@@ -34,8 +34,8 @@ From CTF to Bug Bounty, Red Team to AI Security: a **practical, hands-on knowled
 **What makes VibeHacking stand out:**
 
 - **Code-First** — Every section includes executable commands and ready-to-run code
-- **AI-Integrated** — Learn how to use Claude/GPT-4o as security analysis tools
-- **Cutting-Edge** — Reflects the 2026 AI security ecosystem including Anthropic Claude and OpenAI GPT-4o
+- **AI-Integrated** — Learn how to use Claude & GPT-6.1/GPT-5.6 as security analysis tools
+- **Cutting-Edge** — Reflects the 2026 AI security ecosystem including Anthropic Claude, OpenAI GPT-6.1/GPT-5.6, and Google Gemini
 - **Multilingual** — Available in Korean, English, Japanese, and Chinese
 - **Full Coverage** — Bug Bounty, SOC, Cloud, WiFi, Cryptography, Red Team, and more
 
@@ -197,7 +197,7 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 | 08 | [Python Hacking](#08-python-hacking) | Tool development, network scanners, web automation | 6 |
 | 09 | [Exploit Techniques](#09-exploit-techniques) | ROP Chain, SEH, Linux BOF, privilege escalation | 6 |
 | 10 | [Pentest Methodology](#10-pentest-methodology) | Pentest workflow, OSINT recon, report writing | 6 |
-| 11 | [**AI-Powered Security**](#11-ai-powered-cybersecurity) | Claude Opus 4, GPT-4o, LLM vulnerability research, CTF automation | 6 |
+| 11 | [**AI-Powered Security**](#11-ai-powered-cybersecurity) | Claude Opus 5.5, Fable 5.2, GPT-6.1 / 5.6, Gemini 4 Pro / 3.8 Flash, Carbon | 6 |
 | 12 | [**Bug Bounty**](#12-bug-bounty) | Methodology, Burp Suite advanced, automation tools | 6 |
 | 13 | [**SOC & Blue Team**](#13-soc--blue-team) | SOC operations, Splunk analysis, threat hunting | 6 |
 | 14 | [**Cloud Security**](#14-cloud-security) | AWS/Azure/GCP attack vectors, pentesting, checklist | 6 |
@@ -295,7 +295,7 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 | Vulnerable Targets | Metasploitable2, DVWA, HackTheBox, TryHackMe, CloudGoat |
 | Analysis Tools | Wireshark, Burp Suite, IDA Free / Ghidra / x64dbg |
 | Languages | Python 3.x, Bash, pwntools |
-| AI Tools | Claude Opus 4.6, GPT-4o |
+| AI Tools | Claude Opus 5.5, Fable 5.2, GPT-6.1 / 5.6, Gemini 4 Pro / 3.8 Flash, Carbon |
 | Wireless | Alfa AWUS036ACH (2.4/5GHz monitor mode supported) |
 | Cloud | AWS Free Tier, CloudGoat |
 
@@ -467,11 +467,11 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Claude Opus 4, GPT-4o, 내부 연구 프로그램 overview
+├── 01_ai_security_landscape_2026.md   ← Claude Opus 5.5, Fable 5.2, GPT-6.1/5.6, Gemini 4 Pro, Gemini 3.8 Flash overview
 ├── 02_llm_vulnerability_research.md   ← Zero-day discovery with LLMs, AI fuzzing, code analysis automation
 ├── 03_ai_assisted_pentesting.md       ← AI-assisted pentest workflow, prompt engineering
 ├── 04_ai_ctf_automation.md            ← CTF automation AI agent, crypto/web/forensics sub-agents
-├── 05_claude_gpt_cyber_integration.md ← AI Integration — Claude + GPT-4o Security Analysis Tools Guide
+├── 05_claude_gpt_cyber_integration.md ← AI Integration — Claude + GPT-6.1-Codex / GPT-5.6 Security Analysis Tools Guide
 └── 06_ai_security_ctf_lab.md          ← CTF-Style AI Security Labs
 ```
 
@@ -479,9 +479,12 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 
 | Model | Organization | Capability | Access |
 |-------|-------------|-----------|--------|
-| **Claude Opus 4** | Anthropic | Autonomous discovery of 17-year-old FreeBSD RCE, thousands of zero-days | 내부 연구 프로그램 |
-| **GPT-4o** | OpenAI | Binary reversing, 76% autonomous CTF solving, YARA generation |  (openai.com) |
-| **Claude Opus 4.6** | Anthropic | Code vulnerability analysis, CTF assistance, YARA automation | Generally available |
+| **Claude Opus 5.5** | Anthropic | Large codebase vulnerability analysis, CTF automation, autonomous security agents | General access (API / claude.ai) |
+| **Claude Fable 5.2 / Mythos 5.1** | Anthropic | Autonomous discovery of 17-year FreeBSD RCE, deep threat reasoning & 0-days | General access(Fable 5.2) / Glasswing(Mythos 5.1) |
+| **GPT-6.1 / GPT-6.1-Codex** | OpenAI | Deep binary reversing, 76%+ autonomous CTF solving, YARA/Sigma generation | General access (API / ChatGPT) |
+| **Gemini 4 Pro** | Google | Deep complex reasoning, full-repository zero-day audit & logic analysis | General access (API / AI Studio) |
+| **Gemini 3.8 Flash** | Google | Ultra-fast real-time streaming analysis, high-speed fuzzing & sub-agents | General access (API / AI Studio) |
+| **Gemini Carbon / Hydrogen** | Google | Multimodal massive context & distributed agent security threat analysis | General access (API / AI Studio) |
 
 **Key Content:** Complete AI security ecosystem analysis, Claude API-based vulnerability scanner implementation, AI-assisted pentest automation, CTF solving AI agent (crypto/web/forensics/reversing specialized sub-agents)
 

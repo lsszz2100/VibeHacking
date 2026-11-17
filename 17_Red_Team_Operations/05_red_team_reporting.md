@@ -659,7 +659,7 @@ Tone: Professional, objective, constructive
 """
     
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-5-5",
         max_tokens=2000,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -692,7 +692,7 @@ Write 2-3 pages max. Non-technical audience. Focus on business risk.
 """
     
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-5-5",
         max_tokens=3000,
         messages=[{"role": "user", "content": prompt}]
     )

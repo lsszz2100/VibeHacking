@@ -895,3 +895,29 @@ node wargame/scripts/solve-derivable.js
   - **워게임 PWA 적용**: `manifest.json`, `sw.js` 서비스 워커 적용으로 오프라인 및 PWA 앱 설치 지원
   - **통합 테스트 & CI 검증**: 전체 Pytest 105개 PASS (15개 실습 랩 102개 테스트), 워게임 1,050제 무결성 100% PASS
 
+---
+
+## 6. 2026 최신 프론티어 AI 보안 모델 체계 및 교재/코드베이스 반영 기준
+
+2026년 기준 실전 배포 및 서비스 중인 최신 AI 모델 라인업(OpenAI, Anthropic, Google Gemini)과 전사 교재 및 실습 코드베이스 반영 기준은 다음과 같습니다.
+
+### 6-1. 최신 AI 모델 포지셔닝 및 역할 정의
+1. **OpenAI 최신 계보**:
+   - `GPT-6.1 / GPT-6.1-Codex`: 컴파일된 바이너리 심층 리버스 엔지니어링, 자율 익스플로잇 공학, CTF 76%+ SOTA (Preparedness Framework "High" 등급).
+   - `GPT-5.6`: 범용 심층 추론, 취약점 분류(Triage), SIEM(Splunk/Sigma) 룰 자동 생성, YARA 시그니처 엔지니어링, 모의해킹 종합 진단 보고서 작성 (CTF ~58%).
+   - `GPT-5.4`: 이상 징후/악용 감지 시 안전 모드 격리 라우팅.
+   - `GPT-4o` 및 구형 표기: 전사 레포지토리 전수 소멸(0건) 원칙 영구 적용.
+2. **Anthropic 최신 계보**:
+   - `Claude Opus 5.5`: 플래그십 장기 에이전틱 코딩, 대규모 코드베이스 취약점 정밀 감사 (`model="claude-opus-5-5"`).
+   - `Claude Fable 5.2 / Mythos 5.1`: 최상위 추론, Project Glasswing 제로데이 자율 탐지 및 익스플로잇.
+   - `Claude Sonnet 5.5 / Haiku 5.5`: 초고속 서브에이전트 및 위협 이벤트 라우팅.
+3. **Google Gemini 최신 계보**:
+   - `Gemini 4 Pro`: 초대형 컨텍스트 및 심층 복합 코드 추론 플래그십.
+   - `Gemini 3.8 Flash`: 초고속 실시간 보안 이벤트 스트리밍 및 퍼징 루프 자동화.
+   - `Gemini Carbon / Hydrogen`: 멀티모달 펌웨어·회로·바이너리 통합 분석 및 엔터프라이즈 분산 자율 보안 에이전트.
+4. **오픈소스/폐쇄망**: `GPT-OSS 120B` (에어갭 환경용 고성능 로컬 보안 추론).
+
+### 6-2. 교재 및 다국어 포털 100% 동기화 현황
+- 11장(AI 기반 사이버보안), 13장(SOC), 17장(레드팀), 31장(AI/ML 보안), 69장(LLM/MCP 보안) 및 4개 국어(KO, EN, JA, ZH) 대문 포털 및 AI 도구 테이블 동기화 완료.
+- 레거시 모델 표기(`GPT-4o`, `claude-3-7`, `opus-4.x`) 0건 완전 소멸 검증 완료.
+

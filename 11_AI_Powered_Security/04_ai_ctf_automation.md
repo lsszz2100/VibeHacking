@@ -353,7 +353,7 @@ def ctf_agent(challenge_description: str, files: list[str] = None,
     # 에이전트 루프 (최대 20회 반복)
     for iteration in range(20):
         response = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-5-5",
             max_tokens=4096,
             system=system_prompt,
             tools=CTF_TOOLS,
@@ -620,7 +620,7 @@ def crypto_agent(problem: str) -> str:
     
     for _ in range(15):
         resp = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-5-5",
             max_tokens=2048,
             system="당신은 CTF 암호학 전문가입니다. 제공된 도구를 사용해 암호를 해독하세요.",
             tools=CRYPTO_TOOLS,
@@ -795,7 +795,7 @@ def web_ctf_agent(problem: str, target_url: str) -> str:
     
     for _ in range(20):
         resp = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-5-5",
             max_tokens=2048,
             system="당신은 웹 보안 CTF 전문가입니다. SQLi, XSS, SSRF, IDOR, 인증 우회 등 웹 취약점을 체계적으로 시도하세요.",
             tools=WEB_TOOLS,
@@ -947,7 +947,7 @@ ZIP 내용: {pipeline_result.get('zip_contents', '해당 없음')}
 플래그를 찾았으면 보고하라. 추가 분석이 필요하면 구체적인 명령어를 제안하라."""
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-5-5",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -1038,7 +1038,7 @@ main 함수 디스어셈블:
 4. 접근 방법 제안 (정적/동적 분석)"""
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-5-5",
         max_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -1144,7 +1144,7 @@ class CTFTeam:
 마크다운 형식으로 풀이 보고서를 작성하라."""
         
         resp = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-5-5",
             max_tokens=2048,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -1450,7 +1450,7 @@ Important:
     
     for iteration in range(20):
         response = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-5-5",
             max_tokens=4096,
             system=system_prompt,
             tools=CTF_TOOLS,
@@ -1549,7 +1549,7 @@ def crypto_agent(problem: str) -> str:
     
     for _ in range(15):
         resp = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-5-5",
             max_tokens=2048,
             system="You are a CTF cryptography expert. Use the provided tools to decrypt ciphers.",
             messages=messages
@@ -1685,7 +1685,7 @@ Analyze the following:
 4. Suggested approach (static/dynamic analysis)"""
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-5-5",
         max_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
     )

@@ -39,7 +39,7 @@ root@vibehacking:~# cat mission.txt
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  이론부터 실습까지, CTF·버그바운티·모의해킹·레드팀에 실전 투입 가능한 수준으로  ║
 ║  정리한 한국어 보안 지식 저장소.                                               ║
-║  2026년 Claude Opus 4·GPT-4o 시대의 AI 기반 취약점 연구부터                   ║
+║  2026년 Claude Opus 5.5·Fable 5.2·GPT-6.1/5.6·Gemini 4 Pro·3.8 Flash 시대 취약점 연구  ║
 ║  클라우드·무선·암호학·OT/ICS까지 완전 정복.                                    ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 root@vibehacking:~# █
@@ -57,7 +57,7 @@ root@vibehacking:~# █
 # VibeHacking Feature Matrix
 features = {
     "실전 코드 우선"  : "모든 섹션 복붙 가능한 완성형 CLI",
-    "AI 통합"        : "Claude + GPT-4o 보안 워크플로",
+    "AI 통합"        : "Claude + GPT-6.1/5.6 보안 워크플로",
     "최신 동향"      : "2026년 AI 보안 생태계 완전 반영",
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
@@ -255,7 +255,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 | # | 섹션 | 핵심 내용 | 난이도 | 파일 |
 |:-:|------|-----------|:------:|:----:|
-| 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Claude Opus 4, GPT-4o, LLM 취약점, CTF 자동화 | ⚫ | 6 |
+| 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Claude Opus 5.5, Fable 5.2, GPT-6.1 / 5.6, Gemini 4 Pro / 3.8 Flash, Carbon | ⚫ | 6 |
 | 12 | [버그바운티](#12-버그바운티) | 방법론, Burp Suite 심화, 자동화 도구 | 🔴 | 6 |
 | 13 | [SOC & Blue Team](#13-soc--blue-team) | SOC 운영, Splunk·QRadar, 위협 헌팅 | 🔴 | 6 |
 | 14 | [클라우드 보안](#14-클라우드-보안) | AWS/Azure/GCP 공격, K8s, 체크리스트 | 🔴 | 6 |
@@ -370,7 +370,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 | 취약 환경 | Metasploitable2, DVWA, HackTheBox, TryHackMe, CloudGoat |
 | 분석 도구 | Wireshark, Burp Suite, IDA Free / Ghidra / x64dbg |
 | 언어 | Python 3.10+, Bash, pwntools 4.x |
-| AI 도구 | Claude Opus 4.6, GPT-4o |
+| AI 도구 | Claude Opus 5.5, Fable 5.2, GPT-6.1 / 5.6, Gemini 4 Pro / 3.8 Flash, Carbon |
 | 무선 | Alfa AWUS036ACH (2.4/5GHz 모니터 모드 지원) |
 | 클라우드 | AWS Free Tier, CloudGoat, Terraform |
 
@@ -542,19 +542,22 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Claude Opus 4·GPT-4o·내부 연구 프로그램 전체 지형도
+├── 01_ai_security_landscape_2026.md   ← Claude Opus 5.5·Fable 5.2·GPT-6.1/5.6·Gemini 4 Pro·3.8 Flash 보안 생태계
 ├── 02_llm_vulnerability_research.md   ← LLM으로 제로데이 발견, AI 퍼징, 코드 분석 자동화
 ├── 03_ai_assisted_pentesting.md       ← AI 보조 침투 테스트 워크플로우, 프롬프트 엔지니어링
 ├── 04_ai_ctf_automation.md            ← CTF 자동화 AI 에이전트, 전문 서브에이전트
-├── 05_claude_gpt_cyber_integration.md ← AI 통합 — Claude + GPT-4o 보안 분석 도구 활용법
+├── 05_claude_gpt_cyber_integration.md ← AI 통합 — Claude + GPT-6.1-Codex / GPT-5.6 보안 분석 도구 활용법
 └── 06_ai_security_ctf_lab.md          ← CTF 스타일 AI 보안 실습
 ```
 
 | 모델 | 주체 | 능력 | 접근 방법 |
 |:----:|:----:|------|:--------:|
-| **Claude Opus 4** | Anthropic | 17년 된 FreeBSD RCE 자율 발견, 수천 개 제로데이 | 내부 연구 프로그램 |
-| **GPT-4o** | OpenAI | 바이너리 리버싱, CTF 76% 자율 해결, YARA 생성 |  |
-| **Claude Opus 4.6** | Anthropic | 코드 취약점 분석, CTF 보조, YARA 자동화 | 일반 접근 가능 |
+| **Claude Opus 5.5** | Anthropic | 대규모 코드베이스 취약점 정밀 분석, CTF 자동화, 자율 보안 에이전트 | 일반 접근 가능 (API / claude.ai) |
+| **Claude Fable 5.2 / Mythos 5.1** | Anthropic | 17년 된 FreeBSD RCE 자율 발견, 심층 위협 추론 및 제로데이 탐지 | 일반 접근(Fable 5.2) / Glasswing(Mythos 5.1) |
+| **GPT-6.1 / GPT-5.6 / Codex** | OpenAI | 바이너리 심층 리버싱, CTF 76%+ 자율 해결, 취약점 분류 및 YARA/Sigma 룰 자동 생성 | 일반 접근 가능 (API / ChatGPT) / TAC |
+| **Gemini 4 Pro** | Google | 심층 복합 추론, 대규모 저장소 제로데이 전수 감사 및 로직 분석 | 일반 접근 가능 (API / AI Studio) |
+| **Gemini 3.8 Flash** | Google | 초고속 실시간 스트리밍 분석, 고속 퍼징 및 다중 서브에이전트 | 일반 접근 가능 (API / AI Studio) |
+| **Gemini Carbon / Hydrogen** | Google | 멀티모달 대규모 컨텍스트 및 분산 에이전트 보안 위협 분석 | 일반 접근 가능 (API / AI Studio) |
 
 **핵심 내용:** AI 보안 생태계 완전 분석, Claude API 기반 취약점 스캐너, AI 보조 침투 테스트 자동화, CTF 풀이 AI 에이전트
 

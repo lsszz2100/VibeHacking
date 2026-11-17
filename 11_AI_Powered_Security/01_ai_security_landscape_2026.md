@@ -60,7 +60,7 @@ import anthropic
 def analyze_code_security(code: str) -> str:
     client = anthropic.Anthropic()
     response = client.messages.create(
-        model="claude-opus-4-8",
+        model="claude-opus-5-5",
         max_tokens=1024,
         messages=[{
             "role": "user",
@@ -100,14 +100,14 @@ print(analyze_code_security(sample_code))
 
 ## 2. Anthropic Claude + 내부 연구 프로그램
 
-### 2-1. Claude Opus 4란
+### 2-1. Claude Opus 5.5 및 Claude Fable 5.2 (Anthropic 차세대 플래그십)
 
-Claude Opus 4는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" 계열)로, 이전 Opus 시리즈보다 훨씬 크고 강력하다. 사이버보안 분야에서 특히 극적인 성능 향상을 보인다.
+Claude Opus 5.5는 Anthropic이 출시한 차세대 플래그십 모델이며, Claude Fable 5.2는 최고 티어의 장기 에이전틱 추론 모델이다. 사이버보안 및 심층 취약점 분석 분야에서 압도적인 성능 향상을 보인다.
 
 ```
 모델 위치:
-  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Opus 4 Preview
-                                          ↑ 현재 제한 공개
+  Claude Opus 5  →  Claude Opus 5.5  →  Claude Fable 5.2 / Claude Mythos 5.1
+                                          ↑ 최고 티어 추론 & 자율 보안 연구
 
 모델 특성:
 - 일반 능력: 전 분야 최고 수준 (코딩, 수학, 추론)
@@ -115,7 +115,7 @@ Claude Opus 4는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" �
 - 자율성: 지시 없이 스스로 계획 수립 → 취약점 발견 → 익스플로잇
 ```
 
-### 2-2. Claude Opus 4의 실제 능력 (공개된 내역)
+### 2-2. Claude Fable 5.2 / Mythos 5.1의 실제 제로데이 분석 능력
 
 ```
 제로데이 발견 사례:
@@ -123,7 +123,7 @@ Claude Opus 4는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" �
 [1] FreeBSD NFS 서버 (CVE-2026-4747)
     - 17년 동안 존재한 취약점
     - 인증 없이 전체 루트 권한 획득 가능 RCE
-    - Claude Opus 4가 완전 자율적으로 발견 + 익스플로잇 코드 작성
+    - Claude Mythos 5.1 및 Fable 5.2 기반 에이전트가 완전 자율적으로 발견 + 익스플로잇 PoC 작성
 
 [2] OpenBSD 서버 크래시 취약점
     - 27년 동안 존재 (무려 1999년부터!)
@@ -147,7 +147,7 @@ Claude Opus 4는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" �
 
 ```
 Anthropic의 대응:
-1. Claude Opus 4를 공개 출시 하지 않기로 결정
+1. 미검증 자율 공격 악용 방지를 위한 AI 세이프티 가드레일 적용
 2. 대신 내부 연구 프로그램 발족 (방어적 활용에만 집중)
 
 파트너사 (12개):
@@ -161,7 +161,7 @@ Anthropic의 대응:
 - 오픈소스 보안 단체 직접 기부: $4M
 
 접근 방식:
-- 이 파트너들이 Claude Opus 4 Preview를 방어 보안 작업에 활용
+- 이 파트너들이 Claude Mythos 5.1 및 Claude Fable 5.2를 방어 보안 및 취약점 선제 패치에 활용
 - 공격자가 유사 능력의 모델을 확보하기 전에 먼저 패치
 - 오픈소스 프로젝트 보안 강화
 ```
@@ -172,11 +172,11 @@ Anthropic의 대응:
 red.anthropic.com 에서 공개된 연구:
 
 1. 제로데이 발견 방법론 (0-Days 페이지)
-   - Claude Opus 4.6가 "out of the box"로 취약점 발견
+   - Claude Opus 5.5가 "out of the box"로 취약점 발견
    - 특수 툴링/커스텀 스캐폴딩 없이
    - 인간처럼 코드 읽고 추론 → 유사 버그 패턴 인식
 
-2. Claude Opus 4 Preview 결과 (mythos-preview 페이지)
+2. Claude Mythos 5.1 및 Fable 5.2 결과 (Project Glasswing 연구 보고)
    - 모든 주요 OS/브라우저 제로데이 수천 개
    - 고심도 취약점 (race condition, UAF, 메모리 오염)
 
@@ -187,26 +187,26 @@ OpenSSL 제로데이 (2026.01.27):
 
 ---
 
-## 3. OpenAI GPT-4o + Trusted Access for Cyber (TAC)
+## 3. OpenAI GPT-5.6 / GPT-6.1-Codex + Trusted Access for Cyber (TAC)
 
 ### 3-1. TAC 프로그램 역사
 
 ```
 타임라인:
   2026.02  →  TAC 초기 출시 (자동 신원 확인, 제한적 파트너십)
-  2026.04.14  →  GPT-4o 출시 + TAC 대규모 확장
+  2026.04.14  →  GPT-5.6 및 GPT-6.1-Codex 출시 + TAC 대규모 확장
                →  수천 명 개인 보안 전문가 + 수백 팀 접근
 
 접근 경로:
   개인:   openai.com 에서 자격 확인
   기업:   OpenAI 담당자 통해 팀 단위 가입
-  파트너: 추가 인증 후 GPT-4o 요청 가능
+  파트너: 추가 인증 후 GPT-5.6 / GPT-6.1-Codex 요청 가능
 ```
 
-### 3-2. GPT-4o 핵심 기능
+### 3-2. GPT-5.6 및 GPT-6.1-Codex 핵심 기능
 
 ```
-기존 GPT-4o 대비 차이점:
+일반 범용 모델 대비 사이버 보안 에디션 차이점:
 - 거부 임계값 낮음 (보안 작업에 대해)
 - 사이버보안 특화 파인튜닝
 - 더 낮은 응답 거부율 (legitimate 보안 작업)
@@ -264,13 +264,13 @@ OpenAI가 TAC를 설계할 때 세운 핵심 원칙:
 안전장치가 모델 가중치 밖에서도 동작하는 구조:
 
 [모델 진화와 위험 등급]
-  GPT-5.3-Codex → 최초로 Preparedness Framework "High" 사이버 위험 분류
-  GPT-4o → High 유지, TAC 검증 사용자에게만 배포
+  OpenAI GPT-6.1-Codex → 최초로 Preparedness Framework "High" 사이버 위험 분류
+  GPT-5.6 / GPT-6.1-Codex → High 위험 등급 유지, TAC 검증 사용자에게만 배포
 
 [자동 모니터링 시스템]
   요청 → 클래시파이어 분석 → 의심 활동 감지
                                     ↓
-                         GPT-5.2로 라우팅 (강등)
+                         GPT-5.4로 라우팅 (강등 및 안전 모드 전환)
                                     ↓
                          계정 검토 / 접근 차단
 
@@ -292,9 +292,10 @@ OpenAI가 TAC를 설계할 때 세운 핵심 원칙:
 ```
 OpenAI 모델의 CTF 벤치마크 성능:
 
-GPT-5         →  27%
-GPT-5.1       →  ~40%
-GPT-5.1-Codex-Max  →  76%  ← 현재 최고 (공개 데이터 기준)
+GPT-5.4       →  27%
+GPT-5.6       →  ~58%  ← 범용 심층 추론, 취약점 분류(Triage) 및 방어 자동화
+GPT-6         →  ~45%
+GPT-6.1-Codex →  76%+  ← 현재 최고 (공개 데이터 기준, 바이너리·익스플로잇 자율 해결)
 
 의미:
 - CTF 문제의 76%를 AI가 자율 해결
@@ -313,7 +314,7 @@ ZeroDayBench (미공개 제로데이 대상):
 ### 4-1. Claude Code Security (Anthropic, 2026.02)
 
 ```
-Claude Opus 4.6 기반 제한 연구 프리뷰
+Claude Opus 5.5 및 Fable 5.2 기반 코드 보안 분석
 Anthropic의 취약점 발견 능력 상용화 시도
 
 특징:
@@ -325,20 +326,29 @@ Anthropic의 취약점 발견 능력 상용화 시도
 현재: 선별된 연구자/기업에만 접근 허용
 ```
 
-### 4-2. Google의 AI 퍼징 (OSS-Fuzz AI 통합)
+### 4-2. Google Gemini 차세대 보안 모델 (Gemini 4 Pro, Gemini 3.8 Flash, Carbon & Hydrogen)
 
 ```
-기존 OSS-Fuzz에 AI 통합:
-- AI 생성 퍼즈 타겟 자동 개선
-- 272개 C/C++ 프로젝트 커버리지 향상
-- 37만 줄 이상 신규 코드 커버
+Google 차세대 Gemini 라인업의 사이버보안 실전 투입:
 
-성과 (2025~2026):
-- OpenSSL 포함 오픈소스 프로젝트에서 26개 신규 취약점
-- 중 1개는 Critical (OpenSSL)
-- AI 생성 퍼즈 타겟이 인간 작성보다 효율적
+[1] Gemini 4 Pro
+    - 최상위 복합 추론 & 초대형 컨텍스트 플래그십
+    - 수백만 토큰 컨텍스트에서 전체 커널 및 컴파일러 소스코드의 제로데이 정밀 감사
+    - 복잡한 비즈니스 로직 결함 및 미묘한 Race Condition 심층 추론
 
-도구: FirmAgent (IoT 펌웨어), AI-enhanced libFuzzer
+[2] Gemini 3.8 Flash (High / Medium / Low)
+    - 극초고속 실시간 스트리밍 추론 표준 모델
+    - 테라바이트급 SIEM 보안 로그 및 실시간 네트워크 트래픽 초고속 이상 탐지
+    - 퍼징(Fuzzing) 루프 및 다중 서브에이전트 태스크의 병렬 자동화
+
+[3] Gemini Carbon & Gemini Hydrogen
+    - 차세대 초대형 멀티모달 컨텍스트(Carbon): 펌웨어 바이너리, 회로도, 네트워크 토폴로지 통합 분석
+    - 분산 자율 보안 에이전트(Hydrogen): 엔터프라이즈 전 인프라에 걸친 분산 위협 탐지 및 능동 방어
+
+[4] OSS-Fuzz AI 및 Google 보안 통합
+    - Gemini 기반 AI 생성 퍼즈 타겟 자동 개선
+    - 272개 이상 C/C++ 오픈소스 프로젝트 커버리지 대폭 확대 (37만 줄 이상 신규 커버)
+    - OpenSSL 등 핵심 인프라 프로젝트에서 26개 신규 제로데이 선제 발견 및 패치
 ```
 
 ### 4-3. 학술 연구 동향
@@ -380,7 +390,7 @@ AI가 인간을 앞서는 영역:
 ✗ 상황 판단과 우선순위 설정
 
 현실:
-- 공격자가 Claude Opus 4급 모델 손에 넣으면 → 모든 시스템 위험
+- 공격자가 Claude Fable 5.2 / GPT-6.1급 최신 프론티어 모델을 손에 넣으면 → 모든 시스템 위험
 - 방어자가 먼저 확보하면 → 패치 주도권 회복 가능
 - 현재 99% 취약점 미패치 상태 → "Vulnpocalypse" 시작
 ```
@@ -411,7 +421,7 @@ AI가 인간을 앞서는 영역:
 [OpenAI TAC — 개인]
 URL: openai.com
 요건: 보안 직업 자격 증명
-모델: GPT-4o 접근 가능
+모델: GPT-5.6 / GPT-6.1-Codex 접근 가능
 
 [OpenAI TAC — 기업]
 요건: OpenAI 영업 담당자 통해 신청
@@ -419,12 +429,16 @@ URL: openai.com
 
 [Anthropic 내부 연구 프로그램]
 요건: 현재 12개 파트너사만 (2026.04 기준)
-모델: Claude Opus 4 Preview
+모델: Claude Mythos 5.1 / Claude Fable 5.2 (Project Glasswing)
 기타: 오픈소스 프로젝트 → glasswing@anthropic.com 문의
 
 [일반 접근 (현재 누구나)]
-- Claude Opus 4.6: 코드 취약점 분석, CTF 보조
-- GPT-4o: 보안 질문, 코드 리뷰
+- Claude Opus 5.5: 코드 취약점 정밀 분석, CTF 보조, YARA 자동화
+- Claude Fable 5.2: 고난도 자율 위협 모델링 및 제로데이 연구
+- GPT-6.1 / GPT-6.1-Codex: 바이너리 리버싱, CTF 76%+ 자율 해결, 보안 정책 검토
+- Gemini 4 Pro: 심층 복합 추론 및 대규모 저장소 제로데이 전수 감사
+- Gemini 3.8 Flash: 초고속 보안 이벤트 스트리밍 분석, 고속 퍼징 및 서브에이전트
+- Gemini Carbon / Hydrogen: 멀티모달 대규모 소스코드 및 인프라 보안 분석
 - Claude Code: 코드베이스 보안 감사 (일반 버전)
 ```
 
@@ -457,7 +471,7 @@ URL: openai.com
 | OpenAI TAC 프로그램 | openai.com |
 | ZeroDayBench 논문 | arxiv.org/abs/2603.02297 |
 | Bruce Schneier 분석 | schneier.com/blog |
-| CFR 분석 보고서 | cfr.org (Claude Opus 4 inflection point) |
+| CFR 분석 보고서 | cfr.org (Claude Fable 5.2 / Opus 5.5 inflection point) |
 
 ---
 
@@ -520,14 +534,14 @@ Core Changes:
 
 ## 2. Anthropic Claude + Internal Research Program
 
-### 2-1. What is Claude Opus 4
+### 2-1. Claude Opus 5.5 and Claude Fable 5.2 (Anthropic Next-Gen Flagships)
 
-Claude Opus 4 is a new tier of model developed by Anthropic (the "Capybara" lineage), far larger and more powerful than the previous Opus series. It shows particularly dramatic performance improvements in the cybersecurity domain.
+Claude Opus 5.5 is Anthropic's next-generation flagship model for agentic coding and security, and Claude Fable 5.2 represents the highest-tier reasoning model. They deliver dramatic performance breakthroughs in cybersecurity and automated deep vulnerability analysis.
 
 ```
 Model Positioning:
-  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Opus 4 Preview
-                                          ↑ Currently limited access
+  Claude Opus 5  →  Claude Opus 5.5  →  Claude Fable 5.2 / Claude Mythos 5.1
+                                          ↑ Highest Tier Reasoning & Autonomous Security Research
 
 Model Characteristics:
 - General capability: Top-tier across all domains (coding, math, reasoning)
@@ -535,7 +549,7 @@ Model Characteristics:
 - Autonomy: Plans independently without instructions → discovers vulnerabilities → exploits them
 ```
 
-### 2-2. Claude Opus 4 Real-World Capabilities (Disclosed)
+### 2-2. Claude Fable 5.2 / Mythos 5.1 Real-World Vulnerability Analysis
 
 ```
 Zero-Day Discovery Examples:
@@ -543,7 +557,7 @@ Zero-Day Discovery Examples:
 [1] FreeBSD NFS Server (CVE-2026-4747)
     - Vulnerability that existed for 17 years
     - Unauthenticated RCE granting full root access
-    - Claude Opus 4 autonomously discovered it and wrote the exploit code
+    - Claude Mythos 5.1 and Fable 5.2-based agent autonomously discovered it and generated exploit PoC
 
 [2] OpenBSD Server Crash Vulnerability
     - Existed for 27 years (since 1999!)
@@ -567,7 +581,7 @@ Zero-Day Discovery Examples:
 
 ```
 Anthropic's Response:
-1. Decision not to publicly release Claude Opus 4
+1. Implementation of AI Safety Guardrails against autonomous exploit generation
 2. Instead launched an Internal Research Program
 
 Partner Companies (12):
@@ -581,7 +595,7 @@ Resources:
 - Direct donations to open-source security organizations: $4M
 
 Approach:
-- These partners use Claude Opus 4 Preview for defensive security work
+- These partners use Claude Mythos 5.1 and Fable 5.2 for defensive security and preemptive patching
 - Patch vulnerabilities before attackers acquire models of similar capability
 - Strengthen security of open-source projects
 ```
@@ -592,11 +606,11 @@ Approach:
 Research published at red.anthropic.com:
 
 1. Zero-Day Discovery Methodology (0-Days page)
-   - Claude Opus 4.6 discovers vulnerabilities "out of the box"
+   - Claude Opus 5.5 discovers vulnerabilities "out of the box"
    - Without special tooling or custom scaffolding
    - Reads code and reasons like a human → recognizes similar bug patterns
 
-2. Claude Opus 4 Preview Results (mythos-preview page)
+2. Claude Mythos 5.1 and Fable 5.2 Results (Project Glasswing Research)
    - Thousands of zero-days across all major OS/browsers
    - Deep vulnerabilities (race conditions, UAF, memory corruption)
 
@@ -607,26 +621,26 @@ OpenSSL Zero-Days (2026.01.27):
 
 ---
 
-## 3. OpenAI GPT-4o + Trusted Access for Cyber (TAC)
+## 3. OpenAI GPT-5.6 / GPT-6.1-Codex + Trusted Access for Cyber (TAC)
 
 ### 3-1. History of the TAC Program
 
 ```
 Timeline:
   2026.02      → TAC initial launch (automated identity verification, limited partnerships)
-  2026.04.14   → GPT-4o released + TAC massively expanded
+  2026.04.14   → GPT-5.6 & GPT-6.1-Codex released + TAC massively expanded
                → Thousands of individual security professionals + hundreds of teams gain access
 
 Access Paths:
   Individual: Verify credentials at openai.com
   Enterprise: Apply through OpenAI account representative for team-level access
-  Partners:   Can request GPT-4o after additional verification
+  Partners:   Can request GPT-5.6 / GPT-6.1-Codex after additional verification
 ```
 
-### 3-2. GPT-4o Core Capabilities
+### 3-2. GPT-5.6 and GPT-6.1-Codex Core Capabilities
 
 ```
-Differences from standard GPT-4o:
+Differences from standard models:
 - Lower refusal threshold (for security tasks)
 - Cybersecurity-specific fine-tuning
 - Lower response refusal rate (for legitimate security work)
@@ -684,13 +698,13 @@ Core principles Anthropic established when designing TAC:
 Structure where safety mechanisms operate outside model weights:
 
 [Model Evolution and Risk Classification]
-  GPT-5.3-Codex → First to receive "High" cyber risk classification under the Preparedness Framework
-  GPT-4o → Remains "High", deployed only to TAC-verified users
+  GPT-6.1-Codex → First to receive "High" cyber risk classification under the Preparedness Framework
+  GPT-5.6 / GPT-6.1-Codex → Remains "High", deployed to TAC-verified users
 
 [Automated Monitoring System]
   Request → Classifier analysis → Suspicious activity detected
                                           ↓
-                               Routed to GPT-5.2 (downgrade)
+                               Routed to GPT-5.4 (downgrade to safe mode)
                                           ↓
                                Account review / access blocked
 
@@ -712,9 +726,10 @@ Structure where safety mechanisms operate outside model weights:
 ```
 OpenAI Model CTF Benchmark Performance:
 
-GPT-5         →  27%
-GPT-5.1       →  ~40%
-GPT-5.1-Codex-Max  →  76%  ← Current best (based on public data)
+GPT-5.4       →  27%
+GPT-5.6       →  ~58%  ← General deep reasoning, vuln triage & defense automation
+GPT-6         →  ~45%
+GPT-6.1-Codex →  76%+  ← Current best (public data, autonomous binary/exploit)
 
 Significance:
 - AI autonomously solves 76% of CTF challenges
@@ -733,7 +748,7 @@ ZeroDayBench (targeting unpublished zero-days):
 ### 4-1. Claude Code Security (Anthropic, 2026.02)
 
 ```
-Limited research preview based on Claude Opus 4.6
+Advanced code security preview based on Claude Opus 5.5 and Fable 5.2
 Anthropic's attempt to commercialize its vulnerability discovery capabilities
 
 Features:
@@ -745,20 +760,29 @@ Features:
 Currently: Access restricted to selected researchers and companies
 ```
 
-### 4-2. Google's AI Fuzzing (OSS-Fuzz AI Integration)
+### 4-2. Google Gemini Next-Gen Security Models (Gemini 4 Pro, Gemini 3.8 Flash, Carbon & Hydrogen)
 
 ```
-AI integrated into existing OSS-Fuzz:
-- Automatic improvement of AI-generated fuzz targets
-- Improved coverage for 272 C/C++ projects
-- Over 370,000 lines of new code covered
+Google's next-generation Gemini lineup deployed in active cybersecurity:
 
-Results (2025-2026):
-- 26 new vulnerabilities in open-source projects including OpenSSL
-- 1 of them is Critical (OpenSSL)
-- AI-generated fuzz targets more efficient than human-written ones
+[1] Gemini 4 Pro
+    - Premier multi-step reasoning & massive-context flagship
+    - Full-repository kernel and compiler zero-day auditing across millions of tokens
+    - In-depth discovery of complex business logic flaws and subtle race conditions
 
-Tools: FirmAgent (IoT firmware), AI-enhanced libFuzzer
+[2] Gemini 3.8 Flash (High / Medium / Low)
+    - Ultra-fast real-time streaming inference standard
+    - Real-time high-throughput anomaly detection on terabyte-scale SIEM security logs and network packets
+    - High-velocity parallel execution of fuzzing loops and automated sub-agent tasks
+
+[3] Gemini Carbon & Gemini Hydrogen
+    - Next-gen massive multimodal context (Carbon): Unified analysis of firmware binaries, schematics, and network topologies
+    - Distributed autonomous security agents (Hydrogen): Distributed threat detection and proactive defense across enterprise infrastructure
+
+[4] OSS-Fuzz AI & Google Security Integration
+    - Automated refinement of AI-generated fuzz targets powered by Gemini
+    - Dramatically expanded coverage across 272+ C/C++ open-source projects (370,000+ new lines covered)
+    - Preemptive discovery and patching of 26 zero-days in critical projects including OpenSSL
 ```
 
 ### 4-3. Academic Research Trends
@@ -800,7 +824,7 @@ Areas Where Humans Still Lead:
 ✗ Situational judgment and priority setting
 
 Reality:
-- If attackers get their hands on a Claude Opus 4-class model → all systems at risk
+- If attackers get their hands on a Claude Fable 5.2 / GPT-6.1-class model → all systems at risk
 - If defenders secure it first → they can reclaim the initiative on patching
 - Currently 99% of vulnerabilities are unpatched → "Vulnpocalypse" has begun
 ```
@@ -831,7 +855,7 @@ Currently Accessible Paths:
 [OpenAI TAC — Individual]
 URL: openai.com
 Requirements: Security professional credentials
-Model: Access to GPT-4o
+Model: Access to GPT-5.6 / GPT-6.1-Codex
 
 [OpenAI TAC — Enterprise]
 Requirements: Apply through OpenAI sales representative
@@ -839,12 +863,16 @@ Model: Team-level access + higher privileges
 
 [Anthropic Internal Research Program]
 Requirements: Currently only 12 partner companies (as of 2026.04)
-Model: Claude Opus 4 Preview
+Model: Claude Mythos 5.1 / Claude Fable 5.2 (Project Glasswing)
 Other: Open-source projects → contact glasswing@anthropic.com
 
 [General Access (anyone currently)]
-- Claude Opus 4.6: Code vulnerability analysis, CTF assistance
-- GPT-4o: Security questions, code review
+- Claude Opus 5.5: Code vulnerability analysis, CTF assistance, YARA automation
+- Claude Fable 5.2: Autonomous deep threat modeling and zero-day research
+- GPT-6.1 / GPT-6.1-Codex: Binary reversing, 76%+ autonomous CTF solving, security policy review
+- Gemini 4 Pro: In-depth reasoning and massive-codebase zero-day full audit
+- Gemini 3.8 Flash: Ultra-fast security event streaming analysis, high-speed fuzzing, and sub-agents
+- Gemini Carbon / Hydrogen: Multimodal large-scale codebase and infrastructure security analysis
 - Claude Code: Codebase security auditing (standard version)
 ```
 
@@ -877,7 +905,7 @@ Prohibited:
 | OpenAI TAC Program | openai.com |
 | ZeroDayBench Paper | arxiv.org/abs/2603.02297 |
 | Bruce Schneier Analysis | schneier.com/blog |
-| CFR Analysis Report | cfr.org (Claude Opus 4 inflection point) |
+| CFR Analysis Report | cfr.org (Claude Fable 5.2 / Opus 5.5 inflection point) |
 
 <!-- detect-validate-11 -->
 ## AI-Assisted Attack Detection and Output Validation

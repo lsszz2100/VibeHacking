@@ -6,7 +6,7 @@
 
 ## 1. 개요 및 2026 자율 AI 에이전트 아키텍처
 
-2026년 현재 Claude Opus 4, GPT-4o, 오픈소스 에이전트 프레임워크는 단순 질의응답을 넘어 **Model Context Protocol (MCP)** 및 Function Calling을 통해 데이터베이스 조회, 쉘 명령어 실행, 브라우징, 이메일 발송 등 실제 환경에 능동적으로 영향을 미치는 작업을 수행합니다.
+2026년 현재 Claude Opus 5.5, Claude Fable 5.2, GPT-6.1, Gemini 4 Pro, Gemini 3.8 Flash, Gemini Carbon 등 최신 프론티어 AI 에이전트 프레임워크는 단순 질의응답을 넘어 **Model Context Protocol (MCP)** 및 Function Calling을 통해 데이터베이스 조회, 쉘 명령어 실행, 브라우징, 이메일 발송 등 실제 환경에 능동적으로 영향을 미치는 작업을 수행합니다.
 
 이러한 도구 호출(Tool Calling) 기능은 편리하지만, **간접 프롬프트 주입(Indirect Prompt Injection, IPI)** 및 **도구 포이즈닝(Tool Poisoning)** 공격에 노출될 경우 공격자가 에이전트의 권한을 탈취하여 내부 인프라를 장악하는 치명적인 위협을 유발합니다.
 

@@ -820,7 +820,7 @@ Respond in JSON format:
 """
     
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-5-5",
         max_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
     )

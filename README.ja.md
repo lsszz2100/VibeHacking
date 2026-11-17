@@ -17,7 +17,7 @@
 <br/>
 
 > 理論から実習まで、CTF・バグバウンティ・ペネトレーションテスト・レッドチームに実戦投入できるレベルでまとめたセキュリティ知識リポジトリ。
-> **2026年Claude・GPT-4o時代**のAIベース脆弱性研究からクラウド・無線・暗号理論まで完全網羅。
+> **2026年Claude・GPT-6.1/GPT-5.6時代**のAIベース脆弱性研究からクラウド・無線・暗号理論まで完全網羅。
 
 **🌐 Language / 言語 / 语言:**
 [한국어](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [中文](README.zh.md)
@@ -34,8 +34,8 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 **VibeHackingの強み:**
 
 - **コード優先** — 全セクションにコピー＆ペースト可能なコマンドとコードを収録
-- **AI統合** — Claude/GPT-4oをセキュリティ分析ツールとして活用する方法を解説
-- **最新動向反映** — Anthropic Claude、OpenAI GPT-4oなどAI最先端セキュリティエコシステムを網羅
+- **AI統合** — ClaudeやGPT-6.1/GPT-5.6をセキュリティ分析ツールとして活用する方法を解説
+- **最新動向反映** — Anthropic Claude、OpenAI GPT-6.1/GPT-5.6、Google GeminiなどAI最先端セキュリティエコシステムを網羅
 - **多言語対応** — 韓国語・英語・日本語・中国語で提供
 - **完全なカバレッジ** — バグバウンティ・SOC・クラウド・WiFi・暗号理論・レッドチームまで全領域
 
@@ -176,7 +176,7 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 | 08 | [Pythonハッキング](#08-pythonハッキング) | ツール開発、ネットワークスキャナ、Web自動化 | 6 |
 | 09 | [エクスプロイト技法](#09-エクスプロイト技法) | ROP Chain、SEH、Linux BOF、権限昇格 | 6 |
 | 10 | [ペネトレーションテスト方法論](#10-ペネトレーションテスト方法論) | ペンテスト手順、OSINT偵察、報告書作成 | 6 |
-| 11 | [**AIを活用したサイバーセキュリティ**](#11-aiを活用したサイバーセキュリティ) | Claude Opus 4、GPT-4o、LLM脆弱性研究、CTF自動化 | 6 |
+| 11 | [**AIを活用したサイバーセキュリティ**](#11-aiを活用したサイバーセキュリティ) | Claude Opus 5.5、Fable 5.2、GPT-6.1 / 5.6、Gemini 4 Pro / 3.8 Flash、Carbon | 6 |
 | 12 | [**バグバウンティ**](#12-バグバウンティ) | 方法論、Burp Suite上級、自動化ツール | 6 |
 | 13 | [**SOC & Blue Team**](#13-soc--blue-team) | SOC運用、Splunk分析、脅威ハンティング | 6 |
 | 14 | [**クラウドセキュリティ**](#14-クラウドセキュリティ) | AWS/Azure/GCP攻撃ベクター、ペンテスト、チェックリスト | 6 |
@@ -274,7 +274,7 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 | 脆弱な環境 | Metasploitable2、DVWA、HackTheBox、TryHackMe、CloudGoat |
 | 分析ツール | Wireshark、Burp Suite、IDA Pro / Ghidra、x64dbg |
 | 言語 | Python 3.x、Bash、pwntools |
-| AIツール | Claude Opus 4.6、GPT-4o（） |
+| AIツール | Claude Opus 5.5、Fable 5.2、GPT-6.1 / 5.6、Gemini 4 Pro / 3.8 Flash、Carbon |
 | 無線 | Alfa AWUS036ACH（2.4/5GHzモニターモード対応） |
 | クラウド | AWS Free Tier、CloudGoat |
 
@@ -446,11 +446,11 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Claude・GPT-4o・내부 연구 프로그램全体俯瞰
+├── 01_ai_security_landscape_2026.md   ← Claude・GPT-6.1/5.6・Google Geminiセキュリティ全体俯瞰
 ├── 02_llm_vulnerability_research.md   ← LLMによるゼロデイ発見、AIファジング、コード分析自動化
 ├── 03_ai_assisted_pentesting.md       ← AI支援ペンテストワークフロー、プロンプトエンジニアリング
 ├── 04_ai_ctf_automation.md            ← CTF自動化AIエージェント、暗号/Web/フォレンジクス専門サブエージェント
-├── 05_claude_gpt_cyber_integration.md ← AI統合 — Claude + GPT-4oセキュリティ分析ツールガイド
+├── 05_claude_gpt_cyber_integration.md ← AI統合 — Claude + GPT-6.1-Codex / GPT-5.6セキュリティ分析ツールガイド
 └── 06_ai_security_ctf_lab.md          ← CTF形式AIセキュリティラボ
 ```
 
@@ -458,9 +458,12 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 
 | モデル | 組織 | 能力 | アクセス方法 |
 |-------|------|------|------------|
-| **Claude Opus 4** | Anthropic | 17年間放置されたFreeBSD RCEを自律発見、数千のゼロデイ | 내부 연구 프로그램（12パートナー企業のみ） |
-| **GPT-4o** | OpenAI | バイナリリバーシング、CTF 76%自律解決、YARA生成 | （openai.com） |
-| **Claude Opus 4.6** | Anthropic | コード脆弱性分析、CTF補助、YARA自動化 | 一般公開 |
+| **Claude Opus 5.5** | Anthropic | 大規模コードベース脆弱性精密分析、CTF自動化、自律セキュリティエージェント | 一般利用可能（API / claude.ai） |
+| **Claude Fable 5.2 / Mythos 5.1** | Anthropic | 17年間放置されたFreeBSD RCEを自律発見、深層脅威推論およびゼロデイ検出 | 一般利用可能(Fable 5.2) / Glasswing(Mythos 5.1) |
+| **GPT-6.1 / GPT-6.1-Codex** | OpenAI | バイナリ深層リバーシング、CTF 76%+自律解決、YARA/Sigma自動生成 | 一般利用可能（API / ChatGPT） |
+| **Gemini 4 Pro** | Google | 深層複合推論、大規模リポジトリゼロデイ全数監査およびロジック分析 | 一般利用可能（API / AI Studio） |
+| **Gemini 3.8 Flash** | Google | 超高速リアルタイムストリーミング分析、高速ファジングおよびサブエージェント | 一般利用可能（API / AI Studio） |
+| **Gemini Carbon / Hydrogen** | Google | マルチモーダル大規模コンテキストおよび分散エージェント脅威分析 | 一般利用可能（API / AI Studio） |
 
 **主要内容:** AIセキュリティエコシステム完全分析、Claude APIベースの脆弱性スキャナ実装、AI支援ペンテスト自動化、CTF解法AIエージェント（暗号/Web/フォレンジクス/リバーシング専門サブエージェント含む）
 

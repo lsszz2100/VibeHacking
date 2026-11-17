@@ -243,7 +243,7 @@ SYSTEM_PROMPT = """당신은 'CompanyBot'입니다. 아래 규칙을 반드시 �
 @app.command()
 def chat(
     user_input: str = typer.Argument(..., help="사용자 메시지"),
-    model: str = "claude-opus-4-7",
+    model: str = "claude-opus-5-5",
 ) -> None:
     resp = client.messages.create(
         model=model,
@@ -374,7 +374,7 @@ POISONED_HTML = """<html><body>
 
 def summarize_with_llm(html: str, client: Anthropic) -> str:
     resp = client.messages.create(
-        model="claude-opus-4-7",
+        model="claude-opus-5-5",
         max_tokens=512,
         system="당신은 웹페이지를 중립적으로 요약하는 보조원입니다.",
         messages=[{
@@ -1083,7 +1083,7 @@ def main() -> None:
     for line in JAILBREAK_CORPUS.read_text().splitlines():
         item = json.loads(line)
         r = client.messages.create(
-            model="claude-opus-4-7",
+            model="claude-opus-5-5",
             max_tokens=512,
             messages=[{"role": "user", "content": item["prompt"]}],
         )
