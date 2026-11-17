@@ -115,7 +115,7 @@ class AIDefenseLayer:
 
         # AI 쿼리
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5.4",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_input}
@@ -1068,7 +1068,7 @@ def score_request(prompt: str, session_risk: list[float]) -> dict:
 
 ```bash
 # 방어 회귀 테스트: garak 를 정기 실행해 가드레일 차단율을 추적(소유 엔드포인트)
-python -m garak --model_type openai --model_name gpt-4o-mini \
+python -m garak --model_type openai --model_name gpt-5.4 \
   --probes promptinject,leakreplay --report_prefix nightly_guardrail
 # 리포트의 pass rate 가 기준선 아래로 떨어지면 방어 회귀 → CI 게이트로 차단
 # (예: pass_rate < 0.95 이면 빌드 실패 처리)
@@ -1430,7 +1430,7 @@ Since this document covers defensive controls, here we go beyond *does the contr
 
 ```bash
 # Defense regression test: run garak on a schedule to track guardrail block rate (own endpoint)
-python -m garak --model_type openai --model_name gpt-4o-mini \
+python -m garak --model_type openai --model_name gpt-5.4 \
   --probes promptinject,leakreplay --report_prefix nightly_guardrail
 # If the report pass rate drops below baseline -> defense regression -> gate in CI
 # (e.g. fail the build when pass_rate < 0.95)

@@ -942,7 +942,7 @@ AI 공격은 *무엇이 가능한가*를 다루지만, 방어자 관점에서는
 ```bash
 # 1) garak 로 LLM 취약점(프롬프트 인젝션 등)을 실제 스캔해 가드레일이 막는지 검증
 #    (자신이 소유/통제하는 모델·엔드포인트에만 실행)
-python -m garak --model_type openai --model_name gpt-4o-mini --probes promptinject
+python -m garak --model_type openai --model_name gpt-5.4 --probes promptinject
 # 2) API 게이트웨이에 레이트 리밋이 실제 적용됐는지 사실 확인(예: nginx)
 grep -RnE 'limit_req|limit_conn' /etc/nginx/ 2>/dev/null || echo 'NO RATE LIMIT CONFIGURED'
 ```
@@ -1812,7 +1812,7 @@ AI attacks describe *what is possible*, but defenders must verify **what telemet
 
 ```bash
 # 1) Scan your own LLM/endpoint with garak to verify guardrails block known probes
-python -m garak --model_type openai --model_name gpt-4o-mini --probes promptinject
+python -m garak --model_type openai --model_name gpt-5.4 --probes promptinject
 # 2) Confirm rate limiting is actually applied at the API gateway (e.g. nginx)
 grep -RnE 'limit_req|limit_conn' /etc/nginx/ 2>/dev/null || echo 'NO RATE LIMIT CONFIGURED'
 ```

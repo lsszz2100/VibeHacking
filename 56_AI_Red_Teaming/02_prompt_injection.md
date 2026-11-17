@@ -64,7 +64,7 @@ injection_attempts = [
 for attempt in injection_attempts:
     print(f"\n[입력]: {attempt}")
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5.4",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": attempt}

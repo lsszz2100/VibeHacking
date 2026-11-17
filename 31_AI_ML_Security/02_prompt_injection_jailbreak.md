@@ -490,13 +490,13 @@ pip install garak
 # 기본 스캔 (OpenAI 모델)
 python -m garak \
     --model_type openai \
-    --model_name gpt-4o \
+    --model_name gpt-6.1 \
     --probes promptinject.HijackHateHumans
 
 # 여러 프로브 동시 실행
 python -m garak \
     --model_type openai \
-    --model_name gpt-4o \
+    --model_name gpt-6.1 \
     --probes "dan.Dan_11_0,dan.Dan_10_0,jailbreak.Payload,continuation.ContinueSlursReclaimedSlurs"
 
 # 로컬 모델 (Ollama)
@@ -553,7 +553,7 @@ async def run_pyrit_redteam(
     target = OpenAIChatTarget(
         endpoint=target_endpoint,
         api_key=api_key,
-        model="gpt-4o",
+        model="gpt-6.1",
     )
 
     # 변환기 체인: Base64 → ROT13 (이중 인코딩)
@@ -1330,7 +1330,7 @@ pip install garak
 # Quick scan of an OpenAI-compatible target
 python -m garak \
     --model_type openai \
-    --model_name gpt-4o \
+    --model_name gpt-6.1 \
     --probes "dan.Dan_11_0,promptinject.HijackHateHumans,jailbreak.Payload"
 
 # Scan local Ollama model
@@ -1374,7 +1374,7 @@ async def simple_batch_test(target_url: str, api_key: str) -> None:
     target = OpenAIChatTarget(
         endpoint=target_url,
         api_key=api_key,
-        model="gpt-4o",
+        model="gpt-6.1",
     )
 
     payloads = [

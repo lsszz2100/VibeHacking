@@ -114,7 +114,7 @@ class ValidationResult:
 class LLMConfig:
     api_host: str = "api.openai.com"
     api_path: str = "/v1/chat/completions"
-    model: str = "gpt-4o-mini"
+    model: str = "gpt-5.4"
     max_tokens: int = 512
     temperature: float = 0.7
 
@@ -235,7 +235,7 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--prompt", required=True, help="LLM에 보낼 메시지")
-    parser.add_argument("--model", default="gpt-4o-mini", help="사용할 모델명")
+    parser.add_argument("--model", default="gpt-5.4", help="사용할 모델명")
     parser.add_argument("--system", default="You are a helpful assistant.", help="시스템 프롬프트")
     parser.add_argument("--key-file", type=Path, help="API 키 파일 경로")
     parser.add_argument("--validate-only", action="store_true", help="검증만 수행 (API 호출 없음)")
@@ -491,7 +491,7 @@ python3 01_llm_security_fundamentals.py \
 export OPENAI_API_KEY=sk-...
 python3 01_llm_security_fundamentals.py \
   --prompt "Explain what a firewall does" \
-  --model gpt-4o-mini
+  --model gpt-5.4
 ```
 
 ---
