@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  autonomous_defense_agent_lab:
+    build: .
+    container_name: vhack-lab63-auto-defense
+    ports:
+      - "127.0.0.1:8063:8063"
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - LAB_ID=63
+      - LAB_NAME=AutonomousDefenseAgentLab

@@ -647,6 +647,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [18, 25, 47, 54, 61],
     },
+    "63": {
+        "name": "자율 사이버 방어 에이전트 & 실시간 인시던트 오케스트레이션 랩",
+        "dir":  "63_autonomous_defense_agent_lab",
+        "desc": "AutonomousDefenseAgentLab: 보안 텔레메트리 인제스천 오염 및 프롬프트 인젝션 차단 방어 · 환각/오염된 침해사고 대응 플레이북 실행 및 AST 정적 검증 방어 · 자율 격리 정책 드리프트 및 eBPF Dual-Stack (IPv4+IPv6) 완전 격리 방어 · SOAR 조치 원장 위조 및 HMAC-SHA256 암호학적 서명(Attestation) 검증",
+        "url":  "웹 콘솔 & ACD 오케스트레이터: http://localhost:8063",
+        "difficulty": "★★★★★",
+        "related": [18, 23, 25, 47, 54, 62],
+    },
 }
 
 LABS_METADATA = LABS

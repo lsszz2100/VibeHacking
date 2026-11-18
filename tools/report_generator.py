@@ -613,6 +613,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM07:2025",
         "owasp_name": "Insecure Plugin & Tool Design (Confused Deputy & Indirect Prompt Injection)",
     },
+    "63": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "침해사고 탐지 및 분석 (자율 방어 에이전트 텔레메트리 무결성 및 인시던트 오케스트레이션)",
+        "nist_csf_id": "DE.AE-02",
+        "nist_csf_name": "Anomalous Activity Analyzed & Incident Mitigated (Dual-Stack eBPF Quarantine & Signed SOAR Ledger)",
+        "owasp_id": "LLM06:2025",
+        "owasp_name": "Excessive Agency & Poisoned Remediation Playbook Execution",
+    },
 }
 
 @dataclass
@@ -1772,6 +1780,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Enforce strict Pydantic JSON Schema validation (forbid extra fields), implement Chroot/Sandbox jail with safe path canonicalization and SSRF IP filters, deploy DLP prompt injection sanitizers and secret redactors, and mandate HMAC-SHA256 tool call attestation with G1-G3 human approval."
             }
         ]
+    },
+    "63": {
+        "title": "63 AutonomousDefenseAgentLab Autonomous Cyber Defense Agent & Real-time Incident Orchestration",
+        "category": "AI Security, Autonomous Cyber Defense (ACD) & SOAR Incident Orchestration",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6301",
+                "name": "Telemetry Ingestion Prompt Injection, Poisoned Playbook Execution & SOAR Rollback Tampering in Autonomous Defense Agent",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+                "mitre_id": "T1562",
+                "mitre_technique": "Impair Defenses: Autonomous Defense Agent Sabotage",
+                "mitre_tactic": "Defense Evasion / Impact",
+                "impact": "Adversary injects adversarial prompt into security event telemetry to suppress alerts, induces agent to execute self-harming remediation playbooks (slop package squatting & destructive commands), bypasses IPv4 quarantine via IPv6/DNS C2 tunnels, and tampers with unauthenticated SOAR rollback ledger to dismantle defensive containment.",
+                "description": "Autonomous defense pipeline accepts unparsed log payloads, lacks AST validation and pre-flight dry-run for generated remediation scripts, omits dual-stack IPv6 eBPF quarantine rules, and allows arbitrary SOAR action rollbacks without cryptographic signature or G3 human approval.",
+                "affected_component": "AutonomousDefenseAgentLab ACD Orchestrator (Port 8063)",
+                "remediation": "Deploy structured log parser with Dual-LLM prompt injection sanitizers, enforce Python AST command/import whitelist with virtual sandbox dry-run, implement eBPF XDP Dual-Stack (IPv4+IPv6) quarantine with continuous policy reconciliation, and mandate HMAC-SHA256 immutable action ledger with G3 human-in-the-loop attestation."
+            }
+        ]
     }
 }
 
@@ -1781,7 +1807,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """62개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """63개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

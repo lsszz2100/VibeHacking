@@ -35,6 +35,23 @@ const UBIQUITY_WAIVER = 5;
    anything else under the threshold fails the run. */
 const ALLOWLIST = new Map([
   ['t0_source -> t2_sqlcomment', 'HTML comment syntax happens to be the SQL comment token'],
+  // Track 75 autosec domain terms
+  ['t0_autosec_autonomous_soc_agent_architecture -> t1_ptpipeline', 'Telemetry pipeline architecture in SOC agent'],
+  ['t0_autosec_telemetry_prompt_injection_threat_model -> t1_syslog', 'Telemetry threat model references syslog inputs'],
+  ['t0_autosec_remediation_playbook_hallucination_risks -> t0_hallucination', 'Playbook safety analysis evaluates hallucination hazards'],
+  ['t0_autosec_owasp_llm06_excessive_agency_compliance -> t2_agency', 'OWASP LLM06 compliance addresses excessive agency'],
+  ['t1_autosec_unicode_homoglyph_log_injection_mitigation -> t4_oshomoglyph', 'Log sanitization covers homoglyph attacks'],
+  ['t1_autosec_canary_token_alarm_telemetry_watermarking -> t4_canary', 'Telemetry watermarking uses canary tokens'],
+  ['t1_autosec_sigma_rule_ast_parsing_and_validation -> t2_sigma', 'Detection rule AST parsing analyzes Sigma rules'],
+  ['t1_autosec_quarantine_action_least_privilege_scoping -> t2_k8sauthz', 'Quarantine action scoping enforces RBAC'],
+  ['t1_autosec_alert_storm_deduplication_and_rate_limiting -> t4_ptfatigue', 'Alert deduplication mitigates alert fatigue'],
+  ['t2_autosec_destructive_command_heuristic_and_dryrun -> t0_dd', 'Destructive command list includes dd'],
+  ['t2_autosec_destructive_command_heuristic_and_dryrun -> t4_ghheuristic', 'Pre-flight dryrun applies command heuristic'],
+  ['t2_autosec_slop_package_typosquatting_defense -> t0_sctypo', 'Supply chain package defense counters typosquatting'],
+  ['t2_autosec_ebpf_xdp_ipv4_ipv6_dual_stack_quarantine -> t2_ebpfxdpaction', 'eBPF XDP containment program applies XDP_DROP'],
+  ['t2_autosec_linux_cgroup_cpu_memory_throttling -> t0_inference', 'Agent resource throttling during model inference'],
+  ['t3_autosec_ed25519_asymmetric_forensic_evidence_signing -> t1_pcap', 'Forensic evidence capture includes PCAP data'],
+  ['t4_autosec_autonomous_threat_hunting_hypothesis_engine -> t2_pthypothesis', 'Threat hunting engine formulates hypothesis'],
   // Track 74 aimcp domain terms
   ['t1_aimcp_prototype_pollution_via_json_arguments -> t3_proto', 'Prototype pollution analysis references __proto__ property'],
   ['t1_aimcp_parameter_type_confusion_and_coercion -> t4_pwntypeconfusion', 'Tool argument type confusion evaluation'],
