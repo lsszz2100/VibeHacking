@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vibe Hacking Wargame</title>
-<meta name="description" content="브라우저에서 가짜 셸(connect, cat, submit)로 즐기는 74개 트랙, 2,590개 단계별 사이버보안 침투 워게임. A browser-based, terminal-style cybersecurity infiltration wargame.">
+<meta name="description" content="브라우저에서 가짜 셸(connect, cat, submit)로 즐기는 76개 트랙, 2,660개 단계별 사이버보안 침투 워게임. A browser-based, terminal-style cybersecurity infiltration wargame.">
 <meta name="keywords" content="사이버보안 워게임, CTF, 해킹 실습, 브라우저 워게임, 침투 테스트, cybersecurity wargame, CTF challenges, red team simulation, offensive security">
 <meta name="author" content="lsszz2100">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VibeHacking Wargame">
 <meta property="og:title" content="VibeHacking Wargame — 브라우저 터미널 실전 사이버보안 침투 CTF">
-<meta property="og:description" content="브라우저에서 가짜 셸로 표적 vibe.corp의 5대 보안 계층을 침투하는 74개 트랙 2,590개 단계별 사이버보안 워게임.">
+<meta property="og:description" content="브라우저에서 가짜 셸로 표적 vibe.corp의 5대 보안 계층을 침투하는 76개 트랙 2,660개 단계별 사이버보안 워게임.">
 <meta property="og:url" content="https://lsszz2100.github.io/VibeHacking/wargame/">
 <meta property="og:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
 <!-- Twitter / X Cards -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="VibeHacking Wargame — 브라우저 터미널 사이버보안 침투 CTF">
-<meta name="twitter:description" content="브라우저에서 즐기는 단계별 74개 트랙 2,590개 사이버보안 침투 챌린지. 실시간 터미널 & 22대 취약점 시뮬레이터 탑재.">
+<meta name="twitter:description" content="브라우저에서 즐기는 단계별 76개 트랙 2,660개 사이버보안 침투 챌린지. 실시간 터미널 & 32대 취약점 시뮬레이터 탑재.">
 <meta name="twitter:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 
 <!-- Schema.org Structured Data -->
@@ -34,7 +34,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "VibeHacking Wargame",
-  "description": "A browser-based terminal simulation wargame with 74 tracks and 2,590 progressive cybersecurity infiltration challenges.",
+  "description": "A browser-based terminal simulation wargame with 76 tracks and 2,660 progressive cybersecurity infiltration challenges.",
   "applicationCategory": "EducationalApplication, GameApplication",
   "operatingSystem": "All modern browsers",
   "offers": {
@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/2625</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/2660</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -175,6 +175,7 @@
         <button class="pg-tab" data-tab="ebpfshield">🐝 eBPF Kernel Shield</button>
         <button class="pg-tab" data-tab="hypervisorescape">⚡ MicroVM &amp; Hypervisor Escape</button>
         <button class="pg-tab" data-tab="confidential">🔒 Confidential Computing &amp; TEE</button>
+        <button class="pg-tab" data-tab="autosec">🤖 Autonomous Cyber Defense</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -1395,6 +1396,56 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="confidentialAuditBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: TEE ENFORCED</span>
                 </div>
                 <div id="confidentialAuditView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 28. Autonomous Defense & SOAR eBPF Inspector Panel -->
+        <div id="pgPanel-autosec" class="pg-panel">
+          <div class="confidential-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn success" data-autosec-preset="clean">1. Clean Telemetry Ingestion</button>
+              <button class="pg-btn danger" data-autosec-preset="prompt_inj">2. Telemetry Prompt Injection Bypass</button>
+              <button class="pg-btn danger" data-autosec-preset="ast_exploit">3. Dangerous Playbook AST Shellcode</button>
+              <button class="pg-btn success" data-autosec-preset="g3_approval">4. G3 Cryptographic Arbitration</button>
+              <a href="simulators/autosec_sim.html" target="_blank" class="pg-btn" style="color:var(--amber);text-decoration:none;border-color:var(--amber);">🚀 Launch Standalone Visual Simulator</a>
+            </div>
+            <div class="confidential-controls-row" style="display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap;">
+              <div class="confidential-ctrl-group">
+                <label class="dim" style="font-size:11px;">Defense Pipeline Mode:</label>
+                <select id="autosecModeSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="pipeline_auto" selected>Autonomous Closed-Loop (Sanitize + AST + Dual-Stack eBPF)</option>
+                  <option value="pipeline_strict">Strict Human-in-the-Loop G3 Arbitration Required</option>
+                  <option value="pipeline_audit">Auditing &amp; HMAC Ledger Replay Mode</option>
+                </select>
+              </div>
+              <div class="confidential-ctrl-group">
+                <label class="dim" style="font-size:11px;">Attack Vector Type:</label>
+                <select id="autosecVectorSelect" style="font-family:var(--mono);font-size:11px;background:#010603;color:var(--txt);border:1px solid var(--line);padding:4px 8px;border-radius:3px;">
+                  <option value="clean_ingest" selected>Standard Distributed Ingress Spike</option>
+                  <option value="prompt_injection">Prompt Injection / Instruction Override in Syslog</option>
+                  <option value="ast_dangerous_call">Malicious Playbook AST Arbitrary OS Call</option>
+                  <option value="blast_critical">Core Subnet BGP/Dual-Stack Blackhole</option>
+                </select>
+              </div>
+              <button id="autosecExecuteBtn" class="pg-btn">Simulate Defense Pipeline</button>
+              <button id="autosecResetBtn" class="pg-btn dim">Reset Simulation</button>
+            </div>
+            <div class="confidential-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="confidential-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🤖 Telemetry Sanitizer &amp; Playbook AST Inspector</span>
+                  <span id="autosecAstBadge" class="token-tag token-lit" style="background:#16a34a;color:#fff;">AST: VERIFIED SAFE</span>
+                </div>
+                <div id="autosecAstView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
+              </div>
+              <div class="confidential-card" style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;">
+                <div class="pane-title" style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                  <span>🐝 eBPF Dual-Stack XDP &amp; HMAC Signed Ledger</span>
+                  <span id="autosecLedgerBadge" class="token-tag" style="background:#16a34a;color:#fff;">VERDICT: DEFENSE ENFORCED</span>
+                </div>
+                <div id="autosecLedgerView" class="ast-view" style="min-height:220px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;line-height:1.4;"></div>
               </div>
             </div>
           </div>

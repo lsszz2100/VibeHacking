@@ -49,7 +49,7 @@
     39. `69_LLM_Security/08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md` (AI 에이전트 탈출 공격·Landlock LSM 비특권 샌드박스 & eBPF 듀얼 런타임 방어 심층 분석: 간접 프롬프트 주입 IPI, 도구 탈취 Confused Deputy, Linux 5.13+ Landlock LSM 무특권 자가 격리, Cilium Tetragon eBPF sys_enter_execve 0ms Sigkill 차단)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화 (26개 섹션 목차 테이블 코드 누출 전면 정제 완료)
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 63개 골든 실전 랩 완비** (`labs/01` ~ `labs/63`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 64개 골든 실전 랩 완비** (`labs/01` ~ `labs/64`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (포트: `8021`)
@@ -95,8 +95,9 @@
   - **Lab 61 (ZeroTrustApiGatewayLab)**: 제로 트러스트 API 게이트웨이 & 워크로드 신원 방어 실전 랩 (포트: `8061`, `127.0.0.1` 루프백 격리, Stage 1: Envoy WASM 헤더 스머글링 vs 엄격 mTLS SAN URI 검증, Stage 2: SPIFFE SVID 위조 토큰 vs SPIRE 워크로드 API 증명, Stage 3: 베어러 토큰 재전송 탈취 vs RFC 9449 DPoP 소유 증명 바인딩, Stage 4: GraphQL AST 심도 폭탄 vs Query Complexity & Rate Limiter 4단계 구축)
   - **Lab 62 (AiAgentMcpSecurityLab)**: AI 에이전트 MCP 보안 & 샌드박싱 실전 랩 (포트: `8062`, `127.0.0.1` 루프백 격리, Stage 1: MCP Tool Shadowing vs 서명 기반 스키마 화이트리스팅, Stage 2: Indirect Prompt Injection IPI vs Dual-LLM 가드레일, Stage 3: Confused Deputy 권한 오용 vs 세분화된 RBAC & 도구 권한 스코프, Stage 4: Landlock LSM 샌드박스 탈출 vs seccomp-bpf/Landlock 차단)
   - **Lab 63 (AutonomousDefenseAgentLab)**: AI 자율 방어 & 사이버 디펜스 에이전트 실전 랩 (포트: `8063`, `127.0.0.1` 루프백 격리, Stage 1: 텔레메트리 로그 주입 IPI vs 인제스천 살균 정규식 경계 차단, Stage 2: 오염된 플레이북 & 환각 Slop 패키지 실행 vs 파이썬 AST 정적 구문 분석 & 사전 모의실행 드라이런 게이트, Stage 3: IPv4 격리 정책 드리프트 우회 vs 커널 eBPF Dual-Stack XDP 드라이버 자율 격리 및 1초 주기 실시간 정책 조정 루프, Stage 4: SOAR 조치 원장 무단 변조 및 롤백 vs HMAC-SHA256 디지털 서명 체인 및 G3 인간 승인 인가 게이트 4단계 구축)
-- **브라우저 & 터미널 워게임**: **총 75개 트랙 / 2,625문제** 달성 (`wargame/index.html`, HUD `0/2625`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 75개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
+  - **Lab 64 (ContainerEscapeLsmLab)**: eBPF LSM 기반 컨테이너 탈출 방어 & 커널 런타임 보안 실전 랩 (포트: `8064`, `127.0.0.1` 루프백 격리, Stage 1: 비특권 User Namespace 매핑 권한 상승 vs `bpf_lsm_userns_create` 인커널 차단, Stage 2: cgroup v2 release_agent 탈출 vs `bpf_lsm_file_open` 의사파일계통 쓰기 봉쇄, Stage 3: runc 누출 파일 디스크립터 탈출 CVE-2024-21626 vs `bpf_lsm_file_receive` 디렉터리 경계 탈출 차단, Stage 4: 런타임 제로트러스트 eBPF 링버퍼 실시간 모니터링 & 즉시 사살 격리 4단계 구축)
+- **브라우저 & 터미널 워게임**: **총 76개 트랙 / 2,660문제** 달성 (`wargame/index.html`, HUD `0/2660`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 76개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
   - **Web Audio API 8-bit 치프튠 사운드 FX 엔진**: 브라우저 사운드 합성 탑재

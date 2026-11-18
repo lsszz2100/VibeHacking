@@ -621,6 +621,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM06:2025",
         "owasp_name": "Excessive Agency & Poisoned Remediation Playbook Execution",
     },
+    "64": {
+        "kisa_id": "2.10.5",
+        "kisa_name": "단말 및 런타임 보안 (eBPF LSM 컨테이너 탈출 및 커널 인라인 방어)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "Platforms & Container Runtimes Hardened (eBPF LSM Runtime Shield & Sigkill Containment)",
+        "owasp_id": "K04:2025",
+        "owasp_name": "Inadequate Container Sandboxing & User Namespace Breakout",
+    },
 }
 
 @dataclass
@@ -1798,6 +1806,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Deploy structured log parser with Dual-LLM prompt injection sanitizers, enforce Python AST command/import whitelist with virtual sandbox dry-run, implement eBPF XDP Dual-Stack (IPv4+IPv6) quarantine with continuous policy reconciliation, and mandate HMAC-SHA256 immutable action ledger with G3 human-in-the-loop attestation."
             }
         ]
+    },
+    "64": {
+        "title": "64 ContainerEscapeLsmLab eBPF LSM Container Escape & Kernel Runtime Shield",
+        "category": "Cloud & Kernel Security, eBPF LSM Runtime Defense",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6401",
+                "name": "User Namespace Capability Escalation, Cgroup Overwrite & Leaked File Descriptor Container Breakout",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1611",
+                "mitre_technique": "Escape to Host: Container Runtime & Kernel Breakout",
+                "mitre_tactic": "Privilege Escalation / Defense Evasion",
+                "impact": "Unprivileged container process executes unshare(CLONE_NEWUSER) to escalate capabilities, overwrites cgroup release_agent / procfs kernel parameters, traverses leaked host file descriptors (CVE-2024-21626) to breach host filesystem, and pivots out of container namespace boundary.",
+                "description": "Container runtime allows unprivileged user namespace creation without LSM boundary constraints, permits writes to sensitive pseudofilesystems, leaks host directory handles across execve boundaries, and lacks kernel-level dynamic breakout killswitch mechanisms.",
+                "affected_component": "ContainerEscapeLsmLab Kernel Sensor (Port 8064)",
+                "remediation": "Enforce eBPF LSM bpf_lsm_userns_create and bpf_lsm_capable hooks to deny unprivileged userns creation (-EPERM), apply W^X policy on cgroup/procfs via bpf_lsm_file_open, enforce resolve_beneath path boundary validation, and deploy autonomous bpf_send_signal(SIGKILL) runtime containment with cgroup freezing."
+            }
+        ]
     }
 }
 
@@ -1807,7 +1833,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """63개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """64개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

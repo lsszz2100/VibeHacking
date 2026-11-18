@@ -2844,6 +2844,58 @@ for (const id of DROIDPWN_WINCLIENT_IDS) {
   });
 }
 
+const LSMSEC_IDS = [
+  "t0_lsmsec_ebpf_lsm_architecture",
+  "t0_lsmsec_user_namespaces_clone_flags",
+  "t0_lsmsec_linux_capabilities_bounding_set",
+  "t0_lsmsec_cgroup_v2_unified_hierarchy",
+  "t0_lsmsec_pseudofs_proc_sysfs_boundaries",
+  "t0_lsmsec_file_descriptors_and_inode_lifecycle",
+  "t0_lsmsec_seccomp_bpf_vs_lsm_defense",
+  "t1_lsmsec_unshare_userns_uid_mapping",
+  "t1_lsmsec_cgroup_release_agent_mechanism",
+  "t1_lsmsec_core_pattern_pipe_traversal",
+  "t1_lsmsec_runc_leaked_fd_audit",
+  "t1_lsmsec_bpf_lsm_capable_hook_inspection",
+  "t1_lsmsec_mount_namespaces_and_propagation",
+  "t1_lsmsec_container_capabilities_drop_audit",
+  "t2_lsmsec_userns_root_capability_exploit",
+  "t2_lsmsec_procfs_w_xor_x_lsm_filter",
+  "t2_lsmsec_cgroup_procs_migration_tamper",
+  "t2_lsmsec_resolve_beneath_mount_boundary",
+  "t2_lsmsec_bpf_lsm_inode_unlink_protection",
+  "t2_lsmsec_fd_descriptor_cloaking_defense",
+  "t2_lsmsec_dual_namespace_cgroup_tagging",
+  "t3_lsmsec_cve_2024_21626_runc_escape_shield",
+  "t3_lsmsec_cve_2022_0185_legacy_fs_parser",
+  "t3_lsmsec_bpf_send_signal_runtime_kill",
+  "t3_lsmsec_cgroup_freeze_containment_pipeline",
+  "t3_lsmsec_ringbuf_event_streaming_telemetry",
+  "t3_lsmsec_dynamic_lsm_policy_hotreload",
+  "t3_lsmsec_ptrace_process_injection_interception",
+  "t4_lsmsec_zero_day_container_escape_containment",
+  "t4_lsmsec_kernel_integrity_coexistence_selinux",
+  "t4_lsmsec_hardware_enclave_lsm_attestation",
+  "t4_lsmsec_distroless_kernel_hardening_orchestration",
+  "t4_lsmsec_multi_tenant_cluster_lsm_isolation",
+  "t4_lsmsec_evasion_resistant_syscall_provenance",
+  "t4_lsmsec_capstone_full_spectrum_lsm_shield"
+];
+
+for (const id of LSMSEC_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/LSM_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_lsmsec_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
+
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

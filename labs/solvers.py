@@ -1952,6 +1952,49 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ SOAR Ledger action cryptographically verified and approved -> FLAG{auto_defense_soar_ledger_ed25519_attestation_sealed}"
             }
         ]
+    },
+    "64": {
+        "title": "Lab 64: eBPF LSM Container Escape & Kernel Runtime Shield Lab",
+        "description": "eBPF LSM(Linux Security Module) 기반 컨테이너 탈출 실시간 탐지 및 bpf_send_signal(SIGKILL) 능동 격리 실전",
+        "port": 8064,
+        "steps": [
+            {
+                "step": 1,
+                "name": "User Namespace 특권 승격(CLONE_NEWUSER) 및 bpf_lsm_userns_create 차단",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "비특권 컨테이너에서 unshare(CLONE_NEWUSER)를 실행하여 CAP_SYS_ADMIN 획득을 시도하며, eBPF LSM bpf_lsm_userns_create 훅으로 -EPERM 거부합니다.",
+                "exploit_payload": '{"clone_flags": ["CLONE_NEWUSER", "CLONE_NEWNS"], "target_caps": ["CAP_SYS_ADMIN"], "uid_mapping": "0 1000 1", "use_lsm_guard": true}',
+                "defense": "bpf_lsm_userns_create 및 bpf_lsm_capable 훅을 통한 비인가 cgroup의 사용자 네임스페이스 및 특권 할당 완전 차단.",
+                "sample_output": "✓ eBPF LSM intercepted unshare(CLONE_NEWUSER) from unprivileged cgroup: denied with -EPERM -> FLAG{lsm_userns_capability_sandbox_enforced}"
+            },
+            {
+                "step": 2,
+                "name": "Cgroup v2 release_agent 및 Procfs 커널 파라미터 변조 방어 (W^X 강제)",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "쓰기 가능한 cgroup의 release_agent 또는 /proc/sys/kernel/core_pattern 변조를 시도하고, eBPF LSM file_open W^X 정책으로 차단합니다.",
+                "exploit_payload": '{"target_path": "/sys/fs/cgroup/release_agent", "payload": "#!/bin/sh\\ncat /etc/shadow\\n", "mount_flags": ["rw"], "use_lsm_guard": true}',
+                "defense": "bpf_lsm_file_open 및 bpf_lsm_inode_permission 기반 의사 파일시스템 쓰기 권한 제거(-EACCES).",
+                "sample_output": "✓ eBPF LSM enforced strict W^X policy on pseudo-filesystems: write to sensitive cgroup/procfs blocked -> FLAG{lsm_cgroup_procfs_w_xor_x_shielded}"
+            },
+            {
+                "step": 3,
+                "name": "누출된 호스트 파일 디스크립터 탐색(CVE-2024-21626) 및 resolve_beneath 트랩",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "runc가 누출한 호스트 파일 디스크립터(/proc/self/fd/7)를 통한 호스트 루트 마운트 탈출 시도를 eBPF LSM resolve_beneath 마운트 경계 검사로 차단합니다.",
+                "exploit_payload": '{"fd_descriptor": "/proc/self/fd/7", "relative_traversal": "../../../etc/shadow", "target_action": "read", "use_lsm_guard": true}',
+                "defense": "bpf_lsm_path_link 및 마운트 네임스페이스 경계 검증을 통한 탈출 시도 트랩 및 무효화.",
+                "sample_output": "✓ eBPF LSM detected out-of-namespace descriptor traversal: access trapped -> FLAG{lsm_fd_leaks_resolve_beneath_quarantined}"
+            },
+            {
+                "step": 4,
+                "name": "다단계 컨테이너 탈출 체인 실시간 사살(SIGKILL) 및 Cgroup 동결 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "복합 시스템 콜 시퀀스를 통한 호스트 네임스페이스 탈출 시도시 eBPF LSM bpf_send_signal(SIGKILL)로 0.4 µs 내 즉각 사살하고 cgroup을 동결합니다.",
+                "exploit_payload": '{"process_tree": [{"pid": 42, "comm": "exploit"}], "syscall_sequence": ["unshare", "pivot_root", "setns"], "target_ns_breakout": "init_pid_ns", "use_lsm_runtime_shield": true}',
+                "defense": "커널 링버퍼 이상 전이 감지 즉시 bpf_send_signal(SIGKILL) 발송 및 cgroup freeze.",
+                "sample_output": "✓ eBPF LSM Autonomous Runtime Shield detected namespace breakout: process terminated via bpf_send_signal(SIGKILL) in 0.42 µs -> FLAG{lsm_runtime_sigkill_containment_sealed}"
+            }
+        ]
     }
 }
 

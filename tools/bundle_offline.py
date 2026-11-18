@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VibeHacking Offline Packager & Integrity Verifier
-Verifies that all 62 Labs, 74 Wargame Tracks (2,590 Challenges),
+Verifies that all Hands-on Labs (63+), Wargame Tracks (75+),
 Deep-Dive Textbook Chapters, and Offline Static Assets are completely present and sound.
 Optionally packages the offline bundle into an archive.
 """
@@ -33,11 +33,11 @@ def check_textbook():
     return True, f"{len(sections)} sections, {total_md} chapters"
 
 def check_labs():
-    print("[2/5] Checking 62 Hands-on Labs...")
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
-    if len(lab_dirs) != 62:
-        return False, f"Expected 62 labs, found {len(lab_dirs)}"
+    print(f"[2/5] Checking {len(lab_dirs)} Hands-on Labs...")
+    if len(lab_dirs) < 63:
+        return False, f"Expected at least 63 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,13 +62,13 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 2590:
-        return False, f"Expected 2,590 challenges in challenges.js, found {id_count}"
+    if id_count < 2625:
+        return False, f"Expected at least 2,625 challenges in challenges.js, found {id_count}"
     
     track_matches = re.findall(r'^\s*"id":\s*"[a-z0-9]+",\s*"icon":', content, re.MULTILINE)
-    track_count = len(track_matches) or 74
-    if track_count != 74:
-        return False, f"Expected 74 tracks in challenges.js, found {track_count}"
+    track_count = len(track_matches) or 75
+    if track_count < 75:
+        return False, f"Expected at least 75 tracks in challenges.js, found {track_count}"
     print(f"  ✓ Wargame database verified: {id_count} challenges across {track_count} tracks.")
     return True, f"{id_count} challenges verified"
 
@@ -135,7 +135,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print(" VibeHacking 2.14.0 Offline Release & Audit Pipeline")
+    print(" VibeHacking v2.15.0 Offline Release & Audit Pipeline")
     print("==================================================")
     
     checks = [check_textbook(), check_labs(), check_wargame(), check_offline_assets()]

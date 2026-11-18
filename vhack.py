@@ -655,6 +655,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [18, 23, 25, 47, 54, 62],
     },
+    "64": {
+        "name": "eBPF LSM 컨테이너 탈출 & 커널 런타임 방어 랩",
+        "dir":  "64_container_escape_lsm_lab",
+        "desc": "ContainerEscapeLsmLab: 비특권 사용자 네임스페이스(CLONE_NEWUSER) 특권 승격 및 bpf_lsm_userns_create 차단 · cgroup v2 release_agent / procfs 커널 파라미터 변조 방어 및 W^X 강제 · runc CVE-2024-21626 유출 파일 디스크립터 탐색 및 resolve_beneath 트랩 · eBPF LSM bpf_send_signal(SIGKILL) 0.4µs 즉각 격리 및 cgroup freeze",
+        "url":  "웹 콘솔 & eBPF LSM 커널 센서: http://localhost:8064",
+        "difficulty": "★★★★★",
+        "related": [10, 13, 51, 54, 56, 58],
+    },
 }
 
 LABS_METADATA = LABS

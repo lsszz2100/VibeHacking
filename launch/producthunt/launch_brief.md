@@ -3,7 +3,7 @@
 ## 1. Product Metadata
 
 - **Product Name**: VibeHacking
-- **Tagline**: Open-source cybersecurity bible & 2,625-challenge browser wargame + AI Security Agent Bench
+- **Tagline**: Open-source cybersecurity bible & 2,660-challenge browser wargame + AI Security Agent Bench
 - **Target URL**: [https://lsszz2100.github.io/VibeHacking/](https://lsszz2100.github.io/VibeHacking/)
 - **Repository URL**: [https://github.com/lsszz2100/VibeHacking](https://github.com/lsszz2100/VibeHacking)
 - **License**: MIT License (100% Free & Open Source)
@@ -17,12 +17,12 @@
 VibeHacking is an all-in-one open-source offensive & defensive cybersecurity mastery platform engineered to remove the friction from cybersecurity education.
 
 ### Key Pillars:
-1. **75 In-Depth Textbook Sections**:
+1. **76 In-Depth Textbook Sections**:
    Comprehensive coverage spanning binary exploitation, reverse engineering, kernel exploitation, EDR telemetry bypass, cloud/Kubernetes security, quantum-resistant cryptography (PQC), confidential computing (TEE), and autonomous AI agent red teaming.
-2. **63 Reproducible Docker Labs**:
-   Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 62: AI Agent MCP Security Lab** (`127.0.0.1:8062`) and **Lab 63: Autonomous Defense Agent Lab** (`127.0.0.1:8063`).
-3. **In-Browser Terminal Wargame (75 Tracks, 2,625 Challenges)**:
-   A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 31 interactive visual architecture simulators.
+2. **64 Reproducible Docker Labs**:
+   Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 62: AI Agent MCP Security Lab** (`127.0.0.1:8062`), **Lab 63: Autonomous Defense Agent Lab** (`127.0.0.1:8063`), and **Lab 64: eBPF LSM Container Escape & Kernel Runtime Shield Lab** (`127.0.0.1:8064`).
+3. **In-Browser Terminal Wargame (76 Tracks, 2,660 Challenges)**:
+   A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 32 interactive visual architecture simulators.
 4. **AI Security Agent Benchmark Leaderboard**:
    An automated evaluation engine measuring autonomous AI cybersecurity agents on Pass@1 exploit generation, tool safety, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0 standards.
 
@@ -36,9 +36,9 @@ Hey Product Hunt community! 👋
 We built VibeHacking to solve a major pain point in cybersecurity training: the high friction of massive virtual machines, broken dependencies, paywalled platforms, and disconnected theoretical guides.
 
 With VibeHacking, anyone can open a web browser and immediately interact with:
-• 2,625 progressive hacking challenges across 75 specialized tracks
-• 31 interactive simulators (ZTNA API, BGP Hijacking, PQC Lattice, EDR Shield, AI Agent MCP Sandbox, and Autonomous Cyber Defense)
-• 63 ready-to-deploy Docker labs with automated verification and exploit solvers
+• 2,660 progressive hacking challenges across 76 specialized tracks
+• 32 interactive simulators (ZTNA API, BGP Hijacking, PQC Lattice, EDR Shield, AI Agent MCP Sandbox, and Autonomous Cyber Defense)
+• 64 ready-to-deploy Docker labs with automated verification and exploit solvers
 • Our newly unveiled AI Agent Benchmark Leaderboard evaluating LLM security capabilities
 
 Everything is 100% free, MIT-licensed, and runs entirely in your browser or locally on your machine with no tracking.

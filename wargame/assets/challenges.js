@@ -660,6 +660,15 @@ const TRACKS = [
     "desc_ko": "보안 텔레메트리 인제스천 프롬프트 주입 차단·환각 및 오염된 대응 플레이북 AST 정적 검증·eBPF Dual-Stack XDP 자율 격리 및 정책 드리프트 방어·SOAR 조치 원장 HMAC-SHA256 디지털 서명 검증.",
     "desc_en": "Security telemetry ingestion prompt injection defense, poisoned remediation playbook AST validation, eBPF dual-stack XDP autonomous quarantine and policy reconciliation, and SOAR action ledger HMAC-SHA256 attestation."
   }
+,
+  {
+    "id": "lsmsec",
+    "icon": "🛡️",
+    "ko": "eBPF LSM 컨테이너 탈출 & 커널 런타임 보안",
+    "en": "eBPF LSM Container Escape & Kernel Runtime Shield",
+    "desc_ko": "User Namespace 특권 승격(CLONE_NEWUSER) 차단·cgroup v2 release_agent 및 procfs 변조 방어·runc 유출 파일 디스크립터(CVE-2024-21626) resolve_beneath 트랩·eBPF LSM bpf_send_signal(SIGKILL) 런타임 능동 사살 격리.",
+    "desc_en": "User namespace capability escalation containment, cgroup v2 release_agent & procfs overwrite W^X enforcement, runc leaked descriptor (CVE-2024-21626) resolve_beneath trapping, and eBPF LSM bpf_send_signal(SIGKILL) active runtime isolation."
+  }
 ];
 
 const CHALLENGES = [
@@ -74219,5 +74228,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "a163ff9b42385094e74b45c815a51f9f396fb72a01fb0924652af0db70e76efb"
-}
+},
+  {
+    "id": "t0_lsmsec_ebpf_lsm_architecture",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM 아키텍처 및 커널 보안 모듈 훅 기초",
+      "en": "eBPF LSM Architecture & Kernel Security Module Hooks"
+    },
+    "prompt": {
+      "ko": "Linux 커널 5.7+부터 통합된 BPF LSM 아키텍처와 bpf_lsm_* 인라인 훅 포인트의 동작 원리를 이해합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_ebpf_lsm_architecture`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Learn the architecture of BPF LSM integrated in Linux 5.7+ and execution lifecycle of bpf_lsm_* in-kernel hook points.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_ebpf_lsm_architecture`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_ebpf_lsm_architecture` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_ebpf_lsm_architecture`."
+      ]
+    },
+    "hash": "07b95d354d28df529cafe342fd91c17f660197b9fea895f595a2e580e0c1bc85"
+  },
+  {
+    "id": "t0_lsmsec_user_namespaces_clone_flags",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "리눅스 사용자 네임스페이스와 CLONE_NEWUSER 격리 체계",
+      "en": "Linux User Namespaces & CLONE_NEWUSER Isolation Primitives"
+    },
+    "prompt": {
+      "ko": "비특권 프로세스가 사용자 네임스페이스를 생성하고 권한 분립을 수행하는 unshare(CLONE_NEWUSER)의 특성을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_user_namespaces_clone_flags`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study the unshare(CLONE_NEWUSER) syscall allowing unprivileged processes to instantiate isolated user namespaces.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_user_namespaces_clone_flags`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_user_namespaces_clone_flags` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_user_namespaces_clone_flags`."
+      ]
+    },
+    "hash": "aa7db5cd308d4655e3642da209385c178d8ba5c8a2cc3777a99ebe225f23d1c1"
+  },
+  {
+    "id": "t0_lsmsec_linux_capabilities_bounding_set",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Linux 리눅스 기능(Capabilities)과 바운딩 세트 검증",
+      "en": "Linux Capabilities & Bounding Set Governance"
+    },
+    "prompt": {
+      "ko": "루트 권한을 세분화한 CAP_SYS_ADMIN, CAP_NET_ADMIN 등 리눅스 기능 모델과 컨테이너 바운딩 세트 제한을 분석합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_linux_capabilities_bounding_set`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze the Linux capabilities model (CAP_SYS_ADMIN, CAP_NET_ADMIN) and container capability bounding set restrictions.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_linux_capabilities_bounding_set`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_linux_capabilities_bounding_set` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_linux_capabilities_bounding_set`."
+      ]
+    },
+    "hash": "520a7bc88f0f9153ca33ab4eac619449efbb7218140bb64ac3785f74453901b7"
+  },
+  {
+    "id": "t0_lsmsec_cgroup_v2_unified_hierarchy",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cgroup v2 단일 계층 구조와 자원 제어 모델",
+      "en": "Cgroup v2 Unified Hierarchy & Resource Control"
+    },
+    "prompt": {
+      "ko": "단일 트리 계층으로 통합된 cgroup v2 아키텍처와 하위 프로세스 그룹의 권한 제어 원리를 파악합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_cgroup_v2_unified_hierarchy`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand the unified cgroup v2 single-hierarchy hierarchy and permission delegation across container process groups.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_cgroup_v2_unified_hierarchy`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_cgroup_v2_unified_hierarchy` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_cgroup_v2_unified_hierarchy`."
+      ]
+    },
+    "hash": "504f7fdf6bec1d46d0ba517b75201055ba47b04b924b7052cf14982682a23393"
+  },
+  {
+    "id": "t0_lsmsec_pseudofs_proc_sysfs_boundaries",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "의사 파일시스템(/proc, /sys)과 컨테이너 마스킹 정책",
+      "en": "Pseudo-Filesystem (/proc, /sys) Masking Boundaries"
+    },
+    "prompt": {
+      "ko": "컨테이너 내부에 노출되는 커널 인터페이스(/proc/sys, /sys/fs/cgroup)의 위험성과 마스킹 경로를 검토합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_pseudofs_proc_sysfs_boundaries`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Examine the security hazards of exposing pseudo-filesystems (/proc/sys, /sys/fs/cgroup) and container masking strategies.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_pseudofs_proc_sysfs_boundaries`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_pseudofs_proc_sysfs_boundaries` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_pseudofs_proc_sysfs_boundaries`."
+      ]
+    },
+    "hash": "28fced6009e4499beac9e916ae12dcc8752dbce14adf9669e6aaf758ab7d2f99"
+  },
+  {
+    "id": "t0_lsmsec_file_descriptors_and_inode_lifecycle",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VFS 파일 디스크립터 생명주기와 네임스페이스 누출 위험",
+      "en": "VFS File Descriptors & Namespace Leakage Hazards"
+    },
+    "prompt": {
+      "ko": "리눅스 가상 파일 시스템(VFS)의 파일 디스크립터와 프로세스 간 상속 시 발생하는 네임스페이스 누출 메커니즘을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_file_descriptors_and_inode_lifecycle`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study VFS file descriptor lifecycles and cross-namespace inheritance hazards during container initialization.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_file_descriptors_and_inode_lifecycle`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_file_descriptors_and_inode_lifecycle` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_file_descriptors_and_inode_lifecycle`."
+      ]
+    },
+    "hash": "319eda0eff94c6c139c7f205405a307f254feda07b5a34f38c1d3af9c3f26093"
+  },
+  {
+    "id": "t0_lsmsec_seccomp_bpf_vs_lsm_defense",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Seccomp BPF 시스템 콜 필터와 eBPF LSM의 차이점",
+      "en": "Seccomp BPF Syscall Filtering vs eBPF LSM Defense"
+    },
+    "prompt": {
+      "ko": "시스템 콜 번호 기반 Seccomp BPF와 커널 내부 객체(inode, task, cred) 의미론을 검증하는 eBPF LSM의 방어 범위를 비교합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t0_lsmsec_seccomp_bpf_vs_lsm_defense`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Compare syscall-number-based Seccomp BPF with semantic kernel-object (inode, task, cred) verification in eBPF LSM.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t0_lsmsec_seccomp_bpf_vs_lsm_defense`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t0_lsmsec_seccomp_bpf_vs_lsm_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t0_lsmsec_seccomp_bpf_vs_lsm_defense`."
+      ]
+    },
+    "hash": "d26ff84917241a029dc278d1b4bea646c41f4b0d6c3b1349af28539808e07ecf"
+  },
+  {
+    "id": "t1_lsmsec_unshare_userns_uid_mapping",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "unshare(CLONE_NEWUSER) UID 매핑 분석 및 권한 전이",
+      "en": "unshare(CLONE_NEWUSER) UID Mapping & Privilege Transition"
+    },
+    "prompt": {
+      "ko": "/proc/self/uid_map 설정을 통해 차일드 네임스페이스 내에서 UID 0을 획득하는 권한 전이 과정을 추적합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_unshare_userns_uid_mapping`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Trace the privilege transition mapping child namespace UID 0 via /proc/self/uid_map configurations.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_unshare_userns_uid_mapping`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_unshare_userns_uid_mapping` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_unshare_userns_uid_mapping`."
+      ]
+    },
+    "hash": "64d6f929127c38a97f99a21debcda0307f90755f21eb75fdb614b900d619bd98"
+  },
+  {
+    "id": "t1_lsmsec_cgroup_release_agent_mechanism",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cgroup release_agent 메커니즘과 호스트 실행 경로",
+      "en": "Cgroup release_agent Mechanism & Host Execution Path"
+    },
+    "prompt": {
+      "ko": "cgroup 내 모든 태스크가 종료될 때 호스트 커널이 release_agent 스크립트를 실행하는 취약점 경로를 분석합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_cgroup_release_agent_mechanism`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze how the host kernel executes the release_agent script when all tasks within a cgroup terminate.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_cgroup_release_agent_mechanism`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_cgroup_release_agent_mechanism` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_cgroup_release_agent_mechanism`."
+      ]
+    },
+    "hash": "6a1a8625bfe9cedf8032170cfcf6df3380e09e6562f2d3620561d113a07e2fa6"
+  },
+  {
+    "id": "t1_lsmsec_core_pattern_pipe_traversal",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "core_pattern 파이프 설정을 통한 호스트 명령 실행 분석",
+      "en": "core_pattern Pipe Traversal & Host Command Execution"
+    },
+    "prompt": {
+      "ko": "/proc/sys/kernel/core_pattern 파일에 파이프(|)를 지정하여 크래시 발생 시 호스트 프로세스를 생성하는 흐름을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_core_pattern_pipe_traversal`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study host process creation upon process crashes triggered by piping (|) in /proc/sys/kernel/core_pattern.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_core_pattern_pipe_traversal`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_core_pattern_pipe_traversal` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_core_pattern_pipe_traversal`."
+      ]
+    },
+    "hash": "2c478cfbdd67556fb783570a2987c5669d7119ad092f58527754967836339130"
+  },
+  {
+    "id": "t1_lsmsec_runc_leaked_fd_audit",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "runc 유출 파일 디스크립터(/proc/self/fd) 감사 기법",
+      "en": "runc Leaked File Descriptor (/proc/self/fd) Auditing"
+    },
+    "prompt": {
+      "ko": "컨테이너 초기화 시 O_CLOEXEC 플래그 누락으로 호스트 디렉터리 핸들이 유출되는 현상을 탐지합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_runc_leaked_fd_audit`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Audit leaked host directory file handles caused by missing O_CLOEXEC flags during container initialization.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_runc_leaked_fd_audit`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_runc_leaked_fd_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_runc_leaked_fd_audit`."
+      ]
+    },
+    "hash": "0e570553d5b5a738d057b4b0a687e4288778d7127f0da515a635f6b087656690"
+  },
+  {
+    "id": "t1_lsmsec_bpf_lsm_capable_hook_inspection",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_lsm_capable 훅 파라미터 및 인커널 권한 검사",
+      "en": "bpf_lsm_capable Hook Parameters & In-Kernel Capability Checks"
+    },
+    "prompt": {
+      "ko": "커널 내부에서 프로세스의 권한 요구를 감시하고 특정 cgroup에 속한 프로세스의 특권 상승을 인라인 차단하는 기법을 이해합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_bpf_lsm_capable_hook_inspection`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand in-kernel monitoring of capability requests and inline blocking of privilege escalation within target cgroups.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_bpf_lsm_capable_hook_inspection`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_bpf_lsm_capable_hook_inspection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_bpf_lsm_capable_hook_inspection`."
+      ]
+    },
+    "hash": "cc7d443d66c26572d1692f7c79aef6daa6482bbb56598c5a39708e0a75f71a66"
+  },
+  {
+    "id": "t1_lsmsec_mount_namespaces_and_propagation",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "마운트 네임스페이스와 공유/슬레이브 전파 모드",
+      "en": "Mount Namespaces & Shared/Slave Propagation Modes"
+    },
+    "prompt": {
+      "ko": "호스트와 컨테이너 간 마운트 전파 속성(MS_SHARED, MS_SLAVE, MS_PRIVATE)과 탈출 취약점 간의 관계를 분석합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_mount_namespaces_and_propagation`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze mount propagation flags (MS_SHARED, MS_SLAVE, MS_PRIVATE) and their implications for breakout vulnerabilities.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_mount_namespaces_and_propagation`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_mount_namespaces_and_propagation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_mount_namespaces_and_propagation`."
+      ]
+    },
+    "hash": "b8c6feba0be8f652e5e73892a0fb64b16f70a175e3d66a429c94cec76f0259a7"
+  },
+  {
+    "id": "t1_lsmsec_container_capabilities_drop_audit",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "컨테이너 기본 리눅스 기능 드롭 및 앰비언트 세트 감사",
+      "en": "Container Capability Drop & Ambient Set Audit"
+    },
+    "prompt": {
+      "ko": "도커/k8s 기본 프로파일에서 드롭되는 기능과 execve 이후에도 유지되는 Ambient 기능 세트를 정밀 검증합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t1_lsmsec_container_capabilities_drop_audit`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Audit dropped capabilities in standard container profiles and ambient capability inheritance across execve boundaries.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t1_lsmsec_container_capabilities_drop_audit`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t1_lsmsec_container_capabilities_drop_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t1_lsmsec_container_capabilities_drop_audit`."
+      ]
+    },
+    "hash": "7816464e0c77169e3e283a1d830d224b6d5680a97c73ce3069af9f4a05cf2b5c"
+  },
+  {
+    "id": "t2_lsmsec_userns_root_capability_exploit",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "사용자 네임스페이스 루트 권한 악용 시뮬레이션 및 차단",
+      "en": "User Namespace Root Capability Exploitation & LSM Block"
+    },
+    "prompt": {
+      "ko": "bpf_lsm_userns_create 훅을 활용하여 비인가 컨테이너의 CLONE_NEWUSER 호출을 인커널에서 -EPERM으로 반환 차단합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_userns_root_capability_exploit`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Implement bpf_lsm_userns_create hook to deny unauthorized container CLONE_NEWUSER requests with -EPERM.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_userns_root_capability_exploit`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_userns_root_capability_exploit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_userns_root_capability_exploit`."
+      ]
+    },
+    "hash": "123e1840edca7c364775d5cbae7a15fec9d689ecee051610ace37d2a83b485aa"
+  },
+  {
+    "id": "t2_lsmsec_procfs_w_xor_x_lsm_filter",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "의사 파일시스템 대상 eBPF LSM W^X 쓰기 방지 필터",
+      "en": "eBPF LSM W^X Write Prevention Filter on Pseudo-Filesystems"
+    },
+    "prompt": {
+      "ko": "bpf_lsm_file_open 훅으로 /proc/sys/* 및 /sys/fs/cgroup/* 경로에 대한 쓰기 열기(O_WRONLY/O_RDWR)를 원천 봉쇄합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_procfs_w_xor_x_lsm_filter`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Deploy bpf_lsm_file_open hook enforcing strict W^X policy by revoking write access to /proc/sys/* and cgroup filesystems.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_procfs_w_xor_x_lsm_filter`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_procfs_w_xor_x_lsm_filter` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_procfs_w_xor_x_lsm_filter`."
+      ]
+    },
+    "hash": "aad5e4623f0625a65fbfba8ceb5ae5b663ae6f4be1a7dcd750913e0f676f67f5"
+  },
+  {
+    "id": "t2_lsmsec_cgroup_procs_migration_tamper",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "cgroup.procs 변조를 통한 프로세스 탈출 방어",
+      "en": "Defending against Process Breakout via cgroup.procs Tampering"
+    },
+    "prompt": {
+      "ko": "차일드 프로세스를 상위 cgroup으로 이동시키려는 cgroup.procs 쓰기 시도를 eBPF LSM 인라인 훅으로 차단합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_cgroup_procs_migration_tamper`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Intercept and deny unauthorized cgroup.procs write attempts intended to migrate processes into root cgroup scopes.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_cgroup_procs_migration_tamper`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_cgroup_procs_migration_tamper` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_cgroup_procs_migration_tamper`."
+      ]
+    },
+    "hash": "8a53cb4e0428888341638005a867d3a70d469f53ff1bc9977481ddd5c17a5c3a"
+  },
+  {
+    "id": "t2_lsmsec_resolve_beneath_mount_boundary",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "RESOLVE_BENEATH 경로 검증과 openat2 디렉터리 격리",
+      "en": "RESOLVE_BENEATH Path Validation & openat2 Confinement"
+    },
+    "prompt": {
+      "ko": "openat2 시스템 콜의 RESOLVE_BENEATH 플래그를 검증하여 시작 디렉터리를 벗어나는 심볼릭 링크 및 상대 경로를 차단합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_resolve_beneath_mount_boundary`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Validate openat2 RESOLVE_BENEATH flags ensuring path traversal strictly cannot escape the root boundary directory.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_resolve_beneath_mount_boundary`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_resolve_beneath_mount_boundary` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_resolve_beneath_mount_boundary`."
+      ]
+    },
+    "hash": "1cd1f9275e58e61f8a44b429b486985f3e2480ccee9c732d27fd19be4d4c6cfd"
+  },
+  {
+    "id": "t2_lsmsec_bpf_lsm_inode_unlink_protection",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_lsm_inode_unlink 기반 컨테이너 경계 파일 보호",
+      "en": "bpf_lsm_inode_unlink Protection for Boundary Inodes"
+    },
+    "prompt": {
+      "ko": "격리 경계에 위치한 핵심 마운트 포인트 및 시스템 설정 파일의 삭제/언링크 행위를 eBPF LSM으로 방어합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_bpf_lsm_inode_unlink_protection`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Protect boundary mount points and container configuration files against unauthorized deletion using bpf_lsm_inode_unlink.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_bpf_lsm_inode_unlink_protection`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_bpf_lsm_inode_unlink_protection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_bpf_lsm_inode_unlink_protection`."
+      ]
+    },
+    "hash": "bb89a4bd402e5384d14ff519966a715ebea506cb0c621249cb9c0c708fdd9de2"
+  },
+  {
+    "id": "t2_lsmsec_fd_descriptor_cloaking_defense",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "유출된 호스트 파일 디스크립터 은닉 및 접근 차단",
+      "en": "Trapping & Revoking Leaked Host File Descriptors"
+    },
+    "prompt": {
+      "ko": "프로세스 파일 디스크립터 테이블을 실시간 감사하여 컨테이너 마운트 네임스페이스 외부를 가리키는 fd에 대한 접근을 무효화합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_fd_descriptor_cloaking_defense`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Inspect process file tables to trap and revoke access to leaked descriptors referencing out-of-namespace host filesystems.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_fd_descriptor_cloaking_defense`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_fd_descriptor_cloaking_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_fd_descriptor_cloaking_defense`."
+      ]
+    },
+    "hash": "5b8140a44c15d5b130219d1673a9d4c6497a19ae136af8f1d8947b6fd135a685"
+  },
+  {
+    "id": "t2_lsmsec_dual_namespace_cgroup_tagging",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 해시 테이블을 활용한 듀얼 네임스페이스 및 cgroup 동적 태깅",
+      "en": "Dual-Namespace & Cgroup Dynamic Tagging via eBPF Tables"
+    },
+    "prompt": {
+      "ko": "커널 해시 테이블 자료구조를 활용하여 컨테이너의 PID 네임스페이스와 cgroup ID를 인커널에서 연계 식별하는 구조를 구축합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t2_lsmsec_dual_namespace_cgroup_tagging`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Build in-kernel linkage between container PID namespaces and cgroup IDs using kernel hash table lookup structures.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t2_lsmsec_dual_namespace_cgroup_tagging`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t2_lsmsec_dual_namespace_cgroup_tagging` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t2_lsmsec_dual_namespace_cgroup_tagging`."
+      ]
+    },
+    "hash": "4c12d84ffee2a31f02e34f3201fd4338893d8abf08eac7b0c46ef3bcfe478482"
+  },
+  {
+    "id": "t3_lsmsec_cve_2024_21626_runc_escape_shield",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "runc CVE-2024-21626 탈출 공격 실시간 방어 실드",
+      "en": "CVE-2024-21626 runc Working Directory Escape Shield"
+    },
+    "prompt": {
+      "ko": "/proc/self/fd/7 기반 호스트 루트 작업 디렉터리 탈출 시도를 eBPF LSM path_link 및 resolve_beneath 훅으로 차단합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_cve_2024_21626_runc_escape_shield`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Neutralize runc CVE-2024-21626 working directory breakouts via /proc/self/fd/7 using eBPF LSM path_link enforcement.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_cve_2024_21626_runc_escape_shield`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_cve_2024_21626_runc_escape_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_cve_2024_21626_runc_escape_shield`."
+      ]
+    },
+    "hash": "d4ec8d5d29182f3b03305e72f26bdb90fcb2ee6d3592e98869d521904d58442b"
+  },
+  {
+    "id": "t3_lsmsec_cve_2022_0185_legacy_fs_parser",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "레거시 파일시스템 파서 힙 오버플로우(CVE-2022-0185) 방어",
+      "en": "Mitigating Legacy Filesystem Parser Heap Exploits (CVE-2022-0185)"
+    },
+    "prompt": {
+      "ko": "unshare(CLONE_NEWUSER) 이후 legacy_parse_param 함수 취약점을 트리거하려는 파라미터 주입을 eBPF LSM 훅으로 사전 격리합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_cve_2022_0185_legacy_fs_parser`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Preemptively quarantine malicious filesystem parameter injections targeting legacy_parse_param heap flaws via eBPF LSM.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_cve_2022_0185_legacy_fs_parser`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_cve_2022_0185_legacy_fs_parser` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_cve_2022_0185_legacy_fs_parser`."
+      ]
+    },
+    "hash": "d2ab2bdf67d3ea608eac424ae82bdd3c34be5d165241b62b529a438d93406785"
+  },
+  {
+    "id": "t3_lsmsec_bpf_send_signal_runtime_kill",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_send_signal을 활용한 서브 마이크로초 인커널 즉시 사살",
+      "en": "Sub-Microsecond In-Kernel Process Termination via bpf_send_signal"
+    },
+    "prompt": {
+      "ko": "탈출 징후 감지 즉시 커널 스페이스에서 bpf_send_signal(SIGKILL)을 디스패치하여 0.4 µs 내에 악성 프로세스를 종료합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_bpf_send_signal_runtime_kill`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Dispatch bpf_send_signal(SIGKILL) directly from kernel space to eliminate malicious process trees within 0.4 µs.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_bpf_send_signal_runtime_kill`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_bpf_send_signal_runtime_kill` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_bpf_send_signal_runtime_kill`."
+      ]
+    },
+    "hash": "30361a97cce4ee9a05ff54b22fc44bfdf57e980b2a8a1cd1ce04b85472547e6e"
+  },
+  {
+    "id": "t3_lsmsec_cgroup_freeze_containment_pipeline",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이상 전이 감지 기반 cgroup 동결(Freeze) 자동화 파이프라인",
+      "en": "Automated Cgroup Freezing on Anomalous Kernel Transitions"
+    },
+    "prompt": {
+      "ko": "비정상 네임스페이스 시스템 콜 시퀀스 감지 시 대상 컨테이너 cgroup을 cgroup.freeze 상태로 전이시켜 전체 프로세스를 정지합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_cgroup_freeze_containment_pipeline`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Transition container scopes into cgroup.freeze state upon detecting suspicious syscall sequences to halt running processes.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_cgroup_freeze_containment_pipeline`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_cgroup_freeze_containment_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_cgroup_freeze_containment_pipeline`."
+      ]
+    },
+    "hash": "35909385bb0d26eb38ad5dc258dd6190f07d2ab8c99c2d77679c281758fdb467"
+  },
+  {
+    "id": "t3_lsmsec_ringbuf_event_streaming_telemetry",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF Ring Buffer 기반 고속 런타임 보안 텔레메트리 스트리밍",
+      "en": "eBPF Ring Buffer Telemetry Streaming for Security Signals"
+    },
+    "prompt": {
+      "ko": "BPF_MAP_TYPE_RINGBUF 구조를 통해 컨테이너 보안 위반 이벤트를 손실 없이 사용자 공간 관제 데몬으로 실시간 전송합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_ringbuf_event_streaming_telemetry`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Stream container security violation events without loss to userland monitoring daemons using BPF_MAP_TYPE_RINGBUF.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_ringbuf_event_streaming_telemetry`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_ringbuf_event_streaming_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_ringbuf_event_streaming_telemetry`."
+      ]
+    },
+    "hash": "231f9fbbbb0c223d6470adea0adbcf583295eabe891016270a6c72ca5e3b080d"
+  },
+  {
+    "id": "t3_lsmsec_dynamic_lsm_policy_hotreload",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "쿠버네티스 무중단 eBPF LSM 보안 정책 핫리로드",
+      "en": "Zero-Downtime Dynamic eBPF LSM Security Policy Hot-Reload"
+    },
+    "prompt": {
+      "ko": "BPF 링크(bpf_link)와 BPF 맵 원자적 교체를 활용하여 클러스터 중단 없이 실시간 컨테이너 보안 규칙을 갱신합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_dynamic_lsm_policy_hotreload`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Update container security rules live without downtime using atomic BPF map replacements and bpf_link primitives.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_dynamic_lsm_policy_hotreload`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_dynamic_lsm_policy_hotreload` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_dynamic_lsm_policy_hotreload`."
+      ]
+    },
+    "hash": "a8e5f5394fee131ca4e340b0873aae06d6e10c2875e8b5234ed2cf08b59c742d"
+  },
+  {
+    "id": "t3_lsmsec_ptrace_process_injection_interception",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "교차 네임스페이스 ptrace 및 프로세스 메모리 주입 차단",
+      "en": "Intercepting Cross-Namespace ptrace & Process Injection"
+    },
+    "prompt": {
+      "ko": "bpf_lsm_ptrace_access_check 및 bpf_lsm_task_to_ipc 훅으로 호스트 프로세스 메모리에 셸코드를 주입하려는 시도를 방어합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t3_lsmsec_ptrace_process_injection_interception`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Block shellcode injection into host process memory via bpf_lsm_ptrace_access_check and process_vm_writev filtering.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t3_lsmsec_ptrace_process_injection_interception`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t3_lsmsec_ptrace_process_injection_interception` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t3_lsmsec_ptrace_process_injection_interception`."
+      ]
+    },
+    "hash": "1c273349890dcfc587d5126a8bc5d7e2987ff466f8bbd567a46c1cf059d1813a"
+  },
+  {
+    "id": "t4_lsmsec_zero_day_container_escape_containment",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다단계 복합 제로데이 컨테이너 탈출 체인 능동 차단",
+      "en": "Autonomous In-Kernel Containment of Multi-Stage 0-Day Breakouts"
+    },
+    "prompt": {
+      "ko": "네임스페이스 결합 해제, cgroup 탈취, 런타임 소켓 하이재킹이 결합된 복합 공격을 인라인 정책 엔진으로 격리합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_zero_day_container_escape_containment`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Contain combined multi-stage attacks chaining namespace decoupling, cgroup hijacking, and runtime socket abuse.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_zero_day_container_escape_containment`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_zero_day_container_escape_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_zero_day_container_escape_containment`."
+      ]
+    },
+    "hash": "438970ebd16e6db63e2c4fc8d34a73b74e2f0e059e0e1b9dfe1864ef4ecb9c28"
+  },
+  {
+    "id": "t4_lsmsec_kernel_integrity_coexistence_selinux",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM과 SELinux/AppArmor 다중 보안 모듈 공존 아키텍처",
+      "en": "Multi-LSM Coexistence Architecture (eBPF LSM + SELinux/AppArmor)"
+    },
+    "prompt": {
+      "ko": "기존 리눅스 보안 모듈(LSM) 체인 상에서 eBPF LSM이 후속/선행 감사 훅으로 안전하게 협력 동작하는 공존 모델을 구축합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_kernel_integrity_coexistence_selinux`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Architect a stacked LSM coexistence model where eBPF LSM coordinates with SELinux and AppArmor without policy collisions.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_kernel_integrity_coexistence_selinux`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_kernel_integrity_coexistence_selinux` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_kernel_integrity_coexistence_selinux`."
+      ]
+    },
+    "hash": "3ac3d3e40409b81bade771aceb22546ad9943ce0ff089986706149a1fa34e73f"
+  },
+  {
+    "id": "t4_lsmsec_hardware_enclave_lsm_attestation",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 TEE 엔클레이브 연동 eBPF LSM 센서 원격 증명",
+      "en": "Hardware TEE Remote Attestation for eBPF LSM Kernel Sensors"
+    },
+    "prompt": {
+      "ko": "AMD SEV-SNP / Intel TDX 엔클레이브를 활용하여 커널 로드된 eBPF LSM 바이트코드의 암호학적 해시 무결성을 증명합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_hardware_enclave_lsm_attestation`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Cryptographically attest in-kernel eBPF LSM bytecode integrity using AMD SEV-SNP and Intel TDX measurement quotes.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_hardware_enclave_lsm_attestation`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_hardware_enclave_lsm_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_hardware_enclave_lsm_attestation`."
+      ]
+    },
+    "hash": "78067d861a4983a05e96f82160831a916193816862f8851384e3af1c95a74f8c"
+  },
+  {
+    "id": "t4_lsmsec_distroless_kernel_hardening_orchestration",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "초소형 Distroless 마이크로 컨테이너 커널 하드닝 오케스트레이션",
+      "en": "Distroless Micro-Container Kernel Hardening Orchestration"
+    },
+    "prompt": {
+      "ko": "바이너리 유틸리티가 전무한 distroless 이미지 환경에서 순수 eBPF LSM 런타임 정책만으로 완전한 보안 격리를 달성합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_distroless_kernel_hardening_orchestration`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Achieve full security confinement in distroless environments lacking shell binaries purely via in-kernel eBPF LSM.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_distroless_kernel_hardening_orchestration`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_distroless_kernel_hardening_orchestration` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_distroless_kernel_hardening_orchestration`."
+      ]
+    },
+    "hash": "dbce52b5d89f7b26eb257f258ed62f648bbb98307ab7c0fdc0ab139752a5d6de"
+  },
+  {
+    "id": "t4_lsmsec_multi_tenant_cluster_lsm_isolation",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티테넌트 대규모 클러스터 제로 트러스트 커널 LSM 격리",
+      "en": "Multi-Tenant Enterprise Cluster Zero-Trust Kernel LSM Isolation"
+    },
+    "prompt": {
+      "ko": "수천 개 포드가 상주하는 대규모 클러스터에서 테넌트별 eBPF LSM 네임스페이스 경계를 동적으로 생성하고 감사하는 엔지니어링을 수행합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_multi_tenant_cluster_lsm_isolation`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Engineer per-tenant eBPF LSM security boundaries across massive multi-tenant Kubernetes clusters with zero latency degradation.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_multi_tenant_cluster_lsm_isolation`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_multi_tenant_cluster_lsm_isolation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_multi_tenant_cluster_lsm_isolation`."
+      ]
+    },
+    "hash": "998836fa7294743ce087948e0bf75ec6ef8428fd544b5b8b5495ba63dbbde2b2"
+  },
+  {
+    "id": "t4_lsmsec_evasion_resistant_syscall_provenance",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "회피 방지형 시스템 콜 오리진 및 콜스택 프로비넌스 검증",
+      "en": "Evasion-Resistant Syscall Origin & Call-Stack Provenance Validation"
+    },
+    "prompt": {
+      "ko": "리턴 지향 실행 흐름 조작 및 비직접 시스템 콜 호출 시도를 eBPF LSM 스택 프레임 역추적과 인스트럭션 카운터 검증으로 봉쇄합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_evasion_resistant_syscall_provenance`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Defend against evasive return-oriented gadget chains and non-direct system dispatch by validating instruction pointer origins and in-kernel stack traces.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_evasion_resistant_syscall_provenance`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_evasion_resistant_syscall_provenance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_evasion_resistant_syscall_provenance`."
+      ]
+    },
+    "hash": "73312f16b09d672b383569830e8f8776b3d6089992cc568e972ebfd16246693d"
+  },
+  {
+    "id": "t4_lsmsec_capstone_full_spectrum_lsm_shield",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "lsmsec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM 컨테이너 탈출 & 커널 런타임 방어 캡스톤",
+      "en": "Full-Spectrum eBPF LSM Container Escape & Kernel Runtime Shield Capstone"
+    },
+    "prompt": {
+      "ko": "User Namespace 방어, W^X 의사 파일시스템 보호, 유출 fd 트랩, bpf_send_signal(SIGKILL) 런타임 사살을 통합한 종합 커널 방어 체계를 완성합니다.\n\n[실습 환경 및 검증 식별자]\nLSM_CHALLENGE_ID: `t4_lsmsec_capstone_full_spectrum_lsm_shield`\n\n위 식별자를 기반으로 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Synthesize a comprehensive in-kernel defense combining userns sandbox, W^X procfs filters, fd trap, and instant SIGKILL containment.\n\n[Verification Identifier]\nLSM_CHALLENGE_ID: `t4_lsmsec_capstone_full_spectrum_lsm_shield`\n\nDerive and submit the security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "eBPF LSM(Linux Security Module)의 bpf_lsm_* 훅 라이프사이클과 커널 레벨 격리 정책을 분석하세요.",
+        "이 문제는 식별자 `t4_lsmsec_capstone_full_spectrum_lsm_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the in-kernel eBPF LSM bpf_lsm_* hook lifecycle and runtime containment boundaries.",
+        "This challenge derives a deterministic flag from identifier `t4_lsmsec_capstone_full_spectrum_lsm_shield`."
+      ]
+    },
+    "hash": "71377bb221ce0d688ab4d84fbb5aa6b4857054eb48b9b26164d1741722f86f8e"
+  }
 ];

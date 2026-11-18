@@ -557,6 +557,15 @@ docker-compose --version
 - **워게임 트랙**: `autosec` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 63` (웹 콘솔: `http://localhost:8063`)
 
+### 64. eBPF LSM 컨테이너 탈출 & 커널 런타임 보안 랩 (ContainerEscapeLsmLab)
+- 비특권 User Namespace 매핑 권한 상승 및 `bpf_lsm_userns_create` 인커널 차단
+- Cgroup v2 release_agent 및 procfs 커널 파라미터 변조 W^X 인라인 방어
+- runc 누출 호스트 파일 디스크립터(CVE-2024-21626) 및 경계 탈출 격리
+- 커널 런타임 제로트러스트 eBPF 링버퍼 탐지 및 실시간 `SIGKILL` 킬스위치 격리
+- **교재 챕터 연계**: [14장 클라우드 보안](../14_Cloud_Security/README.md), [26장 커널 보안](../26_Linux_Kernel_and_Driver_Development/README.md)
+- **워게임 트랙**: `lsmsec` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 64` (웹 콘솔: `http://localhost:8064`)
+
 ---
 
 ## 빠른 시작 가이드
