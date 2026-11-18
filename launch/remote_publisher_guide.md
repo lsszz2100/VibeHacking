@@ -66,7 +66,7 @@ For automated background publishing to Reddit when user intervention is not desi
 
   subreddit = reddit.subreddit("netsec")
   subreddit.submit(
-      title="VibeHacking: Open-source cybersecurity bible (75 sections, 62 labs) & browser-based terminal wargame with 2,590 challenges",
+      title="VibeHacking: Open-source cybersecurity bible (75 sections, 63 labs) & browser-based terminal wargame with 2,625 challenges",
       url="https://github.com/lsszz2100/VibeHacking"
   )
   ```

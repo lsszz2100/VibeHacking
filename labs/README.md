@@ -85,6 +85,14 @@ docker-compose --version
 | 53 | [AD BloodHound & ACL 익스플로잇 실습](./53_ad_bloodhound_lab/) | SharpHound 도메인 수집, Cypher 최단 공격 경로 탐색, GenericAll/WriteDacl DACL 악용, Protected Users 하드닝 | ★★★★★ | [54장 Active Directory](../54_Active_Directory_Attacks/08_bloodhound_graph_theory_and_acl_exploitation_deepdive.md) | `adgraph` / `activedirectory` |
 | 54 | [AI 에이전트 샌드박스 탈출 & Landlock 방어 랩](./54_ai_agent_sandbox_escape_lab/) | MCP 도구 포이즈닝, Confused Deputy 권한 대행 탈취, 비특권 Landlock LSM 파일 격리, eBPF Tetragon 런타임 방어 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/08_agent_sandbox_escape_and_landlock_defense_deepdive.md) | `agentsandbox` / `ai` |
 | 55 | [양자 내성 암호 마이그레이션 & FIPS 203/204 랩](./55_pqc_migration_lab/) | NIST FIPS 203 ML-KEM-768 격자 KEM, FIPS 204 ML-DSA-65 전자서명, SNDL 도청 대응, 하이브리드 TLS 1.3 다운그레이드 방어 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md) | `pqcmigrate` / `crypto` |
+| 56 | [eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩](./56_ebpf_kernel_security_lab/) | eBPF 커널 시스콜 텔레메트리, Ring Buffer 익명 실행 포착, 커널 스레드 위장 탐지, bpf_override_return 루트킷 색출, eBPF LSM 제로 트러스트 차단 | ★★★★★ | [26장 리눅스 하드닝](../26_Linux_Hardening/README.md) | `ebpfsec` / `endpoint` |
+| 57 | [바이너리 보호 & 안티 리버싱 능동 방어 랩](./57_anti_reversing_shield_lab/) | 동적 안티디버깅 ptrace/BeingDebugged 무력화, ROR13 API 해싱 역산, 변형 패커 OEP 언패킹, Anti-VM & RDTSC 타이밍 분석 방어 | ★★★★★ | [03장 시스템 해킹](../03_System_Hacking/README.md) | `antire` / `reversing` |
+| 58 | [MicroVM 하이퍼바이저 탈출 & 격리 하드닝 랩](./58_hypervisor_escape_lab/) | VM-Exit EPT 위반 & MMIO 인터셉트, Virtio-Net vring OOB 힙 오염, KVM vCPU MSR_LSTAR 레지스터 스머글링, Seccomp BPF & Landlock 하드닝 | ★★★★★ | [14장 클라우드 보안](../14_Cloud_Security/README.md) | `hypervisor` / `cloud` |
+| 59 | [기밀 컴퓨팅 TEE & 하드웨어 메모리 암호화 랩](./59_confidential_computing_lab/) | AMD SEV-SNP & Intel TDX AES-256-XTS 메모리 암호화, 원격 증명(Attestation) & MRENCLAVE 서명 검증, RMP 페이지 스플라이싱 차단, VMSA 암호화 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md) | `teeconfidential` / `cloud` |
+| 60 | [양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 랩](./60_quantum_cryptanalysis_lab/) | 쇼어(Shor) QPE 주기 탐색 인수분해 시도, 하이브리드 KEM 캡슐화, BKZ-40 격자 기저 축소 SVP 난제, SNDL 방어 Ephemeral PFS, 상수시간 NTT 마스킹 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md) | `quantumcrypt` / `crypto` |
+| 61 | [제로 트러스트 API 게이트웨이 & 워크로드 신원 방어 랩](./61_zero_trust_api_gateway_lab/) | Envoy WASM 헤더 스머글링 주입 & mTLS SAN URI 검증, 위조 SPIFFE SVID 주입 vs SPIRE 커널 증명, RFC 9449 DPoP 증명 바인딩, GraphQL AST 순환 중첩 복잡도 폭탄 방어 | ★★★★★ | [22장 API 보안](../22_API_Security/README.md) | `ztnaapi` / `zerotrust` |
+| 62 | [AI 에이전트 MCP 보안 & 제로 트러스트 도구 방어 랩](./62_ai_agent_mcp_security_lab/) | MCP 도구 스키마 오염 & 파라미터 변조 방어, Confused Deputy 권한 승계 호스트 파일 탈취 차단, 간접 프롬프트 인젝션 & DLP 시크릿 마스킹, HMAC-SHA256 도구 호출 증명 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/README.md) | `aimcp` / `ai` |
+| 63 | [자율 사이버 방어 에이전트 & 실시간 인시던트 오케스트레이션 랩](./63_autonomous_defense_agent_lab/) | 보안 텔레메트리 인제스천 오염 & 프롬프트 인젝션 차단, 환각/오염 대응 플레이북 파이썬 AST 정적 검증, eBPF Dual-Stack XDP 자율 격리, HMAC-SHA256 SOAR 조치 원장 & G3 거버넌스 | ★★★★★ | [18장 보안관제](../18_BlueTeam_SOC/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `autosec` / `ai` |
 
 ---
 
@@ -480,6 +488,74 @@ docker-compose --version
 - **교재 챕터 연계**: [57장 양자 암호학 심층 딥다이브](../57_Quantum_Cryptography/07_post_quantum_cryptography_and_lattice_migration_deepdive.md)
 - **워게임 트랙**: `pqcmigrate` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 55` (웹 콘솔 & PQC 게이트웨이: `http://localhost:8055`)
+
+### 56. eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩 (eBPFShield)
+- eBPF 커널 시스콜 텔레메트리 및 Ring Buffer 이벤트 스트리밍
+- task_struct comm 프로세스 위장 및 프로세스 할로잉 색출
+- bpf_override_return 루트킷 탐지 및 eBPF LSM 정책 적용
+- **교재 챕터 연계**: [26장 리눅스 하드닝](../26_Linux_Hardening/README.md)
+- **워게임 트랙**: `ebpfsec` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 56` (웹 콘솔: `http://localhost:8056`)
+
+### 57. 바이너리 보호 & 안티 리버싱 능동 방어 랩 (AntiReversingShield)
+- 동적 안티디버깅(ptrace/BeingDebugged) 우회 및 무력화
+- ROR13 API 해싱 역산 및 동적 IAT 복원
+- OEP 언패킹 및 Anti-VM/RDTSC 타이밍 분석 방어
+- **교재 챕터 연계**: [03장 시스템 해킹](../03_System_Hacking/README.md)
+- **워게임 트랙**: `antire` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 57` (웹 콘솔: `http://localhost:8057`)
+
+### 58. MicroVM 하이퍼바이저 탈출 & 격리 하드닝 랩 (MicrovmHypervisorEscapeLab)
+- VM-Exit EPT 위반 & MMIO 에뮬레이션 인터셉트
+- Virtio-Net vring OOB 힙 오염 공격 분석 및 완화
+- KVM vCPU MSR_LSTAR 레지스터 스머글링 및 호스트 주소 유출 차단
+- Seccomp BPF & Landlock LSM MicroVM 능동 하드닝
+- **교재 챕터 연계**: [14장 클라우드 보안](../14_Cloud_Security/README.md)
+- **워게임 트랙**: `hypervisor` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 58` (웹 콘솔: `http://localhost:8058`)
+
+### 59. 기밀 컴퓨팅 TEE & 하드웨어 메모리 암호화 랩 (ConfidentialComputingLab)
+- AMD SEV-SNP & Intel TDX AES-256-XTS 하드웨어 메모리 암호화 분석
+- 하드웨어 보안 프로세서 원격 증명(Attestation) & MRENCLAVE 서명 검증
+- RMP 페이지 스플라이싱 차단 및 vCPU 레지스터 상태(VMSA) 암호화
+- **교재 챕터 연계**: [57장 양자 암호학](../57_Quantum_Cryptography/README.md)
+- **워게임 트랙**: `teeconfidential` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 59` (웹 콘솔: `http://localhost:8059`)
+
+### 60. 양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 랩 (QuantumCryptanalysisLab)
+- 쇼어(Shor) QPE 주기 탐색 인수분해 시도 및 하이브리드 KEM 캡슐화
+- BKZ-40 격자 기저 축소 SVP 난제 및 FIPS 203 모듈 격자(k=3) 방어
+- SNDL 도청 차단 Ephemeral PFS 및 상수시간 NTT 다항식 마스킹
+- **교재 챕터 연계**: [57장 양자 암호학](../57_Quantum_Cryptography/README.md)
+- **워게임 트랙**: `quantumcrypt` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 60` (웹 콘솔: `http://localhost:8060`)
+
+### 61. 제로 트러스트 API 게이트웨이 & 워크로드 신원 방어 랩 (ZeroTrustApiGatewayLab)
+- Envoy WASM 헤더 스머글링 주입 및 mTLS SAN URI 상호 인증 방어
+- 위조 SPIFFE SVID 워크로드 토큰 주입 및 SPIRE 커널 증명 방어
+- 탈취된 Bearer 토큰 횡적 재전송 차단 via RFC 9449 DPoP 증명 바인딩
+- GraphQL AST 순환 중첩 복잡도 폭탄(DoW) 및 쿼리 심도 제한
+- **교재 챕터 연계**: [22장 API 보안](../22_API_Security/README.md)
+- **워게임 트랙**: `ztnaapi` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 61` (웹 콘솔: `http://localhost:8061`)
+
+### 62. AI 에이전트 MCP 보안 & 제로 트러스트 도구 방어 랩 (AiAgentMcpSecurityLab)
+- Model Context Protocol (MCP) 도구 스키마 오염 및 파라미터 변조 방어
+- Confused Deputy 권한 승계 호스트 파일 탈취 및 SSRF 가상화 샌드박스 차단
+- 도구 페이로드 은닉 간접 프롬프트 인젝션 및 DLP 시크릿 마스킹
+- HMAC-SHA256 도구 호출 증명 및 G1-G3 인간 개입 승인 거버넌스
+- **교재 챕터 연계**: [69장 LLM 보안](../69_LLM_Security/README.md)
+- **워게임 트랙**: `aimcp` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 62` (웹 콘솔: `http://localhost:8062`)
+
+### 63. 자율 사이버 방어 에이전트 & 실시간 인시던트 오케스트레이션 랩 (AutonomousDefenseAgentLab)
+- 보안 텔레메트리 인제스천 오염 및 프롬프트 인젝션 차단 방어
+- 환각/오염된 침해사고 대응 플레이북 실행 및 파이썬 AST 정적 검증 방어
+- 자율 격리 정책 드리프트 및 eBPF Dual-Stack (IPv4+IPv6) 완전 격리 방어
+- SOAR 조치 원장 위조 및 HMAC-SHA256 암호학적 서명(Attestation) 검증
+- **교재 챕터 연계**: [18장 보안관제](../18_BlueTeam_SOC/README.md), [69장 LLM 보안](../69_LLM_Security/README.md)
+- **워게임 트랙**: `autosec` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 63` (웹 콘솔: `http://localhost:8063`)
 
 ---
 

@@ -37,8 +37,8 @@ vhack — VibeHacking CLI
 명령어:
   list        전체 75개 섹션 목록 표시
   study       섹션 파일 열람
-  lab         Docker 실습 환경 관리 (01~52)
-  dashboard   시스템 리소스, 53개 랩 상태, 워게임 진행도, 보안 지표 통합 대시보드 (aliases: status, stats)
+  lab         Docker 실습 환경 관리 (01~63)
+  dashboard   시스템 리소스, 63개 랩 상태, 워게임 진행도, 보안 지표 통합 대시보드 (aliases: status, stats)
   benchmark   실습 랩 기동 지연시간, 헬스체크 및 메모리 성능 벤치마크 진단
   search      전체 마크다운 문서 검색
   info        섹션 상세 정보
@@ -691,7 +691,7 @@ root@vibe:/perimeter$ submit FLAG{...}   # 정답 제출 → ACCESS GRANTED
 
 ## 12. vhack dashboard (status) — 통합 관제 대시보드
 
-시스템 리소스, 59개 랩 실행 상태, 71개 트랙 워게임 진행도, 보안 지표를 종합적으로 시각화하는 터미널 대시보드입니다.
+시스템 리소스, 63개 랩 실행 상태, 75개 트랙 워게임 진행도, 보안 지표를 종합적으로 시각화하는 터미널 대시보드입니다.
 
 ```bash
 # ANSI 터미널 시각화 대시보드 출력
@@ -711,11 +711,11 @@ vhack dashboard --json
 실습 랩 컨테이너 기동 지연시간, 헬스체크 응답 속도 및 메모리 점유율을 벤치마킹하여 성능 지표를 산출합니다.
 
 ```bash
-# 전체 53개 실습 랩 일괄 벤치마크 (Mock 시뮬레이션 모드)
+# 전체 63개 실습 랩 일괄 벤치마크 (Mock 시뮬레이션 모드)
 vhack benchmark --all --dry-run
 
 # 특정 실습 랩 벤치마크
-vhack benchmark --lab-id 01 16 52 --dry-run
+vhack benchmark --lab-id 01 16 52 63 --dry-run
 
 # 벤치마크 결과를 파일로 저장
 vhack benchmark --all --dry-run -o reports/benchmark_report.json

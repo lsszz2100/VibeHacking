@@ -139,11 +139,11 @@
   - `vhack play`: 75개 트랙 2,625문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리, 0o600 권한 보호)
   - `vhack drill`: 10대 보안 기술팀 공방전 자동 훈련 및 점수 산출 (`vhack drill [--all | --team <tid> | --lab <lid>]`)
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
-  - `vhack solve`: 61개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 10종, 디스크, 포트 8000~8061 가용성 등 시스템 진단
-  - `vhack lab test [--all | <lab_id>]`: 61개 실습 랩 자동 무결성 검증 (전체 685+개 Pytest All Green)
-  - `vhack lab status`: 61개 랩 종합 상태 대시보드
-  - `vhack report summary`: 61개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
+  - `vhack solve`: 63개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 10종, 디스크, 포트 8000~8063 가용성 등 시스템 진단
+  - `vhack lab test [--all | <lab_id>]`: 63개 실습 랩 자동 무결성 검증 (전체 700+개 Pytest All Green)
+  - `vhack lab status`: 63개 랩 종합 상태 대시보드
+  - `vhack report summary`: 63개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
   - `vhack disclaimer` / `vhack legal`: 법적 고지, 정보통신망법/CFAA 처벌 법령, AS-IS 면책 안내
 - **CI/CD 및 자동 색인 파이프라인**:
   - [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml): Labs 01~56, `vhack doctor`, Pytest All Green, Wargame 4대 엄격 검증 스위트 자동화
