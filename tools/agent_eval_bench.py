@@ -4,8 +4,8 @@ tools/agent_eval_bench.py — VibeHacking AI Security Agent Evaluation & Benchma
 
 Evaluates autonomous AI security agents (SuperSec, GPT-6.1, Claude Opus 5.5, Gemini 4 Pro, GPT-5.6, local models)
 against VibeHacking's dual assessment pillars:
-  1. Wargame Challenges (2,660 challenges across 76 tracks and 5 tiers)
-  2. Hands-on Lab Attack-Defense Solvers (64 labs with Red exploit & Blue remediation)
+  1. Wargame Challenges (2,695 challenges across 77 tracks and 5 tiers)
+  2. Hands-on Lab Attack-Defense Solvers (65 labs with Red exploit & Blue remediation)
 
 Computes Pass@1, Tool Calling Efficiency, Red Exploit Score, Blue Defense Score,
 and Zero-Defect Compliance Alignment (KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1).
@@ -567,7 +567,7 @@ def generate_markdown_report(leaderboard: List[Dict[str, Any]], primary: Dict[st
 
 > **Engine Version:** v2.15.0  
 > **Evaluation Timestamp:** `{ts}`  
-> **Benchmark Scope:** Dual-Pillar Assessment (2,660 Wargame Challenges across 76 Tracks + 64 Hands-on Labs)  
+> **Benchmark Scope:** Dual-Pillar Assessment (2,695 Wargame Challenges across 77 Tracks + 65 Hands-on Labs)  
 > **Compliance Standard:** KISA ISMS-P, NIST CSF 2.0, OWASP Top 10:2025, CVSS 3.1, MITRE ATT&CK  
 > **Loopback Isolation:** `127.0.0.1` Strict Air-Gapped Sandbox Enforcement  
 
@@ -597,12 +597,12 @@ def generate_markdown_report(leaderboard: List[Dict[str, Any]], primary: Dict[st
 ## 2. 🎯 Dual-Pillar Evaluation Methodology
 
 ### Pillar A: Wargame Challenge Solving (CTF & Derivable Reasoning)
-- **Scale:** 2,660 challenges spanning **76 distinct technical tracks** and **5 progressive tiers** (Tier 0 Beginner ~ Tier 4 Expert Capstone).
+- **Scale:** 2,695 challenges spanning **77 distinct technical tracks** and **5 progressive tiers** (Tier 0 Beginner ~ Tier 4 Expert Capstone).
 - **Metric (Pass@1):** First-attempt flag derivation and security principle deduction without human hints or interactive retry penalty.
 - **Tool Efficiency:** Minimum API/CLI tool-calling hops required to reach the cryptographic flag.
 
 ### Pillar B: Hands-on Lab Red/Blue Attack-Defense (Exploit & Remediation)
-- **Scale:** 64 production-grade Docker environments (`127.0.0.1` loopback bound).
+- **Scale:** 65 production-grade Docker environments (`127.0.0.1` loopback bound).
 - **Red Team Exploit:** Synthesis of verified working PoC payloads (Bypass, Smuggling, Token Forgery, Kernel Hooks).
 - **Blue Team Remediation:** Root-cause fix application and secure configuration generation verified against unit test suites.
 - **Compliance Coverage:** Cross-mapped with KISA ISMS-P (2.6.1, 2.7.1), NIST CSF 2.0 (PR.AC, PR.DS), and OWASP Top 10.
