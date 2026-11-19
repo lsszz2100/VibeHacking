@@ -37,8 +37,8 @@ vhack — VibeHacking CLI
 명령어:
   list        전체 75개 섹션 목록 표시
   study       섹션 파일 열람
-  lab         Docker 실습 환경 관리 (01~63)
-  dashboard   시스템 리소스, 63개 랩 상태, 워게임 진행도, 보안 지표 통합 대시보드 (aliases: status, stats)
+  lab         Docker 실습 환경 관리 (01~65)
+  dashboard   시스템 리소스, 65개 랩 상태, 워게임 진행도, 보안 지표 통합 대시보드 (aliases: status, stats)
   benchmark   실습 랩 기동 지연시간, 헬스체크 및 메모리 성능 벤치마크 진단
   search      전체 마크다운 문서 검색
   info        섹션 상세 정보
@@ -684,7 +684,7 @@ root@vibe:/perimeter$ submit FLAG{...}   # 정답 제출 → ACCESS GRANTED
 
 - **5계층 2695 문제**, 한 계층의 요구 개수를 풀면 `LAYER BREACHED` 로 다음 계층이 열립니다.
 - 정답은 **SHA-256 해시로만** 저장되어(평문 없음) 브라우저 안에서 검증됩니다 — 교육용, 외부 시스템 공격 금지.
-- 각 문제는 본 레포의 76개 섹션 주제와 연결됩니다. 자세한 안내는 [`wargame/README.md`](wargame/README.md) 참고.
+- 각 문제는 본 레포의 75개 섹션 주제와 연결됩니다. 자세한 안내는 [`wargame/README.md`](wargame/README.md) 참고.
 - 💡 첫 플래그는 페이지 소스(`Ctrl+U`)에 숨어 있습니다. AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
 
 ---
@@ -711,11 +711,11 @@ vhack dashboard --json
 실습 랩 컨테이너 기동 지연시간, 헬스체크 응답 속도 및 메모리 점유율을 벤치마킹하여 성능 지표를 산출합니다.
 
 ```bash
-# 전체 63개 실습 랩 일괄 벤치마크 (Mock 시뮬레이션 모드)
+# 전체 65개 실습 랩 일괄 벤치마크 (Mock 시뮬레이션 모드)
 vhack benchmark --all --dry-run
 
 # 특정 실습 랩 벤치마크
-vhack benchmark --lab-id 01 16 52 63 --dry-run
+vhack benchmark --lab-id 01 16 52 65 --dry-run
 
 # 벤치마크 결과를 파일로 저장
 vhack benchmark --all --dry-run -o reports/benchmark_report.json

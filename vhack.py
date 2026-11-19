@@ -926,7 +926,7 @@ def _lab_solve(lab_id: str | None, step: int = 1) -> None:
 
     solver_data = get_lab_solver(lab_id)
     if not solver_data:
-        print(red(f"✗ Lab {lab_id}에 대한 솔버가 없습니다. (01~20 지원)"))
+        print(red(f"✗ Lab {lab_id}에 대한 솔버가 없습니다. (01~{len(LABS):02d} 지원)"))
         return
 
     res = run_lab_solve_step(lab_id, step)
@@ -1099,7 +1099,7 @@ def _lab_test(lab_id: str | None, test_all: bool = False) -> None:
         print("  개별 랩 단위 또는 전체 랩 테스트 스위트를 수행할 수 있습니다.\n")
         print(f"  {dim('사용법:')}")
         print(f"    {cyan('vhack lab test 14')}    — Lab 14 (문서형 악성코드 랩) 테스트 실행")
-        print(f"    {cyan('vhack lab test --all')} — 전체 29개 랩 테스트 일괄 실행\n")
+        print(f"    {cyan('vhack lab test --all')} — 전체 {len(LABS)}개 랩 테스트 일괄 실행\n")
         print("  " + "─" * 65)
         for lid, meta in sorted(LABS.items()):
             test_dir = LABS_DIR / meta["dir"] / "tests"
@@ -2141,7 +2141,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py list               섹션 목록
           python3 vhack.py list --search web  "web" 포함 섹션 검색
           python3 vhack.py dashboard          시스템/랩/워게임 통합 관제 대시보드
-          python3 vhack.py benchmark --all    전체 62개 랩 성능 및 지연시간 벤치마크
+          python3 vhack.py benchmark --all    전체 65개 랩 성능 및 지연시간 벤치마크
           python3 vhack.py study 5            웹 해킹 섹션 파일 목록
           python3 vhack.py study 5 1          첫 번째 파일 읽기
           python3 vhack.py lab ls             실습 환경 목록
@@ -2150,7 +2150,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab stop --all     모든 랩 종료
           python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
           python3 vhack.py lab test 16        Lab 16 무결성 테스트
-          python3 vhack.py lab test --all     전체 62개 랩 테스트 일괄 실행
+          python3 vhack.py lab test --all     전체 65개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
@@ -2184,31 +2184,31 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub = p_lab.add_subparsers(dest="lab_cmd", metavar="<서브명령>")
     lab_sub.add_parser("ls", help="실습 환경 목록")
     p_start = lab_sub.add_parser("start", help="실습 환경 시작")
-    p_start.add_argument("lab_id", metavar="랩번호", help="01~61")
+    p_start.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_stop = lab_sub.add_parser("stop", help="실습 환경 종료")
-    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~61")
+    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~65")
     p_stop.add_argument("--all", action="store_true", help="모든 랩 종료")
     lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
     p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
-    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~61 (생략 시 안내)")
-    p_test.add_argument("--all", action="store_true", help="전체 61개 랩 테스트 일괄 실행")
+    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~65 (생략 시 안내)")
+    p_test.add_argument("--all", action="store_true", help="전체 65개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 실시간 로그 보기")
-    p_logs.add_argument("lab_id", metavar="랩번호", help="01~61")
+    p_logs.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
     p_logs.add_argument("-n", "--tail", type=int, default=50, help="출력할 마지막 줄 수 (기본값: 50)")
     p_solve = lab_sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
-    p_solve.add_argument("lab_id", metavar="랩번호", help="01~61")
+    p_solve.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
 
     # logs (top-level shortcut)
     p_top_logs = sub.add_parser("logs", help="실습 랩 컨테이너 실시간 로그 확인")
-    p_top_logs.add_argument("lab_id", metavar="랩번호", help="01~61")
+    p_top_logs.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_top_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
     p_top_logs.add_argument("-n", "--tail", type=int, default=50, help="출력할 마지막 줄 수 (기본값: 50)")
 
     # solve (top-level shortcut)
     p_top_solve = sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
-    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~61")
+    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_top_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
 
     # search
@@ -2241,8 +2241,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_wg.add_argument("--cli", action="store_true", help="터미널 CUI 워게임 모드로 실행")
 
     # play
-    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (73개 트랙, 2,555문제 CLI 모드)")
-    p_play.add_argument("--list", action="store_true", help="73개 트랙 로드맵 및 진행도 요약 출력")
+    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (77개 트랙, 2,695문제 CLI 모드)")
+    p_play.add_argument("--list", action="store_true", help="77개 트랙 로드맵 및 진행도 요약 출력")
     p_play.add_argument("--search", metavar="KEYWORD", help="키워드로 챌린지 검색")
     p_play.add_argument("--chal", metavar="CHAL_ID", help="특정 챌린지 상세 지문 및 힌트 조회")
     p_play.add_argument("--submit", nargs=2, metavar=("CHAL_ID", "FLAG"), help="터미널에서 직접 플래그 제출")
@@ -2254,13 +2254,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
     # dashboard (aliases: status, stats)
-    p_dash = sub.add_parser("dashboard", aliases=["status", "stats"], help="통합 관제 대시보드 (시스템 리소스, 62개 랩 상태, 워게임 진행도, 보안 지표)")
+    p_dash = sub.add_parser("dashboard", aliases=["status", "stats"], help="통합 관제 대시보드 (시스템 리소스, 65개 랩 상태, 워게임 진행도, 보안 지표)")
     p_dash.add_argument("--json", action="store_true", help="기계 판독형 JSON 포맷으로 출력")
 
     # benchmark
     p_bench = sub.add_parser("benchmark", help="실습 랩 기동 지연시간, 헬스체크 및 메모리 성능 벤치마크")
     p_bench.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="벤치마크 대상 랩 번호 (예: 01 16 61)")
-    p_bench.add_argument("--all", action="store_true", help="전체 62개 랩 일괄 벤치마크")
+    p_bench.add_argument("--all", action="store_true", help="전체 65개 랩 일괄 벤치마크")
     p_bench.add_argument("--dry-run", "--mock", action="store_true", help="Docker 데몬 없이 내부 검증 모드로 벤치마크 시뮬레이션")
     p_bench.add_argument("-n", "--iterations", type=int, default=1, help="랩당 반복 측정 횟수 (기본값: 1)")
     p_bench.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
@@ -2271,7 +2271,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_disc.add_argument("--en", action="store_true", help="영문 면책조항 출력 (English version)")
 
     # portal
-    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (62개 랩 제어, 진단, 웹 리더 연계)")
+    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (65개 랩 제어, 진단, 웹 리더 연계)")
     p_portal.add_argument("--host", default="127.0.0.1", help="바인딩 호스트 IP (기본값: 127.0.0.1 - 보안 권장)")
     p_portal.add_argument("--port", type=int, default=8800, help="웹 서버 포트 (기본값: 8800)")
     p_portal.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
@@ -2290,14 +2290,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON/CSV, MITRE ATT&CK & CVSS 3.1)")
     report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
 
-    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 62개 랩)")
+    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 65개 랩)")
     p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 62)")
     p_rep_gen.add_argument("--severity", nargs="*", metavar="SEV", help="위험도 등급 필터 (Critical High Medium Low)")
     p_rep_gen.add_argument("--live", action="store_true", help="현재 실행 중인 랩 컨테이너 실시간 공격 표면 감지")
     p_rep_gen.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="출력 형식 (기본값: md)")
     p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
 
-    report_sub.add_parser("summary", help="전체 62개 랩 취약점 통계 및 심각도 요약")
+    report_sub.add_parser("summary", help="전체 65개 랩 취약점 통계 및 심각도 요약")
     report_sub.add_parser("list-templates", help="지원되는 보고서 포맷 및 템플릿 목록")
 
     # setup-docker
@@ -2310,7 +2310,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_drill = sub.add_parser("drill", help="10대 보안 기술팀 공방전 자동 훈련 엔진 (Red vs Blue 시뮬레이션 & Purple Team 점수 산출)")
     p_drill.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     p_drill.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 62개 랩 종합 공방전 실행")
+    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 65개 랩 종합 공방전 실행")
     p_drill.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")
@@ -2449,7 +2449,7 @@ def cmd_report(args: argparse.Namespace) -> None:
 
 
 def cmd_dashboard(args: argparse.Namespace) -> None:
-    """통합 관제 대시보드 (시스템 리소스, 62개 랩 상태, 73개 트랙 워게임 진행도, 보안 지표)"""
+    """통합 관제 대시보드 (시스템 리소스, 65개 랩 상태, 77개 트랙 워게임 진행도, 보안 지표)"""
     import platform
     import shutil
     import json
@@ -2859,7 +2859,7 @@ def cmd_disclaimer(args: argparse.Namespace) -> None:
     else:
         print(bold(cyan("\n⚖️  VibeHacking 법적 고지 및 면책조항 (Legal Notice & Disclaimer)\n")))
         print(bold("1. 🛡️ 교육 및 학술 연구 목적 한정 (Educational & Defensive Only):"))
-        print("   VibeHacking의 모든 교재(75개 섹션), 62개 실습 랩, 워게임 및 CLI 도구는")
+        print("   VibeHacking의 모든 교재(75개 섹션), 65개 실습 랩, 워게임 및 CLI 도구는")
         print("   화이트햇 보안 교육, 방어 역량 강화, 합법적 모의해킹 훈련 목적으로만 제공됩니다.")
         print(bold("\n2. 🚫 무단 시스템 침투 및 공격 엄격 금지 (Strict Prior Authorization):"))
         print("   시스템 소유자의 명시적인 사전 서면 승인(Written Consent) 없는 제3자 시스템 대상")

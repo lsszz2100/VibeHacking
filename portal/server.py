@@ -478,7 +478,7 @@ def get_team_labs_status(team_id: str):
 
 @app.get("/api/compliance/summary")
 def get_compliance_summary():
-    """64개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
+    """65개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
     try:
         from tools.report_generator import SecurityReportGenerator
         gen = SecurityReportGenerator()

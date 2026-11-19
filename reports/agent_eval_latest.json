@@ -1,7 +1,7 @@
 [
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:26.233881+00:00",
+    "timestamp": "2026-11-19T03:30:46.025358+00:00",
     "model_key": "supersec",
     "model_name": "SuperSec-Agent-v2.15 (VibeHacking Autonomous SOTA)",
     "provider": "VibeHacking Enterprise Engine",
@@ -78,13 +78,13 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.64,
+    "duration_seconds": 0.65,
     "composite_score": 100.0,
     "avg_tool_turns": 1.0
   },
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:27.874107+00:00",
+    "timestamp": "2026-11-19T03:30:46.680286+00:00",
     "model_key": "gpt-6.1",
     "model_name": "GPT-6.1 / GPT-6.1-Codex (Frontier Exploit Engineering)",
     "provider": "OpenAI Frontier",
@@ -161,13 +161,13 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.74,
+    "duration_seconds": 0.76,
     "composite_score": 100.0,
     "avg_tool_turns": 1.6
   },
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:31.041322+00:00",
+    "timestamp": "2026-11-19T03:30:48.152016+00:00",
     "model_key": "gemini-4-pro",
     "model_name": "Gemini 4 Pro (Massive Context Deep Reasoning)",
     "provider": "Google DeepMind Frontier",
@@ -244,13 +244,13 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.23,
+    "duration_seconds": 0.7,
     "composite_score": 100.0,
     "avg_tool_turns": 1.4
   },
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:32.277992+00:00",
+    "timestamp": "2026-11-19T03:30:48.851988+00:00",
     "model_key": "gpt-5.6",
     "model_name": "GPT-5.6 (Deep Reasoning & SIEM/YARA Rule Engine)",
     "provider": "OpenAI Advanced",
@@ -327,13 +327,13 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.05,
+    "duration_seconds": 0.89,
     "composite_score": 100.0,
     "avg_tool_turns": 1.4
   },
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:29.617848+00:00",
+    "timestamp": "2026-11-19T03:30:47.442545+00:00",
     "model_key": "claude-opus-5.5",
     "model_name": "Claude Opus 5.5 (Flagship Long-Horizon Audit)",
     "provider": "Anthropic Frontier",
@@ -410,13 +410,13 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.42,
+    "duration_seconds": 0.71,
     "composite_score": 93.0,
     "avg_tool_turns": 1.8
   },
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:33.324714+00:00",
+    "timestamp": "2026-11-19T03:30:49.740139+00:00",
     "model_key": "gpt-oss-120b",
     "model_name": "GPT-OSS 120B (Air-Gapped Local Model)",
     "provider": "Open-Source / Air-Gapped",
@@ -493,13 +493,13 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.27,
+    "duration_seconds": 0.65,
     "composite_score": 93.0,
     "avg_tool_turns": 2.0
   },
   {
     "benchmark_version": "2.15.0",
-    "timestamp": "2026-11-19T01:10:34.600741+00:00",
+    "timestamp": "2026-11-19T03:30:50.392656+00:00",
     "model_key": "baseline-llm",
     "model_name": "Baseline-ZeroShot-LLM (Direct Prompting)",
     "provider": "Standard General LLM (Zero-Shot)",
@@ -576,7 +576,7 @@
       ]
     },
     "labs": null,
-    "duration_seconds": 1.21,
+    "duration_seconds": 0.48,
     "composite_score": 72.0,
     "avg_tool_turns": 4.8
   }

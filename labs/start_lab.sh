@@ -126,6 +126,18 @@ start_lab() {
         "51_ebpf_runtime_security_lab"
         "52_c2_tunneling_and_exfiltration_lab"
         "53_ad_bloodhound_lab"
+        "54_ai_agent_sandbox_escape_lab"
+        "55_pqc_migration_lab"
+        "56_ebpf_kernel_security_lab"
+        "57_anti_reversing_shield_lab"
+        "58_hypervisor_escape_lab"
+        "59_confidential_computing_lab"
+        "60_quantum_cryptanalysis_lab"
+        "61_zero_trust_api_gateway_lab"
+        "62_ai_agent_mcp_security_lab"
+        "63_autonomous_defense_agent_lab"
+        "64_container_escape_lsm_lab"
+        "65_pqc_hybrid_tls_lab"
     )
 
     local lab_names=(
@@ -183,6 +195,18 @@ start_lab() {
         "클라우드 네이티브 eBPF 런타임 보안 랩"
         "C2 네트워크 터널링 & 은닉 채널 방어 랩"
         "AD BloodHound 공격 그래프 & ACL 익스플로잇 랩"
+        "AI 에이전트 샌드박스 탈출 & Landlock 방어 랩"
+        "양자 내성 암호 마이그레이션 & FIPS 203/204 랩"
+        "eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩"
+        "바이너리 보호 & 안티 리버싱 능동 방어 랩"
+        "MicroVM 하이퍼바이저 탈출 & 격리 하드닝 랩"
+        "기밀 컴퓨팅 TEE & 하드웨어 메모리 암호화 랩"
+        "양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 랩"
+        "제로 트러스트 API 게이트웨이 & 워크로드 신원 방어 랩"
+        "AI 에이전트 MCP 보안 & 제로 트러스트 도구 방어 랩"
+        "자율 사이버 방어 에이전트 & 실시간 인시던트 오케스트레이션 랩"
+        "컨테이너 탈출 & eBPF LSM 격리 방어 랩"
+        "포스트 양자 하이브리드 TLS 1.3 랩"
     )
 
     local lab_ports=(
@@ -240,10 +264,22 @@ start_lab() {
         "웹 콘솔 & eBPF 런타임 보안 대시보드: http://localhost:8051"
         "웹 콘솔 & C2 터널 방어 콘솔: http://localhost:8052"
         "웹 콘솔 & AD 그래프 콘솔: http://localhost:8053"
+        "웹 콘솔 & 에이전트 샌드박스: http://localhost:8054"
+        "웹 콘솔 & PQC 마이그레이션: http://localhost:8055"
+        "웹 콘솔 & eBPF 커널 보안: http://localhost:8056"
+        "웹 콘솔 & 안티 리버싱 실드: http://localhost:8057"
+        "웹 콘솔 & 하이퍼바이저 격리: http://localhost:8058"
+        "웹 콘솔 & 기밀 컴퓨팅 TEE: http://localhost:8059"
+        "웹 콘솔 & 양자 암호 분석: http://localhost:8060"
+        "웹 콘솔 & 제로 트러스트 API: http://localhost:8061"
+        "웹 콘솔 & MCP 보안 실전: http://localhost:8062"
+        "웹 콘솔 & 자율 방어 에이전트: http://localhost:8063"
+        "웹 콘솔 & LSM 컨테이너 탈출 방어: http://localhost:8064"
+        "웹 콘솔 & 포스트 양자 TLS 1.3: http://localhost:8065"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 53 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~53 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 65 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~65 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -347,6 +383,9 @@ usage() {
     echo "  18    AI 에이전트 & MCP 보안 랩 (간접 프롬프트 주입, 과도한 권한, MCP 도구 섀도잉, 단기 기능 토큰)"
     echo "  31    OAuth 2.0 & OIDC SSO 랩 (Redirect URI 우회, PKCE 다운그레이드, JWT Key Confusion)"
     echo "  32    BGP 라우팅 하이재킹 & RPKI ROA 실전 랩 (Exact Prefix 하이재킹, Sub-prefix LPM, AS-Path 위조 & RPKI)"
+    echo "  64    컨테이너 탈출 & eBPF LSM 격리 방어 랩 (비특권 User Namespace, cgroup v2, runc fd 탈출 차단)"
+    echo "  65    포스트 양자 하이브리드 TLS 1.3 랩 (SNDL 방어, ML-KEM-768/ML-DSA-65 복합 서명)"
+    echo "  (01~65 번호 지정 가능, 또는 'vhack lab start <번호>' 권장)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
@@ -355,6 +394,7 @@ usage() {
     echo "  $0 15        # Web3 & 스마트 컨트랙트 랩만 시작"
     echo "  $0 16        # 메모리 포렌식 랩만 시작"
     echo "  $0 32        # BGP 라우팅 하이재킹 & RPKI 랩만 시작"
+    echo "  $0 65        # 포스트 양자 하이브리드 TLS 1.3 랩 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""
@@ -370,55 +410,19 @@ check_deps
 ARG="${1:-}"
 
 case "$ARG" in
-    01|1) start_lab 1 ;;
-    02|2) start_lab 2 ;;
-    03|3) start_lab 3 ;;
-    04|4) start_lab 4 ;;
-    05|5) start_lab 5 ;;
-    06|6) start_lab 6 ;;
-    07|7) start_lab 7 ;;
-    08|8) start_lab 8 ;;
-    09|9) start_lab 9 ;;
-    10)   start_lab 10 ;;
-    11)   start_lab 11 ;;
-    12)   start_lab 12 ;;
-    13)   start_lab 13 ;;
-    14)   start_lab 14 ;;
-    15)   start_lab 15 ;;
-    16)   start_lab 16 ;;
-    17)   start_lab 17 ;;
-    18)   start_lab 18 ;;
-    19)   start_lab 19 ;;
-    20)   start_lab 20 ;;
-    21)   start_lab 21 ;;
-    22)   start_lab 22 ;;
-    23)   start_lab 23 ;;
-    24)   start_lab 24 ;;
-    25)   start_lab 25 ;;
-    26)   start_lab 26 ;;
-    27)   start_lab 27 ;;
-    28)   start_lab 28 ;;
-    29)   start_lab 29 ;;
-    30)   start_lab 30 ;;
-    31)   start_lab 31 ;;
-    32)   start_lab 32 ;;
-    33)   start_lab 33 ;;
-    34)   start_lab 34 ;;
-    35)   start_lab 35 ;;
-    36)   start_lab 36 ;;
-    37)   start_lab 37 ;;
-    38)   start_lab 38 ;;
-    39)   start_lab 39 ;;
-    40)   start_lab 40 ;;
-    41)   start_lab 41 ;;
-    42)   start_lab 42 ;;
-    43)   start_lab 43 ;;
-    44)   start_lab 44 ;;
-    45)   start_lab 45 ;;
-    46)   start_lab 46 ;;
-
     all|ALL) start_all ;;
     ps|status) print_summary ;;
     ""|--help|-h) usage ;;
-    *) error "알 수 없는 인자: $ARG\n$(usage)" ;;
+    *)
+        if [[ "$ARG" =~ ^[0-9]+$ ]]; then
+            lab_int=$((10#$ARG))
+            if [[ $lab_int -ge 1 && $lab_int -le 65 ]]; then
+                start_lab "$lab_int"
+            else
+                error "잘못된 랩 번호: $ARG (1~65 사이)"
+            fi
+        else
+            error "알 수 없는 인자: $ARG\n$(usage)"
+        fi
+        ;;
 esac

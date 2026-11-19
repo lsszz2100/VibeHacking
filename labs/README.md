@@ -93,6 +93,8 @@ docker-compose --version
 | 61 | [제로 트러스트 API 게이트웨이 & 워크로드 신원 방어 랩](./61_zero_trust_api_gateway_lab/) | Envoy WASM 헤더 스머글링 주입 & mTLS SAN URI 검증, 위조 SPIFFE SVID 주입 vs SPIRE 커널 증명, RFC 9449 DPoP 증명 바인딩, GraphQL AST 순환 중첩 복잡도 폭탄 방어 | ★★★★★ | [22장 API 보안](../22_API_Security/README.md) | `ztnaapi` / `zerotrust` |
 | 62 | [AI 에이전트 MCP 보안 & 제로 트러스트 도구 방어 랩](./62_ai_agent_mcp_security_lab/) | MCP 도구 스키마 오염 & 파라미터 변조 방어, Confused Deputy 권한 승계 호스트 파일 탈취 차단, 간접 프롬프트 인젝션 & DLP 시크릿 마스킹, HMAC-SHA256 도구 호출 증명 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/README.md) | `aimcp` / `ai` |
 | 63 | [자율 사이버 방어 에이전트 & 실시간 인시던트 오케스트레이션 랩](./63_autonomous_defense_agent_lab/) | 보안 텔레메트리 인제스천 오염 & 프롬프트 인젝션 차단, 환각/오염 대응 플레이북 파이썬 AST 정적 검증, eBPF Dual-Stack XDP 자율 격리, HMAC-SHA256 SOAR 조치 원장 & G3 거버넌스 | ★★★★★ | [18장 보안관제](../18_BlueTeam_SOC/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `autosec` / `ai` |
+| 64 | [컨테이너 탈출 & eBPF LSM 격리 방어 랩](./64_container_escape_lsm_lab/) | 비특권 User Namespace 탈출 차단, Cgroup v2 release_agent 방어, runc 누출 fd 격리, eBPF LSM 링버퍼 모니터링 & SIGKILL | ★★★★★ | [14장 클라우드 보안](../14_Cloud_Security/README.md), [26장 커널 보안](../26_Linux_Kernel_and_Driver_Development/README.md) | `lsmsec` / `cloud` |
+| 65 | [포스트 양자 하이브리드 TLS 1.3 랩](./65_pqc_hybrid_tls_lab/) | SNDL(Store Now Decrypt Later) 도청 방어, X25519+ML-KEM-768 하이브리드 키 교환, ML-DSA-65 복합 서명, TLS 1.3 다운그레이드 방어, 상수 시간 격자 연산 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md) | `pqctls` / `crypto` |
 
 ---
 
@@ -565,6 +567,15 @@ docker-compose --version
 - **교재 챕터 연계**: [14장 클라우드 보안](../14_Cloud_Security/README.md), [26장 커널 보안](../26_Linux_Kernel_and_Driver_Development/README.md)
 - **워게임 트랙**: `lsmsec` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 64` (웹 콘솔: `http://localhost:8064`)
+
+### 65. 포스트 양자 하이브리드 TLS 1.3 & ML-KEM / ML-DSA 마이그레이션 랩 (PqcHybridTlsLab)
+- 고전 키 교환 취약점 및 HNDL/SNDL(Store Now Decrypt Later) 양자 도청 시나리오 분석
+- X25519 + ML-KEM-768 (Kyber) 하이브리드 키 캡슐화 및 HKDF 공유 비밀키 도출
+- ECDSA P-256 + ML-DSA-65 (Dilithium) 복합 이중 전자 서명 무결성 검증
+- TLS 1.3 다운그레이드 방어 카나리 토큰 및 상수 시간(Constant-time) NTT 마스킹 방어
+- **교재 챕터 연계**: [57장 양자 암호학](../57_Quantum_Cryptography/README.md)
+- **워게임 트랙**: `pqctls` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 65` (웹 콘솔: `http://localhost:8065`)
 
 ---
 
