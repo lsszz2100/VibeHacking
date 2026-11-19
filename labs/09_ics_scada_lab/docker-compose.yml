@@ -3,8 +3,8 @@ services:
     build: .
     container_name: ics_scada_lab
     ports:
-      - "8089:8089"
-      - "5020:5020"
+      - "127.0.0.1:8089:8089"
+      - "127.0.0.1:5020:5020"
     restart: unless-stopped
     labels:
       - "lab=09"

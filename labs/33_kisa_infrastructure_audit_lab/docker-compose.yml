@@ -5,7 +5,7 @@ services:
     build: .
     container_name: vhack-lab33-kisa
     ports:
-      - "8033:8033"
+      - "127.0.0.1:8033:8033"
     environment:
       - PORT=8033
     restart: unless-stopped

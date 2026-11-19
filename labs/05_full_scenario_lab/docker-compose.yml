@@ -41,7 +41,7 @@ services:
       internal_net:
         ipv4_address: 172.30.2.10
     ports:
-      - "8888:5000"
+      - "127.0.0.1:8888:5000"
     environment:
       - INTERNAL_API=http://172.30.2.20
       - DB_HOST=172.30.2.30

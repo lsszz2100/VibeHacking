@@ -3,7 +3,7 @@ services:
     build: .
     container_name: cicd_supply_chain_lab
     ports:
-      - "8012:8012"
+      - "127.0.0.1:8012:8012"
     restart: unless-stopped
     labels:
       - "lab=12"

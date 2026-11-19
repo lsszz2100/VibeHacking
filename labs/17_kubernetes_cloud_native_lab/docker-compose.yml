@@ -5,7 +5,7 @@ services:
     build: .
     container_name: kubeshield_lab
     ports:
-      - "8017:8017"
+      - "127.0.0.1:8017:8017"
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1

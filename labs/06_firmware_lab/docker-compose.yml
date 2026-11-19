@@ -29,7 +29,7 @@ services:
       firmware_lab_net:
         ipv4_address: 172.19.0.10
     ports:
-      - "8061:8080"
+      - "127.0.0.1:8061:8080"
     restart: unless-stopped
 
   # 취약한 웹 관리 패널 (펌웨어 업데이트 기능 시뮬레이션)
@@ -45,5 +45,5 @@ services:
       firmware_lab_net:
         ipv4_address: 172.19.0.20
     ports:
-      - "8062:8080"
+      - "127.0.0.1:8062:8080"
     restart: unless-stopped

@@ -18,11 +18,11 @@ services:
     container_name: pwn_lab_server
     restart: unless-stopped
     ports:
-      - "10001:10001"   # chal01: BOF 기초 (NX 없음)
-      - "10002:10002"   # chal02: ret2libc (NX 있음, ASLR 없음)
-      - "10003:10003"   # chal03: ROP 체인
-      - "10004:10004"   # chal04: 포맷 스트링
-      - "10005:10005"   # chal05: 힙 익스플로잇 (tcache poisoning)
+      - "127.0.0.1:10001:10001"   # chal01: BOF 기초 (NX 없음)
+      - "127.0.0.1:10002:10002"   # chal02: ret2libc (NX 있음, ASLR 없음)
+      - "127.0.0.1:10003:10003"   # chal03: ROP 체인
+      - "127.0.0.1:10004:10004"   # chal04: 포맷 스트링
+      - "127.0.0.1:10005:10005"   # chal05: 힙 익스플로잇 (tcache poisoning)
     networks:
       pwn_lab_net:
         ipv4_address: 172.17.0.10

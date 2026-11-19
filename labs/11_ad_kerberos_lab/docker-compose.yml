@@ -3,7 +3,7 @@ services:
     build: .
     container_name: ad_kerberos_lab
     ports:
-      - "8011:8011"
+      - "127.0.0.1:8011:8011"
     restart: unless-stopped
     labels:
       - "lab=11"

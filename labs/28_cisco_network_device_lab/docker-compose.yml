@@ -6,7 +6,7 @@ services:
       - "lab=lab"
       - "lab_id=28"
     ports:
-      - "8028:8028"
+      - "127.0.0.1:8028:8028"
     restart: unless-stopped
     networks:
       - netshield-net

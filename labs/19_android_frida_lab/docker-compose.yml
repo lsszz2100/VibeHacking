@@ -2,7 +2,7 @@ services:
   droidshield-app:
     build: .
     ports:
-      - "8019:8019"
+      - "127.0.0.1:8019:8019"
     environment:
       - PYTHONUNBUFFERED=1
       - LAB_FLAG_ROOT=FLAG{dr01d_r00t_byp4ss_succ3ss_9281}

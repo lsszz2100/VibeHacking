@@ -152,6 +152,7 @@ def test_get_lab_categories(client):
     assert "crypto" in data["categories"]
     assert "55" in data["categories"]["crypto"]["labs"]
     assert "60" in data["categories"]["crypto"]["labs"]
+    assert "65" in data["categories"]["crypto"]["labs"]
     assert "zerotrust" in data["categories"]
     assert "61" in data["categories"]["zerotrust"]["labs"]
     assert "ad" in data["categories"]

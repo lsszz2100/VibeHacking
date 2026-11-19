@@ -3,7 +3,7 @@ services:
     build: .
     container_name: vibehacking-lab40-irshield
     ports:
-      - "8040:8040"
+      - "127.0.0.1:8040:8040"
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1

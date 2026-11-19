@@ -434,11 +434,11 @@ def update_wargame_readme():
     content = re.sub(r'49 tracks', '50 tracks', content)
 
     # Tier counts: +7 each tier
-    content = re.sub(r'\| 0 \| Onboarding \| 188 \|', '| 0 | Onboarding \| 195 |', content)
-    content = re.sub(r'\| 1 \| Beginner \| 309 \|', '| 1 \| Beginner \| 316 |', content)
-    content = re.sub(r'\| 2 \| Intermediate \| 409 \|', '| 2 \| Intermediate \| 416 |', content)
-    content = re.sub(r'\| 3 \| Advanced \| 421 \|', '| 3 \| Advanced \| 428 |', content)
-    content = re.sub(r'\| 4 \| Expert \| 388 \|', '| 4 \| Expert \| 395 |', content)
+    content = re.sub(r'\| 0 \| Onboarding \| 188 \|', r'| 0 | Onboarding | 195 |', content)
+    content = re.sub(r'\| 1 \| Beginner \| 309 \|', r'| 1 | Beginner | 316 |', content)
+    content = re.sub(r'\| 2 \| Intermediate \| 409 \|', r'| 2 | Intermediate | 416 |', content)
+    content = re.sub(r'\| 3 \| Advanced \| 421 \|', r'| 3 | Advanced | 428 |', content)
+    content = re.sub(r'\| 4 \| Expert \| 388 \|', r'| 4 | Expert | 395 |', content)
 
     if '| `dbsec` |' not in content:
         pattern = r'(\| `cloudiam` \|[^\n]+\n)'

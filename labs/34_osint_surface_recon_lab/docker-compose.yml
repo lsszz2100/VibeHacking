@@ -5,7 +5,7 @@ services:
     build: .
     container_name: vhack-lab34-osint
     ports:
-      - "8034:8034"
+      - "127.0.0.1:8034:8034"
     environment:
       - PORT=8034
     restart: unless-stopped

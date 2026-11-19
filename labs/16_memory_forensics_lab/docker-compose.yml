@@ -8,7 +8,7 @@ services:
     container_name: memory_forensics_lab
     restart: unless-stopped
     ports:
-      - "8016:8016"
+      - "127.0.0.1:8016:8016"
     environment:
       - HOST=0.0.0.0
       - PORT=8016

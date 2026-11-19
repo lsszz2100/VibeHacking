@@ -3,7 +3,7 @@ services:
     build: .
     container_name: ebpf_kernel_lab
     ports:
-      - "8013:8013"
+      - "127.0.0.1:8013:8013"
     restart: unless-stopped
     labels:
       - "lab=13"

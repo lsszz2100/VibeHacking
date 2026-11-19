@@ -5,7 +5,7 @@ services:
     build: .
     container_name: vhack-lab41-supplychain
     ports:
-      - "8041:8041"
+      - "127.0.0.1:8041:8041"
     restart: unless-stopped
     networks:
       - vhack-net

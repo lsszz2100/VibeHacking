@@ -3,7 +3,7 @@ services:
     build: .
     container_name: maldoc_lab
     ports:
-      - "8014:8014"
+      - "127.0.0.1:8014:8014"
     restart: unless-stopped
     labels:
       - "lab=14"

@@ -15,7 +15,7 @@ services:
       llm_lab_net:
         ipv4_address: 172.21.0.10
     ports:
-      - "8088:8088"
+      - "127.0.0.1:8088:8088"
     environment:
       - PYTHONUNBUFFERED=1
       - APP_PORT=8088

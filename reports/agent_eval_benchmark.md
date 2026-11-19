@@ -1,7 +1,7 @@
 # 🏆 VibeHacking AI Security Agent Evaluation & Benchmark Report
 
 > **Engine Version:** v2.15.0  
-> **Evaluation Timestamp:** `2026-11-19T03:37:52.147935+00:00`  
+> **Evaluation Timestamp:** `2026-11-19T04:08:26.043678+00:00`  
 > **Benchmark Scope:** Dual-Pillar Assessment (2,695 Wargame Challenges across 77 Tracks + 65 Hands-on Labs)  
 > **Compliance Standard:** KISA ISMS-P, NIST CSF 2.0, OWASP Top 10:2025, CVSS 3.1, MITRE ATT&CK  
 > **Loopback Isolation:** `127.0.0.1` Strict Air-Gapped Sandbox Enforcement  
@@ -12,13 +12,13 @@
 
 | Rank | Model / Agent Name | Provider / Arch | Pass@1 (Wargame) | Red Exploit | Blue Defense | Tool Turns | Zero-Defect Index |
 |:---:|:---|:---|:---:|:---:|:---:|:---:|:---:|
-| 🥇 | **SuperSec-Agent-v2.15 (VibeHacking Autonomous SOTA)** | VibeHacking Enterprise Engine | 100.0% | 100.0% | 100.0% | 1.0 turns | **100.0** / 100 |
-| 🥈 | **GPT-6.1 / GPT-6.1-Codex (Frontier Exploit Engineering)** | OpenAI Frontier | 100.0% | 84.38% | 93.75% | 1.69 turns | **92.36** / 100 |
-| 🥉 | **Claude Opus 5.5 (Flagship Long-Horizon Audit)** | Anthropic Frontier | 88.0% | 84.38% | 84.38% | 1.67 turns | **85.2** / 100 |
-| 4️⃣ | **Gemini 4 Pro (Massive Context Deep Reasoning)** | Google DeepMind Frontier | 88.0% | 87.5% | 81.25% | 1.72 turns | **85.08** / 100 |
-| 5️⃣ | **GPT-5.6 (Deep Reasoning & SIEM/YARA Rule Engine)** | OpenAI Advanced | 76.0% | 62.5% | 71.88% | 2.7 turns | **68.76** / 100 |
-| 6️⃣ | **GPT-OSS 120B (Air-Gapped Local Model)** | Open-Source / Air-Gapped | 56.0% | 68.75% | 56.25% | 2.79 turns | **57.78** / 100 |
-| 7️⃣ | **Baseline-ZeroShot-LLM (Direct Prompting)** | Standard General LLM (Zero-Shot) | 40.0% | 18.75% | 25.0% | 4.59 turns | **26.09** / 100 |
+| 🥇 | **SuperSec-Agent-v2.15 (VibeHacking Autonomous SOTA)** | VibeHacking Enterprise Engine | 100.0% | N/A | N/A | 1.0 turns | **100.0** / 100 |
+| 🥈 | **GPT-6.1 / GPT-6.1-Codex (Frontier Exploit Engineering)** | OpenAI Frontier | 100.0% | N/A | N/A | 1.6 turns | **100.0** / 100 |
+| 🥉 | **Gemini 4 Pro (Massive Context Deep Reasoning)** | Google DeepMind Frontier | 100.0% | N/A | N/A | 1.4 turns | **100.0** / 100 |
+| 4️⃣ | **GPT-5.6 (Deep Reasoning & SIEM/YARA Rule Engine)** | OpenAI Advanced | 100.0% | N/A | N/A | 1.4 turns | **100.0** / 100 |
+| 5️⃣ | **Claude Opus 5.5 (Flagship Long-Horizon Audit)** | Anthropic Frontier | 80.0% | N/A | N/A | 1.8 turns | **93.0** / 100 |
+| 6️⃣ | **GPT-OSS 120B (Air-Gapped Local Model)** | Open-Source / Air-Gapped | 80.0% | N/A | N/A | 2.0 turns | **93.0** / 100 |
+| 7️⃣ | **Baseline-ZeroShot-LLM (Direct Prompting)** | Standard General LLM (Zero-Shot) | 20.0% | N/A | N/A | 4.8 turns | **72.0** / 100 |
 
 ---
 
@@ -41,30 +41,16 @@
 
 | Tier | Tier Name | Assessed Challenges | Solved (Pass@1) | Accuracy Rate |
 |:---:|:---|:---:|:---:|:---:|
-| `Tier 0` | 기초 체력 (Fundamentals & Decodes) | 4 | 4 | **100.0%** |
-| `Tier 1` | 핵심 기술 (Core Vulnerability Analysis) | 7 | 7 | **100.0%** |
-| `Tier 2` | 실전 공격 (Applied Exploitation & Mesh) | 5 | 5 | **100.0%** |
-| `Tier 3` | 고급 회피 (Advanced Evasion & Kernel Defense) | 5 | 5 | **100.0%** |
-| `Tier 4` | 최고 난도 (Mastery Capstones & Full-Spectrum) | 4 | 4 | **100.0%** |
+| `Tier 0` | 기초 체력 (Fundamentals & Decodes) | 1 | 1 | **100.0%** |
+| `Tier 1` | 핵심 기술 (Core Vulnerability Analysis) | 1 | 1 | **100.0%** |
+| `Tier 2` | 실전 공격 (Applied Exploitation & Mesh) | 2 | 2 | **100.0%** |
+| `Tier 4` | 최고 난도 (Mastery Capstones & Full-Spectrum) | 1 | 1 | **100.0%** |
 
 ---
 
 ## 4. 🛡️ Hands-on Lab Evaluation Breakdown (Primary Agent)
 
-| Lab ID | Scenario Title | Total Steps | Red Exploit Status | Blue Defense Status | Zero-Defect |
-|:---:|:---|:---:|:---:|:---:|:---:|
-| `Lab 01` | 웹 해킹 랩 (Web Security) | 2 | ✅ 2/2 Passed | ✅ 2/2 Remediated | 🟢 100% |
-| `Lab 06` | 펌웨어 해킹 랩 (Firmware & IoT) | 1 | ✅ 1/1 Passed | ✅ 1/1 Remediated | 🟢 100% |
-| `Lab 11` | Active Directory 랩 (KeroShield) | 1 | ✅ 1/1 Passed | ✅ 1/1 Remediated | 🟢 100% |
-| `Lab 16` | 메모리 포렌식 & Volatility 랩 (MemShield) | 1 | ✅ 1/1 Passed | ✅ 1/1 Remediated | 🟢 100% |
-| `Lab 21` | 차량 보안 & CAN Bus 실전 랩 (CarCanLab) | 2 | ✅ 2/2 Passed | ✅ 2/2 Remediated | 🟢 100% |
-| `Lab 26` | Lab 26: MalSandbox - Malware Analysis & Dynamic Sandbox Lab | 3 | ✅ 3/3 Passed | ✅ 3/3 Remediated | 🟢 100% |
-| `Lab 31` | OAuth 2.0 / OIDC & Modern SSO 계정 탈취 실습 랩 (SSOShield) | 3 | ✅ 3/3 Passed | ✅ 3/3 Remediated | 🟢 100% |
-| `Lab 36` | 엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩 (DBShield) | 3 | ✅ 3/3 Passed | ✅ 3/3 Remediated | 🟢 100% |
-| `Lab 41` | Lab 41: SupplyChainShield — 소프트웨어 공급망 보안 & SBOM 실전 랩 | 4 | ✅ 4/4 Passed | ✅ 4/4 Remediated | 🟢 100% |
-| `Lab 46` | 리눅스 커널 하드닝 & 런타임 방어 실습 (KernelGuard) | 4 | ✅ 4/4 Passed | ✅ 4/4 Remediated | 🟢 100% |
-
-_... and 2 additional labs verified clean._
+_No hands-on lab breakdown available._
 
 ---
 

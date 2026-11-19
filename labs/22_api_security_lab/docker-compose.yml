@@ -5,7 +5,7 @@ services:
     build: .
     container_name: vibehacking-lab22-apiguard
     ports:
-      - "8022:8022"
+      - "127.0.0.1:8022:8022"
     environment:
       - LAB_FLAG_BOLA=FLAG{bola_idor_bfla_api_privilege_escalated_4822}
       - LAB_FLAG_GRAPHQL=FLAG{graphql_introspection_batching_bypass_7193}

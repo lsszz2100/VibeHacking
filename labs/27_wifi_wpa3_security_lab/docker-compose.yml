@@ -5,7 +5,7 @@ services:
     build: .
     container_name: lab27_wifishield
     ports:
-      - "8027:8027"
+      - "127.0.0.1:8027:8027"
     restart: unless-stopped
     environment:
       - ENV=production
