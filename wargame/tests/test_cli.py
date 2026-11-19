@@ -26,8 +26,12 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 73
-    assert len(challenges) == 2555
+    assert len(tracks) == 77
+    assert len(challenges) == 2695
+    assert any(t["id"] == "aimcp" for t in tracks)
+    assert any(t["id"] == "autosec" for t in tracks)
+    assert any(t["id"] == "lsmsec" for t in tracks)
+    assert any(t["id"] == "pqctls" for t in tracks)
     assert any(t["id"] == "ztnaapi" for t in tracks)
     assert any(t["id"] == "quantumcrypt" for t in tracks)
     assert any(t["id"] == "teeconfidential" for t in tracks)

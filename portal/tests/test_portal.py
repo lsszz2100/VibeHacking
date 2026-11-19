@@ -30,21 +30,24 @@ def test_system_status(client):
     data = res.json()
     assert "cpu_usage_percent" in data
     assert "total_labs" in data
-    assert data["total_labs"] == 62
+    assert data["total_labs"] == 65
 
 
 def test_list_labs(client):
     res = client.get("/api/labs")
     assert res.status_code == 200
     data = res.json()
-    assert data["total"] == 62
-    assert len(data["labs"]) == 62
-    # Check Lab 19~62 presence
+    assert data["total"] == 65
+    assert len(data["labs"]) == 65
+    # Check Lab 19~65 presence
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
     assert "61" in ids
     assert "62" in ids
+    assert "63" in ids
+    assert "64" in ids
+    assert "65" in ids
     assert "54" in ids
     assert "55" in ids
     assert "56" in ids
@@ -142,7 +145,7 @@ def test_get_lab_categories(client):
     res = client.get("/api/labs/categories")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 62
+    assert data["total_labs"] == 65
     assert "ai" in data["categories"]
     assert "54" in data["categories"]["ai"]["labs"]
     assert "62" in data["categories"]["ai"]["labs"]
@@ -242,8 +245,8 @@ def test_portal_compliance_summary(client):
     res = client.get("/api/compliance/summary")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 62
-    assert data["total_findings"] >= 62
+    assert data["total_labs"] == 65
+    assert data["total_findings"] >= 65
     assert data["average_cvss"] > 0
     assert "Critical" in data["severity_counts"]
     assert "High" in data["severity_counts"]

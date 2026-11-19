@@ -669,6 +669,15 @@ const TRACKS = [
     "desc_ko": "User Namespace 특권 승격(CLONE_NEWUSER) 차단·cgroup v2 release_agent 및 procfs 변조 방어·runc 유출 파일 디스크립터(CVE-2024-21626) resolve_beneath 트랩·eBPF LSM bpf_send_signal(SIGKILL) 런타임 능동 사살 격리.",
     "desc_en": "User namespace capability escalation containment, cgroup v2 release_agent & procfs overwrite W^X enforcement, runc leaked descriptor (CVE-2024-21626) resolve_beneath trapping, and eBPF LSM bpf_send_signal(SIGKILL) active runtime isolation."
   }
+,
+  {
+    "id": "pqctls",
+    "icon": "⚛️",
+    "ko": "포스트 양자 하이브리드 TLS 1.3 & PQC 네트워크 방어",
+    "en": "Post-Quantum Hybrid TLS 1.3 & PQC Network Defense",
+    "desc_ko": "FIPS 203 ML-KEM-768 하이브리드 키 교환(X25519+ML-KEM)·FIPS 204 ML-DSA-65 복합 X.509 전자서명·SNDL 도청 방어·TLS 1.3 액티브 다운그레이드 카나리 검증·상수시간 NTT 부채널 타이밍 보호.",
+    "desc_en": "FIPS 203 ML-KEM-768 hybrid key exchange (X25519+ML-KEM), FIPS 204 ML-DSA-65 composite X.509 dual-signatures, SNDL defense, TLS 1.3 active downgrade canary validation, and constant-time NTT protection."
+  }
 ];
 
 const CHALLENGES = [
@@ -75208,5 +75217,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "71377bb221ce0d688ab4d84fbb5aa6b4857054eb48b9b26164d1741722f86f8e"
+  },
+  {
+    "id": "t0_pqctls_shor_algorithm_threat",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "쇼어(Shor) 양자 알고리즘과 고전 공개키 암호 위협",
+      "en": "Shor Quantum Algorithm & Classical Public-Key Threats"
+    },
+    "prompt": {
+      "ko": "다항식 시간 내 소인수분해와 이산대수를 해결하는 쇼어 알고리즘이 RSA 및 ECC(ECDHE) 암호계에 미치는 파괴적 영향을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_shor_algorithm_threat`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand the impact of Shor's quantum algorithm solving prime factorization and discrete logarithms in polynomial time against RSA and ECC.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_shor_algorithm_threat`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_shor_algorithm_threat` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_shor_algorithm_threat`."
+      ]
+    },
+    "hash": "b3ad06f28a8325d281185d6479cc6bab5412be6265fbb6822936d0bc8055df25"
+  },
+  {
+    "id": "t0_pqctls_fips_203_ml_kem_standard",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 203 ML-KEM 모듈 격자 기반 키 캡슐화 표준",
+      "en": "FIPS 203 ML-KEM Module-Lattice Key Encapsulation Standard"
+    },
+    "prompt": {
+      "ko": "NIST가 표준화한 FIPS 203 ML-KEM(구 Kyber)의 파라미터 세트(512, 768, 1024)와 격자 기반 LWE 수학적 난제를 분석합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_fips_203_ml_kem_standard`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze the parameter sets (512, 768, 1024) and Module-LWE mathematical hardness of FIPS 203 ML-KEM standardized by NIST.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_fips_203_ml_kem_standard`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_fips_203_ml_kem_standard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_fips_203_ml_kem_standard`."
+      ]
+    },
+    "hash": "5e9aabc4c00b1b7a6cf41384aa8e3bef38df1b20beaa12dd0ce3e321eae324dd"
+  },
+  {
+    "id": "t0_pqctls_fips_204_ml_dsa_standard",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 204 ML-DSA 모듈 격자 전자서명 알고리즘 표준",
+      "en": "FIPS 204 ML-DSA Module-Lattice Digital Signature Standard"
+    },
+    "prompt": {
+      "ko": "Fiat-Shamir with Aborts 기법에 기반한 FIPS 204 ML-DSA(구 Dilithium) 전자서명 체계의 서명 크기와 검증 메커니즘을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_fips_204_ml_dsa_standard`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study the signature size and verification mechanics of FIPS 204 ML-DSA based on Fiat-Shamir with Aborts lattice foundations.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_fips_204_ml_dsa_standard`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_fips_204_ml_dsa_standard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_fips_204_ml_dsa_standard`."
+      ]
+    },
+    "hash": "ae225014346209ed572cf5b5c9c21d32a44e7d737a3e14f195222c92ee5d12f0"
+  },
+  {
+    "id": "t0_pqctls_hybrid_key_exchange_concept",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하이브리드(고전+PQC) 이중 키 교환 메커니즘 개념",
+      "en": "Hybrid Dual Key Exchange Architecture Foundations"
+    },
+    "prompt": {
+      "ko": "기존 고전 타원곡선(X25519)과 양자 내성 암호(ML-KEM)를 결합하여 두 알고리즘 중 하나라도 안전하면 기밀성을 보장하는 원리를 이해합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_hybrid_key_exchange_concept`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Learn the hybrid key exchange principle combining classical ECDH (X25519) with PQC (ML-KEM) ensuring confidentiality if either holds.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_hybrid_key_exchange_concept`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_hybrid_key_exchange_concept` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_hybrid_key_exchange_concept`."
+      ]
+    },
+    "hash": "98342c86b694e5323c1a7f04a6cdd8ce80b0fd46848c5d2dabb6948698faaaa1"
+  },
+  {
+    "id": "t0_pqctls_harvest_now_decrypt_later",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SNDL(Harvest Now, Decrypt Later) 도청 공격 모델",
+      "en": "Harvest Now Decrypt Later (SNDL) Interception Threat Model"
+    },
+    "prompt": {
+      "ko": "현재 암호화된 트래픽을 대규모 수집·저장한 후 미래의 범용 양자 컴퓨터로 소급 복호화하려는 국가 행위자의 위협 모델을 분석합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_harvest_now_decrypt_later`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze the threat model where adversaries store encrypted in-transit traffic today to decrypt retrospectively with future quantum computers.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_harvest_now_decrypt_later`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_harvest_now_decrypt_later` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_harvest_now_decrypt_later`."
+      ]
+    },
+    "hash": "de5c72d5f38bb2892637c23d2aaa665d4cbcd7f0dfb1fb028f359148b248f8a1"
+  },
+  {
+    "id": "t0_pqctls_composite_x509_certificate",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "복합(Composite) X.509 전자서명 인증서 구조",
+      "en": "Composite Dual-Signature X.509 Certificate Structures"
+    },
+    "prompt": {
+      "ko": "단일 인증서에 고전 공개키(ECDSA/RSA)와 PQC 공개키(ML-DSA)를 동시에 수록하고 듀얼 서명을 검증하는 복합 인증서 규격을 검토합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_composite_x509_certificate`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Examine the ITU-T X.509 composite certificate specification encapsulating both classical and PQC public keys with dual signatures.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_composite_x509_certificate`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_composite_x509_certificate` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_composite_x509_certificate`."
+      ]
+    },
+    "hash": "2778f89503c6e7e7ab3beee5ce7024a12b432ab038796180680a1095ff6ceae6"
+  },
+  {
+    "id": "t0_pqctls_tls13_supported_groups_extension",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS 1.3 supported_groups(0x000a) 확장과 협상 원리",
+      "en": "TLS 1.3 supported_groups (0x000a) Extension & Group Negotiation"
+    },
+    "prompt": {
+      "ko": "ClientHello의 supported_groups 확장을 통해 클라이언트와 서버가 지원 가능한 하이브리드 PQC 명명 그룹을 협상하는 과정을 분석합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t0_pqctls_tls13_supported_groups_extension`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Trace how clients and servers negotiate hybrid post-quantum named groups via the supported_groups (0x000a) extension in TLS 1.3.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t0_pqctls_tls13_supported_groups_extension`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t0_pqctls_tls13_supported_groups_extension` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t0_pqctls_tls13_supported_groups_extension`."
+      ]
+    },
+    "hash": "d972c5b8302f26a71e6cc3eaed7d62839fc05d3f99416772ac7783c09b3fe5cd"
+  },
+  {
+    "id": "t1_pqctls_x25519_mlkem768_codepoint",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "X25519MLKEM768 하이브리드 그룹 코드포인트(0x11ec) 분석",
+      "en": "X25519MLKEM768 Hybrid Group Codepoint (0x11ec) Analysis"
+    },
+    "prompt": {
+      "ko": "IETF 초안에 정의된 X25519MLKEM768(0x11ec) 및 SecP256r1MLKEM768(0x11ed) 식별자 포맷과 바이트 직렬화 규격을 확인합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_x25519_mlkem768_codepoint`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Inspect the X25519MLKEM768 (0x11ec) and SecP256r1MLKEM768 (0x11ed) identifiers and wire serialization specifications.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_x25519_mlkem768_codepoint`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_x25519_mlkem768_codepoint` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_x25519_mlkem768_codepoint`."
+      ]
+    },
+    "hash": "17ae2ec7d9ee8ea8d6cc859750946b793fd05ddeabaf6642f9d464f3754b28b3"
+  },
+  {
+    "id": "t1_pqctls_hkdf_extract_dual_secret",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이중 공유 비밀 기반 HKDF-Extract 키 도출 파이프라인",
+      "en": "Dual Shared Secret HKDF-Extract Key Derivation Pipeline"
+    },
+    "prompt": {
+      "ko": "고전 ECDH 비밀(32B)과 ML-KEM 공유 비밀(32B)을 연결(Concat)하여 마스터 핸드셰이크 비밀을 안전하게 도출하는 HKDF 과정을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_hkdf_extract_dual_secret`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study the HKDF pipeline deriving the master handshake secret by concatenating the classical 32B ECDH and PQC 32B shared secrets.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_hkdf_extract_dual_secret`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_hkdf_extract_dual_secret` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_hkdf_extract_dual_secret`."
+      ]
+    },
+    "hash": "1c838bb53e261f96976fba4b99e781a85f8782f0756641e6bacbbb89c7102cd9"
+  },
+  {
+    "id": "t1_pqctls_mldsa65_ecdsa_composite_verify",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ML-DSA-65 및 ECDSA 복합 서명 순차 교차 검증",
+      "en": "Sequential Verification of Composite ML-DSA-65 & ECDSA Signatures"
+    },
+    "prompt": {
+      "ko": "서버 CertificateVerify 메시지에서 고전 ECDSA P-384 서명과 격자 ML-DSA-65 서명을 순차적으로 파싱하고 교차 검증하는 로직을 분석합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_mldsa65_ecdsa_composite_verify`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze logic parsing and cross-verifying both classical ECDSA P-384 and lattice ML-DSA-65 signatures in CertificateVerify.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_mldsa65_ecdsa_composite_verify`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_mldsa65_ecdsa_composite_verify` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_mldsa65_ecdsa_composite_verify`."
+      ]
+    },
+    "hash": "73df77a36ff2023fe9b3b52a92ddf399bd827f12075009259015ae0119636cf5"
+  },
+  {
+    "id": "t1_pqctls_tls13_key_share_extension",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS 1.3 KeyShare 확장 내 PQC 공개키/캡슐 페이로드 구조",
+      "en": "KeyShare Extension Layout with PQC Public Key & Ciphertext"
+    },
+    "prompt": {
+      "ko": "ClientHello의 1184바이트 ML-KEM-768 공개키 페이로드와 ServerHello의 1088바이트 암호문(Ciphertext) 전송 레이아웃을 검증합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_tls13_key_share_extension`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Verify the 1184-byte ML-KEM-768 public key payload in ClientHello and the 1088-byte ciphertext layout in ServerHello KeyShare.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_tls13_key_share_extension`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_tls13_key_share_extension` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_tls13_key_share_extension`."
+      ]
+    },
+    "hash": "cbb4a53b0e1f6b91f80cd15a4de61455983049a73ee769c16835365e430e64ba"
+  },
+  {
+    "id": "t1_pqctls_anti_downgrade_canary_header",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ServerHello.random 안티 다운그레이드 카나리 검증 기제",
+      "en": "ServerHello.random Anti-Downgrade Canary Verification Mechanics"
+    },
+    "prompt": {
+      "ko": "TLS 1.3 협상 시 다운그레이드를 방지하기 위해 ServerHello.random 마지막 8바이트에 기록되는 카나리 시그니처를 검증합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_anti_downgrade_canary_header`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Verify the 8-byte anti-downgrade canary signature embedded in ServerHello.random when falling back from TLS 1.3.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_anti_downgrade_canary_header`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_anti_downgrade_canary_header` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_anti_downgrade_canary_header`."
+      ]
+    },
+    "hash": "887d1c23051eb09bb30f68671c2539619c96b269d58298951c3cbc19cc6aebe3"
+  },
+  {
+    "id": "t1_pqctls_ring_lwe_lattice_hardness",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "모듈 격자(M-LWE)와 최단 벡터 문제(SVP) 복잡도 난제",
+      "en": "Module-LWE Lattice Hardness & Shortest Vector Problem Reductions"
+    },
+    "prompt": {
+      "ko": "ML-KEM과 ML-DSA의 기저가 되는 모듈 격자 상의 Learning With Errors 난제와 양자 알고리즘에 대한 지수적 계산 복잡도를 분석합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_ring_lwe_lattice_hardness`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze the Module-LWE hardness underpinning ML-KEM/ML-DSA and its exponential quantum complexity against SVP reductions.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_ring_lwe_lattice_hardness`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_ring_lwe_lattice_hardness` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_ring_lwe_lattice_hardness`."
+      ]
+    },
+    "hash": "ef4088e9671fcfaf7f6c1f19faac65464f372d48cc3dd60c2b41bf831564396a"
+  },
+  {
+    "id": "t1_pqctls_kem_encap_decap_cycle",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ML-KEM 캡슐화(Encap) 및 역캡슐화(Decap) 생명주기",
+      "en": "ML-KEM Encapsulation & Decapsulation CCA2 Lifecycle"
+    },
+    "prompt": {
+      "ko": "Fujisaki-Okamoto 변환을 통해 선택 암호문 공격(IND-CCA2) 안전성을 보장하는 ML-KEM 캡슐화/역캡슐화 연산 과정을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t1_pqctls_kem_encap_decap_cycle`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand the Fujisaki-Okamoto transform ensuring IND-CCA2 security during ML-KEM encapsulation and decapsulation cycles.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t1_pqctls_kem_encap_decap_cycle`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t1_pqctls_kem_encap_decap_cycle` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t1_pqctls_kem_encap_decap_cycle`."
+      ]
+    },
+    "hash": "1ea4b60610522c6dae14d72de3218e063b435927143f70df36e1e26c9f1093c4"
+  },
+  {
+    "id": "t2_pqctls_sndl_traffic_archive_audit",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "네트워크 패킷 내 고전 암호 세션의 SNDL 취약성 실전 감사",
+      "en": "Auditing Captured Network Traffic for Post-Quantum SNDL Risks"
+    },
+    "prompt": {
+      "ko": "PCAP 덤프에서 TLS 1.2 RSA 키 교환 및 고전 ECDHE 세션을 식별하고 미래 양자 복호화 위험도를 정량 산출합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_sndl_traffic_archive_audit`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Identify classical RSA/ECDHE sessions within packet captures and compute quantitative vulnerability metrics for SNDL risks.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_sndl_traffic_archive_audit`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_sndl_traffic_archive_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_sndl_traffic_archive_audit`."
+      ]
+    },
+    "hash": "4a0db2aef0338570671b4fc33bc5acdfb61f94e2a0e2c822bf9abf9efda6a739"
+  },
+  {
+    "id": "t2_pqctls_active_mitm_cipher_stripping",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "액티브 중간자 공격의 PQC 하이브리드 그룹 스트리핑 방어",
+      "en": "Defending against Active MITM PQC Named Group Stripping"
+    },
+    "prompt": {
+      "ko": "네트워크 중간자가 ClientHello에서 PQC 그룹(0x11ec)을 제거하고 고전 그룹으로 강등시키려는 시도를 무결성 체크로 차단합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_active_mitm_cipher_stripping`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Detect and reject man-in-the-middle attacks stripping hybrid PQC group indicators (0x11ec) from ClientHello packets.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_active_mitm_cipher_stripping`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_active_mitm_cipher_stripping` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_active_mitm_cipher_stripping`."
+      ]
+    },
+    "hash": "cf8e2a243227950bbc52a812953f1e9da93c72de4ec7dba00e676c7ce5b0f230"
+  },
+  {
+    "id": "t2_pqctls_tls_certificate_chain_bloat",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ML-DSA 서명 대형화에 따른 TCP 패킷 단편화 및 MTU 최적화",
+      "en": "Mitigating Certificate Bloat & Fragmentation under ML-DSA"
+    },
+    "prompt": {
+      "ko": "ML-DSA-65 서명(3,309바이트) 도입으로 발생하는 핸드셰이크 패킷 분할과 버퍼 오버플로우 위험을 RFC 8879 인증서 압축으로 완화합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_tls_certificate_chain_bloat`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Mitigate packet fragmentation and buffer risks from 3309-byte ML-DSA signatures using RFC 8879 certificate compression.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_tls_certificate_chain_bloat`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_tls_certificate_chain_bloat` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_tls_certificate_chain_bloat`."
+      ]
+    },
+    "hash": "37b7f0ccb22dafe1750d4ba5a3fe96ff0a175125b46bb5095da35dfba001f43a"
+  },
+  {
+    "id": "t2_pqctls_early_data_0rtt_replay_hazard",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS 1.3 0-RTT 조기 데이터의 양자 리플레이 공격 방어",
+      "en": "Protecting TLS 1.3 0-RTT Early Data against Quantum Replays"
+    },
+    "prompt": {
+      "ko": "PQC 환경에서 0-RTT 세션 티켓 탈취로 발생할 수 있는 재생 공격을 Single-Use 티켓 캐시와 ClientHello 타임스탬프 바인딩으로 방어합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_early_data_0rtt_replay_hazard`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Defend 0-RTT session tickets against quantum replay attacks using single-use ticket caches and client timestamp bindings.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_early_data_0rtt_replay_hazard`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_early_data_0rtt_replay_hazard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_early_data_0rtt_replay_hazard`."
+      ]
+    },
+    "hash": "e470b908475dffb340f729a83690edee3c464a037855f1338822bf5afa7210be"
+  },
+  {
+    "id": "t2_pqctls_kyber_ntt_modular_arithmetic",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ML-KEM 다항식 환(Z_q[X]/(X^256+1)) 모듈러 곱셈 검증",
+      "en": "ML-KEM Polynomial Ring Modular Arithmetic (q=3329)"
+    },
+    "prompt": {
+      "ko": "모듈러스 q=3329 및 차수 n=256 상에서 수행되는 넘버 이론 변환(NTT) 다항식 고속 곱셈 연산의 무결성을 검증합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_kyber_ntt_modular_arithmetic`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Verify the computational integrity of Number Theoretic Transform (NTT) polynomial multiplications in Z_q[X]/(X^256+1) with q=3329.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_kyber_ntt_modular_arithmetic`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_kyber_ntt_modular_arithmetic` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_kyber_ntt_modular_arithmetic`."
+      ]
+    },
+    "hash": "ecc2182bd5e88a7b2c8b19e765e91c7ae137bb2e10fb888e8926bc5d363f8d7b"
+  },
+  {
+    "id": "t2_pqctls_openssl3_oqs_provider_config",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "OpenSSL 3.x OQS 프로바이더 연동 및 PQC 암호 스위트 구성",
+      "en": "OpenSSL 3.x OQS Provider Integration & PQC Cipher Configuration"
+    },
+    "prompt": {
+      "ko": "엔터프라이즈 게이트웨이에 liboqs 기반 oqsprovider를 로드하고 TLS 1.3 하이브리드 그룹을 활성화하는 설정을 구성합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_openssl3_oqs_provider_config`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Configure OpenSSL 3.x with oqsprovider to enable hybrid post-quantum key exchange groups on edge API gateways.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_openssl3_oqs_provider_config`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_openssl3_oqs_provider_config` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_openssl3_oqs_provider_config`."
+      ]
+    },
+    "hash": "99e62d33dc3e9e1db5600d30685f17967168bd4537cce54d904d3fdfac929733"
+  },
+  {
+    "id": "t2_pqctls_pqc_vpn_ikev2_hybrid_tunnel",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "IPsec IKEv2 터널의 포스트 양자 다중 키 교환 방어",
+      "en": "Post-Quantum Multiple Key Exchange in IPsec IKEv2 Tunnels"
+    },
+    "prompt": {
+      "ko": "RFC 9370 규격에 따라 IKE_INTERMEDIATE 교환을 통해 ML-KEM-768을 추가 주입하여 장기 보안 VPN 터널을 구축합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t2_pqctls_pqc_vpn_ikev2_hybrid_tunnel`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Deploy RFC 9370 multiple key exchange injecting ML-KEM-768 into IKEv2 tunnels to secure long-term VPN backbones.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t2_pqctls_pqc_vpn_ikev2_hybrid_tunnel`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t2_pqctls_pqc_vpn_ikev2_hybrid_tunnel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t2_pqctls_pqc_vpn_ikev2_hybrid_tunnel`."
+      ]
+    },
+    "hash": "7e6fbd602710d83355be3381126bfebeb1af9aa2ce7ac4d6ed9fe9a8205ee2fb"
+  },
+  {
+    "id": "t3_pqctls_ntt_timing_side_channel_probe",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NTT 모듈러 축약 과정의 마이크로초 타이밍 편차 탐지",
+      "en": "Detecting Timing Side-Channel Leakage in NTT Modular Reduction"
+    },
+    "prompt": {
+      "ko": "ML-KEM 역캡슐화 시 비밀 다항식 계수에 따라 조건부 분기에서 발생하는 미세 타이밍 차이를 고해상도 타이머로 탐지합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_ntt_timing_side_channel_probe`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Profile microarchitectural timing differences in conditional branches during ML-KEM polynomial reduction using high-res timers.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_ntt_timing_side_channel_probe`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_ntt_timing_side_channel_probe` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_ntt_timing_side_channel_probe`."
+      ]
+    },
+    "hash": "d1d8d0de9359943d57163d60a79ac679efcb1d08de59fe54180e16c3bb04ce5b"
+  },
+  {
+    "id": "t3_pqctls_constant_time_montgomery_reduce",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "몽고메리 축약 기반 상수 시간(Constant-Time) NTT 구현",
+      "en": "Constant-Time Montgomery Reduction for Side-Channel Immune NTT"
+    },
+    "prompt": {
+      "ko": "조건부 분기를 제거하고 비트 마스킹과 몽고메리 곱셈만으로 모든 연산을 균일 클록 사이클 내에 처리하는 방어 기법을 설계합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_constant_time_montgomery_reduce`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Design constant-time Montgomery modular reduction eliminating conditional execution branches to guarantee uniform clock cycles.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_constant_time_montgomery_reduce`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_constant_time_montgomery_reduce` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_constant_time_montgomery_reduce`."
+      ]
+    },
+    "hash": "b2307ec7da76bb6b169b2f6b76289674cb806636d9406041fa2cefbd47b080c6"
+  },
+  {
+    "id": "t3_pqctls_boolean_arithmetic_masking_pqc",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "격자 기반 암호 대상 1차 불리언-산술 메모리 마스킹",
+      "en": "First-Order Boolean-to-Arithmetic Masking for Lattice Cryptography"
+    },
+    "prompt": {
+      "ko": "DPA(차분 전력 분석) 공격을 차단하기 위해 비밀 다항식 계수를 난수 셰어(Share)로 분할하여 연산하는 마스킹 기법을 적용합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_boolean_arithmetic_masking_pqc`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Apply first-order masking splitting secret polynomial coefficients into randomized shares to resist differential power attacks.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_boolean_arithmetic_masking_pqc`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_boolean_arithmetic_masking_pqc` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_boolean_arithmetic_masking_pqc`."
+      ]
+    },
+    "hash": "7e1651144b4c7efe316c8354faee3d19e39c8142c048986b2f3193f2f5af3e20"
+  },
+  {
+    "id": "t3_pqctls_tls13_downgrade_mitm_containment",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TLS 1.3 다운그레이드 능동 프록시 탐지 및 즉시 차단",
+      "en": "Active Detection & In-Kernel Blocking of TLS 1.3 Downgrade Proxies"
+    },
+    "prompt": {
+      "ko": "안티 다운그레이드 카나리 누락 또는 지원 그룹 강등 시 eBPF XDP 계층에서 즉각 TCP RST를 전송하여 인라인 차단합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_tls13_downgrade_mitm_containment`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Drop connections at the eBPF XDP layer with TCP RST upon detecting missing downgrade canaries or stripped cipher lists.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_tls13_downgrade_mitm_containment`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_tls13_downgrade_mitm_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_tls13_downgrade_mitm_containment`."
+      ]
+    },
+    "hash": "60b9e18642c767be6a8a30441a18beb827f8bcc1ed7b968af79068d9fda8e66b"
+  },
+  {
+    "id": "t3_pqctls_hardware_entropy_jitter_pqc",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "격자 노이즈 생성을 위한 하드웨어 엔트로피 지터 검증",
+      "en": "Hardware Entropy & Ring Oscillator Jitter Validation for Lattice Noise"
+    },
+    "prompt": {
+      "ko": "ML-KEM/ML-DSA의 가우스/중앙 이항 오차 벡터 생성을 위한 TRNG 엔트로피 풀의 NIST SP 800-90B 통계적 무결성을 검증합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_hardware_entropy_jitter_pqc`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Validate NIST SP 800-90B entropy compliance of hardware TRNGs generating error distribution vectors in lattice cryptography.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_hardware_entropy_jitter_pqc`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_hardware_entropy_jitter_pqc` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_hardware_entropy_jitter_pqc`."
+      ]
+    },
+    "hash": "b746eec4cb9a0a8157af4facdaa3b0e09554cc5e5919cff449a574717d743854"
+  },
+  {
+    "id": "t3_pqctls_composite_ca_root_anchoring",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "복합(Composite) CA 루트 신뢰 앵커 구축 및 교차 검증",
+      "en": "Composite CA Root Trust Anchoring & Multi-Anchor Validation"
+    },
+    "prompt": {
+      "ko": "엔터프라이즈 루트 인증기관(Root CA)에 고전 RSA/ECDSA와 PQC ML-DSA 키를 듀얼 앵커링하여 클라이언트 호환성을 유지합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_composite_ca_root_anchoring`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Architect dual-root enterprise trust anchors anchoring both classical and ML-DSA keys for seamless cross-validation.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_composite_ca_root_anchoring`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_composite_ca_root_anchoring` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_composite_ca_root_anchoring`."
+      ]
+    },
+    "hash": "28eec5e4d62fbab401c5e03ad5a00139479a6e413666909c4615dcae57736697"
+  },
+  {
+    "id": "t3_pqctls_pqc_mutual_tls_mesh_workload",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "마이크로서비스 워크로드 간 고속 PQC mTLS 상호 인증",
+      "en": "High-Throughput Post-Quantum mTLS Mesh Workload Authentication"
+    },
+    "prompt": {
+      "ko": "서비스 메시 환경에서 Envoy 사이드카 프록시 간 통신에 ML-KEM-768 기반 mTLS를 적용하고 지연 시간 오버헤드를 5% 이내로 제어합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t3_pqctls_pqc_mutual_tls_mesh_workload`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Implement ML-KEM-768 mTLS between service mesh Envoy sidecars while maintaining sub-5% handshake latency overheads.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t3_pqctls_pqc_mutual_tls_mesh_workload`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t3_pqctls_pqc_mutual_tls_mesh_workload` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t3_pqctls_pqc_mutual_tls_mesh_workload`."
+      ]
+    },
+    "hash": "4770ff0bc34bc5c668174ddee3dd1232739a73e3702354c15871ba108ed47a80"
+  },
+  {
+    "id": "t4_pqctls_cross_cloud_pqc_zero_trust_transit",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티클라우드 크로스리전 하이브리드 TLS 1.3 제로 트러스트 전송망",
+      "en": "Multi-Cloud Cross-Region Hybrid TLS 1.3 Zero-Trust Transit"
+    },
+    "prompt": {
+      "ko": "AWS, GCP, Azure 간 전송되는 기밀 금융 데이터 파이프라인에 전구간 X25519MLKEM768 암호화를 강제하고 인증을 감시합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_cross_cloud_pqc_zero_trust_transit`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Enforce end-to-end X25519MLKEM768 encryption across heterogeneous multi-cloud transit backbones carrying sensitive telemetry.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_cross_cloud_pqc_zero_trust_transit`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_cross_cloud_pqc_zero_trust_transit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_cross_cloud_pqc_zero_trust_transit`."
+      ]
+    },
+    "hash": "c85b53ed287e577aff8436dbc181eee6d04c5a670f26ce29bc218904ddf287da"
+  },
+  {
+    "id": "t4_pqctls_hardware_tee_pqc_key_isolation",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 TEE 엔클레이브 내 ML-KEM 개인키 격리 역캡슐화",
+      "en": "Hardware TEE Enclave Isolation for ML-KEM Private Key Decapsulation"
+    },
+    "prompt": {
+      "ko": "AMD SEV-SNP 및 Intel TDX 기밀 가상머신 내부에서만 ML-KEM-768 개인키를 복호화하고 호스트 메모리 노출을 차단합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_hardware_tee_pqc_key_isolation`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Isolate ML-KEM private keys inside AMD SEV-SNP and Intel TDX enclaves to shield lattice parameters from compromised hypervisors.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_hardware_tee_pqc_key_isolation`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_hardware_tee_pqc_key_isolation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_hardware_tee_pqc_key_isolation`."
+      ]
+    },
+    "hash": "b25ae51a5f9ea0509c21a2c2b200f95c3acb084f6f196ace4f4f5cd40cdc9d20"
+  },
+  {
+    "id": "t4_pqctls_pqc_firmware_secure_boot_chain",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ML-DSA-65 복합 서명 기반 임베디드 펌웨어 보안 부팅 체인",
+      "en": "Embedded Firmware Authenticated Boot Chain with ML-DSA-65 Signatures"
+    },
+    "prompt": {
+      "ko": "부트로더, 리눅스 커널, 램디스크 이미지의 디지털 서명을 FIPS 204 ML-DSA-65로 검증하여 양자 위조 펌웨어 변조를 원천 차단합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_pqc_firmware_secure_boot_chain`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Validate bootloader and kernel images using FIPS 204 ML-DSA-65 signatures to prevent quantum-forged firmware injections.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_pqc_firmware_secure_boot_chain`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_pqc_firmware_secure_boot_chain` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_pqc_firmware_secure_boot_chain`."
+      ]
+    },
+    "hash": "4715fac954a02696aed569d78672e17a5389f54c3956c8233c938b28737e63fd"
+  },
+  {
+    "id": "t4_pqctls_global_pqc_migration_phased_matrix",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NSA CNSA 2.0 규격 준수 엔터프라이즈 PQC 마이그레이션 매트릭스",
+      "en": "Enterprise Migration Matrix Aligned with NSA CNSA 2.0 Timeline"
+    },
+    "prompt": {
+      "ko": "2030년까지 고전 암호를 완전 퇴출하고 ML-KEM/ML-DSA 단독 모드로 전환하기 위한 4단계 엔터프라이즈 로드맵을 수립하고 평가합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_global_pqc_migration_phased_matrix`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Execute a 4-phase transition roadmap decommissioning classical algorithms in compliance with the NSA CNSA 2.0 timeline.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_global_pqc_migration_phased_matrix`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_global_pqc_migration_phased_matrix` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_global_pqc_migration_phased_matrix`."
+      ]
+    },
+    "hash": "960ca111cc305c57ccc641d3cfec0446c107c5023738ac6c1a66610ad1665c01"
+  },
+  {
+    "id": "t4_pqctls_realtime_pqc_handshake_telemetry",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF kprobe 기반 커널 TLS PQC 핸드셰이크 실시간 옵저버빌리티",
+      "en": "Real-Time eBPF kprobe Observability for Kernel TLS PQC Handshakes"
+    },
+    "prompt": {
+      "ko": "kTLS 및 OpenSSL SSL_do_handshake 진입점에 eBPF 프로그램을 부착하여 PQC 협상 실패 및 다운그레이드 시도를 0초 지연으로 관제합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_realtime_pqc_handshake_telemetry`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Attach eBPF kprobes to kTLS and SSL_do_handshake to monitor PQC negotiation success and identify downgrade anomalies in zero latency.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_realtime_pqc_handshake_telemetry`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_realtime_pqc_handshake_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_realtime_pqc_handshake_telemetry`."
+      ]
+    },
+    "hash": "23f708ef529076a62cf9bc197bc90599b012a19f5a477bf3bcfc49faa731a19e"
+  },
+  {
+    "id": "t4_pqctls_ai_agent_pqc_mcp_tunnel_shield",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "분산 AI 에이전트 MCP RPC 통신용 하이브리드 PQC 터널 쉴드",
+      "en": "Hybrid PQC Tunnel Shield for Distributed AI Agent MCP RPC Workloads"
+    },
+    "prompt": {
+      "ko": "Model Context Protocol(MCP) 분산 에이전트 간 도구 호출 및 컨텍스트 공유 채널에 PQC 하이브리드 상호 인증 터널을 강제합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_ai_agent_pqc_mcp_tunnel_shield`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Enforce hybrid PQC mutual TLS tunnels on Model Context Protocol (MCP) tool execution and context synchronization channels.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_ai_agent_pqc_mcp_tunnel_shield`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_ai_agent_pqc_mcp_tunnel_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_ai_agent_pqc_mcp_tunnel_shield`."
+      ]
+    },
+    "hash": "d8083a297fc94a7de9a5dc242f6fde33f5fbc8c67517fae6e3fa75b030fad1cf"
+  },
+  {
+    "id": "t4_pqctls_capstone_full_spectrum_pqc_tls",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "pqctls",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포스트 양자 하이브리드 TLS 1.3 & 네트워크 방어 캡스톤",
+      "en": "Full-Spectrum Post-Quantum Hybrid TLS 1.3 & Network Defense Capstone"
+    },
+    "prompt": {
+      "ko": "하이브리드 KEM 키 교환, 복합 전자서명 검증, 안티 다운그레이드 방어, 상수시간 NTT 부채널 면역을 통합한 완전한 PQC 방어 아키텍처를 완성합니다.\n\n[실습 환경 및 검증 식별자]\nPQC_CHALLENGE_ID: `t4_pqctls_capstone_full_spectrum_pqc_tls`\n\n위 식별자를 기반으로 양자 내성 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Synthesize hybrid KEM negotiation, composite dual-signature verification, anti-downgrade canary checks, and constant-time NTT defense.\n\n[Verification Identifier]\nPQC_CHALLENGE_ID: `t4_pqctls_capstone_full_spectrum_pqc_tls`\n\nDerive and submit the post-quantum security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "FIPS 203 ML-KEM 및 FIPS 204 ML-DSA 하이브리드 TLS 1.3 아키텍처와 프로토콜 규격을 분석하세요.",
+        "이 문제는 식별자 `t4_pqctls_capstone_full_spectrum_pqc_tls` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze the FIPS 203 ML-KEM and FIPS 204 ML-DSA hybrid TLS 1.3 architecture and protocol specifications.",
+        "This challenge derives a deterministic flag from identifier `t4_pqctls_capstone_full_spectrum_pqc_tls`."
+      ]
+    },
+    "hash": "f26e447f45728a7b7e66c91a2a48fd43ccdfadb14d45c21338e3c3240b044baf"
   }
 ];

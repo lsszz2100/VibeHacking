@@ -1995,6 +1995,49 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ eBPF LSM Autonomous Runtime Shield detected namespace breakout: process terminated via bpf_send_signal(SIGKILL) in 0.42 µs -> FLAG{lsm_runtime_sigkill_containment_sealed}"
             }
         ]
+    },
+    "65": {
+        "title": "Lab 65: Post-Quantum Hybrid TLS 1.3 & ML-KEM / ML-DSA Migration Lab",
+        "description": "FIPS 203 ML-KEM-768 하이브리드 키 교환 및 FIPS 204 ML-DSA-65 복합 전자서명을 TLS 1.3에 적용하여 SNDL 도청 및 다운그레이드 방어 실습",
+        "port": 8065,
+        "steps": [
+            {
+                "step": 1,
+                "name": "Harvest Now, Decrypt Later (SNDL) 도청 및 FIPS 203 ML-KEM-768 하이브리드 키 교환",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "고전 X25519 단독 세션 도청 공격을 FIPS 203 ML-KEM-768 하이브리드 KEM(X25519_MLKEM768)으로 방어하여 격자 난제로 복호화를 차단합니다.",
+                "exploit_payload": '{"key_exchange_group": "X25519_MLKEM768", "sndl_intercept_sim": true, "use_hybrid_kem": true}',
+                "defense": "고전 X25519와 FIPS 203 ML-KEM-768 공유 비밀을 결합한 하이브리드 키 도출(HKDF-Extract).",
+                "sample_output": "✓ PQC Hybrid KEM established: SNDL quantum threat neutralized -> FLAG{pqc_hybrid_kem_sndl_resilient_2026}"
+            },
+            {
+                "step": 2,
+                "name": "양자 서명 위조 공격 및 FIPS 204 ML-DSA-65 복합 듀얼 서명 교차 검증",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "고전 RSA/ECDSA 인증서 양자 위조를 FIPS 204 ML-DSA-65와 ECDSA P-384 복합 인증서(Composite Signature)로 방어합니다.",
+                "exploit_payload": '{"cert_algorithm": "COMPOSITE_MLDSA65_ECDSA", "dual_signature_validation": true, "use_mldsa_guard": true}',
+                "defense": "ML-DSA-65 격자 서명 및 ECDSA P-384 듀얼 서명 순차 교차 검증.",
+                "sample_output": "✓ Composite ML-DSA-65 dual-signature verified: MITM quantum forgery blocked -> FLAG{pqc_dual_sig_mldsa_composite_certified}"
+            },
+            {
+                "step": 3,
+                "name": "액티브 다운그레이드 공격 차단 및 엄격 TLS 1.3 카나리 검증",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "MITM의 레거시 TLS 1.2 또는 비PQC 암호 강제 다운그레이드 시도를 안티 다운그레이드 카나리 검증으로 차단합니다.",
+                "exploit_payload": '{"offered_versions": ["TLSv1.3"], "cipher_suites": ["TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256"], "supported_groups": ["X25519_MLKEM768"], "enforce_anti_downgrade": true}',
+                "defense": "TLS 1.3 전용 강제, 안티 다운그레이드 카나리 검증, 비PQC 레거시 암호 스위트 거부.",
+                "sample_output": "✓ TLS 1.3 anti-downgrade canary verified: legacy cipher stripping rejected -> FLAG{pqc_anti_downgrade_strict_handshake_guarded}"
+            },
+            {
+                "step": 4,
+                "name": "다항식 환(Ring) 연산 부채널 타이밍 공격 방어 및 상수시간 NTT 마스킹 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "ML-KEM/ML-DSA 다항식 모듈러 역변환 시 타이밍 편차를 몽고메리 축약 상수시간 NTT 및 1차 마스킹 메모리로 평탄화합니다.",
+                "exploit_payload": '{"ntt_algorithm": "constant_time_masked_ntt", "side_channel_probe": true, "use_masked_memory": true}',
+                "defense": "상수시간(Constant-Time) NTT 모듈러 축약 및 Boolean-to-Arithmetic 마스킹.",
+                "sample_output": "✓ Constant-time NTT verified (timing jitter: 0.12ns): side-channel leakage eliminated -> FLAG{pqc_constant_time_ntt_masked_hardened}"
+            }
+        ]
     }
 }
 

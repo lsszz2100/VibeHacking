@@ -4,9 +4,9 @@ import pytest
 from labs.solvers import SOLVERS, get_lab_solver, run_lab_solve_step
 
 def test_all_labs_have_solvers():
-    """Check that all 64 labs have defined solvers."""
-    assert len(SOLVERS) == 64
-    for i in range(1, 65):
+    """Check that all 65 labs have defined solvers."""
+    assert len(SOLVERS) == 65
+    for i in range(1, 66):
         key = str(i).zfill(2)
         assert key in SOLVERS, f"Lab {key} is missing a solver definition"
         solver = SOLVERS[key]
@@ -243,6 +243,14 @@ def test_run_lab_solve_step():
     assert res61["success"] is True
     assert "Envoy" in res61["name"] or "mTLS" in res61["name"]
     assert "FLAG{" in res61["output"]
+
+    res64 = run_lab_solve_step("64", 1)
+    assert res64["success"] is True
+    assert "FLAG{" in res64["output"]
+
+    res65 = run_lab_solve_step("65", 1)
+    assert res65["success"] is True
+    assert "FLAG{" in res65["output"]
 
 def test_invalid_lab_solver():
     """Test invalid lab handling."""

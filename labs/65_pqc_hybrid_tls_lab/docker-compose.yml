@@ -1,0 +1,15 @@
+services:
+  pqc-hybrid-tls-lab:
+    build: .
+    container_name: vhack-lab65-pqc-hybrid-tls
+    ports:
+      - "127.0.0.1:8065:8065"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8065/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

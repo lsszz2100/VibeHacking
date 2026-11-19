@@ -663,6 +663,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [10, 13, 51, 54, 56, 58],
     },
+    "65": {
+        "name": "포스트 양자 하이브리드 TLS 1.3 & ML-KEM / ML-DSA 마이그레이션 랩",
+        "dir":  "65_pqc_hybrid_tls_lab",
+        "desc": "PqcHybridTlsLab: Harvest Now Decrypt Later(SNDL) 도청 위협 & FIPS 203 ML-KEM-768 하이브리드 키 교환 · 양자 서명 위조 & FIPS 204 ML-DSA-65 복합 듀얼 서명 교차 검증 · 액티브 다운그레이드 공격 차단 및 엄격 TLS 1.3 카나리 검증 · 다항식 환(Ring) 모듈러 역변환 부채널 타이밍 공격 방어 & 상수시간 NTT 마스킹",
+        "url":  "웹 콘솔 & PQC TLS 게이트웨이: http://localhost:8065",
+        "difficulty": "★★★★★",
+        "related": [11, 27, 44, 49, 50, 57],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1704,6 +1712,9 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8060, "Lab 60 (QuantumCryptanalysisLab Shor & Lattice Defense Lab)"),
         (8061, "Lab 61 (ZeroTrustApiGatewayLab Envoy WASM & SPIFFE Lab)"),
         (8062, "Lab 62 (AiAgentMcpSecurityLab MCP Security & Zero Trust Lab)"),
+        (8063, "Lab 63 (AutonomousDefenseAgentLab AI Autonomous Defense Lab)"),
+        (8064, "Lab 64 (ContainerEscapeLsmLab eBPF LSM Container Escape Lab)"),
+        (8065, "Lab 65 (PqcHybridTlsLab Post-Quantum Hybrid TLS Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2534,8 +2545,8 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     # 3. Wargame Telemetry
     wargame_stats = {
-        "total_tracks": 64,
-        "total_challenges": 2240,
+        "total_tracks": 77,
+        "total_challenges": 2695,
         "solved_count": 0,
         "score": 0,
         "progress_percent": 0.0,
@@ -2547,7 +2558,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
             solved = prog_data.get("solved", [])
             wargame_stats["solved_count"] = len(solved)
             wargame_stats["score"] = prog_data.get("total_score", 0)
-            wargame_stats["progress_percent"] = round((len(solved) / 2240) * 100, 2)
+            wargame_stats["progress_percent"] = round((len(solved) / 2695) * 100, 2)
         except Exception:
             pass
 
@@ -2557,7 +2568,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     data = {
         "timestamp": datetime.now().isoformat(),
-        "version": "2.9.0",
+        "version": "2.15.0",
         "system": {
             "os": f"{platform.system()} {platform.release()}",
             "arch": platform.machine(),
@@ -2637,14 +2648,14 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
     wg_pct = wargame_stats["progress_percent"]
     wg_filled = int((wg_pct / 100) * mem_bar_len)
     wg_bar = "█" * wg_filled + "░" * (mem_bar_len - wg_filled)
-    print(f"  • 전체 풀:     {bold('64')}개 트랙 / {bold('2,240')}개 문제 (Tier 0~4 전 계층)")
-    print(f"  • 요원 진행률: [{cyan(wg_bar)}] {bold(str(wg_pct))}% ({wargame_stats['solved_count']} / 2,240 완료)")
+    print(f"  • 전체 풀:     {bold('77')}개 트랙 / {bold('2,695')}개 문제 (Tier 0~4 전 계층)")
+    print(f"  • 요원 진행률: [{cyan(wg_bar)}] {bold(str(wg_pct))}% ({wargame_stats['solved_count']} / 2,695 완료)")
     print(f"  • 획득 점수:   {bold(yellow(str(wargame_stats['score'])))} pts")
 
     # Knowledge Base
     print(bold("\n📚 지식 저장소 및 보안 지표 (Knowledge Base & Compliance)"))
-    print(f"  • 교재 섹션/챕터: {bold(str(total_sections))}개 섹션 / {bold('490')}개 심층 챕터 완비")
-    print(f"  • 인터랙티브 시뮬레이터: {bold('20')}대 웹 콘솔 시뮬레이터 탑재")
+    print(f"  • 교재 섹션/챕터: {bold(str(total_sections))}개 섹션 / {bold('492')}개 심층 챕터 완비")
+    print(f"  • 인터랙티브 시뮬레이터: {bold('32')}대 웹 콘솔 시뮬레이터 탑재")
     print(f"  • 컴플라이언스 매핑: {green('KISA ISMS-P')} · {cyan('NIST CSF 2.0')} · {yellow('OWASP Top 10')} 100% 매핑")
     print()
 

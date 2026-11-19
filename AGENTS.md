@@ -96,8 +96,9 @@
   - **Lab 62 (AiAgentMcpSecurityLab)**: AI 에이전트 MCP 보안 & 샌드박싱 실전 랩 (포트: `8062`, `127.0.0.1` 루프백 격리, Stage 1: MCP Tool Shadowing vs 서명 기반 스키마 화이트리스팅, Stage 2: Indirect Prompt Injection IPI vs Dual-LLM 가드레일, Stage 3: Confused Deputy 권한 오용 vs 세분화된 RBAC & 도구 권한 스코프, Stage 4: Landlock LSM 샌드박스 탈출 vs seccomp-bpf/Landlock 차단)
   - **Lab 63 (AutonomousDefenseAgentLab)**: AI 자율 방어 & 사이버 디펜스 에이전트 실전 랩 (포트: `8063`, `127.0.0.1` 루프백 격리, Stage 1: 텔레메트리 로그 주입 IPI vs 인제스천 살균 정규식 경계 차단, Stage 2: 오염된 플레이북 & 환각 Slop 패키지 실행 vs 파이썬 AST 정적 구문 분석 & 사전 모의실행 드라이런 게이트, Stage 3: IPv4 격리 정책 드리프트 우회 vs 커널 eBPF Dual-Stack XDP 드라이버 자율 격리 및 1초 주기 실시간 정책 조정 루프, Stage 4: SOAR 조치 원장 무단 변조 및 롤백 vs HMAC-SHA256 디지털 서명 체인 및 G3 인간 승인 인가 게이트 4단계 구축)
   - **Lab 64 (ContainerEscapeLsmLab)**: eBPF LSM 기반 컨테이너 탈출 방어 & 커널 런타임 보안 실전 랩 (포트: `8064`, `127.0.0.1` 루프백 격리, Stage 1: 비특권 User Namespace 매핑 권한 상승 vs `bpf_lsm_userns_create` 인커널 차단, Stage 2: cgroup v2 release_agent 탈출 vs `bpf_lsm_file_open` 의사파일계통 쓰기 봉쇄, Stage 3: runc 누출 파일 디스크립터 탈출 CVE-2024-21626 vs `bpf_lsm_file_receive` 디렉터리 경계 탈출 차단, Stage 4: 런타임 제로트러스트 eBPF 링버퍼 실시간 모니터링 & 즉시 사살 격리 4단계 구축)
-- **브라우저 & 터미널 워게임**: **총 76개 트랙 / 2,660문제** 달성 (`wargame/index.html`, HUD `0/2660`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 76개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
+  - **Lab 65 (PqcHybridTlsLab)**: 포스트 양자 하이브리드 TLS 1.3 & ML-KEM / ML-DSA 마이그레이션 랩 (포트: `8065`, `127.0.0.1` 루프백 격리, Stage 1: Harvest Now Decrypt Later(SNDL) 도청 위협 vs FIPS 203 ML-KEM-768 하이브리드 키 교환 `X25519_MLKEM768`, Stage 2: 고전 인증서 양자 위조 공격 vs FIPS 204 ML-DSA-65 & ECDSA P-384 복합 듀얼 서명 교차 검증, Stage 3: MITM 암호 스트리핑 다운그레이드 vs 엄격 TLS 1.3 안티 다운그레이드 카나리 검증, Stage 4: 다항식 환(Ring) NTT 부채널 타이밍 프로브 vs 몽고메리 축약 상수시간 NTT 및 1차 불리언 마스킹 메모리 4단계 구축)
+- **브라우저 & 터미널 워게임**: **총 77개 트랙 / 2,695문제** 달성 (`wargame/index.html`, HUD `0/2695`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 77개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
   - **Web Audio API 8-bit 치프튠 사운드 FX 엔진**: 브라우저 사운드 합성 탑재
@@ -235,6 +236,13 @@
 | **56** | eBPF 런타임 보안 & 커널 루트킷 능동 방어 랩 (eBPFShield) | eBPF 시스콜 텔레메트리, Ring Buffer 익명 실행 포착, 프로세스 할로잉 탐지, bpf_override_return 루트킷 색출, eBPF LSM 제로 트러스트 능동 차단 | `26_Linux_Hardening`, `57_Kernel_and_Driver_Exploits` | `ebpfsec` | `vhack lab start 56` |
 | **57** | 안티 리버싱 & 바이너리 보호 랩 (AntiReversingShield) | 다중 디버거 탐지(PEB/RDTSC), 불투명 술어, BLA 허니 소스맵, LLM 컨텍스트 고갈 대(對)AI 역공학 방어 | `04_Reverse_Engineering`, `55_Evasion_Techniques` | `antirev` | `vhack lab start 57` |
 | **58** | MicroVM 하이퍼바이저 탈출 & 격리 하드닝 랩 (MicrovmHypervisorEscapeLab) | VM-Exit EPT 위반 & MMIO 인터셉트, Virtio-Net vring OOB 힙 변조, KVM vCPU MSR_LSTAR 레지스터 스머글링, Seccomp/Landlock 능동 봉쇄 | `14_Cloud_Security`, `26_Linux_Kernel_and_Driver_Development` | `hypervisor` | `vhack lab start 58` |
+| **59** | 기밀 컴퓨팅 TEE & 하드웨어 메모리 암호화 방어 랩 (ConfidentialComputingLab) | AMD SEV-SNP & Intel TDX 메모리 암호화, 원격 증명(Attestation), RMP 페이지 스플라이싱 차단, VMSA 암호화 | `14_Cloud_Security`, `26_Linux_Hardening` | `teeconfidential` | `vhack lab start 59` |
+| **60** | 양자 알고리즘 암호 분석 & 포스트 양자 능동 방어 실습 랩 (QuantumCryptanalysisLab) | Shor QPE 인수분해, 하이브리드 KEM, BKZ-40 격자 기저 축소 방어, SNDL 차단 PFS, 상수시간 NTT 마스킹 | `57_Quantum_Cryptography` | `quantumcrypt` | `vhack lab start 60` |
+| **61** | 제로 트러스트 API 게이트웨이 & SPIFFE/SPIRE 워크로드 방어 랩 (ZeroTrustApiGatewayLab) | Envoy WASM mTLS 상호 인증, SPIFFE/SPIRE 워크로드 증명, RFC 9449 DPoP 바인딩, GraphQL AST 쿼리 심도 제한 | `22_API_Security`, `35_Zero_Trust` | `ztnaapi` | `vhack lab start 61` |
+| **62** | AI 에이전트 MCP 보안 & 제로 트러스트 도구 방어 랩 (AiAgentMcpSecurityLab) | MCP 도구 스키마 오염 차단, Confused Deputy 호스트 파일 탈취 격리, 간접 프롬프트 인젝션 중화, 도구 호출 증명 | `69_LLM_Security` | `aimcp` | `vhack lab start 62` |
+| **63** | AI 자율 방어 & 사이버 디펜스 에이전트 랩 (AutonomousDefenseAgentLab) | 보안 텔레메트리 IPI 차단, 플레이북 AST 정적 검증, eBPF Dual-Stack 즉시 격리, SOAR 조치 원장 서명 증명 | `69_LLM_Security`, `44_Incident_Response_DFIR` | `autosec` | `vhack lab start 63` |
+| **64** | eBPF LSM 컨테이너 탈출 & 커널 런타임 방어 랩 (ContainerEscapeLsmLab) | Userns bpf_lsm_userns_create 차단, cgroup v2 release_agent W^X 방어, runc CVE-2024-21626 resolve_beneath 트랩, 0.4µs 즉각 격리 | `26_Linux_Hardening` | `lsmsec` | `vhack lab start 64` |
+| **65** | 포스트 양자 하이브리드 TLS 1.3 & ML-KEM / ML-DSA 마이그레이션 랩 (PqcHybridTlsLab) | SNDL 도청 방어 X25519_MLKEM768, FIPS 204 ML-DSA-65 복합 듀얼 서명, TLS 1.3 안티 다운그레이드 카나리, 상수시간 NTT 마스킹 | `57_Quantum_Cryptography` | `pqctls` | `vhack lab start 65` |
 
 ---
 

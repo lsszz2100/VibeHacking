@@ -629,6 +629,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "K04:2025",
         "owasp_name": "Inadequate Container Sandboxing & User Namespace Breakout",
     },
+    "65": {
+        "kisa_id": "2.7.1",
+        "kisa_name": "암호 통제 (포스트 양자 하이브리드 TLS 1.3 및 SNDL 방어)",
+        "nist_csf_id": "PR.DS-01",
+        "nist_csf_name": "Data-at-Rest and In-Transit Protected via Post-Quantum Cryptography (FIPS 203/204)",
+        "owasp_id": "A02:2025",
+        "owasp_name": "Cryptographic Failures & Post-Quantum Downgrade Vulnerability",
+    },
 }
 
 @dataclass
@@ -1824,6 +1832,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Enforce eBPF LSM bpf_lsm_userns_create and bpf_lsm_capable hooks to deny unprivileged userns creation (-EPERM), apply W^X policy on cgroup/procfs via bpf_lsm_file_open, enforce resolve_beneath path boundary validation, and deploy autonomous bpf_send_signal(SIGKILL) runtime containment with cgroup freezing."
             }
         ]
+    },
+    "65": {
+        "title": "65 PqcHybridTlsLab Post-Quantum Hybrid TLS 1.3 & ML-KEM / ML-DSA Migration",
+        "category": "Modern Applied Cryptography, Post-Quantum TLS 1.3 & FIPS 203/204",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6501",
+                "name": "Harvest Now Decrypt Later (SNDL) Classical Key Exchange & Quantum Digital Signature Forgery",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+                "mitre_id": "T1557",
+                "mitre_technique": "Adversary-in-the-Middle: Quantum Cryptographic Interception & Downgrade",
+                "mitre_tactic": "Credential Access / Collection",
+                "impact": "Adversary intercepts classical ECDHE sessions for future quantum Shor decryption (SNDL), forges server identity via factored RSA/ECDSA certificates, executes active TLS cipher suite downgrade attacks, and reconstructs private polynomials via NTT side-channel timing probes.",
+                "description": "TLS 1.3 gateway lacks post-quantum hybrid KEM negotiation, relies exclusively on classical digital signatures, permits active downgrade to legacy cipher suites, and executes unmasked polynomial modular reduction susceptible to timing side-channel attacks.",
+                "affected_component": "PqcHybridTlsLab Gateway Engine (Port 8065)",
+                "remediation": "Mandate FIPS 203 ML-KEM-768 hybrid key exchange (X25519_MLKEM768), enforce FIPS 204 ML-DSA-65 and ECDSA P-384 composite dual-signature verification, enforce strict TLS 1.3 with anti-downgrade canary checks, and apply constant-time Montgomery reduction with Boolean-to-Arithmetic masked memory."
+            }
+        ]
     }
 }
 
@@ -1833,7 +1859,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """64개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """65개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

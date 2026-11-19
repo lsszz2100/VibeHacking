@@ -2896,6 +2896,58 @@ for (const id of LSMSEC_IDS) {
   });
 }
 
+const PQCTLS_IDS = [
+  "t0_pqctls_shor_algorithm_threat",
+  "t0_pqctls_fips_203_ml_kem_standard",
+  "t0_pqctls_fips_204_ml_dsa_standard",
+  "t0_pqctls_hybrid_key_exchange_concept",
+  "t0_pqctls_harvest_now_decrypt_later",
+  "t0_pqctls_composite_x509_certificate",
+  "t0_pqctls_tls13_supported_groups_extension",
+  "t1_pqctls_x25519_mlkem768_codepoint",
+  "t1_pqctls_hkdf_extract_dual_secret",
+  "t1_pqctls_mldsa65_ecdsa_composite_verify",
+  "t1_pqctls_tls13_key_share_extension",
+  "t1_pqctls_anti_downgrade_canary_header",
+  "t1_pqctls_ring_lwe_lattice_hardness",
+  "t1_pqctls_kem_encap_decap_cycle",
+  "t2_pqctls_sndl_traffic_archive_audit",
+  "t2_pqctls_active_mitm_cipher_stripping",
+  "t2_pqctls_tls_certificate_chain_bloat",
+  "t2_pqctls_early_data_0rtt_replay_hazard",
+  "t2_pqctls_kyber_ntt_modular_arithmetic",
+  "t2_pqctls_openssl3_oqs_provider_config",
+  "t2_pqctls_pqc_vpn_ikev2_hybrid_tunnel",
+  "t3_pqctls_ntt_timing_side_channel_probe",
+  "t3_pqctls_constant_time_montgomery_reduce",
+  "t3_pqctls_boolean_arithmetic_masking_pqc",
+  "t3_pqctls_tls13_downgrade_mitm_containment",
+  "t3_pqctls_hardware_entropy_jitter_pqc",
+  "t3_pqctls_composite_ca_root_anchoring",
+  "t3_pqctls_pqc_mutual_tls_mesh_workload",
+  "t4_pqctls_cross_cloud_pqc_zero_trust_transit",
+  "t4_pqctls_hardware_tee_pqc_key_isolation",
+  "t4_pqctls_pqc_firmware_secure_boot_chain",
+  "t4_pqctls_global_pqc_migration_phased_matrix",
+  "t4_pqctls_realtime_pqc_handshake_telemetry",
+  "t4_pqctls_ai_agent_pqc_mcp_tunnel_shield",
+  "t4_pqctls_capstone_full_spectrum_pqc_tls"
+];
+
+for (const id of PQCTLS_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/PQC_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_pqctls_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
+
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */
@@ -2983,3 +3035,4 @@ console.log(
     `graded by the app's own rule. The remaining ${challenges.length - solved.length} are knowledge questions ` +
     'with nothing to derive.'
 );
+
