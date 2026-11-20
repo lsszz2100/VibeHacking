@@ -686,6 +686,14 @@ const TRACKS = [
     "en": "AI Agent Sandbox Escape & Supply Chain Security",
     "desc_ko": "AI 에이전트 툴 동적 로딩 오염·SLSA Level 3 출처 증명·Ray/vLLM 분산 RCE 차단 & SPIFFE mTLS·Landlock LSM 샌드박싱·eBPF 런타임 탈출 SIGKILL 격리·G3 다자간 승인 거버넌스.",
     "desc_en": "AI agent dynamic tool loading poisoning, SLSA Level 3 provenance, Ray/vLLM distributed RCE defense with SPIFFE mTLS, Landlock LSM sandboxing, eBPF instant SIGKILL breakout containment, and G3 multi-party approval governance."
+  },
+  {
+    "id": "teeai",
+    "icon": "🔒",
+    "ko": "기밀 AI & 하드웨어 TEE 엔클레이브 원격 증명",
+    "en": "Confidential AI & Hardware TEE Enclave Attestation",
+    "desc_ko": "AMD SEV-SNP/Intel TDX 하드웨어 TEE 원격 증명·VCEK 인증서 체인 및 PCR0 무결성·엔클레이브 내 AES-256-XTS 가중치 복호화·Flush+Reload 캐시 타이밍 부채널 방어·TPM AIK 암호학적 서명.",
+    "desc_en": "AMD SEV-SNP/Intel TDX hardware TEE remote attestation, VCEK certificate chain and PCR0 measurement integrity, in-enclave AES-256-XTS weight sealing, Flush+Reload cache timing side-channel mitigation, and TPM AIK cryptographic signatures."
   }
 ];
 
@@ -29858,7 +29866,7 @@ const CHALLENGES = [
   "track": "maldoc",
   "points": 130,
   "ci": true,
-  "fmt": "한 단어 / one word (13글자 / 13 chars)",
+  "fmt": "값 그대로 / literal (13글자 / 13 chars, _ 포함 / include _)",
   "title": {
     "ko": "ThisDocument 이벤트 기반 자동 실행 함수",
     "en": "ThisDocument Event-Driven Auto Execution"
@@ -77186,5 +77194,915 @@ const CHALLENGES = [
       ]
     },
     "hash": "1414864b48ca3026e85c50fbbce35580a9d6b65517e6a172e71d6e3ee6c5c9dd"
+  },
+  {
+    "id": "t0_teeai_confidential_computing_threat_model",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "07ff65ed5d6754d45b5f1dcb26edb8466654948724a739d7c309fa48f349d190",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "신뢰할 수 없는 클라우드 하이퍼바이저와 기밀 컴퓨팅 위협 모델",
+      "en": "Untrusted Cloud Hypervisor & Confidential Computing Threat Model"
+    },
+    "prompt": {
+      "ko": "클라우드 서비스 제공자(CSP) 및 악의적 호스트 관리자가 가상머신 메모리를 직접 스누핑하는 위협에 대응하는 TEE 위협 모델을 분석합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_confidential_computing_threat_model`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze the confidential computing threat model defending against untrusted cloud providers and host hypervisors inspecting VM memory.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_confidential_computing_threat_model`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_confidential_computing_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_confidential_computing_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_teeai_hardware_tee_snp_tdx_architecture",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "568bd2c0e601f4eb17a5bcbafcb269ee8bacf474c270b1e71bb11212ef250a9d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AMD SEV-SNP 및 Intel TDX 하드웨어 TEE 격리 아키텍처",
+      "en": "Hardware TEE Isolation Architecture: AMD SEV-SNP vs Intel TDX"
+    },
+    "prompt": {
+      "ko": "CPU 하드웨어 레벨에서 게스트 메모리를 암호화하고 하이퍼바이저 접근을 차단하는 RMP(Reverse Map Table)와 Secure EPT 구조를 학습합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_hardware_tee_snp_tdx_architecture`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study CPU hardware mechanisms including Reverse Map Tables (RMP) and Secure EPT segregating guest memory from host hypervisors.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_hardware_tee_snp_tdx_architecture`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_hardware_tee_snp_tdx_architecture` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_hardware_tee_snp_tdx_architecture`."
+      ]
+    }
+  },
+  {
+    "id": "t0_teeai_remote_attestation_pcr0_measurement",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "a94c41530ef28f4bc05be89ca3c4d38935d765e3964a2118e4fb26abe509ca1e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "원격 증명(Remote Attestation)과 PCR0 부팅 측정치 무결성 원리",
+      "en": "Remote Attestation Principles & PCR0 Boot Measurement Integrity"
+    },
+    "prompt": {
+      "ko": "엔클레이브 초기 부팅 펌웨어 및 커널 이미지의 SHA-256 해시를 하드웨어 루트 키로 서명하여 검증하는 원격 증명 체계를 검토합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_remote_attestation_pcr0_measurement`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Examine remote attestation pipelines validating SHA-256 launch measurement hashes (PCR0) signed by CPU hardware root keys.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_remote_attestation_pcr0_measurement`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_remote_attestation_pcr0_measurement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_remote_attestation_pcr0_measurement`."
+      ]
+    }
+  },
+  {
+    "id": "t0_teeai_in_enclave_model_weights_protection",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "8d23aff2eafbc3d86504cd380148e05a76040d087f4f326d19af30874c1d8dd0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기밀 AI 추론 런타임 내 모델 가중치 암호화 보호 모델",
+      "en": "In-Enclave Model Weight Encryption & Protection Architecture"
+    },
+    "prompt": {
+      "ko": "수십억 개 파라미터의 독점 LLM 가중치가 호스트 메모리나 스왑 영역에 평문으로 노출되지 않도록 엔클레이브 내에서만 해독하는 구조를 이해합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_in_enclave_model_weights_protection`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand in-enclave LLM weight decryption ensuring proprietary multi-billion parameter model weights never leak into host swap or DRAM.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_in_enclave_model_weights_protection`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_in_enclave_model_weights_protection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_in_enclave_model_weights_protection`."
+      ]
+    }
+  },
+  {
+    "id": "t0_teeai_side_channel_microarchitectural_threats",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "086d26090e155000abe87c2f5c631111ca8bb0694102518f34eaf74a007dff3c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "마이크로아키텍처 캐시 타이밍 부채널과 정보 누출 위협",
+      "en": "Microarchitectural Cache Timing Side-Channels & Leakage Threat Surface"
+    },
+    "prompt": {
+      "ko": "TEE 메모리가 암호화되어 있더라도 CPU 공유 캐시(LLC) 적중/실패 시간차로 추론 입력 및 가중치를 복원하는 부채널 원리를 분석합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_side_channel_microarchitectural_threats`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze side-channel vectors where shared CPU cache access latency leaks model activations despite full hardware memory encryption.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_side_channel_microarchitectural_threats`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_side_channel_microarchitectural_threats` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_side_channel_microarchitectural_threats`."
+      ]
+    }
+  },
+  {
+    "id": "t0_teeai_tpm_aik_root_of_trust_governance",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "20ccc4abf3ad6e6501ff0d7f5b1e393a86bf827dc83ce21e78ec10942fec4c1b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 TPM AIK 및 신뢰점(Root of Trust) 거버넌스 원칙",
+      "en": "Hardware TPM AIK Endorsement & Root of Trust Governance Principles"
+    },
+    "prompt": {
+      "ko": "가상 TPM(vTPM) 및 물리 엔도스먼트 키(EK)를 기반으로 증명 식별 키(AIK)를 발급하여 위변조 불가능한 인증 체계를 확립하는 원칙을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_tpm_aik_root_of_trust_governance`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study Attestation Identity Key (AIK) issuance bound to hardware TPM Endorsement Keys establishing tamper-proof trust chains.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_tpm_aik_root_of_trust_governance`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_tpm_aik_root_of_trust_governance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_tpm_aik_root_of_trust_governance`."
+      ]
+    }
+  },
+  {
+    "id": "t0_teeai_confidential_federated_learning_model",
+    "tier": 0,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 25,
+    "ci": false,
+    "hash": "b261206e888a085768b545ddc5ad18a10c6658b4c403b7a4c507d05a2588923d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기밀 연합 학습(Confidential Federated Learning)과 다자간 컴퓨팅",
+      "en": "Confidential Federated Learning & Multi-Party Privacy-Preserving AI"
+    },
+    "prompt": {
+      "ko": "의료 및 금융 기관 간 민감 데이터셋을 공유하지 않고 TEE 엔클레이브 내에서만 가중치를 집계하는 기밀 AI 협업 설계를 검토합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t0_teeai_confidential_federated_learning_model`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Review confidential federated learning workflows where multiple participants aggregate gradients inside TEEs without data sharing.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t0_teeai_confidential_federated_learning_model`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_teeai_confidential_federated_learning_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_teeai_confidential_federated_learning_model`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_sev_snp_vcek_certificate_chain_audit",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "323ee5f9530cdf8fe8dd53db89c23711bac0616811d1edc0259c276305e7d3bf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AMD SEV-SNP VCEK 인증서 체인 무결성 및 CRL 폐기 감사",
+      "en": "AMD SEV-SNP VCEK Certificate Chain Integrity & CRL Revocation Audit"
+    },
+    "prompt": {
+      "ko": "AMD KDS 서버에서 제공하는 VCEK(Versioned Chip Endorsement Key) 인증서 체인을 검증하고 폐기 목록을 확인하여 위조 증명을 차단합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_sev_snp_vcek_certificate_chain_audit`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Validate the AMD VCEK certificate chain against AMD KDS root certs and CRLs to prevent forged hypervisor attestation quotes.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_sev_snp_vcek_certificate_chain_audit`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_sev_snp_vcek_certificate_chain_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_sev_snp_vcek_certificate_chain_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_tdx_quote_generation_sgx_ql_bridge",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "ef5b0c5f4b1f32b0a456b9b76ec899ae84a08ac668c7d29f96b679fcf82dd999",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel TDX Quote 생성 및 SGX QL 브리지 유효성 검증",
+      "en": "Intel TDX Quote Generation & SGX QL Bridge Attestation Verification"
+    },
+    "prompt": {
+      "ko": "Intel TDX 게스트 드라이버(/dev/tdx_guest)를 통해 Quote를 획득하고 Quote Verification Enclave(QVE)를 통해 서명을 정밀 검증합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_tdx_quote_generation_sgx_ql_bridge`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Retrieve hardware TDX quotes via /dev/tdx_guest and verify signatures using Intel Quote Verification Enclave (QVE).\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_tdx_quote_generation_sgx_ql_bridge`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_tdx_quote_generation_sgx_ql_bridge` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_tdx_quote_generation_sgx_ql_bridge`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_aes_256_xts_memory_encryption_audit",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "55b639a6a1a5ba5a6b4c708664def27c1e73d01e7ac2e5f556ca5f262edc3dba",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CPU 하드웨어 AES-256-XTS 메모리 암호화 상태 및 TCB 감사",
+      "en": "CPU Hardware AES-256-XTS Memory Encryption & TCB Version Audit"
+    },
+    "prompt": {
+      "ko": "MSR 레지스터 및 커널 텔레메트리를 조사하여 메모리 버스 암호화가 AES-256-XTS로 활성화되어 있는지 확인하고 TCB 버전을 검증합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_aes_256_xts_memory_encryption_audit`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Audit CPU MSR registers and boot telemetry to verify AES-256-XTS memory encryption is actively enforced across guest DRAM.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_aes_256_xts_memory_encryption_audit`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_aes_256_xts_memory_encryption_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_aes_256_xts_memory_encryption_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_encrypted_weight_blob_kdf_decryption",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "1fb31f459d3f93d662519c53af6de0d3f12e82b650a65bb0a59a049c04aa2a02",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TEE 엔클레이브 내부 KDF 유도 키를 통한 가중치 블롭 안전 복호화",
+      "en": "Secure Model Weight Blob Decryption via In-Enclave KDF Derived Keys"
+    },
+    "prompt": {
+      "ko": "원격 증명 성공 후 키 브로커 서비스(KBS)로부터 전달받은 비밀키로 엔클레이브 힙 내에서만 가중치 텐서를 복호화합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_encrypted_weight_blob_kdf_decryption`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Decrypt model weight blobs inside enclave heap using ephemeral session keys negotiated with a Key Broker Service (KBS).\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_encrypted_weight_blob_kdf_decryption`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_encrypted_weight_blob_kdf_decryption` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_encrypted_weight_blob_kdf_decryption`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_cache_invalidation_instruction_recon",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "5965f4026884695e0a8a759e821b5803fb3e9dce9824150c731f745b30d67ca3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "캐시 무효화 명령어 기반 타이밍 부채널 정찰 및 탐지",
+      "en": "Reconnaissance & Detection of Cache Invalidation Timing Probes"
+    },
+    "prompt": {
+      "ko": "하이퍼바이저 또는 악의적 프로세스가 캐시 무효화 명령어를 반복 호출하여 특정 메모리 라인을 비우는 패턴을 모니터링합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_cache_invalidation_instruction_recon`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Monitor and identify repetitive cache invalidation instruction executions designed to empty targeted memory lines for timing probes.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_cache_invalidation_instruction_recon`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_cache_invalidation_instruction_recon` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_cache_invalidation_instruction_recon`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_signed_inference_token_tpm_verification",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "21a502e95afac292a82fa7b01b530a612a5c29404bdfe036325ec936f2a307d9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TPM AIK 기반 서명된 추론 토큰(Inference Token) 검증",
+      "en": "Verification of TPM AIK Cryptographically Signed Inference Tokens"
+    },
+    "prompt": {
+      "ko": "클라이언트가 수신한 모델 추론 응답에 첨부된 TPM AIK 전자서명을 검증하여 중간자 위변조 없이 TEE에서 생성되었음을 증명합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_signed_inference_token_tpm_verification`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Validate cryptographic signatures on inference response tokens ensuring untampered execution inside the hardware enclave.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_signed_inference_token_tpm_verification`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_signed_inference_token_tpm_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_signed_inference_token_tpm_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t1_teeai_vtpm_measurement_replay_attack_denial",
+    "tier": 1,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 50,
+    "ci": false,
+    "hash": "cba969cab811392b640e27316f474643a04b86bcc597f3705456ac246f5a8de8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "논스(Nonce) 기반 vTPM 측정치 재생 공격(Replay Attack) 방어",
+      "en": "Defending Against vTPM Attestation Replay Attacks via Cryptographic Nonces"
+    },
+    "prompt": {
+      "ko": "원격 증명 챌린지 시 클라이언트가 제공한 256비트 암호학적 난수(Nonce)가 서명된 Quote에 포함되어 있는지 확인하여 재생을 차단합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t1_teeai_vtpm_measurement_replay_attack_denial`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Enforce client-supplied 256-bit cryptographic nonces inside attestation quotes to prevent replay of historic valid quotes.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t1_teeai_vtpm_measurement_replay_attack_denial`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_teeai_vtpm_measurement_replay_attack_denial` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_teeai_vtpm_measurement_replay_attack_denial`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_flush_reload_side_channel_mitigation",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "61a426831ba56585c417c71d108337ab41382f52ed63e3cf12a81e987d7ac1ee",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Flush+Reload 마이크로아키텍처 공격 차단 및 페이지 테이블 격리",
+      "en": "Flush+Reload Side-Channel Mitigation & Kernel Page Table Isolation"
+    },
+    "prompt": {
+      "ko": "공유 바이너리 코드 세그먼트 메모리 매핑을 격리하고 메모리 중복 제거(KSM)를 비활성화하여 Flush+Reload 프로브를 원천 무력화합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_flush_reload_side_channel_mitigation`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Disable Kernel Samepage Merging (KSM) and isolate shared binary code page mappings to defeat Flush+Reload timing probes.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_flush_reload_side_channel_mitigation`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_flush_reload_side_channel_mitigation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_flush_reload_side_channel_mitigation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_prime_probe_llc_cache_contention_sentinel",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "47393344ee024318717b1ecd3e509795c8c21568c51830d6cec540145af71220",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "LLC Prime+Probe 캐시 경합 모니터링 및 비정상 접근 탐지 센티널",
+      "en": "LLC Prime+Probe Cache Contention Monitoring & Anomaly Detection Sentinel"
+    },
+    "prompt": {
+      "ko": "성능 모니터링 카운터(PMC)를 통해 LLC(Last-Level Cache) 미스율 급증 및 경합 이상 징후를 감지하여 부채널 정찰을 즉각 차단합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_prime_probe_llc_cache_contention_sentinel`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Deploy Performance Monitoring Counters (PMC) tracking anomalous LLC miss spikes indicative of Prime+Probe cache surveillance.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_prime_probe_llc_cache_contention_sentinel`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_prime_probe_llc_cache_contention_sentinel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_prime_probe_llc_cache_contention_sentinel`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_hypervisor_page_fault_side_channel_defense",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "45e84139b904ac30f0f73fb4f169b62fef56adf795f88ff6dbfe0de517c1b807",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하이퍼바이저 제로스텝 페이지 폴트(Zero-Step Page Fault) 추적 방어",
+      "en": "Defending Against Hypervisor Zero-Step Page Fault Stepping Attacks"
+    },
+    "prompt": {
+      "ko": "호스트가 게스트 페이지 테이블에 비접근 플래그를 주입하여 명령어 단위 페이지 폴트를 유발하는 단일 스텝 추적 공격을 방어합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_hypervisor_page_fault_side_channel_defense`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Mitigate single-stepping hypervisor attacks that manipulate page table present bits to trace execution flow via page faults.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_hypervisor_page_fault_side_channel_defense`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_hypervisor_page_fault_side_channel_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_hypervisor_page_fault_side_channel_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_secure_key_exchange_ecdh_kdf_enclave",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "269e684535ae6ba53946674358d12d6c797fd57928b97498a89a4c58ac45ed9b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔클레이브-클라이언트 간 종단간 ECDH Ephemeral 키 교환",
+      "en": "End-to-End ECDH Ephemeral Key Exchange Between Client and Enclave"
+    },
+    "prompt": {
+      "ko": "호스트 메모리를 경유하는 모든 입출력 페이로드를 클라이언트와 엔클레이브 간 직접 협상된 X25519 공유키로 암호화합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_secure_key_exchange_ecdh_kdf_enclave`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Establish X25519 ECDH encrypted communication channels directly between client and enclave bypassing the host hypervisor.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_secure_key_exchange_ecdh_kdf_enclave`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_secure_key_exchange_ecdh_kdf_enclave` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_secure_key_exchange_ecdh_kdf_enclave`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_confidential_gpu_nv_hopper_attestation",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "9485c5a886d7c16a03cd61149e997cf43c446de2b617031aeac832e170f0f50a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NVIDIA Hopper H100 기밀 GPU PCIe SPDM 원격 증명 검증",
+      "en": "NVIDIA Hopper H100 Confidential GPU PCIe SPDM Remote Attestation"
+    },
+    "prompt": {
+      "ko": "PCIe Gen5 링크 상에서 CPU TEE와 H100 GPU 간 SPDM(Security Protocol and Data Model) 상호 증명 및 하드웨어 암호화 터널을 수립합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_confidential_gpu_nv_hopper_attestation`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Verify PCIe SPDM attestation and establish encrypted bounce-buffer links between CPU TEE and NVIDIA Hopper confidential GPUs.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_confidential_gpu_nv_hopper_attestation`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_confidential_gpu_nv_hopper_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_confidential_gpu_nv_hopper_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_unencrypted_dram_weight_dump_barrier",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "655f5c3c4c899dabb1285b3824b530b3a8bd06f9a92b38a1f17cddeec99f231d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "호스트 DRAM 직접 메모리 접근(DMA) 및 가중치 덤프 원천 차단",
+      "en": "Host DRAM Direct Memory Access (DMA) & Model Weight Dump Prevention"
+    },
+    "prompt": {
+      "ko": "IOMMU DMA 보호 및 AMD SEV Secure Nested Paging(SNP) RMP를 활성화하여 호스트 PCI 디바이스의 무단 읽기를 하드웨어적으로 거부합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_unencrypted_dram_weight_dump_barrier`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Enforce IOMMU DMA protection and SEV-SNP RMP tables preventing malicious PCI devices from dumping enclave physical pages.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_unencrypted_dram_weight_dump_barrier`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_unencrypted_dram_weight_dump_barrier` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_unencrypted_dram_weight_dump_barrier`."
+      ]
+    }
+  },
+  {
+    "id": "t2_teeai_tamper_proof_audit_ledger_tee_signing",
+    "tier": 2,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 100,
+    "ci": false,
+    "hash": "0b85186863cd4d86c481b9a784f2b4736773620098a93b6030da40c535fef74e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔클레이브 내부 불변 감사 로그 생성 및 SHA-256 머클 트리 봉인",
+      "en": "In-Enclave Immutable Audit Logging Sealed via SHA-256 Merkle Trees"
+    },
+    "prompt": {
+      "ko": "모든 모델 추론 및 도구 호출 이력을 엔클레이브 내에서 머클 트리 구조로 해시 체이닝하고 주기적으로 TPM 서명으로 공증합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t2_teeai_tamper_proof_audit_ledger_tee_signing`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Record all model inferences in an in-enclave Merkle tree sealed with periodic hardware TPM attestation signatures.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t2_teeai_tamper_proof_audit_ledger_tee_signing`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_teeai_tamper_proof_audit_ledger_tee_signing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_teeai_tamper_proof_audit_ledger_tee_signing`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_constant_time_gemm_kernel_hardening",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "b63b55bceefa362299189691718cfe66b83450d72a4ecc215ff8e072a4ffc6f9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "상수 시간 행렬곱(Constant-Time GEMM) 커널 하드닝 및 분기 제거",
+      "en": "Constant-Time GEMM Kernel Hardening & Secret-Dependent Branch Removal"
+    },
+    "prompt": {
+      "ko": "활성화 함수(ReLU, GeLU) 및 부동소수점 곱셈 시 피연산자 값에 따른 클록 주기 편차를 제거하여 사이드채널 정보 유출을 차단합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_constant_time_gemm_kernel_hardening`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Implement constant-time matrix multiplication (GEMM) eliminating data-dependent branch variations and memory latencies.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_constant_time_gemm_kernel_hardening`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_constant_time_gemm_kernel_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_constant_time_gemm_kernel_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_oblivious_ram_oram_inference_memory_access",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "17e846c921a0dd27722dca0b0f46746b3cc64c34abc361d6c3eb9356a5fcd493",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ORAM(Oblivious RAM) 기반 추론 메모리 접근 패턴 은닉화",
+      "en": "Oblivious RAM (ORAM) Access Pattern Shuffling for Inference Protection"
+    },
+    "prompt": {
+      "ko": "Path ORAM 알고리즘을 적용하여 모델 추론 시 토큰별 메모리 접근 위치를 랜덤 셔플링함으로써 호스트의 접근 패턴 분석을 무력화합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_oblivious_ram_oram_inference_memory_access`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Deploy Path ORAM protocols shuffling memory addresses during token generation to mask inference access patterns from hypervisors.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_oblivious_ram_oram_inference_memory_access`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_oblivious_ram_oram_inference_memory_access` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_oblivious_ram_oram_inference_memory_access`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_tdx_sept_violation_attack_containment",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "cf70a10500d5b441315a2036fa77021ff35c671d2a8b411f38070895975435bb",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel TDX Secure EPT(SEPT) 위반 트랩 및 컨테이너 샌드박스 격리",
+      "en": "Intel TDX Secure EPT (SEPT) Violation Trapping & Enclave Containment"
+    },
+    "prompt": {
+      "ko": "호스트 하이퍼바이저가 게스트 메모리 페이지 속성을 무단 변경할 때 발생하는 TDX SEPT 위반을 감지하고 즉각 실행을 중단합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_tdx_sept_violation_attack_containment`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Detect hypervisor-induced Secure EPT (SEPT) mapping violations and trigger emergency enclave self-destruct routines.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_tdx_sept_violation_attack_containment`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_tdx_sept_violation_attack_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_tdx_sept_violation_attack_containment`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_ephemeral_attestation_key_rotation_30s",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "3887f1363b151269c0c7a659fde13229df8ea43834c80e0c794600203d57a1b7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "30초 주기 임시 증명 세션 키 고속 순환 및 PFS 보장",
+      "en": "30-Second Ephemeral Attestation Session Key Rotation & PFS Assurance"
+    },
+    "prompt": {
+      "ko": "원격 클라이언트 세션마다 30초 주기로 HKDF-SHA256 기반 대칭 세션키를 자동 롤오버하여 과거 세션의 완전 순방향 비밀성(PFS)을 달성합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_ephemeral_attestation_key_rotation_30s`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Rotate ephemeral symmetric encryption keys every 30 seconds using HKDF-SHA256 ensuring strict Perfect Forward Secrecy.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_ephemeral_attestation_key_rotation_30s`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_ephemeral_attestation_key_rotation_30s` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_ephemeral_attestation_key_rotation_30s`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_masked_activation_tensor_protection",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "77afb50caa944e7826f062b84520a71c3163478866a3167e40c81b8e9adc1292",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "마스킹된 활성화 텐서(Masked Activation) 연산 및 차수별 엔트로피 보호",
+      "en": "Higher-Order Masked Activation Tensor Arithmetic for Side-Channel Defense"
+    },
+    "prompt": {
+      "ko": "중간 계층 텐서에 1차 및 2차 불리언 마스킹 난수를 주입하여 차동 전력 분석(DPA) 및 전자파 부채널 분석(EMA)을 방어합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_masked_activation_tensor_protection`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Inject 1st and 2nd-order boolean masking entropy into intermediate activations preventing differential power analysis (DPA).\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_masked_activation_tensor_protection`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_masked_activation_tensor_protection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_masked_activation_tensor_protection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_speculative_execution_spectre_v2_barrier",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "baa431445c1d17345645955aee1514ae51c5491ac2c47e656a5c49f0f2b36461",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TEE 엔클레이브 내 투기적 실행 공격(Spectre v2/BTI) 방어 배리어",
+      "en": "Spectre v2 Branch Target Injection (BTI) Mitigation Inside Enclaves"
+    },
+    "prompt": {
+      "ko": "IBRS(Indirect Branch Restricted Speculation) 및 Retpoline 컴파일러 플래그를 강제하여 교차 VM 분기 예측기 오염 공격을 방어합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_speculative_execution_spectre_v2_barrier`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Enforce Enhanced IBRS and retpoline instrumentation within enclave binaries to defeat cross-VM Spectre v2 branch poisoning.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_speculative_execution_spectre_v2_barrier`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_speculative_execution_spectre_v2_barrier` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_speculative_execution_spectre_v2_barrier`."
+      ]
+    }
+  },
+  {
+    "id": "t3_teeai_key_broker_service_kbs_attestation_protocol",
+    "tier": 3,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 200,
+    "ci": false,
+    "hash": "62ef6e33673102b31e7e7351166b79e2ef410dd3b49d9a75981f5fc72f156d9b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "RATS 표준 기반 키 브로커 서비스(KBS) 상호 증명 프로토콜 구현",
+      "en": "IETF RATS Standard Key Broker Service (KBS) Mutual Attestation Protocol"
+    },
+    "prompt": {
+      "ko": "IETF RATS(Remote Attestation Procedures) 아키텍처를 준수하여 Verifier-Relying Party 간 암호학적 신뢰 토큰 규격을 교환합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t3_teeai_key_broker_service_kbs_attestation_protocol`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Implement IETF RATS Entity Attestation Token architecture for mutual verification between Key Broker Services and client enclaves.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t3_teeai_key_broker_service_kbs_attestation_protocol`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_teeai_key_broker_service_kbs_attestation_protocol` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_teeai_key_broker_service_kbs_attestation_protocol`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_zero_leak_confidential_gpu_pipeline",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "1100009232a92eee80f7dcf1ab781b5156aa1ac1d30ff9d827f0ac6f365d82c0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CPU-GPU 이종 TEE 간 제로-릭(Zero-Leak) 통합 기밀 파이프라인 수립",
+      "en": "Zero-Leak End-to-End Heterogeneous CPU-GPU Confidential Pipeline"
+    },
+    "prompt": {
+      "ko": "AMD SEV-SNP 호스트와 NVIDIA H100 Hopper GPU 간 통합 SPDM 암호화 바운스 버퍼를 구축하여 전 파이프라인 무결성을 보장합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_zero_leak_confidential_gpu_pipeline`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Deploy end-to-end encrypted PCIe bounce buffers across AMD SEV-SNP host CPUs and NVIDIA H100 Hopper confidential GPUs.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_zero_leak_confidential_gpu_pipeline`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_zero_leak_confidential_gpu_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_zero_leak_confidential_gpu_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_sub_nanosecond_cache_jitter_shield",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "cfe0d5223822c035ae84ed523e716d924489e0af6028d7b005a702629bccb9a6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "서브나노초 캐시 타이밍 지터 주입과 동적 더미 연산 실드",
+      "en": "Sub-Nanosecond Cache Timing Jitter Injection & Dynamic Dummy Ops Shield"
+    },
+    "prompt": {
+      "ko": "하드웨어 난수 생성기(RDRAND) 기반으로 동적 더미 메모리 접근과 마이크로코드 딜레이를 주입하여 초정밀 통계적 타이밍 분석을 무력화합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_sub_nanosecond_cache_jitter_shield`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Inject RDRAND-driven dummy memory accesses and microcode timing jitter to defeat ultra-high-resolution statistical timing attacks.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_sub_nanosecond_cache_jitter_shield`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_sub_nanosecond_cache_jitter_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_sub_nanosecond_cache_jitter_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_hardware_tpm_quote_live_pcr_verification",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "2c915596d49ed13cf16f77e7254b47a85889ee72134e592c4707d1d5f736d365",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "물리 하드웨어 TPM 2.0 인라인 Quote와 실시간 PCR 0~7 롤링 검증",
+      "en": "Physical TPM 2.0 Inline Quote & Real-Time Rolling PCR 0~7 Verification"
+    },
+    "prompt": {
+      "ko": "부팅 단계부터 런타임까지 확장된 PCR 0~7 해시를 실시간 롤링 검증하여 마이크로코드 패치 및 하이퍼바이저 변조를 즉시 적발합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_hardware_tpm_quote_live_pcr_verification`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Verify rolling physical TPM 2.0 PCR 0~7 measurements continuously detecting runtime hypervisor firmware modifications.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_hardware_tpm_quote_live_pcr_verification`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_hardware_tpm_quote_live_pcr_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_hardware_tpm_quote_live_pcr_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_cross_cloud_tee_confidential_mesh",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "3fc97e9dc4fd9c8ec08e184128522a2abe3bf3f367899f6a883bcff45f5d4c85",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티 클라우드(AWS Nitro / Azure SNP / GCP TDX) 연합 기밀 메시 네트워크",
+      "en": "Multi-Cloud (AWS Nitro / Azure SNP / GCP TDX) Federated Confidential Mesh"
+    },
+    "prompt": {
+      "ko": "이종 클라우드 환경에서 운영되는 TEE 엔클레이브 간 교차 증명(Cross-Attestation)을 수행하고 상호 mTLS 터널을 연동합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_cross_cloud_tee_confidential_mesh`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Perform cross-cloud remote attestation and establish encrypted mTLS mesh networks across AWS Nitro, Azure SNP, and GCP TDX.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_cross_cloud_tee_confidential_mesh`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_cross_cloud_tee_confidential_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_cross_cloud_tee_confidential_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_post_quantum_hybrid_attestation_signature",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "374c489cf9c443193b525e368377c2b2da096184150e87334d5707b06c0c0379",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 204 ML-DSA-65 기반 포스트 양자 하이브리드 원격 증명 서명",
+      "en": "FIPS 204 ML-DSA-65 Post-Quantum Hybrid Remote Attestation Signatures"
+    },
+    "prompt": {
+      "ko": "기존 ECDSA P-384 증명 서명에 FIPS 204 양자 내성 격자 전자서명(ML-DSA-65)을 결합하여 양자 컴퓨터 기반 증명 위조를 영구 차단합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_post_quantum_hybrid_attestation_signature`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Combine classical ECDSA with FIPS 204 ML-DSA-65 lattice signatures on attestation quotes to secure long-term enclave authenticity.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_post_quantum_hybrid_attestation_signature`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_post_quantum_hybrid_attestation_signature` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_post_quantum_hybrid_attestation_signature`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_tamper_evident_token_stream_blockchain",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "b19ecf3f3d4c44d5ec35019ade3d0a02595d8d5047536d7e1c07a038bdf62e4e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위변조 불가능한 LLM 토큰 스트림 실시간 서명 및 온체인 영지식 증명",
+      "en": "Tamper-Evident Real-Time LLM Token Stream Signing & zk-SNARK Verification"
+    },
+    "prompt": {
+      "ko": "생성되는 모든 토큰 청크를 엔클레이브 TPM 키로 스트리밍 서명하고 zk-SNARK 증거를 생성하여 외부 검증자가 실시간 확인하게 합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_tamper_evident_token_stream_blockchain`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Sign streaming LLM token chunks via enclave TPM keys and emit zk-SNARK proofs validating confidential inference fidelity.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_tamper_evident_token_stream_blockchain`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_tamper_evident_token_stream_blockchain` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_tamper_evident_token_stream_blockchain`."
+      ]
+    }
+  },
+  {
+    "id": "t4_teeai_capstone_full_spectrum_confidential_ai_defense",
+    "tier": 4,
+    "cat": "confidential",
+    "track": "teeai",
+    "points": 500,
+    "ci": false,
+    "hash": "507fe7be3a6b892f99833ba01ab019dea83af0b4b361b219edc350c17f9fc042",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기밀 AI 추론 & 하드웨어 엔클레이브 풀 스펙트럼 방어 체계 (Capstone)",
+      "en": "Capstone: Full-Spectrum Confidential AI Inference & Hardware TEE Defense"
+    },
+    "prompt": {
+      "ko": "AMD SEV-SNP 원격 증명, AES-256-XTS 메모리 암호화, 상수시간 GEMM, ORAM 셔플링, TPM AIK 서명을 완벽 통합한 방어를 완성합니다.\n\n[실습 환경 및 검증 식별자]\nTEEAI_CHALLENGE_ID: `t4_teeai_capstone_full_spectrum_confidential_ai_defense`\n\n위 식별자를 기반으로 기밀 AI & 하드웨어 TEE 원격 증명 검증 플래그를 도출하여 제출하세요.",
+      "en": "Synthesize hardware TEE attestation, in-enclave AES-256-XTS weight sealing, constant-time GEMM, ORAM shuffling, and TPM AIK output signatures.\n\n[Verification Identifier]\nTEEAI_CHALLENGE_ID: `t4_teeai_capstone_full_spectrum_confidential_ai_defense`\n\nDerive and submit the confidential AI & hardware TEE attestation verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_teeai_capstone_full_spectrum_confidential_ai_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_teeai_capstone_full_spectrum_confidential_ai_defense`."
+      ]
+    }
   }
 ];

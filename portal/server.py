@@ -96,7 +96,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "40": "dfir", "41": "supplychain", "42": "cloud", "43": "cloud",
     "44": "web", "45": "crypto", "46": "endpoint",
     "47": "ai", "48": "iot", "49": "crypto", "50": "dfir", "51": "endpoint", "52": "network",
-    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud", "59": "cloud", "60": "crypto", "61": "zerotrust", "62": "ai", "63": "ai", "64": "cloud", "65": "crypto", "66": "ai",
+    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud", "59": "cloud", "60": "crypto", "61": "zerotrust", "62": "ai", "63": "ai", "64": "cloud", "65": "crypto", "66": "ai", "67": "confidential",
 }
 
 
@@ -111,7 +111,7 @@ class BatchLabRequest(BaseModel):
 
 @app.get("/api/labs/categories")
 def get_lab_categories():
-    """66개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
+    """67개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
     stats: Dict[str, dict] = {}
     for lid, meta in LABS.items():
         cat = get_lab_category(lid)
@@ -132,7 +132,7 @@ def get_lab_categories():
 
 @app.get("/api/labs")
 def list_labs(category: Optional[str] = None):
-    """66개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
+    """67개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
     result = []
     target_cat = category.strip().lower() if category else None
     for lid, meta in sorted(LABS.items()):

@@ -679,6 +679,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 14, 18, 26, 62, 63, 69],
     },
+    "67": {
+        "name": "기밀 AI 추론 & 하드웨어 엔클레이브 증명 방어 실전 랩",
+        "dir":  "67_confidential_ai_inference_lab",
+        "desc": "ConfidentialAiInferenceLab: AMD SEV-SNP/Intel TDX 하드웨어 TEE 원격 증명 & VCEK 체인 무결성 검증 · 엔클레이브 내 AES-256-XTS 가중치 복호화 & 메모리 덤프 차단 · 마이크로아키텍처 캐시 타이밍(Flush+Reload/Prime+Probe) 부채널 모델 추출 방어 & ORAM 셔플링 · 하드웨어 TPM AIK 기반 추론 출력 위변조 방지 암호학적 서명",
+        "url":  "웹 콘솔 & TEE 게이트웨이: http://localhost:8067",
+        "difficulty": "★★★★★",
+        "related": [11, 57, 59, 62, 63, 65, 66],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1724,6 +1732,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8064, "Lab 64 (ContainerEscapeLsmLab eBPF LSM Container Escape Lab)"),
         (8065, "Lab 65 (PqcHybridTlsLab Post-Quantum Hybrid TLS Lab)"),
         (8066, "Lab 66 (AiSandboxEscapeLab AI Agent Sandbox Escape Lab)"),
+        (8067, "Lab 67 (ConfidentialAiInferenceLab AMD SEV/TDX TEE Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

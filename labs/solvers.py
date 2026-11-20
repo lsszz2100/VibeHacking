@@ -2081,6 +2081,49 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Autonomous G3 approval gate confirmed with valid dual-custody HMAC signature and prompt injection immunity -> FLAG{aisbox_g3_multi_party_ledger_governance_active_8066}"
             }
         ]
+    },
+    "67": {
+        "title": "Lab 67: Confidential AI Inference & Hardware Enclave Attestation Defense Lab",
+        "description": "AMD SEV-SNP/Intel TDX 기밀 컴퓨팅 기반 하드웨어 원격 증명, 엔클레이브 내 모델 가중치 AES-256-XTS 암호화, 캐시 타이밍 부채널 방어 및 TPM AIK 서명 검증 실습",
+        "port": 8067,
+        "steps": [
+            {
+                "step": 1,
+                "name": "하드웨어 TEE 원격 증명(Remote Attestation) 및 VCEK 체인 기반 PCR0 무결성 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "신뢰할 수 없는 클라우드 호스트 환경에서 위조된 증명 쿼트를 AMD SEV-SNP/Intel TDX 하드웨어 VCEK 루트 인증서 체인 및 PCR0 해시 검증으로 차단합니다.",
+                "exploit_payload": '{"hardware_provider": "amd-sev-snp", "attestation_quote": "<hex_quote_64+>", "measurement_pcr0": "<sha256_pcr0>", "require_snp_vcek": true}',
+                "defense": "하드웨어 TEE 원격 증명 쿼트 서명 검증, PCR0 펌웨어 측정치 고정, VCEK 인증 체인 강제.",
+                "sample_output": "✓ Hardware TEE remote attestation quote and PCR0 measurement verified via VCEK chain -> FLAG{teeai_sev_snp_hardware_attestation_verified_8067}"
+            },
+            {
+                "step": 2,
+                "name": "엔클레이브 내부 AES-256-XTS 모델 가중치 복호화 & 메모리 평문 덤프 차단",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "하이퍼바이저 관리자 권한 메모리 스누핑에 대비하여 가중치를 엔클레이브 내부에서만 복호화하고 AES-256-XTS 하드웨어 암호화로 보호합니다.",
+                "exploit_payload": '{"key_id": "kdf-tee-aes256-xts-v2", "encrypted_model_blob": "<blob_32+>", "memory_encryption_xts": true, "prevent_plain_weight_dump": true}',
+                "defense": "하드웨어 메모리 암호화(AES-256-XTS), 엔클레이브 외부 평문 가중치 유출 차단 배리어.",
+                "sample_output": "✓ Enclave model weights decrypted into AES-256-XTS encrypted enclave memory space -> FLAG{teeai_in_enclave_xts_model_weights_sealed_8067}"
+            },
+            {
+                "step": 3,
+                "name": "마이크로아키텍처 캐시 타이밍(Flush+Reload/Prime+Probe) 부채널 모델 역공학 방어",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "추론 시 Last-Level Cache(LLC) 적중/실패 시간차로 뉴런 활성화 상태를 복원하는 부채널 공격을 상수 시간 연산 및 ORAM 메모리 셔플링으로 방어합니다.",
+                "exploit_payload": '{"constant_time_gemm": true, "cache_line_flushing_mitigated": true, "oblivious_ram_or_shuffling": true, "detect_prime_probe": true}',
+                "defense": "상수 시간 행렬곱(Constant-time GEMM), 캐시 플러시 완화, 메모리 접근 패턴 은닉(ORAM), Prime+Probe 탐지 센티널.",
+                "sample_output": "✓ Microarchitectural cache timing side-channel attacks neutralized via constant-time ops and ORAM -> FLAG{teeai_cache_timing_sidechannel_flush_reload_mitigated_8067}"
+            },
+            {
+                "step": 4,
+                "name": "엔클레이브 하드웨어 TPM AIK 기반 추론 출력 위변조 방지 암호학적 서명 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "프롬프트 입력 및 추론 결과의 중간 변조 및 모델 사칭을 하드웨어 RoT 기반 TPM AIK 서명으로 봉인하여 진본성을 증명합니다.",
+                "exploit_payload": '{"prompt_hash": "<sha256_prompt>", "inference_output": "<result_text>", "tpm_aik_signature": "<hmac_sha256>", "hardware_root_of_trust": true}',
+                "defense": "TPM AIK 암호학적 서명 생성, 프롬프트-응답 바인딩 검증, 하드웨어 신뢰점(RoT) 강제.",
+                "sample_output": "✓ Inference output signed with enclave hardware TPM AIK endorsement key -> FLAG{teeai_tpm_aik_tamper_evident_inference_signed_8067}"
+            }
+        ]
     }
 }
 

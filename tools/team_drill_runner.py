@@ -3,7 +3,7 @@
 tools/team_drill_runner.py — 10대 보안 기술팀 공방전 자동 훈련 엔진 (Team Drill Runner)
 
 HumanAPI_Lab/Security/Technical_Team/Technical_Team.md의 10대 팀 매트릭스와
-VibeHacking 65개 랩 및 77개 워게임 트랙을 연계하여
+VibeHacking 67개 랩 및 79개 워게임 트랙을 연계하여
 Red Team(공격 재현) vs Blue Team(탐지 및 차단) 공방전 시뮬레이션을 수행하고
 Purple Team 탐지율 및 보안 점수를 정량 산출합니다.
 """
@@ -191,6 +191,18 @@ BLUE_DETECTIONS: Dict[str, Dict[str, str]] = {
         "rule_id": "ZTNA-ENVOY-SPIFFE-DPOP-GUARD-6101",
         "action": "UPSTREAM_HEADER_STRIPPED_AND_DPOP_REPLAY_BLOCKED",
         "technique": "T1190 / Exploit Public-Facing Application",
+    },
+    "66": {
+        "engine": "Landlock LSM & eBPF Runtime Sandbox Guardian",
+        "rule_id": "AISBOX-LANDLOCK-EBPF-GUARD-6601",
+        "action": "SIGKILL_AND_SUPPLY_CHAIN_ISOLATE",
+        "technique": "T1195.002 / Supply Chain Compromise",
+    },
+    "67": {
+        "engine": "AMD SEV-SNP / TDX Hardware Attestation Monitor",
+        "rule_id": "TEE-ENCLAVE-SNP-VCEK-6701",
+        "action": "ATTESTATION_VALIDATE_AND_SEAL",
+        "technique": "T1659 / Content Verification Process Bypass",
     },
 }
 
@@ -447,7 +459,7 @@ def main() -> None:
     )
     parser.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     parser.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    parser.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 65개 랩 종합 공방전 실행")
+    parser.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 67개 랩 종합 공방전 실행")
     parser.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     parser.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     parser.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")

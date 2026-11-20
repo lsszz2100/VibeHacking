@@ -3000,6 +3000,58 @@ for (const id of AISBOX_IDS) {
   });
 }
 
+
+const TEEAI_IDS = [
+  "t0_teeai_confidential_computing_threat_model",
+  "t0_teeai_hardware_tee_snp_tdx_architecture",
+  "t0_teeai_remote_attestation_pcr0_measurement",
+  "t0_teeai_in_enclave_model_weights_protection",
+  "t0_teeai_side_channel_microarchitectural_threats",
+  "t0_teeai_tpm_aik_root_of_trust_governance",
+  "t0_teeai_confidential_federated_learning_model",
+  "t1_teeai_sev_snp_vcek_certificate_chain_audit",
+  "t1_teeai_tdx_quote_generation_sgx_ql_bridge",
+  "t1_teeai_aes_256_xts_memory_encryption_audit",
+  "t1_teeai_encrypted_weight_blob_kdf_decryption",
+  "t1_teeai_cache_invalidation_instruction_recon",
+  "t1_teeai_signed_inference_token_tpm_verification",
+  "t1_teeai_vtpm_measurement_replay_attack_denial",
+  "t2_teeai_flush_reload_side_channel_mitigation",
+  "t2_teeai_prime_probe_llc_cache_contention_sentinel",
+  "t2_teeai_hypervisor_page_fault_side_channel_defense",
+  "t2_teeai_secure_key_exchange_ecdh_kdf_enclave",
+  "t2_teeai_confidential_gpu_nv_hopper_attestation",
+  "t2_teeai_unencrypted_dram_weight_dump_barrier",
+  "t2_teeai_tamper_proof_audit_ledger_tee_signing",
+  "t3_teeai_constant_time_gemm_kernel_hardening",
+  "t3_teeai_oblivious_ram_oram_inference_memory_access",
+  "t3_teeai_tdx_sept_violation_attack_containment",
+  "t3_teeai_ephemeral_attestation_key_rotation_30s",
+  "t3_teeai_masked_activation_tensor_protection",
+  "t3_teeai_speculative_execution_spectre_v2_barrier",
+  "t3_teeai_key_broker_service_kbs_attestation_protocol",
+  "t4_teeai_zero_leak_confidential_gpu_pipeline",
+  "t4_teeai_sub_nanosecond_cache_jitter_shield",
+  "t4_teeai_hardware_tpm_quote_live_pcr_verification",
+  "t4_teeai_cross_cloud_tee_confidential_mesh",
+  "t4_teeai_post_quantum_hybrid_attestation_signature",
+  "t4_teeai_tamper_evident_token_stream_blockchain",
+  "t4_teeai_capstone_full_spectrum_confidential_ai_defense"
+];
+
+for (const id of TEEAI_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/TEEAI_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_teeai_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

@@ -1,0 +1,15 @@
+services:
+  confidential-ai-inference-lab:
+    build: .
+    container_name: vhack-lab67-confidential-ai-inference
+    ports:
+      - "127.0.0.1:8067:8067"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8067/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

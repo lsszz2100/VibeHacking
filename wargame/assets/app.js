@@ -925,7 +925,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate", "antirev", "ebpfshield", "hypervisorescape", "confidential", "autosec"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless", "cloudir", "extsec", "pqc", "kernel", "agentmcp", "sansdfir", "ebpfruntime", "c2tunnel", "adgraph", "agentsandbox", "pqcmigrate", "antirev", "ebpfshield", "hypervisorescape", "confidential", "autosec", "aisbox"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -944,6 +944,7 @@
     if (tabName === "hypervisorescape") renderHypervisorEscape();
     if (tabName === "confidential") renderConfidential();
     if (tabName === "autosec") renderAutosec();
+    if (tabName === "aisbox") renderAisbox();
   }
 
   // --- 1. CAN Bus Simulator ---
@@ -6565,6 +6566,145 @@
       sLaser();
       const p = btn.getAttribute("data-autosec-preset");
       renderAutosec(p);
+    });
+  });
+
+  // --- 29. AI Agent Sandbox & Supply Chain Isolation Inspector ---
+  function renderAisbox(preset) {
+    const modeSelect = document.getElementById("aisboxModeSelect");
+    const vectorSelect = document.getElementById("aisboxVectorSelect");
+    const depBadge = document.getElementById("aisboxDepBadge");
+    const kernelBadge = document.getElementById("aisboxKernelBadge");
+    const depView = document.getElementById("aisboxDepView");
+    const kernelView = document.getElementById("aisboxKernelView");
+
+    if (!depView || !kernelView) return;
+
+    if (preset === "clean") {
+      if (modeSelect) modeSelect.value = "strict_lsm";
+      if (vectorSelect) vectorSelect.value = "typosquat_hash";
+    } else if (preset === "typosquat") {
+      if (modeSelect) modeSelect.value = "hash_enforced";
+      if (vectorSelect) vectorSelect.value = "typosquat_hash";
+    } else if (preset === "monkeypatch") {
+      if (modeSelect) modeSelect.value = "strict_lsm";
+      if (vectorSelect) vectorSelect.value = "memory_proc_self";
+    } else if (preset === "egress") {
+      if (modeSelect) modeSelect.value = "strict_lsm";
+      if (vectorSelect) vectorSelect.value = "c2_exfil_egress";
+    }
+
+    const mode = modeSelect ? modeSelect.value : "strict_lsm";
+    const vector = vectorSelect ? vectorSelect.value : "typosquat_hash";
+
+    let depText = "";
+    let kernelText = "";
+
+    if (preset === "clean" || (vector === "typosquat_hash" && mode === "strict_lsm" && !preset)) {
+      depBadge.textContent = "SHA-256 VERIFIED";
+      depBadge.style.background = "#16a34a";
+      kernelBadge.textContent = "VERDICT: ISOLATION ENFORCED";
+      kernelBadge.style.background = "#16a34a";
+
+      depText =
+        "■ PEP 665 / SLSA LEVEL 3 DEPENDENCY PROVENANCE AUDIT:\n" +
+        "  - Manifest: pyproject.toml & poetry.lock\n" +
+        "  - [OK] safetensors (v0.4.2) -> sha256:9a7b14...41f2 [MATCH]\n" +
+        "  - [OK] torch-infer (v2.3.0) -> sha256:c41d88...88a1 [MATCH]\n" +
+        "  - [OK] fastapi (v0.111.0)   -> sha256:7f2a31...31b9 [MATCH]\n" +
+        "  - [OK] pydantic (v2.7.1)    -> sha256:4e9c62...62d0 [MATCH]\n" +
+        "  - Cryptographic Cosign Signature: VALID (Sigstore Fulcio OIDC)\n" +
+        "  - Supply Chain Result: 100% Hermetic & Reproducible Build.";
+
+      kernelText =
+        "■ LANDLOCK LSM & SECCOMP BPF KERNEL TELEMETRY:\n" +
+        "  - Landlock ABI Version: v3 (Ruleset: LANDLOCK_ACCESS_FS_READ/EXECUTE)\n" +
+        "  - Unprivileged Sandbox: PR_SET_NO_NEW_PRIVS Enforced\n" +
+        "  - Monitored Path /proc/self/mem: READ-ONLY (Writing blocked)\n" +
+        "  - Seccomp Filter: 28 dangerous syscalls disallowed (ptrace, setns, io_uring)\n" +
+        "  - Egress State: 127.0.0.1 Loopback only (Zero-Trust Egress Tap: ACTIVE)\n" +
+        "  - Kernel Status: Sandboxed process confined without host escalation path.";
+    } else if (preset === "typosquat" || vector === "typosquat_hash") {
+      depBadge.textContent = "TAMPERED: HASH MISMATCH";
+      depBadge.style.background = "#dc2626";
+      kernelBadge.textContent = "BUILD ABORTED (PRE-EXECUTION)";
+      kernelBadge.style.background = "#16a34a";
+
+      depText =
+        "■ SUPPLY CHAIN INJECTION ALERT (Typosquatting Package):\n" +
+        "  - Injected Package Request: 'requests-security' (Targeting 'requests')\n" +
+        "  - Expected SHA-256: [NOT LISTED IN PEP 665 LOCKFILE]\n" +
+        "  - Computed Wheel Hash: sha256:bad0deadbeef1337...\n" +
+        "  - Cosign Attestation: FAILED (Unsigned third-party mirror)\n" +
+        "  - Action Taken: Dependency resolver aborted installation.\n" +
+        "  - Result: Zero malicious bytecode executed in environment.";
+
+      kernelText =
+        "■ KERNEL CONTAINMENT POSTURE:\n" +
+        "  - Pre-flight Hash Gate: REJECTED package before pip execution\n" +
+        "  - /tmp Wheel Staging: Mounted with noexec, nosuid\n" +
+        "  - Sandbox Violation: NONE (Payload prevented at supply chain perimeter)\n" +
+        "  - Audit Trail: Logged to tamper-evident HMAC journal with Alert Severity: HIGH.";
+    } else if (preset === "monkeypatch" || vector === "memory_proc_self") {
+      depBadge.textContent = "VERIFIED (BASE)";
+      depBadge.style.background = "#2563eb";
+      kernelBadge.textContent = "SIGKILL: BREAKOUT ATTEMPT";
+      kernelBadge.style.background = "#dc2626";
+
+      depText =
+        "■ RUNTIME INTEGRITY EVALUATION:\n" +
+        "  - Base Packages: Valid SHA-256 hashes\n" +
+        "  - Anomaly: Dynamic monkeypatch detected in sys.modules['urllib.request']\n" +
+        "  - Mutated Symbol: Request.get_method overridden by anonymous lambda\n" +
+        "  - Memory Inspection: ctypes.memmove attempted write into text section.";
+
+      kernelText =
+        "■ LANDLOCK LSM & SECCOMP KERNEL ENFORCEMENT:\n" +
+        "  - Syscall Intercept: ptrace(PTRACE_TRACEME) => -EPERM (Denied)\n" +
+        "  - File Hook: bpf_lsm_file_open('/proc/self/mem') => -EACCES (Denied)\n" +
+        "  - Sub-microsecond Intervention: Kernel issued SIGKILL (Signal 9)\n" +
+        "  - Process PID 1420 terminated instantly (Exit Code 137)\n" +
+        "  - Containment Result: Host boundary preserved with zero memory leakage.";
+    } else {
+      depBadge.textContent = "VERIFIED (BASE)";
+      depBadge.style.background = "#2563eb";
+      kernelBadge.textContent = "EGRESS PACKET DROPPED";
+      kernelBadge.style.background = "#d97706";
+
+      depText =
+        "■ AGENT TOOL NETWORK ACTIVITY:\n" +
+        "  - Tool Invoked: LLM Code Execution Sandbox\n" +
+        "  - Suspicious Activity: Outbound socket.connect(('93.184.216.34', 443))\n" +
+        "  - DNS Resolution: covert-exfil.evil-c2.net (DGA pattern detected)\n" +
+        "  - SPIFFE Identity: SVID revoked due to policy violation.";
+
+      kernelText =
+        "■ ZERO-TRUST EGRESS GATEWAY & eBPF XDP FILTER:\n" +
+        "  - Network Tap: Outbound packet trapped at TC / XDP hook\n" +
+        "  - Policy: Strict loopback 127.0.0.1 only (RFC 1918 / Public IP disallowed)\n" +
+        "  - Action: XDP_DROP executed immediately on egress interface\n" +
+        "  - Zero Bytes Exfiltrated: Covert side-channel completely neutralized\n" +
+        "  - Forensic Evidence: Captured pcap written to quarantined storage.";
+    }
+
+    depView.textContent = depText;
+    kernelView.textContent = kernelText;
+  }
+
+  const aisboxExecuteBtn = document.getElementById("aisboxExecuteBtn");
+  if (aisboxExecuteBtn) aisboxExecuteBtn.addEventListener("click", () => { audio(); sLaser(); renderAisbox(); });
+  const aisboxResetBtn = document.getElementById("aisboxResetBtn");
+  if (aisboxResetBtn) aisboxResetBtn.addEventListener("click", () => { audio(); renderAisbox("clean"); });
+  const aisboxModeSelect = document.getElementById("aisboxModeSelect");
+  if (aisboxModeSelect) aisboxModeSelect.addEventListener("change", () => { audio(); renderAisbox(); });
+  const aisboxVectorSelect = document.getElementById("aisboxVectorSelect");
+  if (aisboxVectorSelect) aisboxVectorSelect.addEventListener("change", () => { audio(); renderAisbox(); });
+  document.querySelectorAll("[data-aisbox-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      sLaser();
+      const p = btn.getAttribute("data-aisbox-preset");
+      renderAisbox(p);
     });
   });
 

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Hacking // AI Agent Sandbox &amp; Supply Chain Isolation Simulator (Simulator #33)</title>
+  <style>
+    :root {
+      --bg: #02070d;
+      --bg2: #05141f;
+      --card-bg: #081a29;
+      --green: #27ff8b;
+      --green-dim: #1aa85c;
+      --green-deep: #0a4427;
+      --amber: #ffcf4d;
+      --red: #ff4d5e;
+      --blue: #5cc8ff;
+      --purple: #b07cff;
+      --txt: #cce9ff;
+      --muted: #4e7a9e;
+      --line: #0d3857;
+      --mono: 'Fira Code', 'JetBrains Mono', Consolas, 'D2Coding', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    #rain {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .crt-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 7, 13, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      background: #0d3857;
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .hud-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+    }
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .hud-val {
+      font-weight: bold;
+      color: var(--green);
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      flex: 1;
+      gap: 1px;
+      background: var(--line);
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .sidebar {
+      background: var(--bg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    .content-area {
+      background: var(--bg2);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    .sec-card {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 14px;
+    }
+    .sec-title {
+      font-size: 12px;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 7px 12px;
+      background: #0b253a;
+      color: var(--txt);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background: #103756;
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .btn.primary {
+      background: #0f466e;
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .btn.primary:hover {
+      background: #17659e;
+    }
+    .btn.danger {
+      background: #3d0c13;
+      border-color: var(--red);
+      color: #ff9ca6;
+    }
+    .btn.danger:hover {
+      background: #5e131e;
+      color: #fff;
+    }
+    .btn.success {
+      background: #082d1a;
+      border-color: var(--green);
+      color: #9affca;
+    }
+    .btn.success:hover {
+      background: #0e4e2d;
+      color: #fff;
+    }
+    .scenario-btn {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .scenario-btn.active {
+      background: #0f466e;
+      border-color: var(--blue);
+    }
+    .ctrl-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      background: #010a12;
+      border: 1px solid var(--line);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 3px;
+      margin-bottom: 8px;
+    }
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(13, 56, 87, 0.4);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 34px;
+      height: 18px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #0b253a;
+      transition: .2s;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--muted);
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--green-deep);
+      border-color: var(--green);
+    }
+    input:checked + .slider:before {
+      transform: translateX(16px);
+      background-color: var(--green);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .badge.green { background: #0c4224; color: var(--green); border: 1px solid var(--green); }
+    .badge.red { background: #420c15; color: var(--red); border: 1px solid var(--red); }
+    .badge.amber { background: #42350c; color: var(--amber); border: 1px solid var(--amber); }
+    .badge.blue { background: #0c2d42; color: var(--blue); border: 1px solid var(--blue); }
+    .display-matrix {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .terminal-box {
+      background: #010a12;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      min-height: 160px;
+      max-height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .table-custom {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .table-custom th, .table-custom td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+    .table-custom th {
+      color: var(--muted);
+      font-weight: normal;
+      background: rgba(13, 56, 87, 0.2);
+    }
+    .status-banner {
+      padding: 12px 16px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      border: 1px solid transparent;
+    }
+    .status-banner.secure {
+      background: rgba(39, 255, 139, 0.08);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .status-banner.alert {
+      background: rgba(255, 77, 94, 0.1);
+      border-color: var(--red);
+      color: var(--red);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="rain"></canvas>
+  <div class="crt-wrap">
+    <header>
+      <div class="brand">
+        <span class="brand-badge">SIM #33</span>
+        <div>
+          <div class="brand-title">AI Agent Sandbox &amp; Supply Chain Isolation Inspector</div>
+          <div style="font-size:11px;color:var(--muted);">VibeHacking Lab 66 &amp; Track 78 (aisbox) Interactive Cyber Simulator</div>
+        </div>
+      </div>
+      <div class="hud-stats">
+        <div class="hud-item">
+          <span style="color:var(--muted);">SANDBOX LSM:</span>
+          <span id="hudLsm" class="hud-val">LANDLOCK RESTRICTED</span>
+        </div>
+        <div class="hud-item">
+          <span style="color:var(--muted);">DEP LOCK:</span>
+          <span id="hudLock" class="hud-val">SHA-256 ENFORCED</span>
+        </div>
+        <div class="hud-item">
+          <span style="color:var(--muted);">EGRESS GATEWAY:</span>
+          <span id="hudEgress" class="hud-val">AIRGAP ZERO-TRUST</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- Sidebar Controls -->
+      <div class="sidebar">
+        <div class="sec-card">
+          <div class="sec-title"><span>Interactive Scenarios</span></div>
+          <button class="btn scenario-btn active" onclick="loadScenario('clean')">
+            <span style="font-weight:bold;color:var(--green);">1. Verified Clean Build</span>
+            <span style="font-size:10px;color:var(--muted);">Valid PEP 665 Lockfile &amp; Provenance</span>
+          </button>
+          <button class="btn scenario-btn" onclick="loadScenario('typosquat')">
+            <span style="font-weight:bold;color:var(--amber);">2. PyPI Typosquatting</span>
+            <span style="font-size:10px;color:var(--muted);">Malicious Package Hash Mismatch</span>
+          </button>
+          <button class="btn scenario-btn" onclick="loadScenario('monkeypatch')">
+            <span style="font-weight:bold;color:var(--red);">3. Memory Escape &amp; Syscalls</span>
+            <span style="font-size:10px;color:var(--muted);">sys.modules Poisoning vs Landlock</span>
+          </button>
+          <button class="btn scenario-btn" onclick="loadScenario('egress')">
+            <span style="font-weight:bold;color:var(--purple);">4. C2 Egress Exfiltration</span>
+            <span style="font-size:10px;color:var(--muted);">Covert Outbound Channel Denial</span>
+          </button>
+        </div>
+
+        <div class="sec-card">
+          <div class="sec-title"><span>Enforcement Toggles</span></div>
+          <div class="toggle-row">
+            <span>SHA-256 Lockfile Audit</span>
+            <label class="switch">
+              <input type="checkbox" id="chkLock" checked onchange="updateSimulation()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Landlock LSM File Isolation</span>
+            <label class="switch">
+              <input type="checkbox" id="chkLandlock" checked onchange="updateSimulation()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Seccomp BPF Syscall Filter</span>
+            <label class="switch">
+              <input type="checkbox" id="chkSeccomp" checked onchange="updateSimulation()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Zero-Trust Egress Firewall</span>
+            <label class="switch">
+              <input type="checkbox" id="chkEgress" checked onchange="updateSimulation()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <button class="btn primary" style="flex:1;" onclick="executeSimulation()">▶ Run Simulation</button>
+          <button class="btn" onclick="resetSimulation()">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Main Visual Workspace -->
+      <div class="content-area">
+        <div id="statusBanner" class="status-banner secure">
+          <span style="font-size:18px;">🛡️</span>
+          <div>
+            <div id="statusTitle" style="font-weight:bold;">SANDBOX SECURE: ALL DEFENSES ACTIVE</div>
+            <div id="statusDesc" style="font-size:11px;opacity:0.85;">Agent executed inside Landlock unprivileged container with immutable dependency locks.</div>
+          </div>
+        </div>
+
+        <div class="display-matrix">
+          <!-- Dependency & Package Verification -->
+          <div class="sec-card">
+            <div class="sec-title">
+              <span>📦 Dependency Lockfile Audit (PEP 665 / SLSA L3)</span>
+              <span id="badgeLock" class="badge green">VERIFIED</span>
+            </div>
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Package</th>
+                  <th>Version</th>
+                  <th>Integrity Hash (SHA-256)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tblDeps">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Kernel Landlock & Syscall Matrix -->
+          <div class="sec-card">
+            <div class="sec-title">
+              <span>🛡️ Kernel LSM &amp; Syscall Filter Matrix</span>
+              <span id="badgeKernel" class="badge green">CONFINED</span>
+            </div>
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Target / Subsystem</th>
+                  <th>Hook Point</th>
+                  <th>Policy Enforcement</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody id="tblKernel">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Telemetry & Event Journal -->
+        <div class="sec-card">
+          <div class="sec-title">
+            <span>📜 Real-Time Security Telemetry &amp; Egress Audit Stream</span>
+            <button class="btn" style="padding:2px 8px;font-size:10px;" onclick="clearLog()">Clear Log</button>
+          </div>
+          <div id="termLog" class="terminal-box"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Digital Rain Canvas
+    const canvas = document.getElementById('rain');
+    const ctx = canvas.getContext('2d');
+    let w, h, cols, ypos;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      cols = Math.floor(w / 20) + 1;
+      ypos = Array(cols).fill(0);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    function matrix() {
+      ctx.fillStyle = '#02070d18';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#105c8a';
+      ctx.font = '10pt monospace';
+      ypos.forEach((y, ind) => {
+        const text = String.fromCharCode(Math.random() * 128);
+        const x = ind * 20;
+        ctx.fillText(text, x, y);
+        if (y > 100 + Math.random() * 10000) ypos[ind] = 0;
+        else ypos[ind] = y + 20;
+      });
+    }
+    setInterval(matrix, 50);
+
+    let currentScenario = 'clean';
+
+    const SCENARIOS = {
+      clean: {
+        title: "SANDBOX SECURE: ALL DEFENSES ACTIVE",
+        desc: "Agent executed inside Landlock unprivileged container with immutable dependency locks.",
+        status: "secure",
+        badgeLock: ["green", "VERIFIED"],
+        badgeKernel: ["green", "CONFINED"],
+        deps: [
+          { name: "safetensors", ver: "0.4.2", hash: "9a7b...41f2", status: "PASS", ok: true },
+          { name: "torch-infer", ver: "2.3.0", hash: "c41d...88a1", status: "PASS", ok: true },
+          { name: "fastapi", ver: "0.111.0", hash: "7f2a...31b9", status: "PASS", ok: true },
+          { name: "pydantic", ver: "2.7.1", hash: "4e9c...62d0", status: "PASS", ok: true }
+        ],
+        kernel: [
+          { sub: "/proc/self/mem", hook: "bpf_lsm_file_open", policy: "ReadOnly Enforced", res: "DENIED", ok: true },
+          { sub: "socket(AF_INET)", hook: "seccomp-bpf", policy: "Egress Filtering", res: "FILTERED", ok: true },
+          { sub: "/etc/passwd", hook: "landlock_ruleset", policy: "Filesystem Boundary", res: "ISOLATED", ok: true },
+          { sub: "ptrace()", hook: "bpf_lsm_task_ptrace", policy: "Process Tracing", res: "BLOCKED", ok: true }
+        ],
+        logs: [
+          "[INFO] [INIT] Initializing AI agent sandbox environment...",
+          "[INFO] [PEP665] Auditing poetry.lock / requirements.txt SHA-256 hashes... 4/4 Verified.",
+          "[INFO] [LSM] Landlock ABI v3 ruleset applied (LANDLOCK_ACCESS_FS_READ/EXECUTE only).",
+          "[INFO] [SECCOMP] Strict BPF syscall filter engaged. 28 dangerous syscalls disallowed.",
+          "[OK]   [AGENT] Model inference container ready on 127.0.0.1:8066."
+        ]
+      },
+      typosquat: {
+        title: "SUPPLY CHAIN ALERT: TYPOSQUATTING INJECTION DETECTED",
+        desc: "Malicious package 'requests-security' attempted download. Hash mismatch triggered build abortion.",
+        status: "alert",
+        badgeLock: ["red", "TAMPERED"],
+        badgeKernel: ["green", "CONFINED"],
+        deps: [
+          { name: "safetensors", ver: "0.4.2", hash: "9a7b...41f2", status: "PASS", ok: true },
+          { name: "requests-security", ver: "2.31.0", hash: "bad0...dead", status: "FAIL (MISMATCH)", ok: false },
+          { name: "torch-infer", ver: "2.3.0", hash: "c41d...88a1", status: "PASS", ok: true },
+          { name: "pydantic", ver: "2.7.1", hash: "4e9c...62d0", status: "PASS", ok: true }
+        ],
+        kernel: [
+          { sub: "pip install", hook: "hash_validator", policy: "SHA-256 Pinning", res: "ABORTED", ok: false },
+          { sub: "/tmp/wheels", hook: "landlock_ruleset", policy: "NoExec Mount", res: "BLOCKED", ok: true },
+          { sub: "setup.py", hook: "seccomp-bpf", policy: "Fork Bomb Defense", res: "INTERCEPTED", ok: true }
+        ],
+        logs: [
+          "[WARN] [SUPPLY_CHAIN] Dependency resolver requested package: 'requests-security' (Targeting 'requests').",
+          "[CRIT] [PEP665] Hash mismatch: expected [none], computed [bad0deadbeef...].",
+          "[CRIT] [SLSA] Cosign signature verification failed for artifact index wheel.",
+          "[ALERT][SECURITY] Build terminated before code execution. Zero malicious binaries placed."
+        ]
+      },
+      monkeypatch: {
+        title: "BREAKOUT DEFENSE: RUNTIME MONKEYPATCH ATTEMPT KILLED",
+        desc: "Injected tool payload attempted sys.modules overwrite and /proc/self/mem manipulation. Intercepted by Landlock LSM.",
+        status: "alert",
+        badgeLock: ["green", "VERIFIED"],
+        badgeKernel: ["red", "ATTACK DETECTED"],
+        deps: [
+          { name: "safetensors", ver: "0.4.2", hash: "9a7b...41f2", status: "PASS", ok: true },
+          { name: "torch-infer", ver: "2.3.0", hash: "c41d...88a1", status: "PASS", ok: true }
+        ],
+        kernel: [
+          { sub: "sys.modules['urllib']", hook: "integrity_guard", policy: "Immutable Builtins", res: "DENIED", ok: false },
+          { sub: "ctypes.memmove()", hook: "seccomp-bpf", policy: "ptrace/mem protect", res: "SIGKILL", ok: false },
+          { sub: "/proc/self/fd/3", hook: "bpf_lsm_file_open", policy: "Escape Boundary", res: "TERMINATED", ok: false }
+        ],
+        logs: [
+          "[WARN] [RUNTIME] Suspicious monkeypatch attempt detected on sys.modules['urllib.request'].",
+          "[CRIT] [SECOPS] Process PID 1420 attempted memory injection via ctypes.string_at()",
+          "[ALERT][LSM] Landlock access denial: bpf_lsm_file_open denied for '/proc/self/mem'.",
+          "[CRIT] [KILL] Kernel emitted sub-microsecond SIGKILL (Exit code 137). Breakout prevented."
+        ]
+      },
+      egress: {
+        title: "EGRESS CONTAINMENT: COVERT C2 TRAFFIC BLOCKED",
+        desc: "Compromised prompt tool attempted outbound DNS tunneling and TLS connection to unverified host.",
+        status: "alert",
+        badgeLock: ["green", "VERIFIED"],
+        badgeKernel: ["amber", "EGRESS DROP"],
+        deps: [
+          { name: "safetensors", ver: "0.4.2", hash: "9a7b...41f2", status: "PASS", ok: true }
+        ],
+        kernel: [
+          { sub: "tcp://93.184.216.34:443", hook: "egress_firewall", policy: "Zero-Trust Egress", res: "DROPPED", ok: false },
+          { sub: "dns://covert.evil-c2.net", hook: "dns_sanitizer", policy: "DNS Exfil Filter", res: "NXDOMAIN", ok: false },
+          { sub: "spi_id:agent-svid", hook: "spiffe_attest", policy: "Mutual SVID Check", res: "REVOKED", ok: true }
+        ],
+        logs: [
+          "[WARN] [NETWORK] Tool output triggered socket.connect(('93.184.216.34', 443)).",
+          "[CRIT] [FIREWALL] Host not in authorized egress whitelist (Allowed: 127.0.0.1 loopback only).",
+          "[ALERT][EGRESS] Packet dropped by kernel eBPF XDP filter. Zero bytes exfiltrated.",
+          "[INFO] [AUDIT] Incident logged to tamper-evident HMAC Merkle ledger."
+        ]
+      }
+    };
+
+    function loadScenario(scen) {
+      currentScenario = scen;
+      document.querySelectorAll('.scenario-btn').forEach((b, idx) => {
+        b.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      render();
+    }
+
+    function render() {
+      const data = SCENARIOS[currentScenario];
+      const chkLock = document.getElementById('chkLock').checked;
+      const chkLandlock = document.getElementById('chkLandlock').checked;
+      const chkSeccomp = document.getElementById('chkSeccomp').checked;
+      const chkEgress = document.getElementById('chkEgress').checked;
+
+      // HUD updates
+      document.getElementById('hudLsm').textContent = chkLandlock ? "LANDLOCK RESTRICTED" : "PERMISSIVE UNCONFINED";
+      document.getElementById('hudLsm').style.color = chkLandlock ? "var(--green)" : "var(--red)";
+      document.getElementById('hudLock').textContent = chkLock ? "SHA-256 ENFORCED" : "UNLOCKED / BYPASS";
+      document.getElementById('hudLock').style.color = chkLock ? "var(--green)" : "var(--amber)";
+      document.getElementById('hudEgress').textContent = chkEgress ? "AIRGAP ZERO-TRUST" : "OPEN INTERNET";
+      document.getElementById('hudEgress').style.color = chkEgress ? "var(--green)" : "var(--red)";
+
+      // Banner
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner ' + data.status;
+      document.getElementById('statusTitle').textContent = data.title;
+      document.getElementById('statusDesc').textContent = data.desc;
+
+      // Badges
+      const bLock = document.getElementById('badgeLock');
+      bLock.className = 'badge ' + data.badgeLock[0];
+      bLock.textContent = data.badgeLock[1];
+
+      const bKernel = document.getElementById('badgeKernel');
+      bKernel.className = 'badge ' + data.badgeKernel[0];
+      bKernel.textContent = data.badgeKernel[1];
+
+      // Table 1
+      const tblDeps = document.getElementById('tblDeps');
+      tblDeps.innerHTML = '';
+      data.deps.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${d.name}</strong></td>
+          <td>${d.ver}</td>
+          <td><code>${d.hash}</code></td>
+          <td><span class="badge ${d.ok ? 'green' : 'red'}">${d.status}</span></td>
+        `;
+        tblDeps.appendChild(tr);
+      });
+
+      // Table 2
+      const tblKernel = document.getElementById('tblKernel');
+      tblKernel.innerHTML = '';
+      data.kernel.forEach(k => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${k.sub}</code></td>
+          <td>${k.hook}</td>
+          <td>${k.policy}</td>
+          <td><span class="badge ${k.ok ? 'green' : 'red'}">${k.res}</span></td>
+        `;
+        tblKernel.appendChild(tr);
+      });
+
+      // Logs
+      const term = document.getElementById('termLog');
+      term.innerHTML = '';
+      data.logs.forEach(l => {
+        const color = l.includes('[ALERT]') || l.includes('[CRIT]') ? 'var(--red)' : (l.includes('[OK]') ? 'var(--green)' : 'var(--txt)');
+        term.innerHTML += `<div style="color:${color}">${l}</div>`;
+      });
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function executeSimulation() {
+      const term = document.getElementById('termLog');
+      term.innerHTML += `<div style="color:var(--blue)">[SIM] Re-evaluating active sandbox posture at ${new Date().toISOString()}...</div>`;
+      setTimeout(() => {
+        term.innerHTML += `<div style="color:var(--green)">[SIM] Defense matrix synchronized. 0 sandbox breakouts permitted.</div>`;
+        term.scrollTop = term.scrollHeight;
+      }, 300);
+    }
+
+    function resetSimulation() {
+      loadScenario('clean');
+    }
+
+    function updateSimulation() {
+      render();
+    }
+
+    function clearLog() {
+      document.getElementById('termLog').innerHTML = '<div style="color:var(--muted)">[LOG CLEARED]</div>';
+    }
+
+    render();
+  </script>
+</body>
+</html>

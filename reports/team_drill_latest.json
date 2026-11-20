@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-19 12:36:47",
+  "timestamp": "2026-11-20 11:56:46",
   "teams_tested": [
     "red",
     "blue",
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -231,7 +231,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "07",
@@ -572,7 +572,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -605,7 +605,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "23",
@@ -660,7 +660,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "26",
@@ -715,7 +715,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "40",
@@ -781,7 +781,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.15
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "50",
@@ -847,7 +847,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -913,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "56",
@@ -979,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "01",
@@ -1023,7 +1023,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.12
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "03",
@@ -1056,7 +1056,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "05",
@@ -1089,7 +1089,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "13",
@@ -1122,7 +1122,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "23",
@@ -1177,7 +1177,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "38",
@@ -1243,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "50",
@@ -1309,7 +1309,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "56",
@@ -1375,7 +1375,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.13
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "02",
@@ -1419,7 +1419,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "10",
@@ -1518,7 +1518,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "49",
@@ -1584,7 +1584,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "54",
@@ -1650,7 +1650,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "58",
@@ -1716,7 +1716,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "59",
@@ -1782,7 +1782,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "60",
@@ -1848,7 +1848,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "61",
@@ -1914,7 +1914,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "01",
@@ -1958,7 +1958,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "18",
@@ -1991,7 +1991,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "22",
@@ -2046,7 +2046,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "24",
@@ -2101,7 +2101,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "31",
@@ -2156,7 +2156,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -2222,7 +2222,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "53",
@@ -2288,7 +2288,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "04",
@@ -2321,7 +2321,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "10",
@@ -2354,7 +2354,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "28",
@@ -2409,7 +2409,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "32",
@@ -2464,7 +2464,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "35",
@@ -2519,7 +2519,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "46",
@@ -2585,7 +2585,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "55",
@@ -2651,7 +2651,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "58",
@@ -2717,7 +2717,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "59",
@@ -2783,7 +2783,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "60",
@@ -2849,7 +2849,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "61",
@@ -2959,7 +2959,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "06",
@@ -2992,7 +2992,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "33",
@@ -3047,7 +3047,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "42",
@@ -3113,7 +3113,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "43",
@@ -3179,7 +3179,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "44",
@@ -3245,7 +3245,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -3278,7 +3278,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -3333,7 +3333,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -3388,7 +3388,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -3454,7 +3454,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "48",
@@ -3520,7 +3520,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "55",
@@ -3586,7 +3586,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "56",
@@ -3652,7 +3652,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "03",
@@ -3685,7 +3685,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.0
     },
     {
       "lab_id": "20",
@@ -3729,7 +3729,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "21",
@@ -3773,7 +3773,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.2
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "30",
@@ -3828,7 +3828,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "47",
@@ -3894,7 +3894,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "57",
@@ -3960,7 +3960,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "36",
@@ -4015,7 +4015,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -4081,7 +4081,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "57",
@@ -4147,7 +4147,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     }
   ]
 }

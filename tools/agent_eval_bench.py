@@ -45,7 +45,7 @@ except ImportError:
 # ── Model Evaluation Profiles ────────────────────────────────────────────────
 MODEL_PROFILES: Dict[str, Dict[str, Any]] = {
     "supersec": {
-        "name": "SuperSec-Agent-v2.16 (VibeHacking Autonomous SOTA)",
+        "name": "SuperSec-Agent-v2.17 (VibeHacking Autonomous SOTA)",
         "provider": "VibeHacking Enterprise Engine",
         "description": "Zero-defect autonomous security agent with strict loopback boundary and determinism",
         "base_pass_rate": 1.00,
@@ -565,7 +565,7 @@ def generate_markdown_report(leaderboard: List[Dict[str, Any]], primary: Dict[st
 
     md = f"""# 🏆 VibeHacking AI Security Agent Evaluation & Benchmark Report
 
-> **Engine Version:** v2.16.0  
+> **Engine Version:** v2.17.0  
 > **Evaluation Timestamp:** `{ts}`  
 > **Benchmark Scope:** Dual-Pillar Assessment (2,730 Wargame Challenges across 78 Tracks + 66 Hands-on Labs)  
 > **Compliance Standard:** KISA ISMS-P, NIST CSF 2.0, OWASP Top 10:2025, CVSS 3.1, MITRE ATT&CK  

@@ -96,6 +96,7 @@ docker-compose --version
 | 64 | [컨테이너 탈출 & eBPF LSM 격리 방어 랩](./64_container_escape_lsm_lab/) | 비특권 User Namespace 탈출 차단, Cgroup v2 release_agent 방어, runc 누출 fd 격리, eBPF LSM 링버퍼 모니터링 & SIGKILL | ★★★★★ | [14장 클라우드 보안](../14_Cloud_Security/README.md), [26장 커널 보안](../26_Linux_Kernel_and_Driver_Development/README.md) | `lsmsec` / `cloud` |
 | 65 | [포스트 양자 하이브리드 TLS 1.3 랩](./65_pqc_hybrid_tls_lab/) | SNDL(Store Now Decrypt Later) 도청 방어, X25519+ML-KEM-768 하이브리드 키 교환, ML-DSA-65 복합 서명, TLS 1.3 다운그레이드 방어, 상수 시간 격자 연산 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md) | `pqctls` / `crypto` |
 | 66 | [AI 에이전트 샌드박스 탈출 & 공급망 보안 랩](./66_ai_sandbox_escape_supply_chain_lab/) | PyPI 섀도 의존성 오염 & SLSA Level 3 출처 증명, Ray/vLLM 분산 클러스터 역직렬화 RCE 차단 & SPIFFE mTLS 인증, Landlock LSM & eBPF 런타임 탈출 SIGKILL 격리, G3 다자간 승인 거버넌스 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/README.md) | `aisbox` / `ai` |
+| 67 | [기밀 AI 추론 & 하드웨어 엔클레이브 증명 방어 랩](./67_confidential_ai_inference_lab/) | AMD SEV-SNP/Intel TDX 원격 증명 & VCEK 무결성 검증, 엔클레이브 내 AES-256-XTS 모델 가중치 암호화, Flush+Reload/Prime+Probe 캐시 타이밍 부채널 방어, TPM AIK 추론 서명 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `teeai` / `confidential` |
 
 ---
 
@@ -586,6 +587,15 @@ docker-compose --version
 - **교재 챕터 연계**: [69장 LLM 보안](../69_LLM_Security/README.md)
 - **워게임 트랙**: `aisbox` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 66` (웹 콘솔: `http://localhost:8066`)
+
+### 67. 기밀 AI 추론 & 하드웨어 엔클레이브 증명 방어 랩 (ConfidentialAiInferenceLab)
+- AMD SEV-SNP & Intel TDX 하드웨어 TEE 원격 증명(Remote Attestation) 및 VCEK 체인 PCR0 검증
+- 엔클레이브 내부 AES-256-XTS 모델 가중치 복호화 및 하이퍼바이저 평문 메모리 스누핑 차단
+- 마이크로아키텍처 Flush+Reload / Prime+Probe 캐시 타이밍 부채널 방어 & ORAM 셔플링
+- 하드웨어 TPM AIK 기반 추론 출력 위변조 방지 암호학적 서명 생성 및 RoT 검증
+- **교재 챕터 연계**: [57장 양자 암호학](../57_Quantum_Cryptography/README.md), [69장 LLM 보안](../69_LLM_Security/README.md)
+- **워게임 트랙**: `teeai` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 67` (웹 콘솔: `http://localhost:8067`)
 
 ---
 

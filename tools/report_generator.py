@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VibeHacking Security Diagnostic Report Generator (보안 진단 보고서 생성기)
-66개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
+67개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
 - CVSS 3.1 Base Score & Vector 계산기
 - MITRE ATT&CK 프레임워크 전술(Tactics) 및 기법(Techniques) 매핑
 - 다중 출력 포맷: Markdown (.md), HTML5 (.html, 모던 반응형 테마), JSON (.json)
@@ -644,6 +644,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "nist_csf_name": "AI Agent Runtime Sandbox, Supply Chain Provenance & Landlock/eBPF Shield",
         "owasp_id": "LLM07:2025",
         "owasp_name": "System Prompt & Agent Tool Poisoning / Inadequate Sandboxing",
+    },
+    "67": {
+        "kisa_id": "2.10.3",
+        "kisa_name": "암호 통제 및 하드웨어 보안 모듈 (AMD SEV-SNP/Intel TDX 기밀 컴퓨팅 및 원격 증명)",
+        "nist_csf_id": "PR.DS-01",
+        "nist_csf_name": "Hardware TEE Remote Attestation, In-Enclave AES-256-XTS & Side-Channel Mitigation",
+        "owasp_id": "LLM06:2025",
+        "owasp_name": "Sensitive Information Disclosure & Hardware TEE Weight Protection",
     },
 }
 
@@ -1876,6 +1884,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Enforce PEP 665 immutable lockfile with SLSA Level 3 provenance and Sigstore Cosign verification, mandate mutual TLS with SPIFFE SVID attestation for cluster RPC, deploy Landlock LSM filesystem boundary isolation with eBPF LSM instant SIGKILL termination, and require dual-custody HMAC-SHA256 signed approval tokens."
             }
         ]
+    },
+    "67": {
+        "title": "67 ConfidentialAiInferenceLab AMD SEV-SNP/Intel TDX Confidential AI Inference & Enclave Attestation Defense",
+        "category": "Confidential AI Computing, Hardware Enclave Remote Attestation & Side-Channel Shield",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6701",
+                "name": "Hardware TEE Remote Attestation Bypass & Microarchitectural Cache Timing Inference Recovery",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N",
+                "mitre_id": "T1659",
+                "mitre_technique": "Content Verification Process Bypass: TEE Hardware Attestation",
+                "mitre_tactic": "Defense Evasion / Credential Access",
+                "impact": "Adversary injects forged TEE attestation quotes on malicious cloud hypervisors, extracts in-flight model weights via unencrypted host memory dumps, reconstructs intermediate activations via Flush+Reload cache timing attacks, and tampers with inference outputs.",
+                "description": "Confidential inference service accepts unverified attestation quotes lacking VCEK certificate chain validation, stores model weights in unencrypted RAM, executes non-constant-time matrix multiplication susceptible to cache timing side-channels, and returns unsigned inference completions.",
+                "affected_component": "ConfidentialAiInferenceLab TEE Enclave Gateway (Port 8067)",
+                "remediation": "Enforce AMD SEV-SNP/Intel TDX hardware remote attestation quote validation against VCEK root certificates, decrypt model weights exclusively into AES-256-XTS encrypted enclave memory space, implement constant-time GEMM operations with oblivious RAM shuffling, and sign inference completions via hardware TPM AIK endorsement keys."
+            }
+        ]
     }
 }
 
@@ -1885,7 +1911,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """66개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """67개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,
