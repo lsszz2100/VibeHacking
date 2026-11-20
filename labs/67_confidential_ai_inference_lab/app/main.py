@@ -146,7 +146,7 @@ def stage4_eval(data: Stage4Payload):
         hashlib.sha256
     ).hexdigest()
 
-    if data.tpm_aik_signature != expected_sig:
+    if not hmac.compare_digest(data.tpm_aik_signature, expected_sig):
         raise HTTPException(status_code=400, detail="Cryptographic attestation signature mismatch: invalid TPM AIK signature")
 
     return {
