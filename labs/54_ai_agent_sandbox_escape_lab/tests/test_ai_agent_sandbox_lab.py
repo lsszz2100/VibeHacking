@@ -4,7 +4,7 @@ import sys
 import importlib.util
 from pathlib import Path
 import pytest
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 APP_PATH = Path(__file__).resolve().parent.parent / "app" / "main.py"
 spec = importlib.util.spec_from_file_location("lab54_app", str(APP_PATH))

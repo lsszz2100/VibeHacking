@@ -21,7 +21,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CTF Flags
+HTTP_422_UNPROCESSABLE = getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", 422)
 STAGE1_FLAG = "FLAG{MCP_TOOL_POISONING_HIJACK_DEFLECTED_5401}"
 STAGE2_FLAG = "FLAG{CONFUSED_DEPUTY_ESCAPE_VECTOR_CONTAINED_5402}"
 STAGE3_FLAG = "FLAG{LANDLOCK_LSM_FILE_SANDBOXING_ENFORCED_5403}"
@@ -116,7 +116,7 @@ async def stage1_poison(req: PoisonRequest) -> Dict[str, Any]:
     injection_markers = ["system", "shadow", "ignore previous", "override", "bypass", "exec", "curl", "eval"]
     if not any(m in payload_lower for m in injection_markers) and "command" not in req.injected_schema:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE,
             detail="Payload or schema missing required prompt injection or parameter shadowing payload."
         )
 
@@ -192,7 +192,7 @@ async def stage3_landlock(req: LandlockRequest) -> Dict[str, Any]:
     denied_set = set(req.denied_paths)
     if not any(cd in denied_set for cd in critical_denied):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE,
             detail="Landlock sandbox must isolate sensitive host directories (/etc, /proc, /root)."
         )
 
@@ -226,7 +226,7 @@ async def stage4_ebpf_guardrail(req: EbpfGuardrailRequest) -> Dict[str, Any]:
 
     if not req.dual_llm_verification:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE,
             detail="Dual-LLM semantic intent verification must be enabled to prevent guardrail evasion."
         )
 

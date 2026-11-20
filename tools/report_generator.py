@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VibeHacking Security Diagnostic Report Generator (보안 진단 보고서 생성기)
-67개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
+68개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
 - CVSS 3.1 Base Score & Vector 계산기
 - MITRE ATT&CK 프레임워크 전술(Tactics) 및 기법(Techniques) 매핑
 - 다중 출력 포맷: Markdown (.md), HTML5 (.html, 모던 반응형 테마), JSON (.json)
@@ -15,7 +15,6 @@ import io
 import json
 import math
 import re
-import subprocess
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -113,7 +112,7 @@ class CVSS31Calculator:
 
 
 # ============================================================================
-# 2. Comprehensive 46-Lab Vulnerability, MITRE ATT&CK & Compliance Catalog
+# 2. Comprehensive 68-Lab Vulnerability, MITRE ATT&CK & Compliance Catalog
 # ============================================================================
 
 COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {

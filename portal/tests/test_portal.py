@@ -8,7 +8,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import pytest
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 from portal.server import app, LABS
 
 
@@ -337,5 +337,22 @@ def test_portal_agent_eval_run_api(client):
     assert data["status"] == "success"
     assert "leaderboard" in data
     assert len(data["leaderboard"]) >= 1
+
+
+def test_compliance_report_download_api(client):
+    """B2B 진단 보고서 다중 포맷 다운로드 및 보안 헤더 검증"""
+    for fmt in ["html", "csv", "json", "md"]:
+        res = client.get(f"/api/compliance/report/download?format={fmt}")
+        assert res.status_code == 200
+        assert res.headers["cache-control"] == "no-cache, no-store, must-revalidate"
+        assert res.headers["x-content-type-options"] == "nosniff"
+        assert f"vibe_hacking_v2.18.0_enterprise_audit.{fmt}" in res.headers.get("content-disposition", "")
+        assert len(res.text) > 0
+
+    # Test invalid format rejection
+    res_bad = client.get("/api/compliance/report/download?format=exe")
+    assert res_bad.status_code == 400
+    assert "Unsupported format" in res_bad.json()["detail"]
+
 
 

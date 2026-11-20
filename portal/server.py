@@ -111,7 +111,7 @@ class BatchLabRequest(BaseModel):
 
 @app.get("/api/labs/categories")
 def get_lab_categories():
-    """67개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
+    """68개 전체 실습 랩의 카테고리별 통계 및 분포 반환"""
     stats: Dict[str, dict] = {}
     for lid, meta in LABS.items():
         cat = get_lab_category(lid)
@@ -132,7 +132,7 @@ def get_lab_categories():
 
 @app.get("/api/labs")
 def list_labs(category: Optional[str] = None):
-    """67개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
+    """68개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
     result = []
     target_cat = category.strip().lower() if category else None
     for lid, meta in sorted(LABS.items()):
@@ -478,7 +478,7 @@ def get_team_labs_status(team_id: str):
 
 @app.get("/api/compliance/summary")
 def get_compliance_summary():
-    """65개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
+    """68개 랩 전사 컴플라이언스(KISA/NIST/OWASP/CVSS) 요약 통계"""
     try:
         from tools.report_generator import SecurityReportGenerator
         gen = SecurityReportGenerator()
@@ -499,23 +499,37 @@ def get_compliance_summary():
 @app.get("/api/compliance/report/download")
 def download_compliance_report(format: str = "html"):
     """엔터프라이즈 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 진단 보고서 다중 포맷 원클릭 다운로드"""
+    fmt = format.lower().strip()
+    valid_formats = {"html", "csv", "json", "md", "markdown"}
+    if fmt not in valid_formats:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported format '{format}'. Supported formats: html, csv, json, md"
+        )
     try:
         from tools.report_generator import SecurityReportGenerator
         from fastapi.responses import Response
         gen = SecurityReportGenerator()
-        fmt = format.lower().strip()
+        sec_headers = {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "X-Content-Type-Options": "nosniff",
+        }
         if fmt == "html":
             content = gen.to_html()
-            return Response(content=content, media_type="text/html", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.html"})
+            sec_headers["Content-Disposition"] = "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.html"
+            return Response(content=content, media_type="text/html", headers=sec_headers)
         elif fmt == "csv":
             content = gen.to_csv()
-            return Response(content=content, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.csv"})
+            sec_headers["Content-Disposition"] = "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.csv"
+            return Response(content=content, media_type="text/csv", headers=sec_headers)
         elif fmt == "json":
             content = gen.to_json()
-            return Response(content=content, media_type="application/json", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.json"})
+            sec_headers["Content-Disposition"] = "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.json"
+            return Response(content=content, media_type="application/json", headers=sec_headers)
         else:
             content = gen.to_markdown()
-            return Response(content=content, media_type="text/markdown", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.md"})
+            sec_headers["Content-Disposition"] = "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.md"
+            return Response(content=content, media_type="text/markdown", headers=sec_headers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

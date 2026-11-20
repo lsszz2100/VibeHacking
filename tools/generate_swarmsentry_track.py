@@ -392,23 +392,23 @@ def main():
     solve_content = solve_derivable_path.read_text(encoding="utf-8")
     swarmsentry_ids = [ch["id"] for ch in new_challenges]
     ids_js = ",\n  ".join([f'"{cid}"' for cid in swarmsentry_ids])
-    derivable_code = f"""const SWARMSENTRY_IDS = [
-  {ids_js}
+    derivable_code = """const SWARMSENTRY_IDS = [
+  """ + ids_js + """
 ];
 
-for (const id of SWARMSENTRY_IDS) {{
-  SOLVERS.set(id, {{
+for (const id of SWARMSENTRY_IDS) {
+  SOLVERS.set(id, {
     kind: 'computed',
     via: 'SHA256 of identifier in prompt',
-    solve: (ch) => {{
+    solve: (ch) => {
       const text = (ch.prompt.ko || '') + '\\n' + (ch.prompt.en || '');
       const m = text.match(/SWARMSENTRY_CHALLENGE_ID:\\s*`([^`]+)`/);
       const ident = m ? m[1] : ch.id;
       const hash = crypto.createHash('sha256').update(ident + '_vibe_swarmsentry_2026').digest('hex').slice(0, 20);
-      return `FLAG{${{hash}}}`;
-    }}
-  }});
-}}
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 """
     if "const SWARMSENTRY_IDS = [" in solve_content:
         solve_content = re.sub(r'const SWARMSENTRY_IDS = \[[\s\S]*?\}\);\s*\}\s*', lambda m: derivable_code, solve_content)
