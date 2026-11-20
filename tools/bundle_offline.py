@@ -62,13 +62,13 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count < 2695:
-        return False, f"Expected at least 2,695 challenges in challenges.js, found {id_count}"
+    if id_count < 2730:
+        return False, f"Expected at least 2,730 challenges in challenges.js, found {id_count}"
     
     track_matches = re.findall(r'^\s*"id":\s*"[a-z0-9]+",\s*"icon":', content, re.MULTILINE)
-    track_count = len(track_matches) or 77
-    if track_count < 77:
-        return False, f"Expected at least 77 tracks in challenges.js, found {track_count}"
+    track_count = len(track_matches) or 78
+    if track_count < 78:
+        return False, f"Expected at least 78 tracks in challenges.js, found {track_count}"
     print(f"  ✓ Wargame database verified: {id_count} challenges across {track_count} tracks.")
     return True, f"{id_count} challenges verified"
 
@@ -135,7 +135,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print(" VibeHacking v2.15.0 Offline Release & Audit Pipeline")
+    print(" VibeHacking v2.16.0 Offline Release & Audit Pipeline")
     print("==================================================")
     
     checks = [check_textbook(), check_labs(), check_wargame(), check_offline_assets()]

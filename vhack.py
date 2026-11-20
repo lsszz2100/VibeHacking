@@ -671,6 +671,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 27, 44, 49, 50, 57],
     },
+    "66": {
+        "name": "AI 에이전트 샌드박스 탈출 & 공급망 보안 실전 랩",
+        "dir":  "66_ai_sandbox_escape_supply_chain_lab",
+        "desc": "AiSandboxEscapeLab: PyPI/NPM 섀도 의존성 오염 & SLSA Level 3 출처 증명 · Ray/vLLM 분산 클러스터 역직렬화 RCE 차단 & SPIFFE SVID mTLS 인증 · Landlock LSM 파일시스템 샌드박싱 & eBPF 런타임 탈출 SIGKILL 격리 · G3 다자간 승인(HMAC-SHA256) 거버넌스 및 간접 프롬프트 주입 격리",
+        "url":  "웹 콘솔 & AI 샌드박스 모니터: http://localhost:8066",
+        "difficulty": "★★★★★",
+        "related": [11, 14, 18, 26, 62, 63, 69],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1715,6 +1723,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8063, "Lab 63 (AutonomousDefenseAgentLab AI Autonomous Defense Lab)"),
         (8064, "Lab 64 (ContainerEscapeLsmLab eBPF LSM Container Escape Lab)"),
         (8065, "Lab 65 (PqcHybridTlsLab Post-Quantum Hybrid TLS Lab)"),
+        (8066, "Lab 66 (AiSandboxEscapeLab AI Agent Sandbox Escape Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2545,8 +2554,8 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     # 3. Wargame Telemetry
     wargame_stats = {
-        "total_tracks": 77,
-        "total_challenges": 2695,
+        "total_tracks": 78,
+        "total_challenges": 2730,
         "solved_count": 0,
         "score": 0,
         "progress_percent": 0.0,
@@ -2558,7 +2567,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
             solved = prog_data.get("solved", [])
             wargame_stats["solved_count"] = len(solved)
             wargame_stats["score"] = prog_data.get("total_score", 0)
-            wargame_stats["progress_percent"] = round((len(solved) / 2695) * 100, 2)
+            wargame_stats["progress_percent"] = round((len(solved) / 2730) * 100, 2)
         except Exception:
             pass
 

@@ -138,6 +138,7 @@ start_lab() {
         "63_autonomous_defense_agent_lab"
         "64_container_escape_lsm_lab"
         "65_pqc_hybrid_tls_lab"
+        "66_ai_sandbox_escape_supply_chain_lab"
     )
 
     local lab_names=(
@@ -207,6 +208,7 @@ start_lab() {
         "자율 사이버 방어 에이전트 & 실시간 인시던트 오케스트레이션 랩"
         "컨테이너 탈출 & eBPF LSM 격리 방어 랩"
         "포스트 양자 하이브리드 TLS 1.3 랩"
+        "AI 에이전트 샌드박스 탈출 & 공급망 보안 랩"
     )
 
     local lab_ports=(
@@ -276,10 +278,11 @@ start_lab() {
         "웹 콘솔 & 자율 방어 에이전트: http://localhost:8063"
         "웹 콘솔 & LSM 컨테이너 탈출 방어: http://localhost:8064"
         "웹 콘솔 & 포스트 양자 TLS 1.3: http://localhost:8065"
+        "웹 콘솔 & AI 샌드박스 탈출 방어: http://localhost:8066"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 65 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~65 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 66 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~66 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -385,7 +388,8 @@ usage() {
     echo "  32    BGP 라우팅 하이재킹 & RPKI ROA 실전 랩 (Exact Prefix 하이재킹, Sub-prefix LPM, AS-Path 위조 & RPKI)"
     echo "  64    컨테이너 탈출 & eBPF LSM 격리 방어 랩 (비특권 User Namespace, cgroup v2, runc fd 탈출 차단)"
     echo "  65    포스트 양자 하이브리드 TLS 1.3 랩 (SNDL 방어, ML-KEM-768/ML-DSA-65 복합 서명)"
-    echo "  (01~65 번호 지정 가능, 또는 'vhack lab start <번호>' 권장)"
+    echo "  66    AI 에이전트 샌드박스 탈출 & 공급망 랩 (PyPI 오염, Ray RCE, Landlock/eBPF 격리, G3 승인)"
+    echo "  (01~66 번호 지정 가능, 또는 'vhack lab start <번호>' 권장)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
@@ -395,6 +399,7 @@ usage() {
     echo "  $0 16        # 메모리 포렌식 랩만 시작"
     echo "  $0 32        # BGP 라우팅 하이재킹 & RPKI 랩만 시작"
     echo "  $0 65        # 포스트 양자 하이브리드 TLS 1.3 랩 시작"
+    echo "  $0 66        # AI 에이전트 샌드박스 탈출 랩 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""
@@ -416,10 +421,10 @@ case "$ARG" in
     *)
         if [[ "$ARG" =~ ^[0-9]+$ ]]; then
             lab_int=$((10#$ARG))
-            if [[ $lab_int -ge 1 && $lab_int -le 65 ]]; then
+            if [[ $lab_int -ge 1 && $lab_int -le 66 ]]; then
                 start_lab "$lab_int"
             else
-                error "잘못된 랩 번호: $ARG (1~65 사이)"
+                error "잘못된 랩 번호: $ARG (1~66 사이)"
             fi
         else
             error "알 수 없는 인자: $ARG\n$(usage)"

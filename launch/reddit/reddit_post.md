@@ -1,4 +1,4 @@
-# Reddit Launch Post Package: VibeHacking v2.15.0
+# Reddit Launch Post Package: VibeHacking v2.16.0
 
 This package provides tailored, high-converting posts for cybersecurity, developer, and machine learning communities on Reddit.
 
@@ -7,7 +7,7 @@ This package provides tailored, high-converting posts for cybersecurity, develop
 ## 1. r/netsec (Technical Architecture & Whitepaper Focus)
 
 - **Post URL**: [https://www.reddit.com/r/netsec/submit](https://www.reddit.com/r/netsec/submit)
-- **Title**: `VibeHacking: Open-source cybersecurity bible (76 sections, 64 labs) & browser-based terminal wargame with 2,660 challenges`
+- **Title**: `VibeHacking: Open-source cybersecurity bible (75 sections, 66 labs) & browser-based terminal wargame with 2,730 challenges`
 - **Link Target**: `https://github.com/lsszz2100/VibeHacking`
 
 ### Body Text:
@@ -15,9 +15,9 @@ This package provides tailored, high-converting posts for cybersecurity, develop
 VibeHacking is an open-source offensive & defensive cybersecurity resource hub, automated lab framework, and interactive hands-on wargame.
 
 ### Architectural Highlights:
-* **76 Comprehensive Sections**: Covers binary reversing, exploit synthesis, Linux kernel internals, EDR telemetry bypass, Active Directory lateral movement, cloud/Kubernetes security, and post-quantum cryptography (ML-KEM / SLH-DSA).
-* **64 Docker Hands-on Labs**: Self-contained reproducible vulnerable targets (`127.0.0.1` binding) with automated regression tests and deterministic solvers, including Lab 62 (AI Agent MCP Security), Lab 63 (Autonomous Defense Agent Lab), and Lab 64 (eBPF LSM Container Escape & Kernel Runtime Shield Lab).
-* **In-Browser Terminal Wargame**: 76 specialized tracks with 2,660 progressive challenges and 32 interactive architecture simulators (AI MCP Sandbox, ZTNA API Gateway, BGP, OAuth2, DBShield, TLS, Cache, K8s, CanBus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, TEEConfidentialLab, AutonomousCyberDefense).
+* **75 Comprehensive Sections**: Covers binary reversing, exploit synthesis, Linux kernel internals, EDR telemetry bypass, Active Directory lateral movement, cloud/Kubernetes security, and post-quantum cryptography (ML-KEM / ML-DSA).
+* **66 Docker Hands-on Labs**: Self-contained reproducible vulnerable targets (`127.0.0.1` binding) with automated regression tests and deterministic solvers, including Lab 64 (eBPF LSM Container Escape & Kernel Runtime Shield), Lab 65 (Post-Quantum Hybrid TLS 1.3), and Lab 66 (AI Sandbox Escape & Supply Chain Package Defense).
+* **In-Browser Terminal Wargame**: 78 specialized tracks with 2,730 progressive challenges and 32 interactive architecture simulators (AI MCP Sandbox, ZTNA API Gateway, BGP, OAuth2, DBShield, TLS, Cache, K8s, CanBus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, TEEConfidentialLab, AutonomousCyberDefense).
 * **AI Security Agent Benchmark**: Automated evaluation framework benchmarking autonomous security models on Pass@1 accuracy, exploit synthesis, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0.
 
 ### Links:
@@ -31,20 +31,20 @@ VibeHacking is an open-source offensive & defensive cybersecurity resource hub, 
 ## 2. r/cybersecurity (Learning Platform & Hands-on Training Focus)
 
 - **Post URL**: [https://www.reddit.com/r/cybersecurity/submit](https://www.reddit.com/r/cybersecurity/submit)
-- **Title**: `A free, open-source 76-chapter cybersecurity curriculum & interactive browser terminal wargame (2,660 challenges)`
+- **Title**: `A free, open-source 75-chapter cybersecurity curriculum & interactive browser terminal wargame (2,730 challenges)`
 - **Link Target**: `https://lsszz2100.github.io/VibeHacking/`
 
 ### Body Text:
 ```markdown
 Hey r/cybersecurity,
 
-We wanted to share an open-source cybersecurity education and training resource we've built: **VibeHacking v2.15.0**.
+We wanted to share an open-source cybersecurity education and training resource we've built: **VibeHacking v2.16.0**.
 
 Everything is completely free, open-source under MIT, and accessible directly in modern browsers without needing to configure heavy hypervisors or download 40GB VM images:
 
-1. **Complete Curriculum (76 Sections)**: Covers security fundamentals, network protocol analysis, binary analysis, web application exploitation, Active Directory, cloud security, and AI agent red teaming.
-2. **64 Reproducible Docker Labs**: Practical vulnerable targets with automated unit tests and patch verifications.
-3. **Interactive Browser Terminal Wargame**: 76 tracks and 2,660 progressive challenges simulating authentic Linux shell commands (`connect`, `cat`, `submit`, privilege escalation).
+1. **Complete Curriculum (75 Sections)**: Covers security fundamentals, network protocol analysis, binary analysis, web application exploitation, Active Directory, cloud security, and AI agent red teaming.
+2. **66 Reproducible Docker Labs**: Practical vulnerable targets with automated unit tests and patch verifications.
+3. **Interactive Browser Terminal Wargame**: 78 tracks and 2,730 progressive challenges simulating authentic Linux shell commands (`connect`, `cat`, `submit`, privilege escalation).
 4. **32 Interactive Architecture Simulators**: Real-time visualizers for AI MCP Agent Sandbox, Zero Trust API, OAuth2 flows, TLS handshakes, BGP hijacking, PQC lattice KEM, EDR detection bypass, TEE Confidential Computing, and Autonomous Cyber Defense.
 5. **AI Security Agent Benchmark**: Evaluates AI cybersecurity models on Pass@1 exploit generation and compliance alignment with an interactive web leaderboard.
 
@@ -59,7 +59,7 @@ Feedback, bug reports, and track suggestions are warmly welcome!
 ## 3. r/SideProject (Indie Hacking & Architecture Showcase)
 
 - **Post URL**: [https://www.reddit.com/r/SideProject/submit](https://www.reddit.com/r/SideProject/submit)
-- **Title**: `I built an open-source terminal wargame with 2,660 challenges and a 76-chapter cybersecurity guide`
+- **Title**: `I built an open-source terminal wargame with 2,730 challenges and a 75-chapter cybersecurity guide`
 - **Link Target**: `https://lsszz2100.github.io/VibeHacking/`
 
 ### Body Text:
@@ -69,10 +69,10 @@ Hey r/SideProject,
 I spent months building **VibeHacking**, an open-source cybersecurity learning portal with a fully functional browser-based terminal wargame.
 
 What you can do:
-- Solve 2,660 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
-- Study 76 full chapters ranging from reverse engineering to AI security.
+- Solve 2,730 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
+- Study 75 full chapters ranging from reverse engineering to AI security.
 - Explore 32 interactive security architecture simulators (AI MCP Agent Sandbox, Zero Trust API Gateway, OAuth 2.0, TLS, K8s, EDR, PQC, eBPF, AntiReversingShield, HypervisorEscapeLab, TEE, AutonomousCyberDefense).
-- Run 64 Docker hands-on labs locally.
+- Run 66 Docker hands-on labs locally.
 - Benchmark AI security models using the built-in evaluation harness and portal leaderboard.
 
 * **Check it out live**: https://lsszz2100.github.io/VibeHacking/
@@ -94,7 +94,7 @@ Would love to get your thoughts and feedback!
 Evaluating LLMs on autonomous offensive capabilities and deterministic defensive patch generation is critical for agent safety.
 
 We developed an open-source benchmark harness and web visualizer integrated into **VibeHacking**:
-- **Dataset**: 64 hands-on vulnerable environments and 2,660 tiered challenges.
+- **Dataset**: 66 hands-on vulnerable environments and 2,730 tiered challenges.
 - **Metrics**: Pass@1 exploit accuracy, remediation safety, and zero-defect compliance against NIST CSF 2.0 and KISA ISMS-P.
 - **Web Portal Leaderboard**: Real-time visualization of model performance, radar metrics, and comparative evaluation reports.
 

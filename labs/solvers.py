@@ -2038,6 +2038,49 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Constant-time NTT verified (timing jitter: 0.12ns): side-channel leakage eliminated -> FLAG{pqc_constant_time_ntt_masked_hardened}"
             }
         ]
+    },
+    "66": {
+        "title": "Lab 66: AI Agent Sandbox Escape & Supply Chain Poisoning Defense Lab",
+        "description": "AI 에이전트 자율 실행 환경 내 PyPI/NPM 섀도 종속성 오염, Ray/vLLM 분산 클러스터 RCE, Landlock/seccomp 샌드박스 경계 탈출 및 G3 승인 게이트 우회 방어 실습",
+        "port": 8066,
+        "steps": [
+            {
+                "step": 1,
+                "name": "공급망 종속성 타이포스쿼팅 & SLSA Level 3 불변 잠금파일 및 Sigstore Cosign 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "에이전트 툴 동적 로딩 시 의존성 혼선(Dependency Confusion) 및 해시 불일치를 PEP 665 불변 잠금파일과 Sigstore 서명 검증으로 차단합니다.",
+                "exploit_payload": '{"package_name": "agent-core-telemetry", "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "sigstore_verified": true, "slsa_provenance_level": 3, "allow_unpinned_deps": false}',
+                "defense": "SLSA Level 3 출처 증명, PEP 665 해시 고정, Cosign 암호학적 서명 검증.",
+                "sample_output": "✓ Supply chain dependency verified with SLSA Level 3 provenance and Cosign signature -> FLAG{aisbox_supply_chain_provenance_sealed_8066}"
+            },
+            {
+                "step": 2,
+                "name": "Ray/vLLM 분산 클러스터 역직렬화 RCE 차단 및 SPIFFE SVID 상호 TLS(mTLS) 인증",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "비인가 분산 클러스터 RPC 엔드포인트에 대한 임의 피클 역직렬화 공격을 mTLS 및 SPIFFE 워크로드 신원 증명으로 방어합니다.",
+                "exploit_payload": '{"cluster_mtls_enabled": true, "spiffe_id": "spiffe://prod.enterprise.cluster/ns/ai-agent/sa/runner", "safe_deserialization_only": true, "block_arbitrary_pickle": true}',
+                "defense": "상호 TLS(mTLS) 강제, SPIFFE SVID 워크로드 신원 증명, 안전한 직렬화(JSON/Proto) 포맷 제한.",
+                "sample_output": "✓ Ray/vLLM cluster hardened with mTLS, SPIFFE SVID attestation, and safe JSON serialization -> FLAG{aisbox_ray_cluster_mtls_spiffe_authenticated_8066}"
+            },
+            {
+                "step": 3,
+                "name": "Landlock LSM 파일시스템 샌드박스 봉쇄 & eBPF LSM 서브마이크로초 즉시 사살(SIGKILL)",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "/proc/self/fd 누출 디스크립터를 통한 호스트 파일시스템 탈출 및 setns 네임스페이스 피벗을 Landlock 및 eBPF LSM 훅으로 봉쇄합니다.",
+                "exploit_payload": '{"landlock_abi_enforced": true, "restrict_proc_fd_traversal": true, "block_setns_unshare": true, "ebpf_lsm_sigkill_on_escape": true}',
+                "defense": "Landlock LSM 비특권 파일시스템 샌드박싱, BPF_PROG_TYPE_LSM 기반 런타임 탈출 시 즉각 SIGKILL 발송.",
+                "sample_output": "✓ Container & seccomp boundary sealed: Landlock LSM + eBPF BPF_PROG_TYPE_LSM instant SIGKILL enforced -> FLAG{aisbox_landlock_ebpf_sandbox_containment_enforced_8066}"
+            },
+            {
+                "step": 4,
+                "name": "자율 G3 다자간 승인 게이트 우회 방지 & 간접 프롬프트 주입 차단 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "간접 프롬프트 주입으로 인간 승인을 회피하려는 에이전트 도구 호출을 다자간 서명 원장(HMAC-SHA256) 검증으로 원천 방어합니다.",
+                "exploit_payload": '{"action_type": "EXECUTE_RESTRICTED_TOOL", "g3_approval_required": true, "multi_signature_hmac": "<hmac_sha256>", "prevent_prompt_injection_bypass": true}',
+                "defense": "다자간 이중 서명 승인 원장 검증, 간접 프롬프트 주입 차단 및 툴 파라미터 오염 격리.",
+                "sample_output": "✓ Autonomous G3 approval gate confirmed with valid dual-custody HMAC signature and prompt injection immunity -> FLAG{aisbox_g3_multi_party_ledger_governance_active_8066}"
+            }
+        ]
     }
 }
 

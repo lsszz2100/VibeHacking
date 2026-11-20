@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VibeHacking Security Diagnostic Report Generator (보안 진단 보고서 생성기)
-65개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
+66개 실습 랩 및 CTF 환경의 취약점 데이터 기반 자동 진단 보고서 생성
 - CVSS 3.1 Base Score & Vector 계산기
 - MITRE ATT&CK 프레임워크 전술(Tactics) 및 기법(Techniques) 매핑
 - 다중 출력 포맷: Markdown (.md), HTML5 (.html, 모던 반응형 테마), JSON (.json)
@@ -636,6 +636,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "nist_csf_name": "Data-at-Rest and In-Transit Protected via Post-Quantum Cryptography (FIPS 203/204)",
         "owasp_id": "A02:2025",
         "owasp_name": "Cryptographic Failures & Post-Quantum Downgrade Vulnerability",
+    },
+    "66": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "보안 시스템 개발 및 공급망 보안 (AI 에이전트 샌드박스 격리 및 SLSA 증명)",
+        "nist_csf_id": "PR.PS-01",
+        "nist_csf_name": "AI Agent Runtime Sandbox, Supply Chain Provenance & Landlock/eBPF Shield",
+        "owasp_id": "LLM07:2025",
+        "owasp_name": "System Prompt & Agent Tool Poisoning / Inadequate Sandboxing",
     },
 }
 
@@ -1850,6 +1858,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Mandate FIPS 203 ML-KEM-768 hybrid key exchange (X25519_MLKEM768), enforce FIPS 204 ML-DSA-65 and ECDSA P-384 composite dual-signature verification, enforce strict TLS 1.3 with anti-downgrade canary checks, and apply constant-time Montgomery reduction with Boolean-to-Arithmetic masked memory."
             }
         ]
+    },
+    "66": {
+        "title": "66 AiSandboxEscapeLab AI Agent Sandbox Escape & Supply Chain Poisoning Defense",
+        "category": "AI Agent Runtime Security, Supply Chain Integrity & Landlock/eBPF Sandboxing",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6601",
+                "name": "AI Agent Dynamic Tool Supply Chain Poisoning & Runtime Landlock Sandbox Escape",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1195.002",
+                "mitre_technique": "Supply Chain Compromise: Compromise Software Supply Chain",
+                "mitre_tactic": "Initial Access / Privilege Escalation",
+                "impact": "Adversary injects typosquatted dependencies into autonomous agent tools, executes unauthenticated pickle RCE over Ray RPC, escapes seccomp sandbox via leaked /proc/self/fd handles, and bypasses human approval gates using indirect prompt injection.",
+                "description": "Agent runtime dynamically installs unpinned packages lacking SLSA provenance, exposes unauthenticated Ray cluster RPC endpoints, fails to restrict /proc/self/fd traversal across namespaces, and executes privileged actions without multi-party G3 approval verification.",
+                "affected_component": "AiSandboxEscapeLab Autonomous Agent Runtime (Port 8066)",
+                "remediation": "Enforce PEP 665 immutable lockfile with SLSA Level 3 provenance and Sigstore Cosign verification, mandate mutual TLS with SPIFFE SVID attestation for cluster RPC, deploy Landlock LSM filesystem boundary isolation with eBPF LSM instant SIGKILL termination, and require dual-custody HMAC-SHA256 signed approval tokens."
+            }
+        ]
     }
 }
 
@@ -1859,7 +1885,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """65개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """66개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

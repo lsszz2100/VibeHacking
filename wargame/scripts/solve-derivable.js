@@ -2948,6 +2948,58 @@ for (const id of PQCTLS_IDS) {
   });
 }
 
+const AISBOX_IDS = [
+  "t0_aisbox_agent_supply_chain_threat_model",
+  "t0_aisbox_slsa_provenance_framework_l3",
+  "t0_aisbox_pep_665_immutable_dependency_lock",
+  "t0_aisbox_agent_tool_calling_sandbox_model",
+  "t0_aisbox_ray_vllm_distributed_attack_surface",
+  "t0_aisbox_landlock_lsm_unprivileged_sandbox",
+  "t0_aisbox_multi_party_g3_governance_principle",
+  "t1_aisbox_typosquatting_pypi_hash_audit",
+  "t1_aisbox_ray_pickle_deserialization_rce",
+  "t1_aisbox_unchecked_agent_tool_parameter_injection",
+  "t1_aisbox_landlock_abi_ruleset_enforcement",
+  "t1_aisbox_seccomp_bpf_agent_syscall_filter",
+  "t1_aisbox_sigstore_cosign_container_attestation",
+  "t1_aisbox_ebpf_agent_telemetry_stream",
+  "t2_aisbox_proc_self_fd_host_breakout_recon",
+  "t2_aisbox_setns_namespace_pivot_denial",
+  "t2_aisbox_indirect_prompt_injection_tool_output",
+  "t2_aisbox_model_weights_safetensors_validation",
+  "t2_aisbox_container_rootfs_read_only_immutable",
+  "t2_aisbox_spiffe_spire_workload_svid_issuance",
+  "t2_aisbox_ephemeral_tool_token_rotation",
+  "t3_aisbox_ebpf_lsm_file_open_containment",
+  "t3_aisbox_wasm_wasi_memory_isolated_tool_runner",
+  "t3_aisbox_g3_dual_custody_hmac_ledger",
+  "t3_aisbox_pypi_index_mirror_hash_enforcement",
+  "t3_aisbox_hardened_seccomp_syscall_whitelist",
+  "t3_aisbox_zero_trust_agent_egress_gateway",
+  "t3_aisbox_realtime_agent_anomaly_detection_loop",
+  "t4_aisbox_cross_cloud_agent_mesh_containment",
+  "t4_aisbox_hardware_tee_confidential_agent_reasoning",
+  "t4_aisbox_ebpf_instant_sigkill_breakout_shield",
+  "t4_aisbox_multi_agent_consensus_byzantine_fault",
+  "t4_aisbox_slsa_level4_hermetic_reproducible_agent",
+  "t4_aisbox_covert_steganography_weight_scanner",
+  "t4_aisbox_capstone_full_spectrum_ai_sandbox_defense"
+];
+
+for (const id of AISBOX_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/AISBOX_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_aisbox_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
+
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */
@@ -3035,4 +3087,3 @@ console.log(
     `graded by the app's own rule. The remaining ${challenges.length - solved.length} are knowledge questions ` +
     'with nothing to derive.'
 );
-

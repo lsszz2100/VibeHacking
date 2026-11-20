@@ -678,6 +678,15 @@ const TRACKS = [
     "desc_ko": "FIPS 203 ML-KEM-768 하이브리드 키 교환(X25519+ML-KEM)·FIPS 204 ML-DSA-65 복합 X.509 전자서명·SNDL 도청 방어·TLS 1.3 액티브 다운그레이드 카나리 검증·상수시간 NTT 부채널 타이밍 보호.",
     "desc_en": "FIPS 203 ML-KEM-768 hybrid key exchange (X25519+ML-KEM), FIPS 204 ML-DSA-65 composite X.509 dual-signatures, SNDL defense, TLS 1.3 active downgrade canary validation, and constant-time NTT protection."
   }
+,
+  {
+    "id": "aisbox",
+    "icon": "🤖",
+    "ko": "AI 에이전트 샌드박스 탈출 & 공급망 보안",
+    "en": "AI Agent Sandbox Escape & Supply Chain Security",
+    "desc_ko": "AI 에이전트 툴 동적 로딩 오염·SLSA Level 3 출처 증명·Ray/vLLM 분산 RCE 차단 & SPIFFE mTLS·Landlock LSM 샌드박싱·eBPF 런타임 탈출 SIGKILL 격리·G3 다자간 승인 거버넌스.",
+    "desc_en": "AI agent dynamic tool loading poisoning, SLSA Level 3 provenance, Ray/vLLM distributed RCE defense with SPIFFE mTLS, Landlock LSM sandboxing, eBPF instant SIGKILL breakout containment, and G3 multi-party approval governance."
+  }
 ];
 
 const CHALLENGES = [
@@ -76197,5 +76206,985 @@ const CHALLENGES = [
       ]
     },
     "hash": "f26e447f45728a7b7e66c91a2a48fd43ccdfadb14d45c21338e3c3240b044baf"
+  },
+  {
+    "id": "t0_aisbox_agent_supply_chain_threat_model",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 AI 에이전트 도구 동적 로딩과 소프트웨어 공급망 위협 모델",
+      "en": "Autonomous AI Agent Tool Dynamic Loading & Software Supply Chain Threat Model"
+    },
+    "prompt": {
+      "ko": "AI 에이전트가 외부 저장소에서 도구를 동적으로 임포트할 때 발생하는 타이포스쿼팅 및 종속성 혼선 위협 아키텍처를 분석합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_agent_supply_chain_threat_model`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze the threat architecture of dependency confusion and typosquatting when autonomous agents dynamically load tools.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_agent_supply_chain_threat_model`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_agent_supply_chain_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_agent_supply_chain_threat_model`."
+      ]
+    },
+    "hash": "a4bc43cbbd9515b97dfaff737babefd9b8750c87b27b86cf8b9ab63d026bcf31"
+  },
+  {
+    "id": "t0_aisbox_slsa_provenance_framework_l3",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SLSA Level 3 빌드 무결성 증명과 암호학적 출처 검증 체계",
+      "en": "SLSA Level 3 Build Integrity Provenance & Cryptographic Attestation"
+    },
+    "prompt": {
+      "ko": "소프트웨어 아티팩트의 빌드 플랫폼 불변성과 무결성을 보장하는 SLSA Level 3 검증 요건과 암호학적 증명 구조를 학습합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_slsa_provenance_framework_l3`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand SLSA Level 3 requirements assuring tamper-proof build platform integrity and cryptographic provenance attestation.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_slsa_provenance_framework_l3`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_slsa_provenance_framework_l3` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_slsa_provenance_framework_l3`."
+      ]
+    },
+    "hash": "444dfcdce9634dab40f627ec81217197454b8a83f521f969663f31e69248d0d0"
+  },
+  {
+    "id": "t0_aisbox_pep_665_immutable_dependency_lock",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PEP 665 불변 의존성 잠금파일과 해시 고정(Hash Pinning) 규격",
+      "en": "PEP 665 Immutable Dependency Lockfile & Hash Pinning Standard"
+    },
+    "prompt": {
+      "ko": "파이썬 에이전트 실행 환경에서 모든 패키지의 SHA-256 해시를 엄격히 강제하여 공급망 변조를 차단하는 잠금 규격을 검토합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_pep_665_immutable_dependency_lock`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Examine the PEP 665 standard enforcing strict SHA-256 hash pinning for all packages to prevent supply chain tampering.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_pep_665_immutable_dependency_lock`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_pep_665_immutable_dependency_lock` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_pep_665_immutable_dependency_lock`."
+      ]
+    },
+    "hash": "3e09210f6242e36c98056a2df8dabd953506769cae0bcdf39564cdea9fe7ab7f"
+  },
+  {
+    "id": "t0_aisbox_agent_tool_calling_sandbox_model",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AI 에이전트 도구 호출(Tool Calling) 런타임 샌드박스 격리 아키텍처",
+      "en": "AI Agent Tool Calling Runtime Sandbox Isolation Architecture"
+    },
+    "prompt": {
+      "ko": "LLM이 도구 호출 실행 명령을 생성할 때 호스트 시스템과 격리된 전용 마이크로 샌드박스 실행 계층의 설계 원리를 이해합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_agent_tool_calling_sandbox_model`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Understand the architecture of isolated micro-sandboxes executing LLM tool invocations safely segregated from the host.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_agent_tool_calling_sandbox_model`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_agent_tool_calling_sandbox_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_agent_tool_calling_sandbox_model`."
+      ]
+    },
+    "hash": "54c30850bd3548b551a569421d868a3a0176edb2baf981ab641846a1abfadd56"
+  },
+  {
+    "id": "t0_aisbox_ray_vllm_distributed_attack_surface",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Ray 및 vLLM 분산 추론 클러스터의 미인증 RPC 공격 표면",
+      "en": "Unauthenticated RPC Attack Surface in Distributed Ray & vLLM Clusters"
+    },
+    "prompt": {
+      "ko": "분산 GPU 워커 간의 통신 프로토콜 취약점 및 인증 결여 엔드포인트를 통한 임의 작업 주입 공격 표면을 분석합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_ray_vllm_distributed_attack_surface`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze unauthenticated worker endpoints and insecure RPC interfaces in distributed Ray/vLLM inference clusters.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_ray_vllm_distributed_attack_surface`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_ray_vllm_distributed_attack_surface` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_ray_vllm_distributed_attack_surface`."
+      ]
+    },
+    "hash": "435a6256c27b4b65846781a87a1155f171ac72a3eee3a237913d5bd68202201b"
+  },
+  {
+    "id": "t0_aisbox_landlock_lsm_unprivileged_sandbox",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비특권 Landlock LSM 파일시스템 접근 통제와 샌드박스 경계 원리",
+      "en": "Unprivileged Landlock LSM Filesystem Access Control & Sandbox Principles"
+    },
+    "prompt": {
+      "ko": "루트 권한 없이도 프로세스가 스스로의 파일시스템 권한을 축소 격리할 수 있는 리눅스 Landlock LSM의 동작 메커니즘을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_landlock_lsm_unprivileged_sandbox`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Study Linux Landlock LSM mechanisms enabling unprivileged processes to restrict their own filesystem access boundaries.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_landlock_lsm_unprivileged_sandbox`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_landlock_lsm_unprivileged_sandbox` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_landlock_lsm_unprivileged_sandbox`."
+      ]
+    },
+    "hash": "bf7d40b8344510b9ef4deb8d89a7e90570c5d0d488ea673565419c41b94a6621"
+  },
+  {
+    "id": "t0_aisbox_multi_party_g3_governance_principle",
+    "tier": 0,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 에이전트 고위험 작업 수행을 위한 G3 다자간 승인 거버넌스 원칙",
+      "en": "G3 Multi-Party Approval Governance Principles for High-Risk Autonomous Actions"
+    },
+    "prompt": {
+      "ko": "금융 이체, 파일 삭제, 시스템 재부팅 등 고위험 액션에 대해 인간 승인(HITL) 및 이중 서명 검증을 강제하는 G3 원칙을 학습합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t0_aisbox_multi_party_g3_governance_principle`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Learn G3 governance requiring human-in-the-loop (HITL) and dual-signature authorization for high-consequence agent actions.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t0_aisbox_multi_party_g3_governance_principle`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t0_aisbox_multi_party_g3_governance_principle` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t0_aisbox_multi_party_g3_governance_principle`."
+      ]
+    },
+    "hash": "b4f34ad10be12bf919c4da67ab7a9964f6a40797b432e594af917c1785316c0d"
+  },
+  {
+    "id": "t1_aisbox_typosquatting_pypi_hash_audit",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PyPI 타이포스쿼팅 섀도 패키지 변조 해시 탐지 및 차단",
+      "en": "PyPI Typosquatting Shadow Package Hash Tampering Detection & Rejection"
+    },
+    "prompt": {
+      "ko": "공식 라이브러리와 유사한 이름으로 업로드된 악성 휠(wheel) 파일의 불일치 SHA-256 체크섬을 탐지하여 임포트를 차단합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_typosquatting_pypi_hash_audit`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Detect checksum discrepancies in malicious lookalike wheels uploaded to PyPI and reject untrusted package imports.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_typosquatting_pypi_hash_audit`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_typosquatting_pypi_hash_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_typosquatting_pypi_hash_audit`."
+      ]
+    },
+    "hash": "738569edda2db57a6741c55a54aef227a1696675c74a8566e8a27764406df969"
+  },
+  {
+    "id": "t1_aisbox_ray_pickle_deserialization_rce",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Ray 클러스터 Python pickle 역직렬화 가젯 체인 RCE 취약점",
+      "en": "Python Pickle Deserialization Gadget Chain RCE in Ray Clusters"
+    },
+    "prompt": {
+      "ko": "Ray RPC 페이로드 내 __reduce__ 매직 메서드를 악용한 원격 코드 실행(RCE) 페이로드를 분석하고 안전한 직렬화로 마이그레이션합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_ray_pickle_deserialization_rce`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Analyze __reduce__ gadget chains in Ray RPC payloads triggering remote code execution and enforce safe serialization formats.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_ray_pickle_deserialization_rce`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_ray_pickle_deserialization_rce` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_ray_pickle_deserialization_rce`."
+      ]
+    },
+    "hash": "a26917dec940963c6bb72e6f2d15f7e352d20c735631c3d61f79c4faade03bc5"
+  },
+  {
+    "id": "t1_aisbox_unchecked_agent_tool_parameter_injection",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비검증 도구 매개변수를 통한 셸 메타문자 인젝션 공격",
+      "en": "Shell Metacharacter Parameter Injection via Unvalidated Tool Inputs"
+    },
+    "prompt": {
+      "ko": "에이전트 툴 인자에 주입된 세미콜론 및 파이프 셸 메타문자를 정량 검증하여 서브프로세스 임의 명령 실행을 방지합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_unchecked_agent_tool_parameter_injection`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Sanitize shell metacharacters in agent tool parameters to prevent arbitrary command injection in subprocess calls.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_unchecked_agent_tool_parameter_injection`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_unchecked_agent_tool_parameter_injection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_unchecked_agent_tool_parameter_injection`."
+      ]
+    },
+    "hash": "24dcdd6201053a5a36444907666492ac4da844476fc202b283426560afb9c99d"
+  },
+  {
+    "id": "t1_aisbox_landlock_abi_ruleset_enforcement",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Landlock ABI v3 규칙셋을 통한 에이전트 파일시스템 읽기/쓰기 차단",
+      "en": "Restricting Agent Filesystem Access via Landlock ABI v3 Rulesets"
+    },
+    "prompt": {
+      "ko": "LANDLOCK_ACCESS_FS_READ/WRITE 플래그를 프로그래밍하여 /app/runtime 외부의 모든 호스트 경로 접근을 커널 레벨에서 거부합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_landlock_abi_ruleset_enforcement`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Program Landlock ABI v3 rulesets to deny file operations outside /app/runtime at the Linux kernel layer.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_landlock_abi_ruleset_enforcement`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_landlock_abi_ruleset_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_landlock_abi_ruleset_enforcement`."
+      ]
+    },
+    "hash": "5d1c1b08d769db774b35702038d4b9c3c54fb08f4f622e558e771d29d3c9cc00"
+  },
+  {
+    "id": "t1_aisbox_seccomp_bpf_agent_syscall_filter",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Seccomp-BPF 시스템콜 필터링을 통한 소켓 생성 및 ptrace 차단",
+      "en": "Denying Socket Creation & ptrace via Seccomp-BPF Agent Syscall Filters"
+    },
+    "prompt": {
+      "ko": "에이전트 워커 프로세스에서 socket(AF_INET), ptrace, connect 시스템콜 호출 시 SECCOMP_RET_ERRNO(EPERM)을 즉각 반환합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_seccomp_bpf_agent_syscall_filter`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Compile BPF seccomp filters returning SECCOMP_RET_ERRNO on socket(AF_INET) and ptrace syscalls within agent workers.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_seccomp_bpf_agent_syscall_filter`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_seccomp_bpf_agent_syscall_filter` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_seccomp_bpf_agent_syscall_filter`."
+      ]
+    },
+    "hash": "7851e75cb82b0757ef677811a9cb88e0067226259de8cbb3e53e65c92cd11486"
+  },
+  {
+    "id": "t1_aisbox_sigstore_cosign_container_attestation",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Sigstore Cosign 기반 에이전트 런타임 컨테이너 서명 검증",
+      "en": "Agent Runtime Container Signature Verification via Sigstore Cosign"
+    },
+    "prompt": {
+      "ko": "Rekor 투명성 로그와 Fulcio OIDC 루트 인증서를 기반으로 에이전트 컨테이너 이미지의 암호학적 전자서명을 검증합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_sigstore_cosign_container_attestation`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Verify agent container image signatures using Sigstore Cosign, Rekor transparency logs, and Fulcio certificates.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_sigstore_cosign_container_attestation`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_sigstore_cosign_container_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_sigstore_cosign_container_attestation`."
+      ]
+    },
+    "hash": "85b38cc004bbc369d0a6882da231075a089a4da158fceacf3eba46af2dfc0f0a"
+  },
+  {
+    "id": "t1_aisbox_ebpf_agent_telemetry_stream",
+    "tier": 1,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF kprobe 커널 옵저버빌리티를 통한 에이전트 execve 텔레메트리 감시",
+      "en": "Agent execve Telemetry Monitoring via eBPF kprobe Kernel Observability"
+    },
+    "prompt": {
+      "ko": "kprobe:sys_execve 및 tracepoint:sched_process_exec을 모니터링하여 에이전트 자식 프로세스 생성을 실시간 캡처합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t1_aisbox_ebpf_agent_telemetry_stream`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Stream real-time child process execution events from agent workers using eBPF kprobes attached to sys_execve.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t1_aisbox_ebpf_agent_telemetry_stream`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t1_aisbox_ebpf_agent_telemetry_stream` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t1_aisbox_ebpf_agent_telemetry_stream`."
+      ]
+    },
+    "hash": "3142926e04202f192bda1240a896d6822da32665bd216bb10957349983589b47"
+  },
+  {
+    "id": "t2_aisbox_proc_self_fd_host_breakout_recon",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "/proc/self/fd 누출 호스트 파일 디스크립터 탐색 및 탈출 위협 분석",
+      "en": "Host Breakout Threat Analysis via Leaked /proc/self/fd Descriptors"
+    },
+    "prompt": {
+      "ko": "부모 프로세스에서 상속된 개방형 디렉터리 파일 디스크립터(O_DIRECTORY)를 악용하여 샌드박스 외부 루트에 접근하는 기법을 규명합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_proc_self_fd_host_breakout_recon`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Audit leaked directory file descriptors in /proc/self/fd that allow attackers to traverse out of container chroots.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_proc_self_fd_host_breakout_recon`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_proc_self_fd_host_breakout_recon` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_proc_self_fd_host_breakout_recon`."
+      ]
+    },
+    "hash": "4ea68b593e48a50ebdec969aae6702a1d71079e30b0f14246e20c9b4757e9919"
+  },
+  {
+    "id": "t2_aisbox_setns_namespace_pivot_denial",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CLONE_NEWUSER 및 setns 시스템콜 기반 네임스페이스 피벗 차단",
+      "en": "Blocking Namespace Pivot Escalation via CLONE_NEWUSER and setns"
+    },
+    "prompt": {
+      "ko": "비특권 사용자 네임스페이스를 생성한 뒤 호스트 mnt/pid 네임스페이스로 진입하려는 권한 상승 시도를 탐지하고 차단합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_setns_namespace_pivot_denial`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Detect and terminate unprivileged user namespace creation and setns syscall pivots targeting the host namespace.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_setns_namespace_pivot_denial`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_setns_namespace_pivot_denial` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_setns_namespace_pivot_denial`."
+      ]
+    },
+    "hash": "fc2193bdf3fa5787aecb2772e7d1b6d7ddf827f82745a2f8a14e829d3cb772bc"
+  },
+  {
+    "id": "t2_aisbox_indirect_prompt_injection_tool_output",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "외부 웹 검색 결과 및 도구 출력 내 간접 프롬프트 주입 방어",
+      "en": "Defending Against Indirect Prompt Injection in External Tool Outputs"
+    },
+    "prompt": {
+      "ko": "웹 스크래핑 결과물에 포함된 'SYSTEM: 이전 지침을 무시하라' 유형의 적대적 텍스트를 파싱하여 도구 실행 컨텍스트 오염을 무력화합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_indirect_prompt_injection_tool_output`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Sanitize untrusted external web scraper outputs to neutralize adversarial injection strings targeting agent system prompts.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_indirect_prompt_injection_tool_output`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_indirect_prompt_injection_tool_output` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_indirect_prompt_injection_tool_output`."
+      ]
+    },
+    "hash": "dc2784803d65359dde2837d50e8e4039535c8b522a629913fb1f1a88d7ec726a"
+  },
+  {
+    "id": "t2_aisbox_model_weights_safetensors_validation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PyTorch 체크포인트 임의 코드 실행 방어와 Safetensors 무결성 강제",
+      "en": "Enforcing Safetensors Integrity to Prevent PyTorch Checkpoint Pickle Exploits"
+    },
+    "prompt": {
+      "ko": "위험한 pickle 직렬화 포맷(.pt, .bin)의 모델 로딩을 전면 금지하고 메모리 안전 텐서 포맷(Safetensors)과 SHA-256 검증을 강제합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_model_weights_safetensors_validation`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Ban legacy pickle-based .pt checkpoints and mandate Safetensors serialization with cryptographic hash verification.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_model_weights_safetensors_validation`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_model_weights_safetensors_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_model_weights_safetensors_validation`."
+      ]
+    },
+    "hash": "a3967b81dda68a7d3ac4ccefb12509ab7a0ab672aad14d972ba737bfd84630db"
+  },
+  {
+    "id": "t2_aisbox_container_rootfs_read_only_immutable",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "컨테이너 rootfs 읽기 전용 봉인과 dm-verity 블록 암호화 검증",
+      "en": "Read-Only Container rootfs Sealing & dm-verity Block Integrity Verification"
+    },
+    "prompt": {
+      "ko": "에이전트 컨테이너 루트 파일시스템을 완전 읽기 전용(read-only)으로 탑재하고 임의 바이너리 쓰기 시도를 커널 레벨에서 거부합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_container_rootfs_read_only_immutable`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Mount agent container filesystems as immutable read-only volumes backed by dm-verity kernel integrity trees.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_container_rootfs_read_only_immutable`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_container_rootfs_read_only_immutable` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_container_rootfs_read_only_immutable`."
+      ]
+    },
+    "hash": "23f9316c16d165f390ded985b6f0edc7ff5865ddf3295e0b1b88fbba0338b4cc"
+  },
+  {
+    "id": "t2_aisbox_spiffe_spire_workload_svid_issuance",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SPIRE 에이전트를 통한 단기 X.509 SVID 워크로드 신원 증명 발급",
+      "en": "Short-Lived X.509 SVID Workload Identity Issuance via SPIRE Agent"
+    },
+    "prompt": {
+      "ko": "컨테이너 cgroup ID 및 네임스페이스 증명을 기반으로 SPIRE 서버에서 1시간 유효기간의 mTLS 워크로드 SVID를 발급받습니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_spiffe_spire_workload_svid_issuance`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Issue short-lived 1-hour mTLS X.509 SVID credentials from SPIRE servers attested by kernel cgroup measurements.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_spiffe_spire_workload_svid_issuance`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_spiffe_spire_workload_svid_issuance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_spiffe_spire_workload_svid_issuance`."
+      ]
+    },
+    "hash": "a12b2da4204caa85aee9e11c7ef1217634bc5c53911e0afa6035efdce4b20760"
+  },
+  {
+    "id": "t2_aisbox_ephemeral_tool_token_rotation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "HMAC 서명 기반 30초 단기 에이전트 도구 실행 기능 토큰 회전",
+      "en": "30-Second Ephemeral Capability Token Rotation with HMAC Signatures"
+    },
+    "prompt": {
+      "ko": "도구 실행 권한을 30초 동안만 유효한 HMAC-SHA256 기능 토큰으로 제한하여 토큰 탈취 시 재사용 공격을 무력화합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t2_aisbox_ephemeral_tool_token_rotation`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Rotate HMAC-SHA256 capability tokens on a 30-second lease to prevent token replay attacks in compromised workers.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t2_aisbox_ephemeral_tool_token_rotation`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t2_aisbox_ephemeral_tool_token_rotation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t2_aisbox_ephemeral_tool_token_rotation`."
+      ]
+    },
+    "hash": "8a242104f417a456e4836608097db74dbb35cacabb6c3d09c67aa4c41d1c7181"
+  },
+  {
+    "id": "t3_aisbox_ebpf_lsm_file_open_containment",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF bpf_lsm_file_open 훅을 통한 호스트 중요 파일 인라인 차단",
+      "en": "Inline Host File Access Denial via eBPF bpf_lsm_file_open LSM Hooks"
+    },
+    "prompt": {
+      "ko": "컨테이너 내부 프로세스가 /etc/shadow, /proc/kcore, 도커 소켓(/var/run/docker.sock) 열기 시도 시 -EACCES 에러를 인라인 반환합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_ebpf_lsm_file_open_containment`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Attach eBPF LSM hooks to bpf_lsm_file_open returning -EACCES when sandboxed workers attempt opening sensitive host paths.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_ebpf_lsm_file_open_containment`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_ebpf_lsm_file_open_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_ebpf_lsm_file_open_containment`."
+      ]
+    },
+    "hash": "9ca95ce042a2bec05d49b9a91df3cd385d38e0a05ac6110b6339772e0e0b9de6"
+  },
+  {
+    "id": "t3_aisbox_wasm_wasi_memory_isolated_tool_runner",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Wasm/WASI 메모리 격리 런타임을 통한 제로트러스트 에이전트 도구 구동",
+      "en": "Zero-Trust Agent Tool Execution via Wasm/WASI Memory-Isolated Runtimes"
+    },
+    "prompt": {
+      "ko": "Wasmtime 샌드박스에서 선형 메모리 경계(Linear Memory Boundary)를 강제하여 버퍼 오버플로우와 셸 실행을 원천 차단합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_wasm_wasi_memory_isolated_tool_runner`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Execute third-party agent plugins inside Wasmtime WASI runtimes enforcing linear memory boundaries and zero shell access.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_wasm_wasi_memory_isolated_tool_runner`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_wasm_wasi_memory_isolated_tool_runner` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_wasm_wasi_memory_isolated_tool_runner`."
+      ]
+    },
+    "hash": "e0796ba1519c9bec69d899dfa72b7d4256a3cb1f906d2504aae30e1a522bc094"
+  },
+  {
+    "id": "t3_aisbox_g3_dual_custody_hmac_ledger",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "G3 다자간 합의 이중 서명(HMAC-SHA256) 불변 조치 감사 원장",
+      "en": "Immutable Action Audit Ledger with G3 Dual-Custody HMAC-SHA256 Signatures"
+    },
+    "prompt": {
+      "ko": "에이전트가 발행한 조치 요청에 대해 보안 운영자 키와 관리자 키 2개의 HMAC 서명이 모두 확인되어야만 실행을 승인합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_g3_dual_custody_hmac_ledger`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Mandate dual HMAC-SHA256 signatures from both sec-ops and compliance officers before authorizing restricted agent actions.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_g3_dual_custody_hmac_ledger`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_g3_dual_custody_hmac_ledger` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_g3_dual_custody_hmac_ledger`."
+      ]
+    },
+    "hash": "380f3536fa65ec409ddd7f7d0cda5f1a1857325668cc0d2b3c05e40135a70cb7"
+  },
+  {
+    "id": "t3_aisbox_pypi_index_mirror_hash_enforcement",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "사내 프라이빗 패키지 미러의 SHA-256 서명 교차 검증 및 무결성 강제",
+      "en": "Private Package Mirror SHA-256 Cross-Validation & Integrity Enforcement"
+    },
+    "prompt": {
+      "ko": "외부 PyPI 직접 조회를 차단하고 사내 에어갭 미러에서 TUF(The Update Framework) 메타데이터와 패키지 해시를 교차 검증합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_pypi_index_mirror_hash_enforcement`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Block upstream PyPI egress and enforce TUF signed metadata validation across internal air-gapped package mirrors.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_pypi_index_mirror_hash_enforcement`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_pypi_index_mirror_hash_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_pypi_index_mirror_hash_enforcement`."
+      ]
+    },
+    "hash": "0e24b6ea3941c3584d54b0087dd0250b3787dcdc0a78dbdb8a9a0a124c175f3d"
+  },
+  {
+    "id": "t3_aisbox_hardened_seccomp_syscall_whitelist",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "최소 권한 아키텍처 기반 28개 허용 시스템콜 정밀 Seccomp 화이트리스트",
+      "en": "Least-Privilege 28-Syscall Whitelist Architecture via Hardened Seccomp"
+    },
+    "prompt": {
+      "ko": "에이전트 추론에 필요한 최소 28개 시스템콜(read, write, futex 등) 외의 모든 커널 진입을 SECCOMP_RET_KILL_PROCESS로 봉쇄합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_hardened_seccomp_syscall_whitelist`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Restrict agent workers to exactly 28 essential system calls, triggering SECCOMP_RET_KILL_PROCESS on any unknown syscall.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_hardened_seccomp_syscall_whitelist`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_hardened_seccomp_syscall_whitelist` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_hardened_seccomp_syscall_whitelist`."
+      ]
+    },
+    "hash": "178b4efd291d0937cf1e1e97a67503fb319eee0c15b23258a70779e1a68a6361"
+  },
+  {
+    "id": "t3_aisbox_zero_trust_agent_egress_gateway",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Envoy mTLS 제로 트러스트 프록시를 통한 에이전트 아웃바운드 C2 격리",
+      "en": "Agent Outbound C2 Containment via Envoy mTLS Zero-Trust Egress Gateways"
+    },
+    "prompt": {
+      "ko": "에이전트 컨테이너의 모든 외부 네트워크 요청을 Envoy 사이드카로 강제 라우팅하고 FQDN 화이트리스트 외 연결을 즉각 드롭합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_zero_trust_agent_egress_gateway`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Route all egress traffic through Envoy sidecars to enforce strict FQDN whitelists and block outbound reverse C2 beacons.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_zero_trust_agent_egress_gateway`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_zero_trust_agent_egress_gateway` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_zero_trust_agent_egress_gateway`."
+      ]
+    },
+    "hash": "2c594c5718a33f3d9a5c0aa706a46b123f688f1d5979c31c00c21cf72dd9077a"
+  },
+  {
+    "id": "t3_aisbox_realtime_agent_anomaly_detection_loop",
+    "tier": 3,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 링버퍼 기반 에이전트 시스템콜 이상 전이 실시간 통계적 이상 탐지",
+      "en": "Statistical Anomaly Detection of Agent Syscall Trajectories via Ringbuffers"
+    },
+    "prompt": {
+      "ko": "정상 에이전트 실행 패턴(Markov 체인 모델)을 벗어나는 시스템콜 시퀀스 탐지 시 0.5초 이내에 프로세스를 격리합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t3_aisbox_realtime_agent_anomaly_detection_loop`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Monitor syscall transition probabilities using eBPF ringbuffers to isolate deviating agent processes within 0.5 seconds.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t3_aisbox_realtime_agent_anomaly_detection_loop`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t3_aisbox_realtime_agent_anomaly_detection_loop` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t3_aisbox_realtime_agent_anomaly_detection_loop`."
+      ]
+    },
+    "hash": "f827ea20aec16777cdea792f191c5831083f9a83cbed8e1c2f045f4a55036322"
+  },
+  {
+    "id": "t4_aisbox_cross_cloud_agent_mesh_containment",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티클라우드 분산 AI 에이전트 서비스 메시 전송망 침해 격리",
+      "en": "Multi-Cloud Distributed AI Agent Service Mesh Breach Containment"
+    },
+    "prompt": {
+      "ko": "AWS EKS와 GCP GKE에 분산된 에이전트 워커가 탈취되었을 때 크로스 클라우드 SPIFFE 트러스트 도메인 격리를 통해 확산을 차단합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_cross_cloud_agent_mesh_containment`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Isolate compromised worker nodes across multi-cloud EKS and GKE meshes using federated SPIFFE trust domain boundaries.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_cross_cloud_agent_mesh_containment`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_cross_cloud_agent_mesh_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_cross_cloud_agent_mesh_containment`."
+      ]
+    },
+    "hash": "e8b7a5e0e85368fe6a32663a640bf8a156dd85a7b00c3c3637e7e27831101548"
+  },
+  {
+    "id": "t4_aisbox_hardware_tee_confidential_agent_reasoning",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 TEE(AMD SEV-SNP/Intel TDX) 기밀 컴퓨팅 기반 에이전트 추론 보호",
+      "en": "Hardware TEE Confidential Computing Protection for Agent Reasoning"
+    },
+    "prompt": {
+      "ko": "호스트 루트 권한자나 하이퍼바이저 탈취 상황에서도 에이전트 메모리와 프롬프트를 하드웨어 암호화 엔클레이브로 격리합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_hardware_tee_confidential_agent_reasoning`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Shield agent reasoning memory and proprietary system prompts inside hardware AMD SEV-SNP and Intel TDX enclaves.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_hardware_tee_confidential_agent_reasoning`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_hardware_tee_confidential_agent_reasoning` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_hardware_tee_confidential_agent_reasoning`."
+      ]
+    },
+    "hash": "498518c7452f37f43ca235cd7db96d803cb38add152cb94c9b55fe381264cd64"
+  },
+  {
+    "id": "t4_aisbox_ebpf_instant_sigkill_breakout_shield",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "bpf_send_signal(SIGKILL) 기반 서브마이크로초 탈출 시도 즉시 사살 쉴드",
+      "en": "Sub-Microsecond Breakout Neutralization Shield via bpf_send_signal(SIGKILL)"
+    },
+    "prompt": {
+      "ko": "컨테이너 경계 탈출 패턴(leaked fd mknod 등) 감지 시 커널 내부에서 0.35µs 이내에 프로세스를 SIGKILL로 즉시 사살합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_ebpf_instant_sigkill_breakout_shield`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Deploy in-kernel eBPF LSM telemetry triggering bpf_send_signal(SIGKILL) within 0.35µs of unauthorized namespace traversal.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_ebpf_instant_sigkill_breakout_shield`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_ebpf_instant_sigkill_breakout_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_ebpf_instant_sigkill_breakout_shield`."
+      ]
+    },
+    "hash": "f7e91f5c16ea75cebda12f14b59f48d576545f7d11f8289b6c42b4bbf716dee7"
+  },
+  {
+    "id": "t4_aisbox_multi_agent_consensus_byzantine_fault",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다중 에이전트 오케스트레이션 비잔틴 결함 방어 및 독성 명령 거부 합의",
+      "en": "Byzantine Fault Tolerance & Poisoned Instruction Rejection in Multi-Agent Swarms"
+    },
+    "prompt": {
+      "ko": "N개 에이전트 중 1/3 이하가 탈취되어 악의적 툴 호출을 시도하더라도 Raft/PBFT 합의를 통해 공격 명령을 기각합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_multi_agent_consensus_byzantine_fault`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Implement Byzantine Fault Tolerant consensus across multi-agent swarms to reject poisoned commands from rogue workers.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_multi_agent_consensus_byzantine_fault`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_multi_agent_consensus_byzantine_fault` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_multi_agent_consensus_byzantine_fault`."
+      ]
+    },
+    "hash": "5e2432ad43f6e705b24ea20b236d8d2674346872447b1a5bcbb8b151fe6cdbc0"
+  },
+  {
+    "id": "t4_aisbox_slsa_level4_hermetic_reproducible_agent",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "밀폐형(Hermetic) 완전 재현 가능 빌드 파이프라인 기반 SLSA Level 4 에이전트",
+      "en": "Hermetic Fully Reproducible Build Pipeline for SLSA Level 4 Agent Runtimes"
+    },
+    "prompt": {
+      "ko": "네트워크가 차단된 밀폐 빌드 환경에서 비트 단위 동일한 아티팩트를 재생산하고 두 개 이상의 독립 빌더 증명을 결합합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_slsa_level4_hermetic_reproducible_agent`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Enforce network-isolated hermetic build environments producing bit-for-bit reproducible agent container artifacts.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_slsa_level4_hermetic_reproducible_agent`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_slsa_level4_hermetic_reproducible_agent` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_slsa_level4_hermetic_reproducible_agent`."
+      ]
+    },
+    "hash": "f40155012a72c66476126b1ac88993027b665b18d0cfd01be3d7f6e43d46fa8b"
+  },
+  {
+    "id": "t4_aisbox_covert_steganography_weight_scanner",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "대규모 언어 모델 가중치 내 은닉 페이로드 스테가노그래피 텐서 감사",
+      "en": "Steganographic Covert Payload Scanning Across Deep Learning Weight Tensors"
+    },
+    "prompt": {
+      "ko": "FP16 부동소수점 하위 비트에 은닉된 백도어 셸코드 텐서를 엔트로피 및 클러스터링 통계 기법으로 정밀 탐색합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_covert_steganography_weight_scanner`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Scan low-order bits of FP16 weight tensors to detect steganographically embedded shellcode payloads within LLM weights.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_covert_steganography_weight_scanner`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_covert_steganography_weight_scanner` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_covert_steganography_weight_scanner`."
+      ]
+    },
+    "hash": "f1e09bb1d9ad7902fc22f970a05ed431234e3b72b8a776bc89ee268a34111540"
+  },
+  {
+    "id": "t4_aisbox_capstone_full_spectrum_ai_sandbox_defense",
+    "tier": 4,
+    "cat": "ai",
+    "track": "aisbox",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AI 에이전트 샌드박스 탈출 & 공급망 전방위 방어 캡스톤",
+      "en": "Full-Spectrum AI Agent Sandbox Escape & Supply Chain Defense Capstone"
+    },
+    "prompt": {
+      "ko": "SLSA 3 출처 증명, Ray mTLS 신원 인증, Landlock LSM 샌드박싱, eBPF 즉각 사살, G3 다자간 승인을 모두 통합한 종합 방어를 수립합니다.\n\n[실습 환경 및 검증 식별자]\nAISBOX_CHALLENGE_ID: `t4_aisbox_capstone_full_spectrum_ai_sandbox_defense`\n\n위 식별자를 기반으로 AI 샌드박스 공급망 보안 검증 플래그를 도출하여 제출하세요.",
+      "en": "Synthesize SLSA Level 3 provenance, Ray cluster mTLS, Landlock LSM sandboxing, eBPF instant SIGKILL, and G3 dual-custody approval.\n\n[Verification Identifier]\nAISBOX_CHALLENGE_ID: `t4_aisbox_capstone_full_spectrum_ai_sandbox_defense`\n\nDerive and submit the AI sandbox & supply chain security verification flag based on this challenge identifier."
+    },
+    "hints": {
+      "ko": [
+        "AI 에이전트 샌드박스 격리(Landlock/eBPF/Seccomp) 및 공급망(SLSA/Cosign) 보안 아키텍처를 분석하세요.",
+        "이 문제는 식별자 `t4_aisbox_capstone_full_spectrum_ai_sandbox_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "Analyze AI agent sandbox isolation (Landlock/eBPF/Seccomp) and supply chain (SLSA/Cosign) architectures.",
+        "This challenge derives a deterministic flag from identifier `t4_aisbox_capstone_full_spectrum_ai_sandbox_defense`."
+      ]
+    },
+    "hash": "1414864b48ca3026e85c50fbbce35580a9d6b65517e6a172e71d6e3ee6c5c9dd"
   }
 ];

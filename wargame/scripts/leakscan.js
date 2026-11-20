@@ -35,6 +35,24 @@ const UBIQUITY_WAIVER = 5;
    anything else under the threshold fails the run. */
 const ALLOWLIST = new Map([
   ['t0_source -> t2_sqlcomment', 'HTML comment syntax happens to be the SQL comment token'],
+  // Track 78 aisbox domain terms
+  ['t0_aisbox_agent_supply_chain_threat_model -> t0_sctypo', 'Supply chain threat model evaluates typosquatting attacks'],
+  ['t0_aisbox_agent_supply_chain_threat_model -> t1_scdepconf', 'Threat model evaluates dependency confusion'],
+  ['t0_aisbox_pep_665_immutable_dependency_lock -> t2_ztpep', 'Policy enforcement points referenced in PEP locks'],
+  ['t0_aisbox_pep_665_immutable_dependency_lock -> t2_scpinning', 'Immutable locks evaluate version pinning'],
+  ['t0_aisbox_pep_665_immutable_dependency_lock -> t1_sclockfile', 'PEP 665 specifies lockfile formats'],
+  ['t0_aisbox_ray_vllm_distributed_attack_surface -> t0_inference', 'Ray/vLLM attack surface in model inference cluster'],
+  ['t1_aisbox_typosquatting_pypi_hash_audit -> t0_sctypo', 'Typosquatting PyPI hash audit detects package typosquatting'],
+  ['t1_aisbox_ray_pickle_deserialization_rce -> t4_pickle', 'Ray deserialization analyzes Python pickle format vulnerability'],
+  ['t1_aisbox_sigstore_cosign_container_attestation -> t3_scfulcio', 'Sigstore Cosign container attestation integrates with Fulcio CA'],
+  ['t2_aisbox_model_weights_safetensors_validation -> t1_safetensors', 'Model weights validation evaluates safetensors format'],
+  ['t2_aisbox_model_weights_safetensors_validation -> t4_pickle', 'Safetensors prevents unsafe pickle deserialization'],
+  ['t3_aisbox_ebpf_lsm_file_open_containment -> t3_dockersock', 'eBPF LSM file containment blocks access to docker sock'],
+  ['t3_aisbox_wasm_wasi_memory_isolated_tool_runner -> t1_wasmwasi', 'WASM tool runner utilizes WASI interface'],
+  ['t3_aisbox_pypi_index_mirror_hash_enforcement -> t4_sctuf', 'PyPI mirror security relies on The Update Framework TUF'],
+  ['t4_aisbox_cross_cloud_agent_mesh_containment -> t2_eks', 'Cross-cloud agent mesh secures EKS workloads'],
+  ['t4_aisbox_slsa_level4_hermetic_reproducible_agent -> t3_screpro', 'SLSA Level 4 requires reproducible hermetic builds'],
+  ['t4_aisbox_capstone_full_spectrum_ai_sandbox_defense -> t4_wasmsandboxesc', 'Capstone AI sandbox defense covers WASM sandbox escape scenarios'],
   // Track 75 autosec domain terms
   ['t0_autosec_autonomous_soc_agent_architecture -> t1_ptpipeline', 'Telemetry pipeline architecture in SOC agent'],
   ['t0_autosec_telemetry_prompt_injection_threat_model -> t1_syslog', 'Telemetry threat model references syslog inputs'],

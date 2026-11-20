@@ -1,0 +1,15 @@
+services:
+  ai-sandbox-escape-supply-chain-lab:
+    build: .
+    container_name: vhack-lab66-ai-sandbox-escape
+    ports:
+      - "127.0.0.1:8066:8066"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8066/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
