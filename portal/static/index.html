@@ -99,11 +99,12 @@
     <span>통합 보안 포털 & 관제 센터</span>
   </div>
   <nav>
-    <button class="nav-btn active" onclick="switchView('labs')">🧪 62대 실습 랩</button>
+    <button class="nav-btn active" onclick="switchView('labs')">🧪 68대 골든 실습 랩</button>
     <button class="nav-btn" onclick="switchView('bench')">🤖 AI 벤치마크</button>
     <button class="nav-btn" onclick="switchView('docs')">📚 교재 리더 (:3000)</button>
     <button class="nav-btn" onclick="switchView('wargame')">🎮 워게임 (:8000)</button>
     <button class="nav-btn" onclick="switchView('ctf')">🏆 CTF 경기장 (:8888)</button>
+    <a href="/api/compliance/report/download?format=html" target="_blank" class="nav-btn" style="text-decoration:none; color:#38bdf8; border-color:#38bdf8;">📜 B2B 진단보고서</a>
   </nav>
 </header>
 
@@ -148,7 +149,7 @@
     <!-- Category Filter & Batch Controls Bar -->
     <div class="filter-bar">
       <div class="filter-chips" id="category-filters">
-        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 카테고리 (62)</button>
+        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 카테고리 (68)</button>
       </div>
       <div class="batch-actions">
         <button class="btn btn-green" onclick="batchControl('start')">▶ 일괄 가동</button>
@@ -166,7 +167,7 @@
     <div class="section-header" style="margin-top: 0.5rem;">
       <div>
         <h2 style="font-size: 1.35rem; color: #38bdf8; margin: 0 0 4px 0;">🤖 AI 보안 에이전트 다중 모델 벤치마크 리더보드</h2>
-        <span style="color: var(--text-dim); font-size: 0.85rem;">Pass@1 해결률 · 65개 랩 취약점 탐지/익스플로잇 성공률 · 규제 준수율 전수 평가</span>
+        <span style="color: var(--text-dim); font-size: 0.85rem;">Pass@1 해결률 · 68개 랩 취약점 탐지/익스플로잇 성공률 · 규제 준수율 전수 평가</span>
       </div>
       <div style="display: flex; gap: 8px;">
         <button class="btn btn-green" onclick="runAgentBenchmarkTrigger()">⚡ 벤치마크 실행 / 갱신</button>

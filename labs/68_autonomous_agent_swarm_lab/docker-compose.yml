@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  autonomous_agent_swarm_lab:
+    build: .
+    container_name: vhack-lab-68-swarmsentry
+    ports:
+      - "127.0.0.1:8068:8068"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    environment:
+      - LAB_ID=68
+      - LAB_NAME=autonomous_agent_swarm_lab
+      - PORT=8068

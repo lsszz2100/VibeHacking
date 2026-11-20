@@ -96,7 +96,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "40": "dfir", "41": "supplychain", "42": "cloud", "43": "cloud",
     "44": "web", "45": "crypto", "46": "endpoint",
     "47": "ai", "48": "iot", "49": "crypto", "50": "dfir", "51": "endpoint", "52": "network",
-    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud", "59": "cloud", "60": "crypto", "61": "zerotrust", "62": "ai", "63": "ai", "64": "cloud", "65": "crypto", "66": "ai", "67": "confidential",
+    "53": "ad", "54": "ai", "55": "crypto", "56": "endpoint", "57": "reversing", "58": "cloud", "59": "cloud", "60": "crypto", "61": "zerotrust", "62": "ai", "63": "ai", "64": "cloud", "65": "crypto", "66": "ai", "67": "confidential", "68": "ai",
 }
 
 
@@ -492,6 +492,30 @@ def get_compliance_summary():
             "kisa_mapped_count": len(stats.get("kisa_counts", {})),
             "nist_mapped_count": len(stats.get("nist_csf_counts", {})),
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/compliance/report/download")
+def download_compliance_report(format: str = "html"):
+    """엔터프라이즈 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 진단 보고서 다중 포맷 원클릭 다운로드"""
+    try:
+        from tools.report_generator import SecurityReportGenerator
+        from fastapi.responses import Response
+        gen = SecurityReportGenerator()
+        fmt = format.lower().strip()
+        if fmt == "html":
+            content = gen.to_html()
+            return Response(content=content, media_type="text/html", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.html"})
+        elif fmt == "csv":
+            content = gen.to_csv()
+            return Response(content=content, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.csv"})
+        elif fmt == "json":
+            content = gen.to_json()
+            return Response(content=content, media_type="application/json", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.json"})
+        else:
+            content = gen.to_markdown()
+            return Response(content=content, media_type="text/markdown", headers={"Content-Disposition": "attachment; filename=vibe_hacking_v2.18.0_enterprise_audit.md"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -653,6 +653,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM06:2025",
         "owasp_name": "Sensitive Information Disclosure & Hardware TEE Weight Protection",
     },
+    "68": {
+        "kisa_id": "2.10.1",
+        "kisa_name": "보안 시스템 접근 통제 및 분산 에이전트 상호 인증 (Autonomous Agent Swarm & PBFT 합의 방어)",
+        "nist_csf_id": "PR.AC-04",
+        "nist_csf_name": "Multi-Agent Swarm Identity Pinning, PBFT Byzantine Fault Tolerance & Landlock LSM Memory Isolation",
+        "owasp_id": "LLM07:2025",
+        "owasp_name": "System Prompt & Shared Context Window Hijacking in Autonomous Swarm Workflows",
+    },
 }
 
 @dataclass
@@ -1900,6 +1908,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Confidential inference service accepts unverified attestation quotes lacking VCEK certificate chain validation, stores model weights in unencrypted RAM, executes non-constant-time matrix multiplication susceptible to cache timing side-channels, and returns unsigned inference completions.",
                 "affected_component": "ConfidentialAiInferenceLab TEE Enclave Gateway (Port 8067)",
                 "remediation": "Enforce AMD SEV-SNP/Intel TDX hardware remote attestation quote validation against VCEK root certificates, decrypt model weights exclusively into AES-256-XTS encrypted enclave memory space, implement constant-time GEMM operations with oblivious RAM shuffling, and sign inference completions via hardware TPM AIK endorsement keys."
+            }
+        ]
+    },
+    "68": {
+        "title": "68 AutonomousAgentSwarmLab Multi-Agent Swarm Security, Byzantine Consensus Defense & eBPF Lateral Containment",
+        "category": "Autonomous AI Agent Swarm Defense & Byzantine Fault Tolerance",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6801",
+                "name": "Rogue Agent Registration, Swarm Byzantine Consensus Poisoning & Worker Lateral Movement",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1190",
+                "mitre_technique": "Exploit Public-Facing Application: Rogue Swarm Agent Infiltration",
+                "mitre_tactic": "Initial Access / Lateral Movement / Impact",
+                "impact": "Rogue worker agent joins multi-agent swarm without mTLS verification, poisons distributed Byzantine consensus quorum with forged decision vectors, hijacks shared memory context windows, and moves laterally across swarm nodes.",
+                "description": "Multi-agent swarm orchestrator accepts unverified worker RPC connections lacking SPIFFE ID validation, aggregates voting results without PBFT quorum anomaly thresholds, permits unprivileged workers to mutate shared context memory, and fails to monitor inter-agent IPC sockets in the Linux kernel.",
+                "affected_component": "AutonomousAgentSwarmLab Orchestrator & Worker Mesh (Port 8068)",
+                "remediation": "Enforce mutual TLS (mTLS) with cryptographically bound SPIFFE IDs for all swarm workers, mandate PBFT (3f + 1) consensus with outlier vote pruning, isolate shared context windows using Linux Landlock LSM read-only snapshots, and deploy Cilium Tetragon eBPF LSM policies for 0ms SIGKILL on unauthorized inter-worker IPC."
             }
         ]
     }

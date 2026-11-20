@@ -9,7 +9,7 @@ if str(REPO_ROOT) not in sys.path:
 
 import pytest
 from starlette.testclient import TestClient
-from portal.server import app
+from portal.server import app, LABS
 
 
 @pytest.fixture
@@ -30,16 +30,16 @@ def test_system_status(client):
     data = res.json()
     assert "cpu_usage_percent" in data
     assert "total_labs" in data
-    assert data["total_labs"] == 66
+    assert data["total_labs"] == len(LABS)
 
 
 def test_list_labs(client):
     res = client.get("/api/labs")
     assert res.status_code == 200
     data = res.json()
-    assert data["total"] == 66
-    assert len(data["labs"]) == 66
-    # Check Lab 19~66 presence
+    assert data["total"] == len(LABS)
+    assert len(data["labs"]) == len(LABS)
+    # Check Lab presence
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
@@ -49,6 +49,7 @@ def test_list_labs(client):
     assert "64" in ids
     assert "65" in ids
     assert "66" in ids
+    assert "67" in ids
     assert "54" in ids
     assert "55" in ids
     assert "56" in ids
@@ -146,7 +147,7 @@ def test_get_lab_categories(client):
     res = client.get("/api/labs/categories")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 66
+    assert data["total_labs"] == len(LABS)
     assert "ai" in data["categories"]
     assert "54" in data["categories"]["ai"]["labs"]
     assert "62" in data["categories"]["ai"]["labs"]
@@ -248,11 +249,28 @@ def test_portal_compliance_summary(client):
     res = client.get("/api/compliance/summary")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 66
-    assert data["total_findings"] >= 66
+    assert data["total_labs"] == len(LABS)
+    assert data["total_findings"] >= len(LABS)
     assert data["average_cvss"] > 0
     assert "Critical" in data["severity_counts"]
     assert "High" in data["severity_counts"]
+
+
+def test_download_compliance_report(client):
+    res_html = client.get("/api/compliance/report/download?format=html")
+    assert res_html.status_code == 200
+    assert "text/html" in res_html.headers["content-type"]
+    assert "VibeHacking" in res_html.text
+
+    res_csv = client.get("/api/compliance/report/download?format=csv")
+    assert res_csv.status_code == 200
+    assert "text/csv" in res_csv.headers["content-type"]
+    assert "\ufeff" in res_csv.text
+
+    res_json = client.get("/api/compliance/report/download?format=json")
+    assert res_json.status_code == 200
+    data = res_json.json()
+    assert "findings" in data
 
 
 def test_portal_drill_run_api(client):

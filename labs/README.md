@@ -97,6 +97,7 @@ docker-compose --version
 | 65 | [포스트 양자 하이브리드 TLS 1.3 랩](./65_pqc_hybrid_tls_lab/) | SNDL(Store Now Decrypt Later) 도청 방어, X25519+ML-KEM-768 하이브리드 키 교환, ML-DSA-65 복합 서명, TLS 1.3 다운그레이드 방어, 상수 시간 격자 연산 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md) | `pqctls` / `crypto` |
 | 66 | [AI 에이전트 샌드박스 탈출 & 공급망 보안 랩](./66_ai_sandbox_escape_supply_chain_lab/) | PyPI 섀도 의존성 오염 & SLSA Level 3 출처 증명, Ray/vLLM 분산 클러스터 역직렬화 RCE 차단 & SPIFFE mTLS 인증, Landlock LSM & eBPF 런타임 탈출 SIGKILL 격리, G3 다자간 승인 거버넌스 | ★★★★★ | [69장 LLM 보안](../69_LLM_Security/README.md) | `aisbox` / `ai` |
 | 67 | [기밀 AI 추론 & 하드웨어 엔클레이브 증명 방어 랩](./67_confidential_ai_inference_lab/) | AMD SEV-SNP/Intel TDX 원격 증명 & VCEK 무결성 검증, 엔클레이브 내 AES-256-XTS 모델 가중치 암호화, Flush+Reload/Prime+Probe 캐시 타이밍 부채널 방어, TPM AIK 추론 서명 | ★★★★★ | [57장 양자 암호학](../57_Quantum_Cryptography/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `teeai` / `confidential` |
+| 68 | [자율 멀티에이전트 스웜 보안 & 비잔틴 합의 방어 랩](./68_autonomous_agent_swarm_lab/) | 사칭 워커 에이전트 등록 차단 & X.509 mTLS/SPIFFE ID 상호 인증, 스웜 분산 합의 오염 & PBFT 비잔틴 고장 쿼럼 방어, 공유 컨텍스트 윈도우 Landlock LSM 메모리 격리, Cilium Tetragon eBPF 0ms SIGKILL | ★★★★★ | [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `swarmsentry` / `ai` |
 
 ---
 
@@ -596,6 +597,16 @@ docker-compose --version
 - **교재 챕터 연계**: [57장 양자 암호학](../57_Quantum_Cryptography/README.md), [69장 LLM 보안](../69_LLM_Security/README.md)
 - **워게임 트랙**: `teeai` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 67` (웹 콘솔: `http://localhost:8067`)
+
+### 68. 자율 멀티에이전트 스웜 보안 & 비잔틴 합의 방어 랩 (AutonomousAgentSwarmLab)
+- 분산 멀티에이전트 스웜 오케스트레이션 및 사칭 워커 차단
+- X.509 mTLS 상호 인증 및 SPIFFE ID 신원 고정
+- PBFT 3단계 분산 합의 프로토콜 및 비잔틴 고장 이상치 가중치 필터링
+- Linux Landlock LSM 무특권 샌드박싱 및 공유 컨텍스트 메모리 불변 읽기전용 락
+- Cilium Tetragon 커널 eBPF LSM 실시간 모니터링 및 비인가 IPC 0ms SIGKILL 즉시 사살
+- **교재 챕터 연계**: [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md)
+- **워게임 트랙**: `swarmsentry` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 68` (웹 콘솔: `http://localhost:8068`)
 
 ---
 

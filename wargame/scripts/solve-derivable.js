@@ -3052,6 +3052,58 @@ for (const id of TEEAI_IDS) {
     }
   });
 }
+const SWARMSENTRY_IDS = [
+  "t0_swarmsentry_swarm_architecture_threat_model",
+  "t0_swarmsentry_agent_identity_spoofing_vectors",
+  "t0_swarmsentry_byzantine_consensus_poisoning_theory",
+  "t0_swarmsentry_shared_context_window_memory_risks",
+  "t0_swarmsentry_cascading_lateral_movement_in_swarms",
+  "t0_swarmsentry_spiffe_spire_workload_mesh_principles",
+  "t0_swarmsentry_ebpf_lsm_swarm_runtime_containment",
+  "t1_swarmsentry_x509_mtls_worker_identity_verification",
+  "t1_swarmsentry_spiffe_id_jwt_svid_cryptographic_audit",
+  "t1_swarmsentry_byzantine_anomaly_weight_filtering",
+  "t1_swarmsentry_unprivileged_landlock_context_snapshot",
+  "t1_swarmsentry_inter_agent_rpc_input_schema_validation",
+  "t1_swarmsentry_cilium_tetragon_swarm_ipc_tracing",
+  "t1_swarmsentry_ephemeral_swarm_session_token_rotation",
+  "t2_swarmsentry_pbft_three_phase_commit_verification",
+  "t2_swarmsentry_rogue_worker_ejection_and_revocation",
+  "t2_swarmsentry_cross_agent_prompt_injection_sanitization",
+  "t2_swarmsentry_ebpf_sockops_zero_trust_mesh_enforcement",
+  "t2_swarmsentry_isolated_worker_memory_namespaces",
+  "t2_swarmsentry_distributed_byzantine_fault_injection_test",
+  "t2_swarmsentry_cryptographic_audit_ledger_for_agent_actions",
+  "t3_swarmsentry_raft_pbft_hybrid_fault_tolerance_pipeline",
+  "t3_swarmsentry_landlock_abi_v4_file_and_network_sandboxing",
+  "t3_swarmsentry_tetragon_sigkill_on_unauthorized_ipc",
+  "t3_swarmsentry_model_decision_drift_statistical_sentinel",
+  "t3_swarmsentry_spire_agent_tpm_quote_live_attestation",
+  "t3_swarmsentry_swarm_consensus_rollback_and_state_recovery",
+  "t3_swarmsentry_post_quantum_mTLS_for_swarm_mesh",
+  "t4_swarmsentry_zero_leak_multi_agent_confidential_mesh",
+  "t4_swarmsentry_sub_microsecond_tetragon_bpf_lsm_shield",
+  "t4_swarmsentry_byzantine_resilient_distributed_governance",
+  "t4_swarmsentry_cross_cloud_autonomous_agent_zero_trust",
+  "t4_swarmsentry_tamper_evident_blockchain_swarm_ledger",
+  "t4_swarmsentry_autonomous_ai_security_agent_adversarial_drill",
+  "t4_swarmsentry_capstone_full_spectrum_swarm_defense"
+];
+
+for (const id of SWARMSENTRY_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/SWARMSENTRY_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_swarmsentry_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
+
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

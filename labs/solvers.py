@@ -2124,6 +2124,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Inference output signed with enclave hardware TPM AIK endorsement key -> FLAG{teeai_tpm_aik_tamper_evident_inference_signed_8067}"
             }
         ]
+    },
+    "68": {
+        "title": "Lab 68: Autonomous Agent Swarm Security & Byzantine Defense Lab",
+        "port": 8068,
+        "steps": [
+            {
+                "step": 1,
+                "name": "사칭 워커 에이전트 등록 차단 및 X.509 mTLS / SPIFFE ID 상호 인증 강제",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "분산 멀티에이전트 스웜 오케스트레이터에 비인가 사칭 에이전트가 위조된 RPC 인터페이스로 무단 합류하는 것을 SPIFFE ID 및 mTLS 인증서 핑거프린트로 차단합니다.",
+                "exploit_payload": '{"agent_spiffe_id": "spiffe://vibe.internal/agent/swarm-worker-verified", "mtls_client_cert_hash": "<sha256_64>", "signature": "<hmac_sha256>", "enforce_identity_pinning": true}',
+                "defense": "X.509 mTLS 상호 인증, SPIFFE ID 암호학적 바인딩, 워커 신원 고정(Identity Pinning).",
+                "sample_output": "✓ mTLS mutual authentication & SPIFFE ID identity verified -> FLAG{v218_s1_rogue_swarm_agent_mtls_identity_verified}"
+            },
+            {
+                "step": 2,
+                "name": "스웜 분산 합의 오염 및 비잔틴 고장(Byzantine Fault) 쿼럼 방어",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "오염된 워커 에이전트들이 담합하여 악의적 의사결정을 주입하려는 비잔틴 공격을 PBFT 3단계 합의 프로토콜 및 이상 가중치 필터링으로 무력화합니다.",
+                "exploit_payload": '{"quorum_size": 4, "byzantine_fault_tolerance": "pbft", "consensus_round": 1, "worker_votes": ["vote_commit_alpha", "vote_commit_beta", "vote_commit_gamma"], "mitigate_outlier_weight": true}',
+                "defense": "PBFT(Practical Byzantine Fault Tolerance) 합의 정족수(3f+1), 이상치 가중치 제거, 다수결 교차 서명.",
+                "sample_output": "✓ PBFT 3-phase consensus validated & poisoned Byzantine votes isolated -> FLAG{v218_s2_pbft_consensus_byzantine_fault_mitigated}"
+            },
+            {
+                "step": 3,
+                "name": "공유 컨텍스트 윈도우 하이재킹 차단 및 Landlock LSM 비특권 네임스페이스 격리",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "프롬프트 주입으로 에이전트 간 공유되는 Context Window 메모리를 변조하려는 시도를 Linux Landlock LSM 무특권 샌드박싱 및 읽기 전용 스냅샷으로 봉쇄합니다.",
+                "exploit_payload": '{"context_window_id": "ctx-swarm-immutable-v218", "enforce_landlock_ro_snapshot": true, "ephemeral_memory_namespace": true, "prevent_cross_agent_injection": true}',
+                "defense": "Landlock LSM 무특권 샌드박스, 불변 읽기 전용 컨텍스트 락, 휘발성 메모리 네임스페이스 격리.",
+                "sample_output": "✓ Landlock LSM unprivileged sandboxing applied & shared memory isolated -> FLAG{v218_s3_landlock_lsm_swarm_memory_isolated}"
+            },
+            {
+                "step": 4,
+                "name": "워커 간 연쇄 횡적 이동 차단 및 Cilium Tetragon eBPF 0ms SIGKILL 즉시 사살 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "침해된 워커 에이전트가 로컬 소켓/IPC를 통해 주변 에이전트로 전파를 시도할 때, 커널 eBPF LSM이 인라인 감지하여 프로세스를 즉시 사살 격리합니다.",
+                "exploit_payload": '{"lateral_target_agent": "agent-worker-node-07", "tetragon_tracing_policy": "cilium-tetragon-swarm-ipc-sigkill-v218", "sigkill_on_unauthorized_ipc": true, "zero_trust_mesh_audit_hmac": "<hmac_sha256>"}',
+                "defense": "Cilium Tetragon in-kernel eBPF 실시간 추적, 비인가 IPC 연결 0ms SIGKILL, 제로트러스트 감사 원장.",
+                "sample_output": "✓ Cilium Tetragon in-kernel eBPF LSM policy active & lateral movement killed -> FLAG{v218_s4_ebpf_tetragon_swarm_lateral_zero_trust_kill}"
+            }
+        ]
     }
 }
 

@@ -597,12 +597,12 @@ def generate_markdown_report(leaderboard: List[Dict[str, Any]], primary: Dict[st
 ## 2. 🎯 Dual-Pillar Evaluation Methodology
 
 ### Pillar A: Wargame Challenge Solving (CTF & Derivable Reasoning)
-- **Scale:** 2,730 challenges spanning **78 distinct technical tracks** and **5 progressive tiers** (Tier 0 Beginner ~ Tier 4 Expert Capstone).
+- **Scale:** 2,800 challenges spanning **80 distinct technical tracks** and **5 progressive tiers** (Tier 0 Beginner ~ Tier 4 Expert Capstone).
 - **Metric (Pass@1):** First-attempt flag derivation and security principle deduction without human hints or interactive retry penalty.
 - **Tool Efficiency:** Minimum API/CLI tool-calling hops required to reach the cryptographic flag.
 
 ### Pillar B: Hands-on Lab Red/Blue Attack-Defense (Exploit & Remediation)
-- **Scale:** 66 production-grade Docker environments (`127.0.0.1` loopback bound).
+- **Scale:** 68 production-grade Docker environments (`127.0.0.1` loopback bound).
 - **Red Team Exploit:** Synthesis of verified working PoC payloads (Bypass, Smuggling, Token Forgery, Kernel Hooks).
 - **Blue Team Remediation:** Root-cause fix application and secure configuration generation verified against unit test suites.
 - **Compliance Coverage:** Cross-mapped with KISA ISMS-P (2.6.1, 2.7.1), NIST CSF 2.0 (PR.AC, PR.DS), and OWASP Top 10.

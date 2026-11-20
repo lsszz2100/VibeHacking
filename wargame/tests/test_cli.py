@@ -26,8 +26,10 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 79
-    assert len(challenges) == 2765
+    assert len(tracks) == 80
+    assert len(challenges) == 2800
+    assert any(t["id"] == "swarmsentry" for t in tracks)
+    assert any(t["id"] == "teeai" for t in tracks)
     assert any(t["id"] == "aisbox" for t in tracks)
     assert any(t["id"] == "aimcp" for t in tracks)
     assert any(t["id"] == "autosec" for t in tracks)

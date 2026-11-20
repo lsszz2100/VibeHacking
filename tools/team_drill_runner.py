@@ -62,7 +62,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "화이트팀",
         "name_en": "White Team",
         "mission": "훈련 환경·범위·규칙 통제, 127.0.0.1 루프백 샌드박스 격리 통제, 킬스위치 즉시 가동",
-        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61"],
+        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68"],
         "tactics": ["Safety Bounds", "Isolation Enforcement", "Exercise Adjudication", "Audit Logging"],
         "tools": ["Docker Guard", "Landlock LSM", "Cgroup Confinement", "Port Sentinel"],
     },
@@ -203,6 +203,12 @@ BLUE_DETECTIONS: Dict[str, Dict[str, str]] = {
         "rule_id": "TEE-ENCLAVE-SNP-VCEK-6701",
         "action": "ATTESTATION_VALIDATE_AND_SEAL",
         "technique": "T1659 / Content Verification Process Bypass",
+    },
+    "68": {
+        "engine": "Cilium Tetragon eBPF LSM & PBFT Swarm Quorum Engine",
+        "rule_id": "SWARM-TETRAGON-PBFT-SIGKILL-6801",
+        "action": "INSTANT_SIGKILL_AND_QUORUM_QUARANTINE",
+        "technique": "T1190 / Exploit Public-Facing Application",
     },
 }
 

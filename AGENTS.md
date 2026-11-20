@@ -49,7 +49,7 @@
     39. `69_LLM_Security/08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md` (AI 에이전트 탈출 공격·Landlock LSM 비특권 샌드박스 & eBPF 듀얼 런타임 방어 심층 분석: 간접 프롬프트 주입 IPI, 도구 탈취 Confused Deputy, Linux 5.13+ Landlock LSM 무특권 자가 격리, Cilium Tetragon eBPF sys_enter_execve 0ms Sigkill 차단)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화 (26개 섹션 목차 테이블 코드 누출 전면 정제 완료)
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 64개 골든 실전 랩 완비** (`labs/01` ~ `labs/64`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 68개 골든 실전 랩 완비** (`labs/01` ~ `labs/68`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (포트: `8021`)
@@ -98,13 +98,15 @@
   - **Lab 64 (ContainerEscapeLsmLab)**: eBPF LSM 기반 컨테이너 탈출 방어 & 커널 런타임 보안 실전 랩 (포트: `8064`, `127.0.0.1` 루프백 격리, Stage 1: 비특권 User Namespace 매핑 권한 상승 vs `bpf_lsm_userns_create` 인커널 차단, Stage 2: cgroup v2 release_agent 탈출 vs `bpf_lsm_file_open` 의사파일계통 쓰기 봉쇄, Stage 3: runc 누출 파일 디스크립터 탈출 CVE-2024-21626 vs `bpf_lsm_file_receive` 디렉터리 경계 탈출 차단, Stage 4: 런타임 제로트러스트 eBPF 링버퍼 실시간 모니터링 & 즉시 사살 격리 4단계 구축)
   - **Lab 65 (PqcHybridTlsLab)**: 포스트 양자 하이브리드 TLS 1.3 & ML-KEM / ML-DSA 마이그레이션 랩 (포트: `8065`, `127.0.0.1` 루프백 격리, Stage 1: Harvest Now Decrypt Later(SNDL) 도청 위협 vs FIPS 203 ML-KEM-768 하이브리드 키 교환 `X25519_MLKEM768`, Stage 2: 고전 인증서 양자 위조 공격 vs FIPS 204 ML-DSA-65 & ECDSA P-384 복합 듀얼 서명 교차 검증, Stage 3: MITM 암호 스트리핑 다운그레이드 vs 엄격 TLS 1.3 안티 다운그레이드 카나리 검증, Stage 4: 다항식 환(Ring) NTT 부채널 타이밍 프로브 vs 몽고메리 축약 상수시간 NTT 및 1차 불리언 마스킹 메모리 4단계 구축)
   - **Lab 66 (AiSandboxEscapeSupplyChainLab)**: AI 에이전트 샌드박스 탈출 & 공급망 패키지 격리 방어 실전 랩 (포트: `8066`, `127.0.0.1` 루프백 격리, Stage 1: 악성 PyPI Typosquatting 공급망 패키지 주입 vs SHA-256 해시 락파일 & 무결성 오딧, Stage 2: sys.modules 오염 및 런타임 몽키패치 탈취 vs 런타임 무결성 가드 & 불변 모듈 봉쇄, Stage 3: Python ctype/ptrace 기반 샌드박스 탈출 메모리 오염 vs 엄격 Seccomp-BPF & Landlock LSM 프로세스 격리, Stage 4: 사이드채널 기반 외부 C2 데이터 유출 vs 제로 트러스트 egress 방화벽 & 감사 로깅 4단계 구축)
-- **브라우저 & 터미널 워게임**: **총 78개 트랙 / 2,730문제** 달성 (`wargame/index.html`, HUD `0/2730`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 78개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
+  - **Lab 67 (ConfidentialAiInferenceLab)**: 기밀 AI 추론 & 하드웨어 TEE 원격 증명/가중치 보호/캐시 부채널 방어 실전 랩 (포트: `8067`, `127.0.0.1` 루프백 격리, Stage 1: 비보호 호스트 메모리 내 평문 신경망 가중치 탈취 vs AES-256-GCM TEE 봉인 및 메모리 암호화, Stage 2: 가짜 원격 증명 보고서 위조 vs 하드웨어 기반 Quote/PCR 서명 및 EPID/ECDSA 암호 검증, Stage 3: Flush+Reload 캐시 타이밍 부채널 추론 토큰 스누핑 vs 불리언 마스킹 활성화 텐서 & 캐시 노이즈 지터링, Stage 4: 악성 가중치 변조 공급망 주입 vs hmac.compare_digest 상수 시간 해시 검증 & 불변 락 4단계 구축)
+  - **Lab 68 (AutonomousAgentSwarmLab)**: 자율 멀티에이전트 스웜 침투 협업 & 비잔틴 분산 방어 실전 랩 (포트: `8068`, `127.0.0.1` 루프백 격리, Stage 1: 사칭 워커 에이전트 무단 RPC 등록 시도 vs X.509 mTLS 및 SPIFFE ID 신원 고정 검증, Stage 2: 스웜 비잔틴 고장 가중치 투표 오염 vs PBFT 3단계 합의 쿼럼 및 이상치 격리, Stage 3: 프롬프트 주입을 통한 공유 컨텍스트 윈도우 메모리 탈취 vs Linux Landlock LSM 무특권 네임스페이스 격리 및 불변 읽기전용 락, Stage 4: 워커 간 로컬 IPC 연쇄 횡적 이동 전파 vs Cilium Tetragon eBPF sys_enter_connect 실시간 감지 및 0ms SIGKILL 즉시 사살 4단계 구축)
+- **브라우저 & 터미널 워게임**: **총 80개 트랙 / 2,800문제** 달성 (`wargame/index.html`, HUD `0/2800`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 80개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
   - **Web Audio API 8-bit 치프튠 사운드 FX 엔진**: 브라우저 사운드 합성 탑재
-  - **워게임 32대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, BGP 하이재킹 & RPKI, OAuth PKCE & Key Confusion, DB RBAC & UDF Shield, EDR 회피 & 메모리 패칭 인스펙터, AES-CBC Padding Oracle & Bit-Flipping Inspector, DFIR Live Triage & Memory Timeline Inspector, SBOM & Supply Chain Dependency Inspector, Serverless & FaaS Security Inspector, Cloud Incident Response & Athena CloudTrail Inspector, Browser Extension & DOM Security Inspector, Lattice KEM & PQC Inspector, Linux Kernel Hardening & Sandboxing Inspector, AI Agent & MCP Tool Hijacking Inspector, SANS DFIR & Supertimeline Inspector, eBPF Kernel Observability & Tetragon Inspector, C2 Malleable & Traffic Tunneling Inspector, AD Attack Graph Traversal & Cypher Inspector, AI Agent Sandbox & Landlock LSM Inspector, PQC Migration & Lattice KEM Inspector, eBPF Kernel Security & Runtime Threat Inspector, Anti-Reversing & Binary Protection Inspector, MicroVM & Hypervisor Escape Inspector, TEE Confidential Computing & Attestation Inspector, Zero Trust API Gateway & SPIFFE Inspector, AI Defense Agent Telemetry Sanitizer, eBPF LSM Sandbox Inspector, PQC Hybrid TLS Handshake Inspector
-  - **66~78번째 신규 트랙 완비**:
+  - **워게임 34대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, BGP 하이재킹 & RPKI, OAuth PKCE & Key Confusion, DB RBAC & UDF Shield, EDR 회피 & 메모리 패칭 인스펙터, AES-CBC Padding Oracle & Bit-Flipping Inspector, DFIR Live Triage & Memory Timeline Inspector, SBOM & Supply Chain Dependency Inspector, Serverless & FaaS Security Inspector, Cloud Incident Response & Athena CloudTrail Inspector, Browser Extension & DOM Security Inspector, Lattice KEM & PQC Inspector, Linux Kernel Hardening & Sandboxing Inspector, AI Agent & MCP Tool Hijacking Inspector, SANS DFIR & Supertimeline Inspector, eBPF Kernel Observability & Tetragon Inspector, C2 Malleable & Traffic Tunneling Inspector, AD Attack Graph Traversal & Cypher Inspector, AI Agent Sandbox & Landlock LSM Inspector, PQC Migration & Lattice KEM Inspector, eBPF Kernel Security & Runtime Threat Inspector, Anti-Reversing & Binary Protection Inspector, MicroVM & Hypervisor Escape Inspector, TEE Confidential Computing & Attestation Inspector, Zero Trust API Gateway & SPIFFE Inspector, AI Defense Agent Telemetry Sanitizer, eBPF LSM Sandbox Inspector, PQC Hybrid TLS Handshake Inspector, AI Sandbox Escape & Supply Chain Inspector, Confidential AI Inference & TEE Attestation Inspector, Autonomous Multi-Agent Swarm & Byzantine Defense Inspector
+  - **66~80번째 신규 트랙 완비**:
     - `adgraph` 🩸 AD BloodHound & 공격 그래프 (35개 문제: Tier 0~4)
     - `agentsandbox` 🤖 AI 에이전트 탈출 & Landlock 샌드박스 (35개 문제: Tier 0~4)
     - `pqcmigrate` ⚛️ PQC 양자 내성 암호 마이그레이션 & FIPS 203/204 (35개 문제: Tier 0~4)
@@ -120,21 +122,22 @@
     - `pqctls` ⚛️ 포스트 양자 하이브리드 TLS 1.3 & ML-KEM/ML-DSA (35개 문제: Tier 0~4)
     - `aisbox` 📦 AI 에이전트 샌드박스 탈출 & 공급망 보안 (35개 문제: Tier 0~4)
     - `teeai` 🛡️ 기밀 AI 추론 & 하드웨어 TEE 원격 증명 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (2,765제, 79트랙, 5티어), `audit.js --strict` (395/395행 0결함), `leakscan.js` (2,765문제 0유출), `solve-derivable.js` (1,767제 도출 통과)
+    - `swarmsentry` 🐝 자율 멀티에이전트 스웜 침투 & 비잔틴 분산 방어 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (2,800제, 80트랙, 5티어), `audit.js --strict` (400/400행 0결함), `leakscan.js` (2,800문제 0유출), `solve-derivable.js` (1,802제 도출 통과)
 - **AI 보안 에이전트 벤치마크 엔진 (`tools/agent_eval_bench.py`, `vhack bench-agent`, `vhack eval`)**:
   - autonomous AI 보안 에이전트(SuperSec, Claude, GPT, Gemini, 로컬 LLM)의 실전 보안 역량을 정량 평가하는 평가 하네스 완비
   - **2대 핵심 평가 축**:
-    1. **워게임 챌린지 풀이 (Pass@1)**: 2,765개 문제 대상 단일 턴 도출 정확도 및 도구 호출 횟수(Turn Efficiency) 측정
-    2. **67개 실습 랩 공방전 평가**: 레드팀 PoC 익스플로잇 합성 및 블루팀 근본 패치/조치 역량 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 제로 결함 인덱스 산출
+    1. **워게임 챌린지 풀이 (Pass@1)**: 2,800개 문제 대상 단일 턴 도출 정확도 및 도구 호출 횟수(Turn Efficiency) 측정
+    2. **68개 실습 랩 공방전 평가**: 레드팀 PoC 익스플로잇 합성 및 블루팀 근본 패치/조치 역량 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 제로 결함 인덱스 산출
   - **다중 모델 비교 리더보드**: `--compare` 옵션을 통한 모델별 순위표 자동 생성 (`reports/agent_eval_latest.json`, `reports/agent_eval_benchmark.md`)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(67개 랩 시작/중지/재시작), 16대 카테고리 필터링 탭 바(`zerotrust`, `confidential` 카테고리 연동) 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`, 정규식 기반 `is_dangerous_command` 파괴 명령어 차단 필터 탑재), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(68개 랩 시작/중지/재시작), 17대 카테고리 필터링 탭 바(`zerotrust`, `confidential`, `ai` 등 연동) 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 엔터프라이즈 KISA/NIST 원클릭 진단보고서 다중 포맷 다운로드 API, 자원 모니터링 (`vhack portal [--port 8800]`)
 - **보안 진단 보고서 생성기 (Report CLI)**:
-  - `tools/report_generator.py`, `vhack report`: 67개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
+  - `tools/report_generator.py`, `vhack report`: 68개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
-  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 67개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
+  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 68개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
 - **10대 보안 기술팀 공방전 엔진 (`tools/team_drill_runner.py`, `vhack drill`)**:
-  - Red vs Blue 시뮬레이션 및 Purple Team 종합 방어 점수(100.0/100) 산출, 10개 팀(Red, Blue, Purple, White, Yellow, Green, Orange, Gold, RE, Anti-RE) 및 67개 랩 통합 공방전 자동 훈련 및 `reports/team_drill_latest.json` 발간
+  - Red vs Blue 시뮬레이션 및 Purple Team 종합 방어 점수(100.0/100) 산출, 10개 팀 및 68개 랩 통합 공방전 자동 훈련 및 `reports/team_drill_latest.json` 발간
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
   - `ctf/server.py`, `ctf/tests/test_ctf.py`: 110개 랩 플래그 풀, 순차 해금 모드(Progressive Unlock) 지원, 팀 등록 정규식 검증(XSS 방어), `secrets.compare_digest` 시간차 분석 공격 방어, 전역 HTML 엔티티 이스케이프(`esc()`), 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프, 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
 - **오프라인 번들러 및 릴리스 배포 파이프라인 (Bundler & Release)**:

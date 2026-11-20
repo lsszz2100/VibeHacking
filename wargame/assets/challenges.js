@@ -694,6 +694,14 @@ const TRACKS = [
     "en": "Confidential AI & Hardware TEE Enclave Attestation",
     "desc_ko": "AMD SEV-SNP/Intel TDX 하드웨어 TEE 원격 증명·VCEK 인증서 체인 및 PCR0 무결성·엔클레이브 내 AES-256-XTS 가중치 복호화·Flush+Reload 캐시 타이밍 부채널 방어·TPM AIK 암호학적 서명.",
     "desc_en": "AMD SEV-SNP/Intel TDX hardware TEE remote attestation, VCEK certificate chain and PCR0 measurement integrity, in-enclave AES-256-XTS weight sealing, Flush+Reload cache timing side-channel mitigation, and TPM AIK cryptographic signatures."
+  },
+  {
+    "id": "swarmsentry",
+    "icon": "🐝",
+    "ko": "자율 멀티에이전트 스웜 침투 & 비잔틴 분산 방어",
+    "en": "Autonomous Multi-Agent Swarm Security & Byzantine Defense",
+    "desc_ko": "사칭 워커 에이전트 등록 차단·X.509 mTLS/SPIFFE ID 상호 인증·PBFT 비잔틴 합의 오염 방어·Landlock LSM 공유 메모리 격리·Cilium Tetragon eBPF 0ms SIGKILL 즉시 사살.",
+    "desc_en": "Rogue worker agent registration denial, X.509 mTLS/SPIFFE ID mutual authentication, PBFT Byzantine consensus defense, Landlock LSM shared memory isolation, and Cilium Tetragon eBPF 0ms SIGKILL containment."
   }
 ];
 
@@ -78102,6 +78110,916 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_teeai_capstone_full_spectrum_confidential_ai_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_swarm_architecture_threat_model",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "7abc219b5ca4ae9a17cb406c7c03fd9cc9dc3cd5770fef38d8687fa43ab85103",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 멀티에이전트 스웜 아키텍처와 위협 모델",
+      "en": "Autonomous Multi-Agent Swarm Architecture & Threat Model"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 자율 멀티에이전트 스웜 아키텍처와 위협 모델\n상세 분석 지침:\n- 분산 협업 멀티에이전트 시스템에서 오케스트레이터와 워커 간 신뢰 경계 및 위협 표면을 분석합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_swarm_architecture_threat_model`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Autonomous Multi-Agent Swarm Architecture & Threat Model\nAnalysis Requirements:\n- Analyze trust boundaries and threat surfaces between orchestrators and distributed worker agents in multi-agent swarms.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_swarm_architecture_threat_model`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_swarm_architecture_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_swarm_architecture_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_agent_identity_spoofing_vectors",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "06f191c8c1f0871e4e4d3ec43b4085cdca0fb429002dda12a59ffe5ab34b7efe",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "사칭 워커 에이전트와 위조된 RPC 등록 위협",
+      "en": "Rogue Worker Agent Spoofing & RPC Registration Vectors"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 사칭 워커 에이전트와 위조된 RPC 등록 위협\n상세 분석 지침:\n- 악의적 엔터티가 비인가 워커를 스웜 클러스터에 무단 등록하여 의사결정을 왜곡하는 공격 벡터를 학습합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_agent_identity_spoofing_vectors`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Rogue Worker Agent Spoofing & RPC Registration Vectors\nAnalysis Requirements:\n- Study rogue agent registration vectors where unauthenticated workers join the cluster to manipulate collective outputs.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_agent_identity_spoofing_vectors`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_agent_identity_spoofing_vectors` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_agent_identity_spoofing_vectors`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_byzantine_consensus_poisoning_theory",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "622b24cef8129a2684990f46035e00dc28632e5389aabecf3d7d9cb1bde03eb7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "분산 스웜 의사결정과 비잔틴 고장 모델",
+      "en": "Distributed Swarm Decision Quorums & Byzantine Fault Model"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 분산 스웜 의사결정과 비잔틴 고장 모델\n상세 분석 지침:\n- 일부 에이전트가 거짓 정보를 고의로 제출할 때 정족수(3f+1)를 유지하여 합의를 보호하는 비잔틴 내성 원리를 검토합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_byzantine_consensus_poisoning_theory`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Distributed Swarm Decision Quorums & Byzantine Fault Model\nAnalysis Requirements:\n- Examine Byzantine fault tolerance mechanisms ensuring swarm consensus despite malicious coordinated worker dissent.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_byzantine_consensus_poisoning_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_byzantine_consensus_poisoning_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_byzantine_consensus_poisoning_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_shared_context_window_memory_risks",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "c5bf502bdf7dbccd2c2a035567d0450407124bfed882ee2fbebe1682c4d4c284",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "공유 컨텍스트 윈도우 및 메모리 버퍼 오염 위험",
+      "en": "Shared Context Window & Swarm Memory Buffer Poisoning Risks"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 공유 컨텍스트 윈도우 및 메모리 버퍼 오염 위험\n상세 분석 지침:\n- 에이전트 간 공유되는 프롬프트 컨텍스트 윈도우 및 캐시 메모리가 오염될 때 발생하는 연쇄 오작동을 분석합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_shared_context_window_memory_risks`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Shared Context Window & Swarm Memory Buffer Poisoning Risks\nAnalysis Requirements:\n- Analyze cross-agent context contamination risks where malicious inputs into shared context windows alter swarm behavior.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_shared_context_window_memory_risks`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_shared_context_window_memory_risks` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_shared_context_window_memory_risks`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_cascading_lateral_movement_in_swarms",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "0c6734ec766ecb8f3645e8c9ec9de5b3c5de565c36794d6c6986625e47cc28f9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "워커 에이전트 간 연쇄 횡적 이동 위협 표면",
+      "en": "Cascading Lateral Movement Vectors Across Swarm Nodes"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 워커 에이전트 간 연쇄 횡적 이동 위협 표면\n상세 분석 지침:\n- 하나의 워커 에이전트 침해가 로컬 IPC 및 네트워크 메시를 통해 인접 노드로 연쇄 전파되는 경로를 분석합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_cascading_lateral_movement_in_swarms`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Cascading Lateral Movement Vectors Across Swarm Nodes\nAnalysis Requirements:\n- Examine propagation paths where compromise of a single worker cascades across local IPC and peer mesh networks.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_cascading_lateral_movement_in_swarms`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_cascading_lateral_movement_in_swarms` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_cascading_lateral_movement_in_swarms`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_spiffe_spire_workload_mesh_principles",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "9cbceaf716de8d6d1339685ff649ba9b91ecbf013f66853c24d49619ab134d6d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SPIFFE/SPIRE 기반 에이전트 워크로드 신원 증명 원리",
+      "en": "SPIFFE/SPIRE Workload Attestation Principles for Agents"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: SPIFFE/SPIRE 기반 에이전트 워크로드 신원 증명 원리\n상세 분석 지침:\n- 동적으로 스케일링되는 에이전트 프로세스에 암호학적 X.509 SVID를 자동 발급하는 제로트러스트 신원 체계를 학습합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_spiffe_spire_workload_mesh_principles`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: SPIFFE/SPIRE Workload Attestation Principles for Agents\nAnalysis Requirements:\n- Study automated X.509 SVID issuance and zero-trust workload attestation for ephemeral autonomous agent workers.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_spiffe_spire_workload_mesh_principles`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_spiffe_spire_workload_mesh_principles` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_spiffe_spire_workload_mesh_principles`."
+      ]
+    }
+  },
+  {
+    "id": "t0_swarmsentry_ebpf_lsm_swarm_runtime_containment",
+    "tier": 0,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 25,
+    "ci": false,
+    "hash": "c3681ed15b157ac7f6d2c25dc7ddcfb7f0cbe07c9e2fc0545cd631caeb2e0943",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM 기반 멀티에이전트 런타임 봉쇄 개요",
+      "en": "eBPF LSM Multi-Agent Runtime Containment Overview"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: eBPF LSM 기반 멀티에이전트 런타임 봉쇄 개요\n상세 분석 지침:\n- 커널 레벨에서 비인가 소켓 생성 및 IPC 통신을 실시간 인터셉트하여 사살하는 eBPF 인커널 격리 원리를 검토합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_ebpf_lsm_swarm_runtime_containment`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: eBPF LSM Multi-Agent Runtime Containment Overview\nAnalysis Requirements:\n- Review kernel-level eBPF interception mechanisms enforcing in-line termination of unauthorized inter-agent sockets.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t0_swarmsentry_ebpf_lsm_swarm_runtime_containment`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_swarmsentry_ebpf_lsm_swarm_runtime_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_swarmsentry_ebpf_lsm_swarm_runtime_containment`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_x509_mtls_worker_identity_verification",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "2bb0b6afc178af2ee79e60bc27c6ddd2bc0d101b53335e8e4cfa88ce1d348833",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "워커 에이전트 X.509 mTLS 상호 인증 및 인증서 핑거프린트 감사",
+      "en": "Worker Agent X.509 mTLS Mutual Authentication Audit"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 워커 에이전트 X.509 mTLS 상호 인증 및 인증서 핑거프린트 감사\n상세 분석 지침:\n- 스웜 오케스트레이터 연결 시 상호 TLS 핸드셰이크와 클라이언트 인증서 SHA-256 핑거프린트를 정밀 검증합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_x509_mtls_worker_identity_verification`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Worker Agent X.509 mTLS Mutual Authentication Audit\nAnalysis Requirements:\n- Audit mutual TLS handshakes and SHA-256 certificate fingerprints on all worker connections to the orchestrator.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_x509_mtls_worker_identity_verification`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_x509_mtls_worker_identity_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_x509_mtls_worker_identity_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_spiffe_id_jwt_svid_cryptographic_audit",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "ac80ec8dd1b6a2c655e9bfaa40e6cb5a8939fe29cece37cc605194a8a6f5fc2d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SPIFFE ID 및 JWT-SVID 암호학적 서명 유효성 검증",
+      "en": "SPIFFE ID & JWT-SVID Cryptographic Signature Validation"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: SPIFFE ID 및 JWT-SVID 암호학적 서명 유효성 검증\n상세 분석 지침:\n- 에이전트 RPC 페이로드에 동봉된 JWT-SVID 토큰의 OIDC 공개키 서명 및 만료 시간을 감사하여 위조 토큰을 차단합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_spiffe_id_jwt_svid_cryptographic_audit`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: SPIFFE ID & JWT-SVID Cryptographic Signature Validation\nAnalysis Requirements:\n- Validate JWT-SVID cryptographic signatures and expiration timestamps against the SPIRE OIDC keyset.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_spiffe_id_jwt_svid_cryptographic_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_spiffe_id_jwt_svid_cryptographic_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_spiffe_id_jwt_svid_cryptographic_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_byzantine_anomaly_weight_filtering",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "61a421a07b12256ad64648ea9e5814e1cf8df4f767aefe8117bd6a496b3893b1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "워커 에이전트 제출 가중치 이상치 탐지 및 초기 격리",
+      "en": "Worker Weight Anomaly Detection & Outlier Isolation"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 워커 에이전트 제출 가중치 이상치 탐지 및 초기 격리\n상세 분석 지침:\n- 스웜 합의 투표에서 표준 편차 3-시그마를 초과하는 비정상 가중치 벡터를 탐지하여 합의 집계에서 배제합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_byzantine_anomaly_weight_filtering`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Worker Weight Anomaly Detection & Outlier Isolation\nAnalysis Requirements:\n- Detect and quarantine statistical outlier votes exceeding 3-sigma variance in distributed consensus rounds.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_byzantine_anomaly_weight_filtering`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_byzantine_anomaly_weight_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_byzantine_anomaly_weight_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_unprivileged_landlock_context_snapshot",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "0a47a061f4eafb1897cc984fce0ec27e74cee7646f4defffc3f3a82ad799e2f9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Linux Landlock LSM을 통한 컨텍스트 읽기 전용 스냅샷 강제",
+      "en": "Unprivileged Landlock LSM Read-Only Snapshot Enforcement"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: Linux Landlock LSM을 통한 컨텍스트 읽기 전용 스냅샷 강제\n상세 분석 지침:\n- 루트 권한 없이도 프로세스 스스로 공유 메모리 및 컨텍스트 버퍼를 읽기 전용으로 고정하는 Landlock 정책을 적용합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_unprivileged_landlock_context_snapshot`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Unprivileged Landlock LSM Read-Only Snapshot Enforcement\nAnalysis Requirements:\n- Enforce unprivileged Landlock LSM rules locking shared context memory regions into immutable read-only states.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_unprivileged_landlock_context_snapshot`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_unprivileged_landlock_context_snapshot` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_unprivileged_landlock_context_snapshot`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_inter_agent_rpc_input_schema_validation",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "227bc03e4b164a2e54389314f04b76a0217f83cd9d50cd92e5f6d8409c32dd47",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "워커 간 RPC 메시지 입력 스키마 및 엄격 타입 검증",
+      "en": "Inter-Agent RPC Input Schema & Type Strictness Audit"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 워커 간 RPC 메시지 입력 스키마 및 엄격 타입 검증\n상세 분석 지침:\n- 에이전트 간 통신에 사용되는 JSON-RPC 페이로드의 Pydantic 스키마 무결성을 검증하여 오염 입력을 차단합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_inter_agent_rpc_input_schema_validation`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Inter-Agent RPC Input Schema & Type Strictness Audit\nAnalysis Requirements:\n- Enforce strict Pydantic schema validation on all inter-worker JSON-RPC payloads to reject malformed injections.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_inter_agent_rpc_input_schema_validation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_inter_agent_rpc_input_schema_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_inter_agent_rpc_input_schema_validation`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_cilium_tetragon_swarm_ipc_tracing",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "5f4ea01916365d150411637218cdde7038284eb6d0df71bd11a166e2eaa3234b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cilium Tetragon eBPF 시스템콜 추적 정책 수립",
+      "en": "Cilium Tetragon eBPF IPC Syscall Tracing Policy Setup"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: Cilium Tetragon eBPF 시스템콜 추적 정책 수립\n상세 분석 지침:\n- 에이전트 프로세스가 호출하는 sys_enter_connect 및 sys_enter_execve 이벤트를 실시간 로깅하는 정책을 구성합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_cilium_tetragon_swarm_ipc_tracing`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Cilium Tetragon eBPF IPC Syscall Tracing Policy Setup\nAnalysis Requirements:\n- Deploy Tetragon TracingPolicy catching sys_enter_connect and execve syscalls initiated by agent processes.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_cilium_tetragon_swarm_ipc_tracing`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_cilium_tetragon_swarm_ipc_tracing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_cilium_tetragon_swarm_ipc_tracing`."
+      ]
+    }
+  },
+  {
+    "id": "t1_swarmsentry_ephemeral_swarm_session_token_rotation",
+    "tier": 1,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 50,
+    "ci": false,
+    "hash": "51c018fcddce7a8f0a87dd20ad0d7bc88b6a6da26f49a95fc071f66c0455a8e7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "30초 단위 스웜 워커 기능 토큰 암호학적 회전",
+      "en": "30-Second Ephemeral Swarm Capability Token Rotation"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 30초 단위 스웜 워커 기능 토큰 암호학적 회전\n상세 분석 지침:\n- 워커 에이전트의 도구 실행 토큰 수명을 30초로 제한하고 HMAC 기반으로 자동 갱신하여 탈취 토큰의 재사용을 차단합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_ephemeral_swarm_session_token_rotation`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: 30-Second Ephemeral Swarm Capability Token Rotation\nAnalysis Requirements:\n- Rotate ephemeral worker tool capability tokens every 30 seconds via HMAC derivation to prevent token replay.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t1_swarmsentry_ephemeral_swarm_session_token_rotation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_swarmsentry_ephemeral_swarm_session_token_rotation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_swarmsentry_ephemeral_swarm_session_token_rotation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_pbft_three_phase_commit_verification",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "ef91b4f316447f6ec18455a4b544ffc727b8102b533e96f71dcb8a1f399d07ec",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PBFT Pre-Prepare/Prepare/Commit 3단계 합의 검증",
+      "en": "PBFT Three-Phase Commit Protocol Verification"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: PBFT Pre-Prepare/Prepare/Commit 3단계 합의 검증\n상세 분석 지침:\n- 스웜 리더의 제안(Pre-Prepare)과 워커들의 2/3 다수결 검증(Prepare/Commit) 상태 전이를 정밀 검증합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_pbft_three_phase_commit_verification`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: PBFT Three-Phase Commit Protocol Verification\nAnalysis Requirements:\n- Formally verify PBFT state transitions across Pre-Prepare, Prepare, and Commit phases requiring 2/3 quorum confirmation.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_pbft_three_phase_commit_verification`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_pbft_three_phase_commit_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_pbft_three_phase_commit_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_rogue_worker_ejection_and_revocation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "f9cc449264d288c32156e6d0db3b8ccf6713c9eb2168fffe963e90bbe8961145",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이상 행동 워커 에이전트 즉시 축출 및 인증서 폐기",
+      "en": "Rogue Worker Ejection & Certificate Revocation Pipeline"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 이상 행동 워커 에이전트 즉시 축출 및 인증서 폐기\n상세 분석 지침:\n- 비정상 응답을 반복하는 워커의 세션을 즉시 종료하고 클러스터 CRL에 등재하여 재접속을 차단합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_rogue_worker_ejection_and_revocation`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Rogue Worker Ejection & Certificate Revocation Pipeline\nAnalysis Requirements:\n- Automate instant session termination and CRL revocation for workers demonstrating malicious or anomalous voting.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_rogue_worker_ejection_and_revocation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_rogue_worker_ejection_and_revocation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_rogue_worker_ejection_and_revocation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_cross_agent_prompt_injection_sanitization",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "b8ed1f4719cb1d01d99760b48e1114db56d8a2c0633e2aca1bbe01160764618d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에이전트 간 메시지 전달 시 간접 프롬프트 주입 살균",
+      "en": "Cross-Agent Prompt Injection Dual-Pass Sanitization"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 에이전트 간 메시지 전달 시 간접 프롬프트 주입 살균\n상세 분석 지침:\n- 선행 에이전트의 출력이 후속 에이전트의 시스템 지시사항을 무력화하지 못하도록 가드레일 필터를 적용합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_cross_agent_prompt_injection_sanitization`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Cross-Agent Prompt Injection Dual-Pass Sanitization\nAnalysis Requirements:\n- Implement dual-pass sanitization stripping indirect injection payloads from upstream agent completions.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_cross_agent_prompt_injection_sanitization`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_cross_agent_prompt_injection_sanitization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_cross_agent_prompt_injection_sanitization`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_ebpf_sockops_zero_trust_mesh_enforcement",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "9339ebe1be89a415533366c82fa08f2a7e9691d72346751173db08045903c310",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF sockops 기반 소켓 레벨 제로 트러스트 메시 강제",
+      "en": "eBPF sockops Socket-Level Zero Trust Mesh Enforcement"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: eBPF sockops 기반 소켓 레벨 제로 트러스트 메시 강제\n상세 분석 지침:\n- 커널 소켓 계층에서 BPF sock_ops 프로그램을 실행하여 승인된 워커 간 포트 통신만을 허용합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_ebpf_sockops_zero_trust_mesh_enforcement`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: eBPF sockops Socket-Level Zero Trust Mesh Enforcement\nAnalysis Requirements:\n- Run kernel-level BPF sock_ops programs restricting TCP connections strictly to approved peer port pairs.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_ebpf_sockops_zero_trust_mesh_enforcement`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_ebpf_sockops_zero_trust_mesh_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_ebpf_sockops_zero_trust_mesh_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_isolated_worker_memory_namespaces",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "52f140e9bbc0ec6675c3f9eca3bd158d87b9d9c5ee64c4d7ac483f460d8763f2",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "개별 워커 에이전트 전용 휘발성 메모리 네임스페이스 분리",
+      "en": "Isolated Worker Volatile Memory Namespace Partitioning"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 개별 워커 에이전트 전용 휘발성 메모리 네임스페이스 분리\n상세 분석 지침:\n- 각 워커 에이전트가 다른 워커의 중간 추론 텐서나 API 토큰을 읽을 수 없도록 프로세스 네임스페이스를 분리합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_isolated_worker_memory_namespaces`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Isolated Worker Volatile Memory Namespace Partitioning\nAnalysis Requirements:\n- Partition Linux process and IPC namespaces ensuring workers cannot access peer memory buffers or token caches.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_isolated_worker_memory_namespaces`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_isolated_worker_memory_namespaces` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_isolated_worker_memory_namespaces`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_distributed_byzantine_fault_injection_test",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "4f3cc70bf1c2ae62bbed54f4fc495a0483ad63616e32c62e49c7d93312614e7e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비잔틴 고장 주입 시뮬레이션을 통한 쿼럼 안정성 검증",
+      "en": "Distributed Byzantine Fault Injection & Quorum Stability Test"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 비잔틴 고장 주입 시뮬레이션을 통한 쿼럼 안정성 검증\n상세 분석 지침:\n- f개의 악의적 노드가 임의의 거짓 투표를 제출하는 시나리오에서 스웜 전체의 합의 무결성을 스트레스 테스트합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_distributed_byzantine_fault_injection_test`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Distributed Byzantine Fault Injection & Quorum Stability Test\nAnalysis Requirements:\n- Stress-test swarm consensus stability under active Byzantine fault injection where f out of 3f+1 nodes act maliciously.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_distributed_byzantine_fault_injection_test`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_distributed_byzantine_fault_injection_test` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_distributed_byzantine_fault_injection_test`."
+      ]
+    }
+  },
+  {
+    "id": "t2_swarmsentry_cryptographic_audit_ledger_for_agent_actions",
+    "tier": 2,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 100,
+    "ci": false,
+    "hash": "187225fbcd336cbcb1fdc95dc886db274b5284829b55b6353899c4bf107eb9ca",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "스웜 에이전트 실행 내역 암호학적 감사 원장 기록",
+      "en": "Cryptographic Audit Ledger for Swarm Agent Executions"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 스웜 에이전트 실행 내역 암호학적 감사 원장 기록\n상세 분석 지침:\n- 모든 워커의 도구 호출 및 결정 내역을 해시 체인 머클 트리 구조로 직렬화하여 부인 방지를 보장합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_cryptographic_audit_ledger_for_agent_actions`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Cryptographic Audit Ledger for Swarm Agent Executions\nAnalysis Requirements:\n- Serialize agent tool invocations and voting outcomes into a cryptographic Merkle-hashed audit log for non-repudiation.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t2_swarmsentry_cryptographic_audit_ledger_for_agent_actions`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_swarmsentry_cryptographic_audit_ledger_for_agent_actions` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_swarmsentry_cryptographic_audit_ledger_for_agent_actions`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_raft_pbft_hybrid_fault_tolerance_pipeline",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "6c280adfb034a99298281062f48b385e2cda8a5dd92c84ec02a6e5d6eec34fc4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Raft/PBFT 하이브리드 고장 감내 합의 파이프라인",
+      "en": "Raft/PBFT Hybrid Fault-Tolerant Consensus Pipeline"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: Raft/PBFT 하이브리드 고장 감내 합의 파이프라인\n상세 분석 지침:\n- 고속 로그 복제(Raft)와 비잔틴 방어(PBFT)를 계층적으로 결합하여 처리량과 보안성을 동시에 확보합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_raft_pbft_hybrid_fault_tolerance_pipeline`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Raft/PBFT Hybrid Fault-Tolerant Consensus Pipeline\nAnalysis Requirements:\n- Architect a tiered consensus pipeline pairing Raft high-throughput log replication with PBFT Byzantine validation.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_raft_pbft_hybrid_fault_tolerance_pipeline`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_raft_pbft_hybrid_fault_tolerance_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_raft_pbft_hybrid_fault_tolerance_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_landlock_abi_v4_file_and_network_sandboxing",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "46b72cbb3025ea2d33f03e7ab6e2d7b49a1f8e384de4e7d45a46a3fe53476f57",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Landlock ABI v4 기반 파일 및 네트워크 소켓 샌드박싱",
+      "en": "Landlock ABI v4 File & Network Socket Sandboxing"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: Landlock ABI v4 기반 파일 및 네트워크 소켓 샌드박싱\n상세 분석 지침:\n- 최신 Linux 6.7+ Landlock ABI v4 규칙을 적용하여 파일시스템과 TCP 바인드/연결을 프로세스 레벨에서 완벽 격리합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_landlock_abi_v4_file_and_network_sandboxing`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Landlock ABI v4 File & Network Socket Sandboxing\nAnalysis Requirements:\n- Deploy Linux Landlock ABI v4 rules restricting filesystem write access and outbound TCP socket bindings.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_landlock_abi_v4_file_and_network_sandboxing`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_landlock_abi_v4_file_and_network_sandboxing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_landlock_abi_v4_file_and_network_sandboxing`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_tetragon_sigkill_on_unauthorized_ipc",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "9fd4b6057409ae0e61734b180b124e540835a786295a467ba20423c5a1ddffda",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비인가 워커 간 IPC 연결 시 Tetragon 0ms SIGKILL 즉시 사살",
+      "en": "Tetragon In-Kernel 0ms SIGKILL on Unauthorized IPC"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 비인가 워커 간 IPC 연결 시 Tetragon 0ms SIGKILL 즉시 사살\n상세 분석 지침:\n- 격리 정책을 우회하여 로컬 도메인 소켓 연결을 시도하는 프로세스를 Tetragon 인커널 액션으로 즉각 종료합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_tetragon_sigkill_on_unauthorized_ipc`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Tetragon In-Kernel 0ms SIGKILL on Unauthorized IPC\nAnalysis Requirements:\n- Configure in-kernel Tetragon actions delivering instantaneous SIGKILL upon unauthorized AF_UNIX socket connections.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_tetragon_sigkill_on_unauthorized_ipc`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_tetragon_sigkill_on_unauthorized_ipc` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_tetragon_sigkill_on_unauthorized_ipc`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_model_decision_drift_statistical_sentinel",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "413d4459ee3417b44b4f9733d2f95c2fcee23aed93858e52180b5bd63d516016",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다중 에이전트 추론 결과 통계적 드리프트 탐지 센티널",
+      "en": "Model Decision Drift Statistical Sentinel"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 다중 에이전트 추론 결과 통계적 드리프트 탐지 센티널\n상세 분석 지침:\n- 워커 에이전트들의 추론 편향 및 은닉된 탈옥 시도를 엔트로피와 코사인 유사도 분석으로 실시간 감시합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_model_decision_drift_statistical_sentinel`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Model Decision Drift Statistical Sentinel\nAnalysis Requirements:\n- Monitor entropy and cosine similarity distributions across agent completions to catch stealthy jailbreak drift.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_model_decision_drift_statistical_sentinel`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_model_decision_drift_statistical_sentinel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_model_decision_drift_statistical_sentinel`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_spire_agent_tpm_quote_live_attestation",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "2bb38f704b34daffdaaa60e23a94d9ef90561415181edf73d1ae0fe4f606f436",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "물리 TPM Quote 기반 SPIRE 에이전트 라이브 원격 증명",
+      "en": "Physical TPM Quote Live Remote Attestation for SPIRE"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 물리 TPM Quote 기반 SPIRE 에이전트 라이브 원격 증명\n상세 분석 지침:\n- 호스트 하드웨어 TPM 2.0 PCR 측정치를 SPIRE 서버에 제출하여 하드웨어 신뢰점 기반 SVID를 발급받습니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_spire_agent_tpm_quote_live_attestation`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Physical TPM Quote Live Remote Attestation for SPIRE\nAnalysis Requirements:\n- Submit hardware TPM 2.0 PCR quotes to SPIRE servers verifying physical node integrity prior to SVID issuance.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_spire_agent_tpm_quote_live_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_spire_agent_tpm_quote_live_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_spire_agent_tpm_quote_live_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_swarm_consensus_rollback_and_state_recovery",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "29a5b13f8837ac581851065b1113096014ef3b05d215be0e333f9c345769eaca",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "오염된 합의 상태의 암호학적 롤백 및 상태 복구",
+      "en": "Swarm Consensus Cryptographic Rollback & State Recovery"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 오염된 합의 상태의 암호학적 롤백 및 상태 복구\n상세 분석 지침:\n- 비잔틴 공격으로 오염된 스웜 상태를 마지막 검증된 암호학적 체크포인트로 안전하게 롤백하고 재합의를 유도합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_swarm_consensus_rollback_and_state_recovery`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Swarm Consensus Cryptographic Rollback & State Recovery\nAnalysis Requirements:\n- Execute state rollbacks to cryptographically signed checkpoints when consensus poisoning is detected post-facto.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_swarm_consensus_rollback_and_state_recovery`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_swarm_consensus_rollback_and_state_recovery` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_swarm_consensus_rollback_and_state_recovery`."
+      ]
+    }
+  },
+  {
+    "id": "t3_swarmsentry_post_quantum_mTLS_for_swarm_mesh",
+    "tier": 3,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 200,
+    "ci": false,
+    "hash": "388ddcafc75f272012824a354b2236256d9a90fc1e0748cdc82df997bda10d0e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ML-KEM-768 기반 양자 내성 하이브리드 스웜 mTLS 통신",
+      "en": "ML-KEM-768 Post-Quantum Hybrid mTLS for Swarm Mesh"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: ML-KEM-768 기반 양자 내성 하이브리드 스웜 mTLS 통신\n상세 분석 지침:\n- 에이전트 간 통신에 FIPS 203 ML-KEM-768 키 교환을 적용하여 미래의 양자 컴퓨터 도청 공격에 대비합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_post_quantum_mTLS_for_swarm_mesh`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: ML-KEM-768 Post-Quantum Hybrid mTLS for Swarm Mesh\nAnalysis Requirements:\n- Deploy FIPS 203 ML-KEM-768 post-quantum hybrid key exchange protecting inter-agent communication against harvest-now attacks.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t3_swarmsentry_post_quantum_mTLS_for_swarm_mesh`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_swarmsentry_post_quantum_mTLS_for_swarm_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_swarmsentry_post_quantum_mTLS_for_swarm_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_zero_leak_multi_agent_confidential_mesh",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "a3c8cd8c933bd53a7b13f97265b08d8229021e6498cd876b2de5354d9819a862",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "제로-릭 멀티에이전트 기밀 컴퓨팅 메시 아키텍처",
+      "en": "Zero-Leak Multi-Agent Confidential Computing Mesh"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 제로-릭 멀티에이전트 기밀 컴퓨팅 메시 아키텍처\n상세 분석 지침:\n- 모든 워커 에이전트가 개별 TEE 엔클레이브 내에서 구동되며 엔드투엔드 암호화된 메시로만 협업하는 설계를 완성합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_zero_leak_multi_agent_confidential_mesh`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Zero-Leak Multi-Agent Confidential Computing Mesh\nAnalysis Requirements:\n- Engineer an end-to-end confidential mesh where every swarm agent executes inside dedicated hardware TEE enclaves.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_zero_leak_multi_agent_confidential_mesh`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_zero_leak_multi_agent_confidential_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_zero_leak_multi_agent_confidential_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_sub_microsecond_tetragon_bpf_lsm_shield",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "5a7fe6838da2ede8199ca6d12c274bd464d23d9016402dda2075513ea4324704",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "서브마이크로초 Tetragon BPF-LSM 커널 방어 쉴드",
+      "en": "Sub-Microsecond Tetragon BPF-LSM Kernel Defense Shield"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 서브마이크로초 Tetragon BPF-LSM 커널 방어 쉴드\n상세 분석 지침:\n- 커널 레벨 BPF-LSM 훅을 활용하여 비인가 에이전트 프로세스 생성을 서브마이크로초 단위로 사전 차단합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_sub_microsecond_tetragon_bpf_lsm_shield`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Sub-Microsecond Tetragon BPF-LSM Kernel Defense Shield\nAnalysis Requirements:\n- Enforce sub-microsecond pre-execution blocking of unvetted agent binaries via kernel-level BPF-LSM hooks.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_sub_microsecond_tetragon_bpf_lsm_shield`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_sub_microsecond_tetragon_bpf_lsm_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_sub_microsecond_tetragon_bpf_lsm_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_byzantine_resilient_distributed_governance",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "2c4610b2f37ca162e932d5853d9643834d4ef0a607ad5645092bbc304aaca8e0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "100 노드 규모 분산 비잔틴 내성 합의 거버넌스",
+      "en": "100-Node Byzantine-Resilient Distributed Swarm Governance"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 100 노드 규모 분산 비잔틴 내성 합의 거버넌스\n상세 분석 지침:\n- 100개 이상의 자율 에이전트가 참여하는 대규모 클러스터에서 33%의 악의적 노드 공격을 방어하는 거버넌스를 구축합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_byzantine_resilient_distributed_governance`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: 100-Node Byzantine-Resilient Distributed Swarm Governance\nAnalysis Requirements:\n- Deploy resilient consensus governance maintaining 99.99% decision integrity across 100+ distributed worker nodes.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_byzantine_resilient_distributed_governance`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_byzantine_resilient_distributed_governance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_byzantine_resilient_distributed_governance`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_cross_cloud_autonomous_agent_zero_trust",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "7f5a311f3fa74fa3f3d270f1374323a8e3febbfee072031e1c3dcf7958fa6967",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티클라우드 자율 에이전트 스웜 제로 트러스트 연계",
+      "en": "Cross-Cloud Autonomous Agent Swarm Zero Trust Federation"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 멀티클라우드 자율 에이전트 스웜 제로 트러스트 연계\n상세 분석 지침:\n- AWS, GCP, 온프레미스에 분산된 에이전트 클러스터 간 신원을 SPIFFE Federation과 mTLS로 통합 관리합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_cross_cloud_autonomous_agent_zero_trust`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Cross-Cloud Autonomous Agent Swarm Zero Trust Federation\nAnalysis Requirements:\n- Federate multi-cloud agent swarms across AWS, GCP, and on-premises using SPIFFE multi-trust domain federation.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_cross_cloud_autonomous_agent_zero_trust`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_cross_cloud_autonomous_agent_zero_trust` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_cross_cloud_autonomous_agent_zero_trust`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_tamper_evident_blockchain_swarm_ledger",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "fc9300f0c7e99272833f43184af3482f0b1237789485c1ec311a2297c37eb66d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "변조 방지 블록체인 기반 스웜 의사결정 원장",
+      "en": "Tamper-Evident Blockchain Swarm Decision Ledger"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 변조 방지 블록체인 기반 스웜 의사결정 원장\n상세 분석 지침:\n- 스웜이 내린 주요 보안 의사결정을 분산 불변 원장에 실시간 기록하여 사후 포렌식 및 무결성을 완벽 보장합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_tamper_evident_blockchain_swarm_ledger`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Tamper-Evident Blockchain Swarm Decision Ledger\nAnalysis Requirements:\n- Anchor critical swarm orchestrator policy updates and worker outputs into an immutable distributed ledger.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_tamper_evident_blockchain_swarm_ledger`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_tamper_evident_blockchain_swarm_ledger` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_tamper_evident_blockchain_swarm_ledger`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_autonomous_ai_security_agent_adversarial_drill",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "8d0775d7b3e0d45574db0b274af87c15593dd2a356c487034958b0862e096856",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 AI 보안 에이전트 간 적대적 공방전 훈련",
+      "en": "Autonomous AI Security Agent Adversarial Drill"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 자율 AI 보안 에이전트 간 적대적 공방전 훈련\n상세 분석 지침:\n- 공격 에이전트 스웜(Red Swarm)과 방어 에이전트 스웜(Blue Swarm)이 자율적으로 공방전을 수행하는 모의 훈련을 집행합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_autonomous_ai_security_agent_adversarial_drill`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Autonomous AI Security Agent Adversarial Drill\nAnalysis Requirements:\n- Execute autonomous multi-agent cyber battle drills pitting autonomous red swarms against blue defense swarms.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_autonomous_ai_security_agent_adversarial_drill`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_autonomous_ai_security_agent_adversarial_drill` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_autonomous_ai_security_agent_adversarial_drill`."
+      ]
+    }
+  },
+  {
+    "id": "t4_swarmsentry_capstone_full_spectrum_swarm_defense",
+    "tier": 4,
+    "cat": "ai",
+    "track": "swarmsentry",
+    "points": 400,
+    "ci": false,
+    "hash": "540bcce49af9f1076886289bb4f7a6b9ecd4bd7f6a17d7569bf222434df50836",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "80개 트랙 통합 자율 에이전트 스웜 방어 캡스톤",
+      "en": "Capstone: Full-Spectrum Autonomous Swarm Defense"
+    },
+    "prompt": {
+      "ko": "분산 자율 에이전트 스웜 및 비잔틴 고장 방어 실무를 수행합니다.\n\n주제: 80개 트랙 통합 자율 에이전트 스웜 방어 캡스톤\n상세 분석 지침:\n- 신원 인증, 비잔틴 합의, Landlock 메모리 격리, eBPF 사살, TEE 기밀 연계를 총망라한 엔터프라이즈 스웜 방어를 완성합니다.\n- 스웜 오케스트레이터 및 워커 에이전트의 신원과 권한을 정밀 감사하십시오.\n- 검증 식별자 SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_capstone_full_spectrum_swarm_defense`\n- 보안 정책 및 합의 쿼럼을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous agent swarm and Byzantine defense.\n\nTopic: Capstone: Full-Spectrum Autonomous Swarm Defense\nAnalysis Requirements:\n- Synthesize mTLS identity, PBFT consensus, Landlock isolation, eBPF Tetragon containment, and TEE mesh defense.\n- Thoroughly audit identity, memory, and consensus controls across the swarm.\n- Verification Identifier SWARMSENTRY_CHALLENGE_ID: `t4_swarmsentry_capstone_full_spectrum_swarm_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_swarmsentry_capstone_full_spectrum_swarm_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_swarmsentry_capstone_full_spectrum_swarm_defense`."
       ]
     }
   }

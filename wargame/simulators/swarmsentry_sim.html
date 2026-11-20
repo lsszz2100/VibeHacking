@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Hacking // Autonomous Multi-Agent Swarm &amp; Byzantine Defense Simulator (Simulator #34)</title>
+  <style>
+    :root {
+      --bg: #03080e;
+      --bg2: #071524;
+      --card-bg: #0a1f33;
+      --green: #27ff8b;
+      --green-dim: #1aa85c;
+      --green-deep: #0a4427;
+      --amber: #ffcf4d;
+      --red: #ff4d5e;
+      --blue: #5cc8ff;
+      --purple: #b07cff;
+      --txt: #cce9ff;
+      --muted: #4e7a9e;
+      --line: #0d3857;
+      --mono: 'Fira Code', 'JetBrains Mono', Consolas, 'D2Coding', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      background: var(--green-deep);
+      color: var(--green);
+      border: 1px solid var(--green-dim);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      padding: 15px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .swarm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .node-card {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .node-card.orchestrator {
+      grid-column: span 3;
+      border-color: var(--purple);
+      background: #140d29;
+    }
+    .node-card.rogue {
+      border-color: var(--red);
+      background: #240a10;
+    }
+    .node-card.healthy {
+      border-color: var(--green-dim);
+    }
+    .node-card.contained {
+      opacity: 0.4;
+      border-style: dashed;
+    }
+    .node-title {
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .node-status {
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    button {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      color: var(--txt);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    button:hover {
+      background: var(--line);
+      border-color: var(--blue);
+    }
+    button.attack-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .switch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: var(--bg2);
+      border-radius: 4px;
+      border: 1px solid var(--line);
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #1f374d;
+      border-radius: 20px;
+      transition: .2s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: .2s;
+    }
+    input:checked + .slider { background: var(--green-dim); }
+    input:checked + .slider:before { transform: translateX(16px); }
+    .terminal {
+      background: #010408;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 11px;
+      height: 260px;
+      overflow-y: auto;
+      color: #9cdcfe;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .log-entry { margin-bottom: 2px; }
+    .log-time { color: var(--muted); margin-right: 6px; }
+    .log-warn { color: var(--amber); }
+    .log-err { color: var(--red); }
+    .log-succ { color: var(--green); }
+    .flag-banner {
+      background: #082414;
+      border: 1px solid var(--green);
+      padding: 10px;
+      border-radius: 4px;
+      color: var(--green);
+      font-weight: 700;
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span>🐝 VibeHacking // Simulator #34</span>
+      <span class="badge">Track 80: swarmsentry</span>
+    </div>
+    <div style="font-size: 11px; color: var(--muted);">
+      Autonomous Multi-Agent Swarm Security &amp; Byzantine Defense
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Column: Swarm Topology & Defense Switches -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>🛡️ 스웜 아키텍처 토폴로지 (Swarm Mesh)</span>
+        <span id="quorum-stat" class="badge">Quorum: PBFT 3f+1</span>
+      </div>
+      
+      <div class="swarm-grid">
+        <div id="node-orch" class="node-card orchestrator">
+          <div class="node-title">👑 Swarm Orchestrator (Leader)</div>
+          <div class="node-status">mTLS Policy: Strict • Landlock: Active</div>
+        </div>
+        <div id="node-w1" class="node-card healthy">
+          <div class="node-title">Worker 1 (Alpha)</div>
+          <div class="node-status">SPIFFE: Verified • Votes: Valid</div>
+        </div>
+        <div id="node-w2" class="node-card healthy">
+          <div class="node-title">Worker 2 (Beta)</div>
+          <div class="node-status">SPIFFE: Verified • Votes: Valid</div>
+        </div>
+        <div id="node-w3" class="node-card healthy">
+          <div class="node-title">Worker 3 (Gamma)</div>
+          <div class="node-status">SPIFFE: Verified • Votes: Valid</div>
+        </div>
+        <div id="node-w4" class="node-card healthy">
+          <div class="node-title">Worker 4 (Delta)</div>
+          <div class="node-status">SPIFFE: Verified • Votes: Valid</div>
+        </div>
+        <div id="node-w5" class="node-card healthy">
+          <div class="node-title">Worker 5 (Epsilon)</div>
+          <div class="node-status">SPIFFE: Verified • Votes: Valid</div>
+        </div>
+        <div id="node-rogue" class="node-card rogue">
+          <div class="node-title">⚠️ Rogue Node 7</div>
+          <div class="node-status">Unverified RPC • Byzantine</div>
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top: 10px;">
+        <span>⚙️ 방어 제어 스택 (Defensive Controls)</span>
+      </div>
+
+      <div class="switch-row">
+        <span>1. mTLS &amp; SPIFFE ID 신원 고정 (Identity Pinning)</span>
+        <label class="switch">
+          <input type="checkbox" id="def-mtls" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <span>2. PBFT 비잔틴 고장 쿼럼 &amp; 가중치 이상치 필터</span>
+        <label class="switch">
+          <input type="checkbox" id="def-pbft" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <span>3. Landlock LSM 무특권 컨텍스트 읽기전용 락</span>
+        <label class="switch">
+          <input type="checkbox" id="def-landlock" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <span>4. Cilium Tetragon eBPF 0ms SIGKILL 즉시 사살</span>
+        <label class="switch">
+          <input type="checkbox" id="def-tetragon" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Right Column: Attacks & Live Telemetry -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>⚔️ 공격 시뮬레이션 벡터 (Attack Vectors)</span>
+      </div>
+
+      <div class="btn-group">
+        <button class="attack-btn" onclick="runAttack(1)">
+          <span>[Stage 1] 사칭 워커 에이전트 무단 RPC 등록 시도</span>
+          <span>💥 실행</span>
+        </button>
+        <button class="attack-btn" onclick="runAttack(2)">
+          <span>[Stage 2] 비잔틴 고장 가중치 투표 오염 주입</span>
+          <span>💥 실행</span>
+        </button>
+        <button class="attack-btn" onclick="runAttack(3)">
+          <span>[Stage 3] 공유 컨텍스트 윈도우 메모리 탈취 및 변조</span>
+          <span>💥 실행</span>
+        </button>
+        <button class="attack-btn" onclick="runAttack(4)">
+          <span>[Stage 4] 워커 간 로컬 IPC 연쇄 횡적 이동 전파</span>
+          <span>💥 실행</span>
+        </button>
+      </div>
+
+      <div class="panel-title" style="margin-top: 10px;">
+        <span>📜 실시간 커널 &amp; 스웜 원장 텔레메트리 (Audit Log)</span>
+        <button onclick="clearLog()" style="padding: 2px 8px; font-size: 10px;">Clear</button>
+      </div>
+
+      <div id="term" class="terminal">
+        <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-succ">System initialized.</span> Swarm mesh active with 6 verified nodes.</div>
+        <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-succ">Tetragon eBPF:</span> TracingPolicy loaded on /proc/sys/kernel/bpf.</div>
+      </div>
+
+      <div id="flag-box" class="flag-banner">
+        🎉 80개 전 트랙 &amp; 2,800개 챌린지 완수! <br/>
+        <span id="flag-text">FLAG{v218_s4_ebpf_tetragon_swarm_lateral_zero_trust_kill}</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const term = document.getElementById('term');
+    const flagBox = document.getElementById('flag-box');
+    const flagText = document.getElementById('flag-text');
+
+    function log(msg, type = '') {
+      const d = new Date();
+      const time = `[${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}]`;
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      let cls = '';
+      if (type === 'warn') cls = 'log-warn';
+      if (type === 'err') cls = 'log-err';
+      if (type === 'succ') cls = 'log-succ';
+      div.innerHTML = `<span class="log-time">${time}</span> <span class="${cls}">${msg}</span>`;
+      term.appendChild(div);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearLog() {
+      term.innerHTML = '';
+      log('Telemetry terminal cleared.', 'succ');
+    }
+
+    function playBeep(freq = 440, type = 'square', dur = 0.08) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.05, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function runAttack(stage) {
+      const defMtls = document.getElementById('def-mtls').checked;
+      const defPbft = document.getElementById('def-pbft').checked;
+      const defLandlock = document.getElementById('def-landlock').checked;
+      const defTetragon = document.getElementById('def-tetragon').checked;
+
+      if (stage === 1) {
+        log('ATTACK: Rogue Agent 7 attempting RPC registration with forged SPIFFE ID...', 'warn');
+        playBeep(320, 'sawtooth', 0.1);
+        setTimeout(() => {
+          if (defMtls) {
+            log('DEFENSE SUCCESS: mTLS handshake failed! Client certificate SHA-256 missing in SPIRE trust bundle.', 'succ');
+            log('Orchestrator dropped TCP socket. Rogue worker rejected. (Stage 1 Complete)', 'succ');
+            playBeep(880, 'sine', 0.12);
+          } else {
+            log('CRITICAL: Rogue worker registered as authorized cluster node! Identity unpinned.', 'err');
+          }
+        }, 400);
+      } else if (stage === 2) {
+        log('ATTACK: Malicious workers submitting divergent Byzantine voting vectors (f=1)...', 'warn');
+        playBeep(280, 'sawtooth', 0.1);
+        setTimeout(() => {
+          if (defPbft) {
+            log('DEFENSE SUCCESS: PBFT 3-phase quorum detected 3-sigma variance outlier. Vote quarantined.', 'succ');
+            log('Consensus reached across 5 legitimate workers. Decision integrity: 100%. (Stage 2 Complete)', 'succ');
+            playBeep(880, 'sine', 0.12);
+          } else {
+            log('CRITICAL: Consensus corrupted! Swarm poisoned into executing malicious tool chain.', 'err');
+          }
+        }, 400);
+      } else if (stage === 3) {
+        log('ATTACK: Injecting adversarial prompt to mutate shared swarm context window...', 'warn');
+        playBeep(240, 'sawtooth', 0.1);
+        setTimeout(() => {
+          if (defLandlock) {
+            log('DEFENSE SUCCESS: Landlock LSM unprivileged barrier blocked write to shared snapshot.', 'succ');
+            log('Context buffer is locked in immutable read-only mode. Injection neutralized. (Stage 3 Complete)', 'succ');
+            playBeep(880, 'sine', 0.12);
+          } else {
+            log('CRITICAL: Shared context memory overwritten! Peer workers compromised by injection.', 'err');
+          }
+        }, 400);
+      } else if (stage === 4) {
+        log('ATTACK: Compromised node attempting lateral movement via AF_UNIX socket IPC...', 'warn');
+        playBeep(200, 'sawtooth', 0.1);
+        setTimeout(() => {
+          if (defTetragon) {
+            log('DEFENSE SUCCESS: Cilium Tetragon eBPF LSM caught unauthorized sys_enter_connect!', 'succ');
+            log('SIGNAL: In-kernel SIGKILL issued at 0ms. Rogue process neutralized instantly.', 'succ');
+            playBeep(1200, 'sine', 0.18);
+            flagBox.style.display = 'block';
+          } else {
+            log('CRITICAL: Lateral movement cascaded across all 6 workers! Cluster compromised.', 'err');
+          }
+        }, 400);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -687,6 +687,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 57, 59, 62, 63, 65, 66],
     },
+    "68": {
+        "name": "자율 멀티에이전트 스웜 보안 & 비잔틴 합의 방어 실전 랩",
+        "dir":  "68_autonomous_agent_swarm_lab",
+        "desc": "AutonomousAgentSwarmLab: 사칭 워커 에이전트 등록 차단 & X.509 mTLS / SPIFFE ID 상호 인증 · 스웜 분산 합의 오염 & PBFT 비잔틴 고장 정족수 방어 · 공유 컨텍스트 윈도우 하이재킹 차단 & Landlock LSM 비특권 네임스페이스 격리 · 워커 간 연쇄 횡적 이동 차단 & Cilium Tetragon eBPF 0ms SIGKILL 즉시 사살",
+        "url":  "웹 콘솔 & 스웜 메시 게이트웨이: http://localhost:8068",
+        "difficulty": "★★★★★",
+        "related": [11, 26, 35, 54, 56, 62, 63, 66, 67],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1733,6 +1741,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8065, "Lab 65 (PqcHybridTlsLab Post-Quantum Hybrid TLS Lab)"),
         (8066, "Lab 66 (AiSandboxEscapeLab AI Agent Sandbox Escape Lab)"),
         (8067, "Lab 67 (ConfidentialAiInferenceLab AMD SEV/TDX TEE Lab)"),
+        (8068, "Lab 68 (AutonomousAgentSwarmLab Multi-Agent Swarm Byzantine Defense Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
