@@ -6,7 +6,7 @@
 
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
-- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH, 총 490개 챕터)
+- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH, 총 492개 챕터)
   - **37대 심층 인제스천 챕터 완비**:
     1. `02_Network_Hacking/07_practical_packet_analysis_deepdive.md` (Wireshark 심층 해부, 패킷 분석, DNS 터널링, TLS 복호화)
     2. `06_Malware_Analysis/08_advanced_pdf_maldoc_structure_analysis_deepdive.md` (PDF 바이너리 객체, OLE/CFBF 매크로, CVE-2017-11882, CVE-2021-40444, 힙 스프레이)
@@ -119,19 +119,20 @@
     - `lsmsec` 🛡️ eBPF LSM 컨테이너 탈출 & 런타임 제로트러스트 (35개 문제: Tier 0~4)
     - `pqctls` ⚛️ 포스트 양자 하이브리드 TLS 1.3 & ML-KEM/ML-DSA (35개 문제: Tier 0~4)
     - `aisbox` 📦 AI 에이전트 샌드박스 탈출 & 공급망 보안 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (2,730제, 78트랙, 5티어), `audit.js --strict` (390/390행 0결함), `leakscan.js` (2,730문제 0유출), `solve-derivable.js` (1,732제 도출 통과)
+    - `teeai` 🛡️ 기밀 AI 추론 & 하드웨어 TEE 원격 증명 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (2,765제, 79트랙, 5티어), `audit.js --strict` (395/395행 0결함), `leakscan.js` (2,765문제 0유출), `solve-derivable.js` (1,767제 도출 통과)
 - **AI 보안 에이전트 벤치마크 엔진 (`tools/agent_eval_bench.py`, `vhack bench-agent`, `vhack eval`)**:
   - autonomous AI 보안 에이전트(SuperSec, Claude, GPT, Gemini, 로컬 LLM)의 실전 보안 역량을 정량 평가하는 평가 하네스 완비
   - **2대 핵심 평가 축**:
-    1. **워게임 챌린지 풀이 (Pass@1)**: 2,730개 문제 대상 단일 턴 도출 정확도 및 도구 호출 횟수(Turn Efficiency) 측정
-    2. **66개 실습 랩 공방전 평가**: 레드팀 PoC 익스플로잇 합성 및 블루팀 근본 패치/조치 역량 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 제로 결함 인덱스 산출
+    1. **워게임 챌린지 풀이 (Pass@1)**: 2,765개 문제 대상 단일 턴 도출 정확도 및 도구 호출 횟수(Turn Efficiency) 측정
+    2. **67개 실습 랩 공방전 평가**: 레드팀 PoC 익스플로잇 합성 및 블루팀 근본 패치/조치 역량 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 제로 결함 인덱스 산출
   - **다중 모델 비교 리더보드**: `--compare` 옵션을 통한 모델별 순위표 자동 생성 (`reports/agent_eval_latest.json`, `reports/agent_eval_benchmark.md`)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(66개 랩 시작/중지/재시작), 16대 카테고리 필터링 탭 바(`zerotrust` 카테고리 연동) 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`, 정규식 기반 `is_dangerous_command` 파괴 명령어 차단 필터 탑재), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(67개 랩 시작/중지/재시작), 16대 카테고리 필터링 탭 바(`zerotrust`, `confidential` 카테고리 연동) 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`, 정규식 기반 `is_dangerous_command` 파괴 명령어 차단 필터 탑재), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
 - **보안 진단 보고서 생성기 (Report CLI)**:
-  - `tools/report_generator.py`, `vhack report`: 66개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
+  - `tools/report_generator.py`, `vhack report`: 67개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
-  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 66개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
+  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 67개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
 - **10대 보안 기술팀 공방전 엔진 (`tools/team_drill_runner.py`, `vhack drill`)**:
   - Red vs Blue 시뮬레이션 및 Purple Team 종합 방어 점수(100.0/100) 산출, 10개 팀(Red, Blue, Purple, White, Yellow, Green, Orange, Gold, RE, Anti-RE) 및 67개 랩 통합 공방전 자동 훈련 및 `reports/team_drill_latest.json` 발간
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
