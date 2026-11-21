@@ -1,9 +1,9 @@
-# Product Hunt Launch Package: VibeHacking v2.23.0
+# Product Hunt Launch Package: VibeHacking v2.24.0
 
 ## 1. Product Metadata
 
 - **Product Name**: VibeHacking
-- **Tagline**: Open-source cybersecurity bible & 2,975-challenge browser wargame + AI Security Agent Bench
+- **Tagline**: Open-source cybersecurity bible & 3,010-challenge browser wargame + AI Security Agent Bench
 - **Target URL**: [https://lsszz2100.github.io/VibeHacking/](https://lsszz2100.github.io/VibeHacking/)
 - **Repository URL**: [https://github.com/lsszz2100/VibeHacking](https://github.com/lsszz2100/VibeHacking)
 - **License**: MIT License (100% Free & Open Source)
@@ -21,7 +21,7 @@ VibeHacking is an all-in-one open-source offensive & defensive cybersecurity mas
    Comprehensive coverage spanning binary exploitation, reverse engineering, kernel exploitation, EDR telemetry bypass, cloud/Kubernetes security, quantum-resistant cryptography (PQC), confidential computing (TEE), and autonomous AI agent red teaming (492 complete chapters across KO, EN, JA, ZH).
 2. **73 Reproducible Docker Labs**:
    Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 70: Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense Lab** (`127.0.0.1:8070`), **Lab 71: Hardware GPU Sidechannel & VRAM Isolation Defense Lab** (`127.0.0.1:8071`), **Lab 72: AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense Lab** (`127.0.0.1:8072`), and **Lab 73: Silicon Photonics Optical Interconnect & QKD Quantum Mesh Defense Lab** (`127.0.0.1:8073`).
-3. **In-Browser Terminal Wargame (85 Tracks, 2,975 Challenges)**:
+3. **In-Browser Terminal Wargame (86 Tracks, 3,010 Challenges)**:
    A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 39 interactive visual architecture simulators.
 4. **AI Security Agent Benchmark Leaderboard**:
    An automated evaluation engine measuring autonomous AI cybersecurity agents on Pass@1 exploit generation, tool safety, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0 standards.
@@ -36,8 +36,8 @@ Hey Product Hunt community! 👋
 We built VibeHacking to solve a major pain point in cybersecurity training: the high friction of massive virtual machines, broken dependencies, paywalled platforms, and disconnected theoretical guides.
 
 With VibeHacking, anyone can open a web browser and immediately interact with:
-• 2,975 progressive hacking challenges across 85 specialized tracks
-• 39 interactive simulators (Silicon Photonics QKD Mesh, AI Agent Memory Poisoning Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Autonomous Multi-Agent Swarm, Confidential AI Inference, SafeTensors Neural Weight Steganography, ZTNA API, BGP Hijacking, PQC Lattice, EDR Shield, AI Agent MCP Sandbox, Autonomous Cyber Defense, and Supply Chain Isolation)
+• 3,010 progressive hacking challenges across 86 specialized tracks
+• 40 interactive simulators (Silicon Photonics QKD Mesh, AI Agent Memory Poisoning Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Autonomous Multi-Agent Swarm, Confidential AI Inference, SafeTensors Neural Weight Steganography, ZTNA API, BGP Hijacking, PQC Lattice, EDR Shield, AI Agent MCP Sandbox, Autonomous Cyber Defense, and Supply Chain Isolation)
 • 73 ready-to-deploy Docker labs with automated verification and exploit solvers
 • Our newly unveiled AI Agent Benchmark Leaderboard evaluating LLM security capabilities
 

@@ -1,0 +1,8 @@
+services:
+  quantum_neural_hybrid_lab:
+    build: .
+    ports:
+      - "127.0.0.1:8074:8074"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

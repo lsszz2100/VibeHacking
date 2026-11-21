@@ -146,6 +146,7 @@ start_lab() {
         "71_hardware_gpu_sidechannel_lab"
         "72_agent_memory_poison_lab"
         "73_silicon_photonics_qkd_lab"
+        "74_quantum_neural_hybrid_lab"
     )
 
     local lab_names=(
@@ -221,6 +222,9 @@ start_lab() {
         "AI 모델 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩"
         "커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 랩"
         "GPU 가속기 사이드채널 & VRAM 격리 방어 랩"
+        "AI 에이전트 장기 메모리 오염 & 지식 그래프 방어 랩"
+        "실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 랩"
+        "양자 신경망 적대적 섭동 & QPU 메모리 격리 방어 랩"
     )
 
     local lab_ports=(
@@ -298,10 +302,11 @@ start_lab() {
         "웹 콘솔 & GPU VRAM 사이드채널 인스펙터: http://localhost:8071"
         "웹 콘솔 & 에이전트 인지 메모리 방화벽: http://localhost:8072"
         "웹 콘솔 & 실리콘 포토닉스 QKD 게이트웨이: http://localhost:8073"
+        "웹 콘솔 & 양자 신경망 QPU 게이트웨이: http://localhost:8074"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 73 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~73 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 74 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~74 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

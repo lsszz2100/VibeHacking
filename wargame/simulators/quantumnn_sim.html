@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Hacking // Quantum Neural Hybrid & QPU Memory Isolation Inspector (Simulator #40)</title>
+  <style>
+    :root {
+      --bg: #03080e;
+      --bg2: #071524;
+      --card-bg: #0a1f33;
+      --cyan: #00e5ff;
+      --cyan-dim: #0099b8;
+      --cyan-deep: #003644;
+      --purple: #c084fc;
+      --purple-dim: #9333ea;
+      --purple-deep: #3b0764;
+      --green: #27ff8b;
+      --green-dim: #1aa85c;
+      --green-deep: #0a4427;
+      --amber: #ffcf4d;
+      --red: #ff4d5e;
+      --blue: #5cc8ff;
+      --txt: #cce9ff;
+      --muted: #4e7a9e;
+      --line: #0d3857;
+      --mono: 'Fira Code', 'JetBrains Mono', Consolas, 'D2Coding', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      background: var(--purple-deep);
+      color: var(--purple);
+      border: 1px solid var(--purple-dim);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 360px 1fr 380px;
+      gap: 16px;
+      padding: 16px;
+      flex: 1;
+    }
+    @media (max-width: 1200px) {
+      .container { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--purple);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+    }
+    .btn {
+      background: var(--purple-deep);
+      color: var(--purple);
+      border: 1px solid var(--purple-dim);
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: bold;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .btn:hover { background: var(--purple-dim); color: #fff; }
+    .btn-red { background: #3d0a12; color: var(--red); border-color: var(--red); }
+    .btn-red:hover { background: var(--red); color: #000; }
+    .btn-green { background: var(--green-deep); color: var(--green); border-color: var(--green-dim); }
+    .btn-green:hover { background: var(--green); color: #000; }
+    .btn-cyan { background: var(--cyan-deep); color: var(--cyan); border-color: var(--cyan-dim); }
+    .btn-cyan:hover { background: var(--cyan); color: #000; }
+
+    .stat-row { display: flex; justify-content: space-between; font-size: 12px; }
+    .stat-val { font-weight: bold; }
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .pill-green { background: var(--green-deep); color: var(--green); border: 1px solid var(--green); }
+    .pill-red { background: #3d0a12; color: var(--red); border: 1px solid var(--red); }
+    .pill-amber { background: #3d2c00; color: var(--amber); border: 1px solid var(--amber); }
+
+    .canvas-box {
+      background: #02060c;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      height: 280px;
+      position: relative;
+      overflow: hidden;
+    }
+    canvas { width: 100%; height: 100%; display: block; }
+
+    .log-terminal {
+      background: #02060c;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 11px;
+      height: 230px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .log-item { display: flex; gap: 8px; }
+    .log-ts { color: var(--muted); }
+    .log-ok { color: var(--green); }
+    .log-warn { color: var(--amber); }
+    .log-err { color: var(--red); }
+    .log-info { color: var(--cyan); }
+    .log-qnn { color: var(--purple); }
+
+    .qubit-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .qubit-cell {
+      background: #040d18;
+      border: 1px solid var(--line);
+      padding: 6px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 10px;
+    }
+    .qubit-cell.active { border-color: var(--purple); box-shadow: 0 0 6px rgba(192, 132, 252, 0.3); }
+    .qubit-cell.zeroized { border-color: var(--green); }
+    .qubit-cell.bleeding { border-color: var(--red); animation: pulse-red 1s infinite; }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 2px var(--red); }
+      50% { box-shadow: 0 0 8px var(--red); }
+      100% { box-shadow: 0 0 2px var(--red); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span style="font-size: 18px;">🔮</span>
+      <strong>VibeHacking Architecture Simulator #40</strong>
+      <span class="badge">Lab 74 & Track 86 // quantumnn</span>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <span id="defenseStatus" class="status-pill pill-green">SHIELD ACTIVE (100%)</span>
+      <span style="color: var(--muted); font-size: 11px;">v2.24.0 Sovereignty</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Left Column: Attack Simulation & Control -->
+    <div class="card">
+      <div class="card-title">
+        <span>⚔️ 적대적 양자 공격 주입기</span>
+        <span style="font-size: 11px; color: var(--muted);">QAP Attack Engine</span>
+      </div>
+
+      <p style="font-size: 11px; color: var(--muted);">
+        양자 신경망(QNN)에 미세 위상 섭동을 주입하거나 멀티 테넌트 큐비트 잔류 상태를 도청하는 적대적 벡터를 시뮬레이션합니다.
+      </p>
+
+      <button class="btn btn-red" onclick="injectQAPAttack()">⚡ QAP 적대적 섭동 주입 (Phase Shift)</button>
+      <button class="btn btn-red" onclick="injectCoherenceBleed()">📡 멀티테넌트 큐비트 탈동조화 누출 공격</button>
+      <button class="btn btn-red" onclick="injectModelInversion()">🧬 양자 상태 역추정 모델 도난 공격</button>
+
+      <div style="border-top: 1px solid var(--line); margin: 6px 0;"></div>
+
+      <div class="card-title">
+        <span>🛡️ 능동 제로화 & 방어 통제</span>
+        <span style="font-size: 11px; color: var(--muted);">Defense Actions</span>
+      </div>
+
+      <button class="btn btn-green" onclick="executePauliTwirling()">🔄 파울리 트월링 128회 액티브 제로화</button>
+      <button class="btn btn-cyan" onclick="enableQFIFilter()">📐 QFI 기하학적 그래디언트 클리핑 활성화</button>
+      <button class="btn btn-purple" onclick="verifyMerkleAttestation()">🔏 QPU 마이크로코드 머클 증명 검증</button>
+      <button class="btn" onclick="resetState()">♻️ 텔레메트리 상태 초기화</button>
+    </div>
+
+    <!-- Center Column: Quantum Visualizer & Qubit Grid -->
+    <div class="card">
+      <div class="card-title">
+        <span>🌌 양자 피셔 정보(QFI) 매니폴드 & Bloch 구면 텔레메트리</span>
+        <span id="qfiMetric" style="color: var(--cyan); font-size: 11px;">QFI Divergence: 1.82 (SECURE)</span>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="quantumCanvas"></canvas>
+      </div>
+
+      <div class="card-title" style="margin-top: 4px;">
+        <span>🧩 QPU 16-Qubit 물리 레지스터 점유 및 결맞음 상태</span>
+        <span id="fidelityMetric" style="color: var(--green); font-size: 11px;">Residual Fidelity: 0.0004</span>
+      </div>
+
+      <div class="qubit-grid" id="qubitGrid">
+        <!-- Qubit cells generated dynamically -->
+      </div>
+    </div>
+
+    <!-- Right Column: Metrics & Live Security Log -->
+    <div class="card">
+      <div class="card-title">
+        <span>📊 보안 통제 텔레메트리</span>
+        <span class="badge">Zero-Trust QPU</span>
+      </div>
+
+      <div class="stat-row">
+        <span>양자 회로 구조 (Ansatz):</span>
+        <span class="stat-val" style="color: var(--purple);">Hardware-Efficient PQC</span>
+      </div>
+      <div class="stat-row">
+        <span>얽힘 심도 (Entanglement Depth):</span>
+        <span class="stat-val" id="entangleDepth">6 Layers (>=4 OK)</span>
+      </div>
+      <div class="stat-row">
+        <span>허용 섭동 엡실론 (Epsilon):</span>
+        <span class="stat-val" id="epsilonVal" style="color: var(--green);">0.02 (<=0.05 PASS)</span>
+      </div>
+      <div class="stat-row">
+        <span>QPU 잔류 상태 충실도:</span>
+        <span class="stat-val" id="fidelityVal" style="color: var(--green);">0.0004 (<=0.001 PASS)</span>
+      </div>
+      <div class="stat-row">
+        <span>포스트 양자 암호 (PQC):</span>
+        <span class="stat-val" style="color: var(--cyan);">ML-KEM-1024 Enclave</span>
+      </div>
+      <div class="stat-row">
+        <span>차분 프라이버시 노이즈 SNR:</span>
+        <span class="stat-val" id="snrVal" style="color: var(--green);">28.5 dB (>=24.0 PASS)</span>
+      </div>
+      <div class="stat-row">
+        <span>QPU 마이크로코드 해시:</span>
+        <span class="stat-val" style="font-size: 10px; color: var(--muted);">e3b0c44298fc1c149afb...</span>
+      </div>
+
+      <div class="card-title" style="margin-top: 6px;">
+        <span>📜 실시간 QPU 시큐리티 저널</span>
+        <span id="logCount" style="font-size: 10px; color: var(--muted);">0 events</span>
+      </div>
+
+      <div class="log-terminal" id="logTerminal">
+        <!-- Log entries -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('quantumCanvas');
+    const ctx = canvas.getContext('2d');
+    const logTerminal = document.getElementById('logTerminal');
+    const qubitGrid = document.getElementById('qubitGrid');
+
+    let isAttacking = false;
+    let attackType = null;
+    let residualFidelity = 0.0004;
+    let qfiDivergence = 1.82;
+    let currentEpsilon = 0.02;
+    let snrDb = 28.5;
+    let waveOffset = 0;
+
+    // Initialize 16 Qubits
+    const qubits = Array.from({ length: 16 }, (_, i) => ({
+      id: i,
+      state: 'zeroized',
+      phase: Math.random() * Math.PI * 2
+    }));
+
+    function renderQubits() {
+      qubitGrid.innerHTML = '';
+      qubits.forEach(q => {
+        const div = document.createElement('div');
+        div.className = `qubit-cell ${q.state}`;
+        div.innerHTML = `<strong>Q${q.id}</strong><br><span style="color:var(--muted);">${q.state === 'zeroized' ? '|0⟩' : (q.state === 'bleeding' ? 'BLEED' : '|ψ⟩')}</span>`;
+        qubitGrid.appendChild(div);
+      });
+    }
+
+    function addLog(msg, type='info') {
+      const row = document.createElement('div');
+      row.className = 'log-item';
+      const now = new Date().toTimeString().split(' ')[0];
+      row.innerHTML = `<span class="log-ts">[${now}]</span> <span class="log-${type}">${msg}</span>`;
+      logTerminal.appendChild(row);
+      logTerminal.scrollTop = logTerminal.scrollHeight;
+      document.getElementById('logCount').innerText = `${logTerminal.children.length} events`;
+    }
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function draw() {
+      ctx.fillStyle = '#02060c';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const cy = h / 2;
+
+      // Draw quantum state manifold waves
+      ctx.lineWidth = 2;
+      for (let layer = 0; layer < 4; layer++) {
+        ctx.beginPath();
+        const color = isAttacking 
+          ? (layer % 2 === 0 ? 'rgba(255, 77, 94, 0.7)' : 'rgba(255, 207, 77, 0.5)')
+          : (layer % 2 === 0 ? 'rgba(192, 132, 252, 0.8)' : 'rgba(0, 229, 255, 0.6)');
+        ctx.strokeStyle = color;
+
+        for (let x = 0; x < w; x += 4) {
+          const freq = 0.015 + layer * 0.008;
+          const amp = isAttacking ? 50 + Math.sin(x * 0.05 + waveOffset) * 20 : 35 + layer * 10;
+          const y = cy + Math.sin(x * freq + waveOffset + layer) * amp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // Draw Bloch Vector Circles
+      for (let i = 0; i < 4; i++) {
+        const bx = 60 + i * (w / 4);
+        ctx.beginPath();
+        ctx.arc(bx, cy, 25, 0, Math.PI * 2);
+        ctx.strokeStyle = isAttacking ? 'rgba(255, 77, 94, 0.4)' : 'rgba(192, 132, 252, 0.3)';
+        ctx.stroke();
+
+        // Arrow
+        const angle = waveOffset * (i + 1) * 0.5;
+        const ax = bx + Math.cos(angle) * 20;
+        const ay = cy + Math.sin(angle) * 20;
+        ctx.beginPath();
+        ctx.moveTo(bx, cy);
+        ctx.lineTo(ax, ay);
+        ctx.strokeStyle = isAttacking ? '#ff4d5e' : '#c084fc';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      waveOffset += isAttacking ? 0.08 : 0.03;
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+
+    function injectQAPAttack() {
+      isAttacking = true;
+      attackType = 'qap';
+      currentEpsilon = 0.18; // violates <=0.05
+      qfiDivergence = 0.72;  // violates >=1.45
+      document.getElementById('defenseStatus').className = 'status-pill pill-red';
+      document.getElementById('defenseStatus').innerText = 'ATTACK DETECTED (QAP ANOMALY)';
+      document.getElementById('epsilonVal').innerText = `${currentEpsilon} (VIOLATION > 0.05)`;
+      document.getElementById('epsilonVal').style.color = 'var(--red)';
+      document.getElementById('qfiMetric').innerText = `QFI Divergence: ${qfiDivergence} (ANOMALOUS MANIFOLD)`;
+      document.getElementById('qfiMetric').style.color = 'var(--red)';
+      
+      qubits.forEach((q, idx) => {
+        if (idx % 2 === 0) q.state = 'active';
+      });
+      renderQubits();
+
+      addLog("⚠️ [ALERT] 적대적 양자 섭동(QAP) 주입 감지! Epsilon: 0.18 > 0.05", "err");
+      addLog("⚠️ [ALERT] 양자 피셔 정보(QFI) 발산율 임계치 미달: 0.72 < 1.45", "warn");
+    }
+
+    function injectCoherenceBleed() {
+      isAttacking = true;
+      attackType = 'bleed';
+      residualFidelity = 0.048; // violates <=0.001
+      document.getElementById('defenseStatus').className = 'status-pill pill-red';
+      document.getElementById('defenseStatus').innerText = 'COHERENCE BLEED LEAKING';
+      document.getElementById('fidelityVal').innerText = `${residualFidelity} (LEAK > 0.001)`;
+      document.getElementById('fidelityVal').style.color = 'var(--red)';
+      document.getElementById('fidelityMetric').innerText = `Residual Fidelity: ${residualFidelity} (BLEED)`;
+      document.getElementById('fidelityMetric').style.color = 'var(--red)';
+
+      qubits.forEach(q => q.state = 'bleeding');
+      renderQubits();
+
+      addLog("🚨 [CRITICAL] 이전 테넌트 큐비트 잔류 상태 감지! Residual Fidelity: 0.048", "err");
+      addLog("🚨 [LEAK] 극저온 QPU 정전용량 누화 사이드채널 발생 중!", "warn");
+    }
+
+    function injectModelInversion() {
+      isAttacking = true;
+      attackType = 'inversion';
+      snrDb = 14.2; // violates >=24.0dB
+      document.getElementById('defenseStatus').className = 'status-pill pill-amber';
+      document.getElementById('defenseStatus').innerText = 'MODEL INVERSION DETECTED';
+      document.getElementById('snrVal').innerText = `${snrDb} dB (COMPROMISED < 24.0)`;
+      document.getElementById('snrVal').style.color = 'var(--amber)';
+
+      addLog("⚠️ [WARNING] 양자 상태 단층촬영(QST) 가중치 역산 쿼리 스트림 감지!", "warn");
+      addLog("⚠️ [THREAT] PQC 파라미터 그래디언트 차분 노이즈 임계치 저하!", "err");
+    }
+
+    function executePauliTwirling() {
+      residualFidelity = 0.0004;
+      isAttacking = false;
+      document.getElementById('defenseStatus').className = 'status-pill pill-green';
+      document.getElementById('defenseStatus').innerText = 'SHIELD ACTIVE (100%)';
+      document.getElementById('fidelityVal').innerText = `0.0004 (PASS <= 0.001)`;
+      document.getElementById('fidelityVal').style.color = 'var(--green)';
+      document.getElementById('fidelityMetric').innerText = `Residual Fidelity: 0.0004 (ZEROIZED)`;
+      document.getElementById('fidelityMetric').style.color = 'var(--green)';
+
+      qubits.forEach(q => q.state = 'zeroized');
+      renderQubits();
+
+      addLog("✅ [SUCCESS] 128회 무작위 파울리 트월링 적용 완료 -> 잔류 결맞음 완전 소멸", "ok");
+      addLog("🛡️ [HMAC] QPU 제로화 감사 토큰 발행: hmac_qpu_epoch_2026_ok", "qnn");
+      addLog("🎉 FLAG: FLAG{v224_s2_qpu_memory_zeroization_coherence_reset}", "info");
+    }
+
+    function enableQFIFilter() {
+      currentEpsilon = 0.02;
+      qfiDivergence = 1.85;
+      snrDb = 28.5;
+      isAttacking = false;
+      document.getElementById('defenseStatus').className = 'status-pill pill-green';
+      document.getElementById('defenseStatus').innerText = 'SHIELD ACTIVE (100%)';
+      document.getElementById('epsilonVal').innerText = `0.02 (PASS <= 0.05)`;
+      document.getElementById('epsilonVal').style.color = 'var(--green)';
+      document.getElementById('qfiMetric').innerText = `QFI Divergence: 1.85 (SECURE)`;
+      document.getElementById('qfiMetric').style.color = 'var(--cyan)';
+      document.getElementById('snrVal').innerText = `28.5 dB (PASS >= 24.0)`;
+      document.getElementById('snrVal').style.color = 'var(--green)';
+
+      qubits.forEach(q => q.state = 'zeroized');
+      renderQubits();
+
+      addLog("✅ [SUCCESS] 양자 피셔 정보(QFI) 기하학적 그래디언트 클리핑 인가", "ok");
+      addLog("🛡️ [FILTER] 적대적 위상 섭동 엡실론 경계(0.02) 강제 적용 완료", "info");
+      addLog("🎉 FLAG: FLAG{v224_s1_qnn_fisher_information_filter_secured}", "info");
+    }
+
+    function verifyMerkleAttestation() {
+      addLog("🔏 [MERKLE] QPU 마이크로코드 SHA-256 해시 검증 중...", "qnn");
+      setTimeout(() => {
+        addLog("✅ [MERKLE] QPU Firmware SHA-256: e3b0c44298fc1c149afb... MATCH", "ok");
+        addLog("✅ [MERKLE] Quantum Circuit AST Root: 4f53cda18c2baa0c... MATCH", "ok");
+        addLog("🏆 [ATTESTATION] Hardware Root-of-Trust (RoT) Cryptographically Proven!", "ok");
+        addLog("🎉 CAPSTONE FLAG: FLAG{v224_s4_qnn_circuit_merkle_provenance_attested}", "info");
+      }, 400);
+    }
+
+    function resetState() {
+      isAttacking = false;
+      residualFidelity = 0.0004;
+      qfiDivergence = 1.82;
+      currentEpsilon = 0.02;
+      snrDb = 28.5;
+      document.getElementById('defenseStatus').className = 'status-pill pill-green';
+      document.getElementById('defenseStatus').innerText = 'SHIELD ACTIVE (100%)';
+      document.getElementById('epsilonVal').innerText = `0.02 (<=0.05 PASS)`;
+      document.getElementById('epsilonVal').style.color = 'var(--green)';
+      document.getElementById('fidelityVal').innerText = `0.0004 (<=0.001 PASS)`;
+      document.getElementById('fidelityVal').style.color = 'var(--green)';
+      document.getElementById('qfiMetric').innerText = `QFI Divergence: 1.82 (SECURE)`;
+      document.getElementById('qfiMetric').style.color = 'var(--cyan)';
+      document.getElementById('fidelityMetric').innerText = `Residual Fidelity: 0.0004`;
+      document.getElementById('fidelityMetric').style.color = 'var(--green)';
+      document.getElementById('snrVal').innerText = `28.5 dB (>=24.0 PASS)`;
+      document.getElementById('snrVal').style.color = 'var(--green)';
+      qubits.forEach(q => q.state = 'zeroized');
+      renderQubits();
+      addLog("♻️ 텔레메트리 및 큐비트 상태가 성공적으로 리셋되었습니다.", "info");
+    }
+
+    // Initial load
+    renderQubits();
+    addLog("🚀 [SYSTEM] VibeHacking Quantum Neural Hybrid & QPU Memory Inspector #40 초기화 완료.", "info");
+    addLog("🔒 [STATUS] ML-KEM-1024 엔클레이브 및 QFI 적대적 섭동 필터 정상 가동 중.", "ok");
+  </script>
+</body>
+</html>

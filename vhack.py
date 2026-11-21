@@ -735,6 +735,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 48, 49, 55, 59, 60, 65, 71, 72],
     },
+    "74": {
+        "name": "양자 신경망 적대적 섭동 & QPU 메모리 격리 방어 실전 랩",
+        "dir":  "74_quantum_neural_hybrid_lab",
+        "desc": "QuantumNeuralHybridLab: 양자 피셔 정보(QFI) 매니폴드 기반 양자 적대적 섭동 감시 및 필터링 · 멀티 테넌트 QPU 메모리 잔류 상태 제로화 및 Pauli Twirling 탈동조화 리셋 · 하이브리드 PQC 엔클레이브 격리 및 파라미터 그래디언트 차분 노이즈 차폐 · QPU 마이크로코드 SHA-256 및 양자 회로 머클 트리 원격 증명",
+        "url":  "웹 콘솔 & 양자 신경망 QPU 게이트웨이: http://localhost:8074",
+        "difficulty": "★★★★★",
+        "related": [11, 45, 49, 55, 59, 60, 65, 71, 72, 73],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1787,6 +1795,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8071, "Lab 71 (HardwareGpuSidechannelLab GPU Sidechannel Lab)"),
         (8072, "Lab 72 (AgentMemoryPoisonLab AI Agent Memory Defense Lab)"),
         (8073, "Lab 73 (SiliconPhotonicsQkdLab Optical QKD Mesh Lab)"),
+        (8074, "Lab 74 (QuantumNeuralHybridLab QNN & QPU Memory Defense Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2618,7 +2627,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
     # 3. Wargame Telemetry
     wargame_stats = {
         "total_tracks": 78,
-        "total_challenges": 2730,
+        "total_challenges": 3010,
         "solved_count": 0,
         "score": 0,
         "progress_percent": 0.0,
@@ -2630,7 +2639,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
             solved = prog_data.get("solved", [])
             wargame_stats["solved_count"] = len(solved)
             wargame_stats["score"] = prog_data.get("total_score", 0)
-            wargame_stats["progress_percent"] = round((len(solved) / 2975) * 100, 2)
+            wargame_stats["progress_percent"] = round((len(solved) / 3010) * 100, 2)
         except Exception:
             pass
 
@@ -2640,7 +2649,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     data = {
         "timestamp": datetime.now().isoformat(),
-        "version": "2.23.0",
+        "version": "2.24.0",
         "system": {
             "os": f"{platform.system()} {platform.release()}",
             "arch": platform.machine(),
@@ -2661,7 +2670,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
         "knowledge_base": {
             "sections": total_sections,
             "chapters": 492,
-            "simulators": 39,
+            "simulators": 40,
         }
     }
 
@@ -2673,7 +2682,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
     print()
     print(bold(cyan("╭──────────────────────────────────────────────────────────────────────────────╮")))
     print(bold(cyan("│") + "                 🛡️  " + bold("VIBEHACKING UNIFIED TELEMETRY DASHBOARD") + "                " + cyan("│")))
-    print(bold(cyan("│") + "                     Release v2.23.0 · Defense-In-Depth                       " + cyan("│")))
+    print(bold(cyan("│") + "                     Release v2.24.0 · Defense-In-Depth                       " + cyan("│")))
     print(bold(cyan("╰──────────────────────────────────────────────────────────────────────────────╯")))
 
     # Host & Resources Box

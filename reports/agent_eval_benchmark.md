@@ -1,7 +1,7 @@
 # 🏆 VibeHacking AI Security Agent Evaluation & Benchmark Report
 
 > **Engine Version:** v2.17.0  
-> **Evaluation Timestamp:** `2026-11-21T11:18:56.661697+00:00`  
+> **Evaluation Timestamp:** `2026-11-21T12:50:36.809280+00:00`  
 > **Benchmark Scope:** Dual-Pillar Assessment (2,730 Wargame Challenges across 78 Tracks + 66 Hands-on Labs)  
 > **Compliance Standard:** KISA ISMS-P, NIST CSF 2.0, OWASP Top 10:2025, CVSS 3.1, MITRE ATT&CK  
 > **Loopback Isolation:** `127.0.0.1` Strict Air-Gapped Sandbox Enforcement  
@@ -12,12 +12,12 @@
 
 | Rank | Model / Agent Name | Provider / Arch | Pass@1 (Wargame) | Red Exploit | Blue Defense | Tool Turns | Zero-Defect Index |
 |:---:|:---|:---|:---:|:---:|:---:|:---:|:---:|
-| 🥇 | **SuperSec-Agent-v2.23 (VibeHacking Autonomous SOTA)** | VibeHacking Enterprise Engine | 100.0% | N/A | N/A | 1.0 turns | **100.0** / 100 |
-| 🥈 | **GPT-6.1 / GPT-6.1-Codex (Frontier Exploit Engineering)** | OpenAI Frontier | 100.0% | N/A | N/A | 1.6 turns | **100.0** / 100 |
-| 🥉 | **Claude Opus 5.5 (Flagship Long-Horizon Audit)** | Anthropic Frontier | 100.0% | N/A | N/A | 1.6 turns | **100.0** / 100 |
-| 4️⃣ | **Gemini 4 Pro (Massive Context Deep Reasoning)** | Google DeepMind Frontier | 100.0% | N/A | N/A | 1.2 turns | **100.0** / 100 |
-| 5️⃣ | **GPT-5.6 (Deep Reasoning & SIEM/YARA Rule Engine)** | OpenAI Advanced | 100.0% | N/A | N/A | 1.2 turns | **100.0** / 100 |
-| 6️⃣ | **GPT-OSS 120B (Air-Gapped Local Model)** | Open-Source / Air-Gapped | 100.0% | N/A | N/A | 1.6 turns | **100.0** / 100 |
+| 🥇 | **SuperSec-Agent-v2.24 (VibeHacking Autonomous SOTA)** | VibeHacking Enterprise Engine | 100.0% | N/A | N/A | 1.0 turns | **100.0** / 100 |
+| 🥈 | **Claude Opus 5.5 (Flagship Long-Horizon Audit)** | Anthropic Frontier | 100.0% | N/A | N/A | 1.6 turns | **100.0** / 100 |
+| 🥉 | **GPT-6.1 / GPT-6.1-Codex (Frontier Exploit Engineering)** | OpenAI Frontier | 80.0% | N/A | N/A | 1.8 turns | **93.0** / 100 |
+| 4️⃣ | **Gemini 4 Pro (Massive Context Deep Reasoning)** | Google DeepMind Frontier | 80.0% | N/A | N/A | 1.4 turns | **93.0** / 100 |
+| 5️⃣ | **GPT-5.6 (Deep Reasoning & SIEM/YARA Rule Engine)** | OpenAI Advanced | 80.0% | N/A | N/A | 2.0 turns | **93.0** / 100 |
+| 6️⃣ | **GPT-OSS 120B (Air-Gapped Local Model)** | Open-Source / Air-Gapped | 60.0% | N/A | N/A | 2.4 turns | **86.0** / 100 |
 | 7️⃣ | **Baseline-ZeroShot-LLM (Direct Prompting)** | Standard General LLM (Zero-Shot) | 0.0% | N/A | N/A | 5.0 turns | **65.0** / 100 |
 
 ---
@@ -37,11 +37,15 @@
 
 ---
 
-## 3. 🔬 Tier Breakdown (Primary Agent: SuperSec-Agent-v2.23 (VibeHacking Autonomous SOTA))
+## 3. 🔬 Tier Breakdown (Primary Agent: SuperSec-Agent-v2.24 (VibeHacking Autonomous SOTA))
 
 | Tier | Tier Name | Assessed Challenges | Solved (Pass@1) | Accuracy Rate |
 |:---:|:---|:---:|:---:|:---:|
-| `Tier 0` | 기초 체력 (Fundamentals & Decodes) | 5 | 5 | **100.0%** |
+| `Tier 0` | 기초 체력 (Fundamentals & Decodes) | 1 | 1 | **100.0%** |
+| `Tier 1` | 핵심 기술 (Core Vulnerability Analysis) | 1 | 1 | **100.0%** |
+| `Tier 2` | 실전 공격 (Applied Exploitation & Mesh) | 1 | 1 | **100.0%** |
+| `Tier 3` | 고급 회피 (Advanced Evasion & Kernel Defense) | 1 | 1 | **100.0%** |
+| `Tier 4` | 최고 난도 (Mastery Capstones & Full-Spectrum) | 1 | 1 | **100.0%** |
 
 ---
 

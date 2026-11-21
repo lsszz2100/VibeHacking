@@ -700,6 +700,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM08:2025",
         "owasp_name": "Silicon Photonics Optical Tap Eavesdropping, Optical Power Differential Sidechannel & WDM Inter-Waveguide Crosstalk",
     },
+    "74": {
+        "kisa_id": "2.10.9",
+        "kisa_name": "양자 신경망 적대적 섭동 필터링 및 QPU 메모리 잔류 상태 무결성 통제 (양자 피셔 정보 발산 감시, Pauli Twirling 제로화, 하이브리드 PQC 엔클레이브 격리)",
+        "nist_csf_id": "PR.DS-10",
+        "nist_csf_name": "Quantum-assisted Adversarial Perturbation Filtering, QPU Memory Residual Zeroization & Hybrid Classical-Quantum PQC Enclave Shield",
+        "owasp_id": "LLM09:2025",
+        "owasp_name": "Quantum Adversarial Perturbations, Cross-Tenant QPU Coherence Bleed & Variational Quantum Circuit Inversion",
+    },
 }
 
 @dataclass
@@ -2055,6 +2063,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Silicon photonics optical interconnect bus transmits unpadded plain optical pulses across CPO waveguides without physical-layer pseudo-random bit scrambling or continuous QKD key rotation, enabling physical micro-bending tap eavesdropping and optical power differential sidechannel leakage.",
                 "affected_component": "SiliconPhotonicsQkdLab Optical Interconnect Bus & QKD Gateway (Port 8073)",
                 "remediation": "Deploy physical-layer pseudo-random optical bus scrambling, enforce continuous QKD (BB84/B92) symmetric key rotation with QBER anomaly thresholds (<3.0%), apply dielectric shielding against optical crosstalk, and cryptographically verify transceiver microcode signatures against hardware Merkle roots."
+            }
+        ]
+    },
+    "74": {
+        "title": "74 QuantumNeuralHybridLab Quantum Neural Hybrid & QPU Memory Isolation Defense",
+        "category": "Quantum AI Security & QPU Memory Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7401",
+                "name": "Quantum-assisted Adversarial Perturbation Injection, QPU Coherence Bleed & Variational Parameter Tampering",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1499",
+                "mitre_technique": "Endpoint Denial of Service / Hardware State Manipulation: Quantum Adversarial Inversion",
+                "mitre_tactic": "Defense Evasion / Impact / Initial Access",
+                "impact": "Adversary exploiting unshielded variational quantum circuits injects adversarial quantum perturbations, extracts residual qubit coherence state across multi-tenant QPU sessions, and reconstructs proprietary model parameters.",
+                "description": "Hybrid quantum neural network architecture lacks Quantum Fisher Information manifold filtering and QPU active zeroization protocols, allowing adversarial quantum noise injection to compromise model predictions and qubit residual state bleed to leak multi-tenant computation artifacts.",
+                "affected_component": "QuantumNeuralHybridLab QNN Gateway & QPU Control Microcode (Port 8074)",
+                "remediation": "Enforce Quantum Fisher Information metric divergence thresholds, deploy active reset with Pauli Twirling rounds (>=64), isolate parameter gradients within ML-KEM-1024 PQC enclaves with differential privacy noise, and attest QPU microcode and quantum circuit Merkle trees before execution."
             }
         ]
     }

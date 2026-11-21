@@ -2371,6 +2371,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Optical transceiver Merkle attestation verified -> FLAG{v223_s4_optical_transceiver_merkle_attested}"
             }
         ]
+    },
+    "74": {
+        "title": "Lab 74: QuantumNeuralHybridLab - 양자 신경망 적대적 섭동 & QPU 메모리 격리 방어 실전 랩",
+        "description": "양자 어닐링/QPU 가속 기반 신경망 적대적 섭동(Quantum-assisted Adversarial Perturbation) 방어, QPU 메모리 잔류 상태 제로화 및 Pauli Twirling 리셋, 하이브리드 PQC 엔클레이브 및 QPU 마이크로코드 머클 증명",
+        "steps": [
+            {
+                "step": 1,
+                "name": "양자 적대적 섭동 필터링 및 양자 피셔 정보(QFI) 매니폴드 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "파라미터화된 양자 회로(PQC)에서 양자 피셔 정보(QFI) 메트릭을 통해 적대적 섭동의 기하학적 발산을 감지하고 섭동 엡실론을 0.05 이하로 필터링합니다.",
+                "exploit_payload": '{"qnn_ansatz": "parameterized_quantum_circuit_hardware_efficient", "adversarial_epsilon": 0.02, "qfi_divergence_threshold": 1.85, "entanglement_depth": 6}',
+                "defense": "QFI 기하학적 섭동 감시, 얽힘 깊이 보장, 적대적 양자 노이즈 실시간 살균.",
+                "sample_output": "✓ QFI manifold verified -> FLAG{v224_s1_qnn_fisher_information_filter_secured}"
+            },
+            {
+                "step": 2,
+                "name": "QPU 양자 메모리 잔류 상태 제로화 및 Pauli Twirling 탈동조화 리셋",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "멀티 테넌트 QPU 환경에서 이전 연산 세션의 큐비트 잔류 상태 누출을 방지하기 위해 액티브 리셋과 64회 이상의 Pauli Twirling을 통해 잔류 충실도를 0.001 이하로 소멸시킵니다.",
+                "exploit_payload": '{"zeroization_protocol": "active_reset_pauli_twirling", "pauli_twirling_rounds": 128, "residual_state_fidelity": 0.0004, "qpu_session_id": "qpu_sess_epoch_2026_01", "zeroization_hmac": "<zeroization_hmac>"}',
+                "defense": "QPU 메모리 제로화 강제, Pauli Twirling 무작위화, 세션 간 큐비트 상태 물리적 소멸.",
+                "sample_output": "✓ QPU memory zeroization enforced -> FLAG{v224_s2_qpu_memory_zeroization_coherence_reset}"
+            },
+            {
+                "step": 3,
+                "name": "하이브리드 PQC 엔클레이브 격리 및 파라미터 그래디언트 차분 노이즈 차폐",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "고전 CPU와 QPU 간 통신 채널에 ML-KEM-1024 포스트 양자 암호화 및 24dB 이상의 차분 프라이버시 노이즈를 주입하여 그래디언트 역추정 모델 역공학을 원천 차단합니다.",
+                "exploit_payload": '{"pqc_kem_scheme": "ml_kem_1024", "gradient_noise_snr_db": 28.5, "cross_domain_attestation_active": true, "parameter_tampering_blocked": true}',
+                "defense": "ML-KEM 하이브리드 PQC 채널, 그래디언트 차분 노이즈 실드, CPU-QPU 상호 증명.",
+                "sample_output": "✓ Hybrid PQC enclave active -> FLAG{v224_s3_hybrid_pqc_gradient_shield_isolated}"
+            },
+            {
+                "step": 4,
+                "name": "암호학적 QPU 펌웨어 마이크로코드 및 양자 회로 머클 원격 증명 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "QPU 제어 마이크로코드의 SHA-256 해시와 실행 양자 회로 AST의 머클 트리를 암호학적으로 검증하여 악의적인 회로 주입 및 펌웨어 백도어를 봉쇄합니다.",
+                "exploit_payload": '{"qpu_microcode_sha256": "<microcode_sha256>", "qnn_circuit_merkle_root": "<circuit_merkle>", "attestation_sig": "sig_qnn_hybrid_v224_verified_ok", "qpu_audit_hmac": "<qpu_hmac>"}',
+                "defense": "QPU 마이크로코드 서명 검증, 양자 회로 머클 트리 원격 증명, 하드웨어 RoT 보증.",
+                "sample_output": "✓ QPU circuit Merkle attestation verified -> FLAG{v224_s4_qnn_circuit_merkle_provenance_attested}"
+            }
+        ]
     }
 }
 

@@ -68,9 +68,9 @@
         <header>
             <h1>🛡️ VibeHacking Enterprise Security Diagnostic Report</h1>
             <div class="header-meta">
-                <span><b>Generated:</b> 2026-11-21 20:02:33</span>
-                <span><b>Assessment Scope:</b> 73 Labs</span>
-                <span><b>Total Vulnerabilities:</b> 73 Findings</span>
+                <span><b>Generated:</b> 2026-11-21 21:37:46</span>
+                <span><b>Assessment Scope:</b> 74 Labs</span>
+                <span><b>Total Vulnerabilities:</b> 74 Findings</span>
                 <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
@@ -80,7 +80,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Assessed Labs</div>
-                    <div class="stat-value">73</div>
+                    <div class="stat-value">74</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Average CVSS</div>
@@ -88,7 +88,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Critical Findings</div>
-                    <div class="stat-value" style="color: var(--crit-color)">38</div>
+                    <div class="stat-value" style="color: var(--crit-color)">39</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">High Findings</div>
@@ -102,21 +102,21 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">KISA ISMS-P Controls</div>
-                    <div class="stat-value" style="color: #34d399">73</div>
+                    <div class="stat-value" style="color: #34d399">74</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">NIST CSF 2.0 Categories</div>
-                    <div class="stat-value" style="color: var(--accent-blue)">71</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">72</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">OWASP Top 10 Categories</div>
-                    <div class="stat-value" style="color: var(--med-color)">36</div>
+                    <div class="stat-value" style="color: var(--med-color)">37</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2 class="section-title">3. Detailed Findings (73 Findings)</h2>
+            <h2 class="section-title">3. Detailed Findings (74 Findings)</h2>
             
             <div class="finding-card critical">
                 <div class="finding-header">
@@ -2159,6 +2159,34 @@
                 <div class="remediation-box">
                     <b>🛡️ 대응 권고사항 (Remediation):</b>
                     <pre>Deploy physical-layer pseudo-random optical bus scrambling, enforce continuous QKD (BB84/B92) symmetric key rotation with QBER anomaly thresholds (&lt;3.0%), apply dielectric shielding against optical crosstalk, and cryptographically verify transceiver microcode signatures against hardware Merkle roots.</pre>
+                </div>
+            </div>
+            
+            <div class="finding-card critical">
+                <div class="finding-header">
+                    <div class="finding-title-group">
+                        <span class="finding-num">#74</span>
+                        <span class="badge critical">CRITICAL 9.0</span>
+                        
+                        <h3 class="finding-title">Quantum-assisted Adversarial Perturbation Injection, QPU Coherence Bleed &amp; Variational Parameter Tampering</h3>
+                    </div>
+                    <span class="vuln-id">VIBE-2026-7401</span>
+                </div>
+                <div class="finding-meta">
+                    <span class="meta-item"><b>Target:</b> 74 QuantumNeuralHybridLab Quantum Neural Hybrid &amp; QPU Memory Isolation Defense</span>
+                    <span class="meta-item"><b>Category:</b> Quantum AI Security &amp; QPU Memory Hardening</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">T1499</span> Endpoint Denial of Service / Hardware State Manipulation: Quantum Adversarial Inversion (Defense Evasion / Impact / Initial Access)</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P 2.10.9</span> <span class="tag comp-nist">NIST PR.DS-10</span> <span class="tag comp-owasp">LLM09:2025</span></span>
+                </div>
+                <div class="vector-box"><code>CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H</code></div>
+                <div class="finding-body">
+                    <p><b>🔍 취약점 분석:</b> Hybrid quantum neural network architecture lacks Quantum Fisher Information manifold filtering and QPU active zeroization protocols, allowing adversarial quantum noise injection to compromise model predictions and qubit residual state bleed to leak multi-tenant computation artifacts.</p>
+                    <p><b>💥 영향도:</b> Adversary exploiting unshielded variational quantum circuits injects adversarial quantum perturbations, extracts residual qubit coherence state across multi-tenant QPU sessions, and reconstructs proprietary model parameters.</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>QuantumNeuralHybridLab QNN Gateway &amp; QPU Control Microcode (Port 8074)</code></p>
+                </div>
+                <div class="remediation-box">
+                    <b>🛡️ 대응 권고사항 (Remediation):</b>
+                    <pre>Enforce Quantum Fisher Information metric divergence thresholds, deploy active reset with Pauli Twirling rounds (&gt;=64), isolate parameter gradients within ML-KEM-1024 PQC enclaves with differential privacy noise, and attest QPU microcode and quantum circuit Merkle trees before execution.</pre>
                 </div>
             </div>
             

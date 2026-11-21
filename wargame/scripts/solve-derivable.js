@@ -3359,6 +3359,57 @@ for (const id of QKDMESH_IDS) {
     }
   });
 }
+const QUANTUMNN_IDS = [
+  "t0_quantumnn_qnn_variational_circuit_foundations",
+  "t0_quantumnn_quantum_adversarial_perturbation_threat_model",
+  "t0_quantumnn_quantum_fisher_information_manifold_metric",
+  "t0_quantumnn_qpu_multi_tenancy_coherence_bleed_risks",
+  "t0_quantumnn_pauli_twirling_randomization_reset_theory",
+  "t0_quantumnn_hybrid_pqc_gradient_communication_channel",
+  "t0_quantumnn_qpu_control_microcode_merkle_provenance_intro",
+  "t1_quantumnn_qap_adversarial_perturbation_bound_filtering_impl",
+  "t1_quantumnn_qfi_manifold_divergence_anomaly_telemetry",
+  "t1_quantumnn_qpu_memory_active_reset_cycle_verification",
+  "t1_quantumnn_pauli_twirling_twirling_round_execution",
+  "t1_quantumnn_ml_kem_1024_cpu_qpu_channel_encapsulation",
+  "t1_quantumnn_gradient_differential_privacy_noise_addition",
+  "t1_quantumnn_qpu_firmware_sha256_hash_lock_enforcement",
+  "t2_quantumnn_qfi_geometric_gradient_clipping_defense",
+  "t2_quantumnn_qpu_multitenant_coherence_bleed_interception",
+  "t2_quantumnn_zeroization_fidelity_audit_hmac_signing",
+  "t2_quantumnn_hybrid_pqc_enclave_isolation_guard",
+  "t2_quantumnn_cpu_qpu_mutual_attestation_handshake",
+  "t2_quantumnn_qnn_variational_circuit_ast_integrity_check",
+  "t2_quantumnn_qpu_microcode_merkle_tree_root_verification",
+  "t3_quantumnn_quantum_tomography_adversarial_noise_reconstruction",
+  "t3_quantumnn_entanglement_depth_security_bounds_enforcement",
+  "t3_quantumnn_syndrome_parity_annihilation_active_reset",
+  "t3_quantumnn_quantum_neural_model_extraction_containment",
+  "t3_quantumnn_qpu_microcode_sha256_merkle_combined_attestation",
+  "t3_quantumnn_federated_quantum_learning_gradient_shielding",
+  "t3_quantumnn_qpu_hypervisor_quantum_timeslice_scheduling_isolation",
+  "t4_quantumnn_qnn_hybrid_adversarial_drill_offensive_eval",
+  "t4_quantumnn_enterprise_qpu_memory_zeroization_infrastructure",
+  "t4_quantumnn_quantum_sidechannel_decoherence_shielding",
+  "t4_quantumnn_qpu_compromised_tenant_quarantine_protocol",
+  "t4_quantumnn_cross_domain_cpu_qpu_pqc_attestation_zero_trust",
+  "t4_quantumnn_quantum_ai_cluster_gradient_confidentiality_enforcement",
+  "t4_quantumnn_sovereign_quantum_neural_hybrid_defense_capstone"
+];
+
+for (const id of QUANTUMNN_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/QUANTUMNN_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_quantumnn_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */
