@@ -107,5 +107,5 @@ echo "  ✓ CLI smoke test passed."
 
 echo ""
 echo "=================================================================="
-echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.18.0 is 100% Offline Ready!"
+echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.19.0 is 100% Offline Ready!"
 echo "=================================================================="

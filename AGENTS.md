@@ -146,19 +146,19 @@
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
   - `ctf/server.py`, `ctf/tests/test_ctf.py`: 110개 랩 플래그 풀, 순차 해금 모드(Progressive Unlock) 지원, 팀 등록 정규식 검증(XSS 방어), `secrets.compare_digest` 시간차 분석 공격 방어, 전역 HTML 엔티티 이스케이프(`esc()`), 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프, 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
 - **오프라인 번들러 및 릴리스 배포 파이프라인 (Bundler & Release)**:
-  - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/v2.17.0/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 67개 랩, 79개 트랙(2,765문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/v2.17.0/vibe-hacking-v2.17.0-offline.tar.gz`) 생성 지원
+  - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/v2.19.0/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 69개 랩, 81개 트랙(2,835문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/v2.19.0/vibe-hacking-v2.19.0-offline.tar.gz`) 생성 지원
 - **vhack CLI 고도화**:
-  - `vhack dashboard` (`vhack status`, `vhack stats`): 시스템 리소스(RAM/Swap/CPU/Disk), 67개 랩 실행 상태, 79개 트랙 2,765제 워게임 요원 진행도, 지식 저장소 및 보안 지표를 종합 시각화하는 ANSI 터미널 대시보드 (`--json` 지원)
-  - `vhack benchmark`: 67개 실습 랩 기동 지연시간, 헬스체크 응답 속도 및 메모리 점유율을 실시간 측정·보고하는 고성능 벤치마크 엔진 (`--all`, `--dry-run`, `--iterations`, `--json`, `-o`)
+  - `vhack dashboard` (`vhack status`, `vhack stats`): 시스템 리소스(RAM/Swap/CPU/Disk), 69개 랩 실행 상태, 81개 트랙 2,835제 워게임 요원 진행도, 지식 저장소 및 보안 지표를 종합 시각화하는 ANSI 터미널 대시보드 (`--json` 지원)
+  - `vhack benchmark`: 69개 실습 랩 기동 지연시간, 헬스체크 응답 속도 및 메모리 점유율을 실시간 측정·보고하는 고성능 벤치마크 엔진 (`--all`, `--dry-run`, `--iterations`, `--json`, `-o`)
   - `vhack bench-agent` / `vhack eval`: AI 보안 에이전트 역량 평가 및 벤치마크 엔진 (`vhack bench-agent --compare`, `vhack eval --target wargame`)
-  - `vhack play`: 79개 트랙 2,765문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리, 0o600 권한 보호)
+  - `vhack play`: 81개 트랙 2,835문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리, 0o600 권한 보호)
   - `vhack drill`: 10대 보안 기술팀 공방전 자동 훈련 및 점수 산출 (`vhack drill [--all | --team <tid> | --lab <lid>]`)
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
-  - `vhack solve`: 67개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 10종, 디스크, 포트 8000~8067 가용성 등 시스템 진단
-  - `vhack lab test [--all | <lab_id>]`: 67개 실습 랩 자동 무결성 검증 (전체 700+개 Pytest All Green)
-  - `vhack lab status`: 67개 랩 종합 상태 대시보드
-  - `vhack report summary`: 67개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
+  - `vhack solve`: 69개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 10종, 디스크, 포트 8000~8069 가용성 등 시스템 진단
+  - `vhack lab test [--all | <lab_id>]`: 69개 실습 랩 자동 무결성 검증 (전체 758개 Pytest All Green)
+  - `vhack lab status`: 69개 랩 종합 상태 대시보드
+  - `vhack report summary`: 69개 랩 취약점 통계, 심각도 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 컴플라이언스 요약
   - `vhack disclaimer` / `vhack legal`: 법적 고지, 정보통신망법/CFAA 처벌 법령, AS-IS 면책 안내
 - **CI/CD 및 자동 색인 파이프라인**:
   - [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml): Labs 01~56, `vhack doctor`, Pytest All Green, Wargame 4대 엄격 검증 스위트 자동화
@@ -187,7 +187,7 @@
 
 ---
 
-## 2. 실습 랩(01~58) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(01~69) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :--- | :---: | :--- |
@@ -256,6 +256,10 @@
 | **63** | AI 자율 방어 & 사이버 디펜스 에이전트 랩 (AutonomousDefenseAgentLab) | 보안 텔레메트리 IPI 차단, 플레이북 AST 정적 검증, eBPF Dual-Stack 즉시 격리, SOAR 조치 원장 서명 증명 | `69_LLM_Security`, `44_Incident_Response_DFIR` | `autosec` | `vhack lab start 63` |
 | **64** | eBPF LSM 컨테이너 탈출 & 커널 런타임 방어 랩 (ContainerEscapeLsmLab) | Userns bpf_lsm_userns_create 차단, cgroup v2 release_agent W^X 방어, runc CVE-2024-21626 resolve_beneath 트랩, 0.4µs 즉각 격리 | `26_Linux_Hardening` | `lsmsec` | `vhack lab start 64` |
 | **65** | 포스트 양자 하이브리드 TLS 1.3 & ML-KEM / ML-DSA 마이그레이션 랩 (PqcHybridTlsLab) | SNDL 도청 방어 X25519_MLKEM768, FIPS 204 ML-DSA-65 복합 듀얼 서명, TLS 1.3 안티 다운그레이드 카나리, 상수시간 NTT 마스킹 | `57_Quantum_Cryptography` | `pqctls` | `vhack lab start 65` |
+| **66** | AI 에이전트 샌드박스 탈출 & 공급망 패키지 격리 방어 랩 (AiSandboxEscapeSupplyChainLab) | 악성 PyPI Typosquatting 공급망 패키지 격리, sys.modules 몽키패치 방어, Seccomp-BPF & Landlock LSM 프로세스 격리, egress 감사 | `69_LLM_Security`, `35_Supply_Chain_Attacks` | `aisbox` | `vhack lab start 66` |
+| **67** | 기밀 AI 추론 & 하드웨어 TEE 원격 증명 실전 랩 (ConfidentialAiInferenceLab) | 신경망 가중치 AES-256-GCM 봉인, TEE Quote/PCR 하드웨어 원격 증명, Flush+Reload 캐시 부채널 방어, hmac.compare_digest 상수시간 무결성 검증 | `69_LLM_Security`, `14_Cloud_Security` | `teeai` | `vhack lab start 67` |
+| **68** | 자율 멀티에이전트 스웜 침투 & 비잔틴 분산 방어 랩 (AutonomousAgentSwarmLab) | 사칭 워커 차단 X.509 mTLS/SPIFFE ID, PBFT 3단계 합의 쿼럼, Landlock LSM 무특권 네임스페이스 격리, Cilium Tetragon eBPF 0ms SIGKILL | `69_LLM_Security`, `35_Zero_Trust` | `swarmsentry` | `vhack lab start 68` |
+| **69** | AI 모델 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩 (ModelWeightStegoLab) | Pickle RCE 차단, Float32 가수부 LSB 은닉 탐지 & 비트마스크 양자화 살균, 카이제곱 적합도 및 샤논 엔트로피 이상치 감사, Sigstore Cosign 머클 트리 원격 증명 | `69_LLM_Security`, `35_Supply_Chain_Attacks` | `weightsec` | `vhack lab start 69` |
 
 ---
 
@@ -264,15 +268,15 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (Labs 01~59, Solvers, Portal, CTF, Wargame CLI, Report Generator)
+# 1. 전체 단위/통합 테스트 (Labs 01~69, Solvers, Portal, CTF, Wargame CLI, Report Generator)
 pytest -q
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (59개 랩 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (69개 랩 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 59개 랩 포트 충돌 검사 완비)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 69개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사
@@ -348,8 +352,10 @@ node wargame/scripts/solve-derivable.js
     - `SuperSec-Agent-v2.19` 100.0/100 (Pass@1: 100.0%) 1위 유지, `GPT-6.1`, `Gemini 4 Pro` 리더보드 및 `reports/agent_eval_latest.json` 갱신.
   - **10대 보안 기술팀 공방전 엔진 69개 랩 전수 연동 (`tools/team_drill_runner.py`)**:
     - Lab 69 공격/방어 규칙 연동, 10개 팀 69개 랩 236건 공격 시도 중 236건 100.0% 탐지/차단, Purple Team 종합 방어 점수 100.0/100 All Defended 달성.
-  - **글로벌 론칭 패키지 최신 동기화**:
+  - **글로벌 론칭 패키지 최신 동기화 및 v2.19.0 오프라인 릴리즈 배포 완결**:
     - `tools/promo_kit.py`, `launch/producthunt/launch_brief.md`, `launch/reddit/reddit_post.md` v2.19.0 최신 스펙 일괄 갱신.
+    - `release/v2.19.0/vibe-hacking-v2.19.0-offline.tar.gz` (10.99 MB, SHA-256: `3ac374d3...`) 생성 및 `SHA256SUMS` 암호 서명 완료.
+    - 7단계 오프라인 배포 스모크 테스트(`verify_offline_deployment.sh`) 100% All Green 합격.
 
 - **2026-11-15 (Enterprise Milestone: Lab 60 QuantumCryptanalysisLab, Track 72 quantumcrypt 2,520 Challenges, v2.13.0 Offline Pipeline, 27 Simulators, 676 Tests All Green)**:
   - **Lab 60 양자 암호 분석 & 포스트 양자 암호(PQC) 방어 랩 신규 구축 (`labs/60_quantum_cryptanalysis_lab/`)**:

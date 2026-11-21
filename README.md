@@ -2,12 +2,12 @@
 
 <div align="center">
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=75+Sections+%C2%B7+491%2B+Files+%C2%B7+530%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=75+Sections+%C2%B7+492+Files+%C2%B7+560%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
 
 <br/>
 
 [![Sections](https://img.shields.io/badge/⚔️_SECTIONS-75-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
-[![Files](https://img.shields.io/badge/📄_FILES-491+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
+[![Files](https://img.shields.io/badge/📄_FILES-492-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
 [![Lines](https://img.shields.io/badge/💻_LINES-560K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![AI](https://img.shields.io/badge/🤖_AI--POWERED-Claude+GPT-9933FF?style=for-the-badge&labelColor=0d0d0d)](#11-ai-기반-사이버보안)
 [![License](https://img.shields.io/badge/🔓_LICENSE-MIT-0078D7?style=for-the-badge&labelColor=0d0d0d)](LICENSE)
@@ -28,7 +28,7 @@
 <br/>
 
 커뮤니티 · 문의 &nbsp;→&nbsp; [![Discussions](https://img.shields.io/badge/Discussions-커뮤니티_Q%26A-00FF41?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/discussions) &nbsp; [![Security Advisories](https://img.shields.io/badge/보안_권고문-Security_Advisories-EA4335?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/security/advisories)
-&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%202%2C730%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+66+labs)+and+terminal+wargame+with+2730+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
+&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%202%2C835%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+69+labs)+and+terminal+wargame+with+2835+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
 
 </div>
 
