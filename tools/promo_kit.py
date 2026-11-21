@@ -20,13 +20,13 @@ REPO_URL = "https://github.com/lsszz2100/VibeHacking"
 
 PROMO_TEMPLATES = {
     "geeknews": {
-        "title": "VibeHacking v2.15.0 — 실전 사이버보안 바이블 & 2,695제 브라우저 터미널 워게임 + AI 에이전트 벤치마크",
+        "title": "VibeHacking v2.19.0 — 실전 사이버보안 바이블 & 2,835제 브라우저 터미널 워게임 + AI 에이전트 벤치마크",
         "url": SITE_URL,
-        "body": """안녕하세요, 사이버보안 완전 정복 오픈소스 프로젝트 VibeHacking v2.15.0을 공유합니다.
+        "body": """안녕하세요, 사이버보안 완전 정복 오픈소스 프로젝트 VibeHacking v2.19.0을 공유합니다.
 
 - 📖 75개 섹션 종합 바이블 (리버싱, 시스템해킹, EDR 우회, 제로 트러스트 API, AI 모델 탈옥 및 방어, 기밀 컴퓨팅, eBPF LSM, PQC 하이브리드 TLS 1.3)
-- 🔬 65개 도커 핸즈온 실습 랩 (Lab 65 포스트 양자 하이브리드 TLS 1.3 랩 포함, 원클릭 환경 구성, 단계별 PoC 공격 및 자동 패치 채점 지원)
-- 🎮 브라우저 터미널 워게임 (77개 트랙, 2,695개 단계별 침투 챌린지, 32대 취약점 시뮬레이터 탑재)
+- 🔬 69개 도커 핸즈온 실습 랩 (Lab 65 포스트 양자 하이브리드 TLS 1.3 랩 포함, 원클릭 환경 구성, 단계별 PoC 공격 및 자동 패치 채점 지원)
+- 🎮 브라우저 터미널 워게임 (81개 트랙, 2,835개 단계별 침투 챌린지, 35대 취약점 시뮬레이터 탑재)
 - 🤖 AI 보안 에이전트 벤치마크 엔진 & 리더보드 (Pass@1 정확도, 레드/블루팀 공방전 및 KISA/NIST 컴플라이언스 다각도 평가)
 - 🌐 GitHub Pages 포털: https://lsszz2100.github.io/VibeHacking/
 - 💻 GitHub 저장소: https://github.com/lsszz2100/VibeHacking
@@ -34,42 +34,42 @@ PROMO_TEMPLATES = {
 설치 없이 브라우저에서 바로 즐길 수 있는 터미널 워게임과 실전 보안 교재를 무료로 이용하실 수 있습니다."""
     },
     "producthunt": {
-        "name": "VibeHacking v2.15.0",
-        "tagline": "Open-source cybersecurity bible & 2,695-challenge browser wargame + AI Security Agent Bench",
+        "name": "VibeHacking v2.19.0",
+        "tagline": "Open-source cybersecurity bible & 2,835-challenge browser wargame + AI Security Agent Bench",
         "url": SITE_URL,
         "topics": "Developer Tools, Open Source, Education, Security, Artificial Intelligence",
         "description": """VibeHacking is an all-in-one open-source offensive & defensive cybersecurity mastery platform.
 
 Features:
 • 75 In-Depth Sections: Binary exploitation, reverse engineering, kernel internals, EDR telemetry evasion, cloud/Kubernetes security, AI red teaming, and Zero Trust API architectures.
-• 65 Reproducible Docker Labs: Ready-to-deploy hands-on testing environments with automated validation and red/blue solvers (including Lab 65 PQC Hybrid TLS 1.3 Lab).
-• In-Browser Terminal Wargame: 77 tracks with 2,695 progressive challenges and 32 interactive security architecture simulators (Track 77 PQC Hybrid TLS, Track 76 eBPF LSM, AI Agent MCP Security, ZTNA API, BGP, OAuth2, DBShield, TLS, Cache, K8s, CAN Bus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, TEEConfidentialLab).
+• 69 Reproducible Docker Labs: Ready-to-deploy hands-on testing environments with automated validation and red/blue solvers (including Lab 65 PQC Hybrid TLS 1.3 Lab).
+• In-Browser Terminal Wargame: 81 tracks with 2,835 progressive challenges and 35 interactive security architecture simulators (Track 77 PQC Hybrid TLS, Track 76 eBPF LSM, AI Agent MCP Security, ZTNA API, BGP, OAuth2, DBShield, TLS, Cache, K8s, CAN Bus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, TEEConfidentialLab).
 • AI Security Agent Benchmark: Interactive web leaderboard evaluating LLM security models on Pass@1 accuracy, exploit synthesis, and zero-defect remediation.
 • 100% Free & Open Source under MIT License. No installation required to play.""",
         "maker_comment": """Hey Product Hunt community! 👋
 
 We built VibeHacking to solve a major pain point in learning cybersecurity: the friction of heavy virtual machines, outdated tutorials, and disconnected theory.
 
-With VibeHacking, you can open your browser, enter an authentic simulated Linux terminal, and immediately start solving progressive penetration testing challenges across 77 specialized tracks. Coupled with 75 complete textbook sections, 65 Docker labs, and our new AI security agent benchmark leaderboard, it bridges the gap from zero knowledge to industry-grade offensive & defensive security.
+With VibeHacking, you can open your browser, enter an authentic simulated Linux terminal, and immediately start solving progressive penetration testing challenges across 77 specialized tracks. Coupled with 75 complete textbook sections, 69 Docker labs, and our new AI security agent benchmark leaderboard, it bridges the gap from zero knowledge to industry-grade offensive & defensive security.
 
 We'd love to hear your feedback, bug reports, and challenge suggestions! Let us know what you think! 🚀"""
     },
     "reddit_netsec": {
-        "title": "VibeHacking: Open-source cybersecurity bible (75 sections, 65 labs) & browser-based terminal wargame with 2,695 challenges",
+        "title": "VibeHacking: Open-source cybersecurity bible (75 sections, 65 labs) & browser-based terminal wargame with 2,835 challenges",
         "url": REPO_URL,
         "body": """VibeHacking is an open-source offensive & defensive cybersecurity resource hub and hands-on wargame.
 
 Key Highlights:
 * 75 Comprehensive Sections: Binary reversing, exploit development, kernel exploitation, EDR telemetry bypass, cloud/k8s security, AI security, and zero-trust API security.
 * 65 Docker Hands-on Labs: Self-contained reproducible vulnerable lab environments with automated regression tests and solvers (including Lab 65 PQC Hybrid TLS 1.3).
-* In-Browser Infiltration Wargame: A full terminal simulation covering 77 tracks with 2,695 progressive challenges and 32 interactive simulators (PQC TLS 1.3, eBPF LSM, AI MCP Sandbox, ZTNA API, BGP, OAuth2, DBShield, TLS, Cache, K8s, CanBus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, TEEConfidentialLab).
+* In-Browser Infiltration Wargame: A full terminal simulation covering 81 tracks with 2,835 progressive challenges and 35 interactive simulators (PQC TLS 1.3, eBPF LSM, AI MCP Sandbox, ZTNA API, BGP, OAuth2, DBShield, TLS, Cache, K8s, CanBus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, TEEConfidentialLab).
 * AI Agent Evaluation Engine & Portal Leaderboard: Built-in benchmark evaluating autonomous security agents on Pass@1 and zero-defect remediation.
 * Live Portal: https://lsszz2100.github.io/VibeHacking/
 * Interactive Wargame: https://lsszz2100.github.io/VibeHacking/wargame/
 * GitHub Repository: https://github.com/lsszz2100/VibeHacking"""
     },
     "reddit_cybersecurity": {
-        "title": "A free, open-source 75-chapter cybersecurity curriculum & interactive browser terminal wargame (2,695 challenges)",
+        "title": "A free, open-source 75-chapter cybersecurity curriculum & interactive browser terminal wargame (2,835 challenges)",
         "url": SITE_URL,
         "body": """Hey r/cybersecurity,
 
@@ -77,8 +77,8 @@ Wanted to share an open-source cybersecurity education and training resource we'
 
 Everything is completely free and browser-accessible without needing to spin up heavy VMs just to get started:
 1. Complete Curriculum (75 Sections): Covers foundations, network protocols, system internals, binary analysis, web vulnerabilities, Active Directory, cloud security, and modern AI red teaming.
-2. 65 Reproducible Docker Labs: Practical vulnerable targets with automated testing scripts and defense patches.
-3. Interactive Browser Terminal Wargame: 77 tracks and 2,695 progressive challenges simulating real shell environments (`connect`, `cat`, `submit`, privilege escalation).
+2. 69 Reproducible Docker Labs: Practical vulnerable targets with automated testing scripts and defense patches.
+3. Interactive Browser Terminal Wargame: 81 tracks and 2,835 progressive challenges simulating real shell environments (`connect`, `cat`, `submit`, privilege escalation).
 4. Interactive Architecture Simulators: 32 real-time visualizers for PQC TLS 1.3, eBPF LSM, AI MCP Agent Sandbox, Zero Trust API, OAuth2 flows, TLS handshakes, BGP hijacking, PQC lattice KEM, EDR detection bypass, AntiReversingShield, HypervisorEscapeLab, and TEE Confidential Computing.
 5. AI Security Agent Benchmark: Benchmark LLM cybersecurity agents on Pass@1 and compliance alignment with an interactive web leaderboard.
 
@@ -88,16 +88,16 @@ Everything is completely free and browser-accessible without needing to spin up 
 Feedback and contributions are always welcome!"""
     },
     "reddit_sideproject": {
-        "title": "I built an open-source terminal wargame with 2,695 challenges and a 75-chapter cybersecurity guide",
+        "title": "I built an open-source terminal wargame with 2,835 challenges and a 75-chapter cybersecurity guide",
         "url": SITE_URL,
         "body": """Hey r/SideProject,
 
 I spent months building VibeHacking, an open-source cybersecurity learning portal with a fully functional browser-based terminal wargame.
 
 What you can do:
-- Solve 2,695 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
+- Solve 2,835 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
 - Study 75 full chapters ranging from reverse engineering to AI security.
-- Explore 32 interactive security architecture simulators (PQC TLS 1.3, eBPF LSM, AI MCP Agent Sandbox, Zero Trust API Gateway, OAuth 2.0, TLS, K8s, EDR, PQC, eBPF, AntiReversingShield, HypervisorEscapeLab, TEE).
+- Explore 35 interactive security architecture simulators (PQC TLS 1.3, eBPF LSM, AI MCP Agent Sandbox, Zero Trust API Gateway, OAuth 2.0, TLS, K8s, EDR, PQC, eBPF, AntiReversingShield, HypervisorEscapeLab, TEE).
 - Run 65 Docker hands-on labs locally.
 - Benchmark AI security models using the built-in evaluation harness and portal leaderboard.
 
@@ -107,10 +107,10 @@ Source Code: https://github.com/lsszz2100/VibeHacking
 Would love to get your thoughts and feedback!"""
     },
     "twitter": {
-        "text": """🔥 실전 사이버보안 오픈소스 바이블 & 워게임 [VibeHacking v2.15.0]
+        "text": """🔥 실전 사이버보안 오픈소스 바이블 & 워게임 [VibeHacking v2.19.0]
 💻 75개 섹션 보안 교재
-🔬 65개 핸즈온 실습 랩
-🎮 77개 트랙 2,695제 브라우저 터미널 워게임 + 32대 EDR/보안 시뮬레이터
+🔬 69개 핸즈온 실습 랩
+🎮 81개 트랙 2,835제 브라우저 터미널 워게임 + 35대 EDR/보안 시뮬레이터
 🤖 AI 보안 에이전트 벤치마크 리더보드 탑재
 
 지금 브라우저에서 바로 침투 실습을 시작해보세요! 🚀
@@ -119,11 +119,11 @@ Would love to get your thoughts and feedback!"""
 #보안 #해킹 #CTF #Wargame #Cybersecurity #EDR #ZeroTrust #Infosec #DevSecOps #AIAgent"""
     },
     "disquiet": {
-        "title": "설치 없이 브라우저에서 즐기는 2,695제 사이버보안 워게임 & 교재 포털",
+        "title": "설치 없이 브라우저에서 즐기는 2,835제 사이버보안 워게임 & 교재 포털",
         "url": SITE_URL,
         "body": """보안 공부를 시작할 때 환경 구축의 번거로움 없이, 브라우저 가짜 셸 터미널(`connect`, `cat`, `submit`)로 단계별 침투를 실습할 수 있는 VibeHacking 워게임을 소개합니다.
 
-총 75개 섹션 교재와 65개 랩, 2,695개 워게임 챌린지가 모두 오픈소스로 공개되어 있습니다!"""
+총 75개 섹션 교재와 69개 랩, 2,835개 워게임 챌린지가 모두 오픈소스로 공개되어 있습니다!"""
     }
 }
 

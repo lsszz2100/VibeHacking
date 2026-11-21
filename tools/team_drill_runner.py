@@ -3,7 +3,7 @@
 tools/team_drill_runner.py — 10대 보안 기술팀 공방전 자동 훈련 엔진 (Team Drill Runner)
 
 HumanAPI_Lab/Security/Technical_Team/Technical_Team.md의 10대 팀 매트릭스와
-VibeHacking 67개 랩 및 79개 워게임 트랙을 연계하여
+VibeHacking 69개 랩 및 81개 워게임 트랙을 연계하여
 Red Team(공격 재현) vs Blue Team(탐지 및 차단) 공방전 시뮬레이션을 수행하고
 Purple Team 탐지율 및 보안 점수를 정량 산출합니다.
 """
@@ -62,7 +62,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "화이트팀",
         "name_en": "White Team",
         "mission": "훈련 환경·범위·규칙 통제, 127.0.0.1 루프백 샌드박스 격리 통제, 킬스위치 즉시 가동",
-        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68"],
+        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68", "69"],
         "tactics": ["Safety Bounds", "Isolation Enforcement", "Exercise Adjudication", "Audit Logging"],
         "tools": ["Docker Guard", "Landlock LSM", "Cgroup Confinement", "Port Sentinel"],
     },
@@ -71,7 +71,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "옐로팀",
         "name_en": "Yellow Team",
         "mission": "애플리케이션 보안, CI/CD DevSecOps 검사, SLSA L3 SBOM 검증, API BOLA 및 스마트 계약 감사",
-        "labs": ["01", "18", "22", "24", "31", "41", "53"],
+        "labs": ["01", "18", "22", "24", "31", "41", "53", "69"],
         "tactics": ["SAST/DAST", "Software Supply Chain", "API Security", "Smart Contract Audit"],
         "tools": ["Semgrep", "Trivy", "Syft/Grype", "AFL++ Fuzzer", "Slither", "ZAP"],
     },
@@ -209,6 +209,12 @@ BLUE_DETECTIONS: Dict[str, Dict[str, str]] = {
         "rule_id": "SWARM-TETRAGON-PBFT-SIGKILL-6801",
         "action": "INSTANT_SIGKILL_AND_QUORUM_QUARANTINE",
         "technique": "T1190 / Exploit Public-Facing Application",
+    },
+    "69": {
+        "engine": "SafeTensors Zero-Deserialization Parser & Sigstore Rekor Verifier",
+        "rule_id": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901",
+        "action": "QUARANTINE_MODEL_AND_SANITIZE_WEIGHTS",
+        "technique": "T1195.002 / Compromise Software Supply Chain: Malicious Model Weights",
     },
 }
 
@@ -465,7 +471,7 @@ def main() -> None:
     )
     parser.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     parser.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    parser.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 67개 랩 종합 공방전 실행")
+    parser.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 69개 랩 종합 공방전 실행")
     parser.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     parser.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     parser.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")

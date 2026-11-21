@@ -50,6 +50,8 @@ def test_list_labs(client):
     assert "65" in ids
     assert "66" in ids
     assert "67" in ids
+    assert "68" in ids
+    assert "69" in ids
     assert "54" in ids
     assert "55" in ids
     assert "56" in ids

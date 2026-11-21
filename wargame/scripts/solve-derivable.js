@@ -3104,6 +3104,57 @@ for (const id of SWARMSENTRY_IDS) {
   });
 }
 
+const WEIGHTSEC_IDS = [
+  "t0_weightsec_pickle_vs_safetensors_threat_model",
+  "t0_weightsec_neural_weight_lsb_stego_concepts",
+  "t0_weightsec_model_supply_chain_poisoning_vectors",
+  "t0_weightsec_weight_quantization_bitmask_theory",
+  "t0_weightsec_gaussian_weight_distribution_metrics",
+  "t0_weightsec_sigstore_cosign_provenance_fundamentals",
+  "t0_weightsec_huggingface_hub_model_audit_principles",
+  "t1_weightsec_safetensors_header_json_boundary_audit",
+  "t1_weightsec_pickle_magic_byte_disassembly_inspection",
+  "t1_weightsec_float32_mantissa_lsb_extraction",
+  "t1_weightsec_quantization_clipping_weight_sanitization",
+  "t1_weightsec_shannon_entropy_bit_distribution_audit",
+  "t1_weightsec_rekor_transparency_log_inclusion_verification",
+  "t1_weightsec_ed25519_model_weight_signature_validation",
+  "t2_weightsec_zero_deserialization_safetensors_enforcer",
+  "t2_weightsec_anti_pickle_rce_bytecode_firewall",
+  "t2_weightsec_lsb_bitmask_sanitizer_pipeline",
+  "t2_weightsec_chi_square_goodness_of_fit_sentinel",
+  "t2_weightsec_layer_variance_anomaly_filtering",
+  "t2_weightsec_cosign_bundle_fulcio_cert_chain_validation",
+  "t2_weightsec_model_provenance_immutable_attestation",
+  "t3_weightsec_in_kernel_safetensors_integrity_guard",
+  "t3_weightsec_covert_weight_channel_differential_analyzer",
+  "t3_weightsec_multimodal_tensor_entropy_anomaly_scanner",
+  "t3_weightsec_adversarial_weight_backdoor_trigger_mitigation",
+  "t3_weightsec_sigstore_rekor_merkle_root_cross_verifier",
+  "t3_weightsec_ephemeral_key_kdf_weight_decryption",
+  "t3_weightsec_automated_model_registry_quarantine_daemon",
+  "t4_weightsec_full_spectrum_neural_weight_defense_mesh",
+  "t4_weightsec_hardware_enclave_safetensors_attestation",
+  "t4_weightsec_zero_leak_weight_steganography_neutralizer",
+  "t4_weightsec_decentralized_merkle_provenance_blockchain",
+  "t4_weightsec_autonomous_ai_security_weight_auditor",
+  "t4_weightsec_capstone_safe_ai_model_supply_chain_defense",
+  "t4_weightsec_capstone_weightsec_sovereign_ai_assurance"
+];
+
+for (const id of WEIGHTSEC_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/WEIGHTSEC_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_weightsec_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

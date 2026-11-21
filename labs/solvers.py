@@ -2166,6 +2166,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Cilium Tetragon in-kernel eBPF LSM policy active & lateral movement killed -> FLAG{v218_s4_ebpf_tetragon_swarm_lateral_zero_trust_kill}"
             }
         ]
+    },
+    "69": {
+        "title": "69 ModelWeightStegoLab AI 신경망 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩",
+        "steps": [
+            {
+                "step": 1,
+                "name": "레거시 PyTorch/Pickle 임의 코드 실행(RCE) 차단 및 SafeTensors 헤더 엄격 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "악성 바이트코드(__reduce__)가 은닉된 Pickle 바이너리를 차단하고 역직렬화 위험이 없는 SafeTensors JSON 헤더 메타데이터를 정밀 파싱합니다.",
+                "exploit_payload": '{"model_format": "safetensors", "magic_header": "safetensors-v1", "reject_pickle_opcodes": true, "header_metadata_json": {"__metadata__": {"framework": "pt"}, "weight": {"dtype": "F32", "shape": [768, 768]}}}',
+                "defense": "SafeTensors 제로 역직렬화 포맷 강제, Pickle 매직 바이트 검사 및 위험 바이트코드 차단.",
+                "sample_output": "✓ Pickle deserialization RCE blocked & SafeTensors verified -> FLAG{v219_s1_safetensors_pickle_deserialization_blocked}"
+            },
+            {
+                "step": 2,
+                "name": "신경망 가중치 가수부 LSB 은닉 페이로드 추출 및 양자화 비트마스크 살균",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "트랜스포머 어텐션 레이어 가중치(float32) 최하위 비트(LSB)에 은닉된 은닉 통신 채널을 비트마스킹 및 동적 양자화 클리핑으로 무력화합니다.",
+                "exploit_payload": '{"layer_name": "transformer.encoder.layer.0.attention.weight", "weight_precision": "float32", "lsb_bitmask_sanitization": true, "quantization_clipping": true}',
+                "defense": "가수부 하위 비트 살균, FP8/INT8 동적 양자화 클리핑, 은닉 통신 채널 제거.",
+                "sample_output": "✓ Float32 mantissa LSB covert channel sanitized -> FLAG{v219_s2_neural_weight_lsb_stego_neutralized}"
+            },
+            {
+                "step": 3,
+                "name": "통계적 카이제곱 적합도 검정 및 샤논 엔트로피 이상치 탐지",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "가우스 정규분포 적합도 카이제곱 검정(p >= 0.05) 및 텐서 비트 엔트로피(H <= 7.92) 분석을 통해 은밀히 조작된 가중치 이상 패턴을 색출합니다.",
+                "exploit_payload": '{"chi_square_p_value": 0.42, "shannon_entropy": 7.65, "variance_threshold": 0.015, "statistical_anomaly_detected": true}',
+                "defense": "통계적 적합도 검정 센티널, 엔트로피 기반 이상 가중치 필터링, 정규분포 신뢰구간 검증.",
+                "sample_output": "✓ Chi-Square goodness-of-fit and Shannon entropy validated -> FLAG{v219_s3_statistical_chi_square_weight_anomaly_detected}"
+            },
+            {
+                "step": 4,
+                "name": "Sigstore Cosign 머클 트리 원격 증명 및 모델 출처 불변성 검증 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "Sigstore Rekor 투명성 로그 및 SHA-256 머클 루트 해시 서명을 검증하여 공급망 내 모델 가중치의 출처 및 무결성을 보증합니다.",
+                "exploit_payload": '{"model_sha256": "<sha256_hash>", "sigstore_rekor_log_index": 8069219, "ed25519_signature": "sig_ed25519_cosign_v219_verified_pass", "merkle_root_audit_hmac": "<hmac_sha256>"}',
+                "defense": "Sigstore Cosign 머클 트리 증명, Rekor 분산 투명성 감사 원장, Ed25519 디지털 서명 체인.",
+                "sample_output": "✓ Sigstore Cosign Rekor transparency verified & model provenance established -> FLAG{v219_s4_sigstore_model_provenance_merkle_verified}"
+            }
+        ]
     }
 }
 

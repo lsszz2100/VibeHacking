@@ -141,6 +141,7 @@ start_lab() {
         "66_ai_sandbox_escape_supply_chain_lab"
         "67_confidential_ai_inference_lab"
         "68_autonomous_agent_swarm_lab"
+        "69_model_weight_stego_lab"
     )
 
     local lab_names=(
@@ -213,6 +214,7 @@ start_lab() {
         "AI 에이전트 샌드박스 탈출 & 공급망 보안 랩"
         "기밀 AI 추론 & 하드웨어 엔클레이브 증명 방어 랩"
         "자율 멀티에이전트 스웜 보안 & 비잔틴 합의 방어 랩"
+        "AI 모델 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩"
     )
 
     local lab_ports=(
@@ -285,10 +287,11 @@ start_lab() {
         "웹 콘솔 & AI 샌드박스 탈출 방어: http://localhost:8066"
         "웹 콘솔 & TEE 게이트웨이: http://localhost:8067"
         "웹 콘솔 & 스웜 메시 게이트웨이: http://localhost:8068"
+        "웹 콘솔 & 모델 가중치 레지스트리: http://localhost:8069"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 68 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~68 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 69 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~69 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

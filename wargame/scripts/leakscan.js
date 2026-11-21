@@ -655,6 +655,12 @@ const ALLOWLIST = new Map([
   ['t4_antire_nested_virtualization_timing_side_channel_mitigation -> t4_revirt', 'Nested virtualization mitigates hypervisor timing'],
   ['t4_antire_kernel_assisted_anti_tamper_ebpf_lsm_guard -> t4_pwncet', 'Kernel assisted guard integrates Intel CET'],
   ['t4_antire_hardware_enclave_sgx_trustzone_binary_shield -> t4_firmwaretrustzone', 'Hardware enclave analyzes ARM TrustZone'],
+
+  // Track 81 weightsec domain terms
+  ['t0_weightsec_weight_quantization_bitmask_theory -> t1_quantization', 'Neural weight quantization bitmask concepts cite quantization technique'],
+  ['t1_weightsec_quantization_clipping_weight_sanitization -> t1_quantization', 'Quantization clipping sanitization cites quantization'],
+  ['t2_weightsec_model_provenance_immutable_attestation -> t3_scintoto', 'Model provenance attestation references in-toto software supply chain attestation'],
+  ['t3_weightsec_covert_weight_channel_differential_analyzer -> t1_quantization', 'Differential analysis references quantization mitigation'],
 ]);
 
 function loadChallenges() {

@@ -660,6 +660,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM07:2025",
         "owasp_name": "System Prompt & Shared Context Window Hijacking in Autonomous Swarm Workflows",
     },
+    "69": {
+        "kisa_id": "2.10.4",
+        "kisa_name": "소프트웨어 개발 보안 및 AI 모델 공급망 무결성 통제 (SafeTensors 및 신경망 가중치 스테가노그래피 방어)",
+        "nist_csf_id": "PR.DS-06",
+        "nist_csf_name": "Neural Weight Steganography Mitigation, SafeTensors Deserialization Hardening & Sigstore Cosign Attestation",
+        "owasp_id": "LLM04:2025",
+        "owasp_name": "Model Denial of Service & Neural Weight Manipulation / Supply Chain Poisoning",
+    },
 }
 
 @dataclass
@@ -1925,6 +1933,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Multi-agent swarm orchestrator accepts unverified worker RPC connections lacking SPIFFE ID validation, aggregates voting results without PBFT quorum anomaly thresholds, permits unprivileged workers to mutate shared context memory, and fails to monitor inter-agent IPC sockets in the Linux kernel.",
                 "affected_component": "AutonomousAgentSwarmLab Orchestrator & Worker Mesh (Port 8068)",
                 "remediation": "Enforce mutual TLS (mTLS) with cryptographically bound SPIFFE IDs for all swarm workers, mandate PBFT (3f + 1) consensus with outlier vote pruning, isolate shared context windows using Linux Landlock LSM read-only snapshots, and deploy Cilium Tetragon eBPF LSM policies for 0ms SIGKILL on unauthorized inter-worker IPC."
+            }
+        ]
+    },
+    "69": {
+        "title": "69 ModelWeightStegoLab Neural Weight Steganography, SafeTensors Deserialization & Model Provenance",
+        "category": "AI Security & Model Supply Chain Defense",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-6901",
+                "name": "Legacy Pickle Deserialization RCE, Neural Weight LSB Steganography & Unsigned Registry Poisoning",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1195.002",
+                "mitre_technique": "Supply Chain Compromise: Compromise Software Supply Chain via Neural Weights",
+                "mitre_tactic": "Initial Access / Defense Evasion / Persistence",
+                "impact": "Pickle bytecode execution yields arbitrary remote code execution upon model loading, float32 weight mantissa LSB manipulation establishes covert command-and-control channels without inference accuracy degradation, and unsigned model registries allow malicious weight distribution.",
+                "description": "AI model loading pipeline parses untrusted PyTorch pickle serialized weights without bytecode sanitization, fails to audit least significant bit (LSB) anomalies in tensor mantissa distributions against Gaussian baselines, and omits cryptographic Merkle signature verification against Sigstore Rekor transparency logs.",
+                "affected_component": "ModelWeightStegoLab Registry & Weight Ingestion Engine (Port 8069)",
+                "remediation": "Mandate SafeTensors zero-deserialization binary format, apply mantissa LSB bitmasking and dynamic quantization clipping, enforce Chi-Square goodness-of-fit (p >= 0.05) and Shannon bit entropy (H <= 7.92) telemetry gating, and verify Sigstore Cosign Merkle signatures prior to tensor allocation."
             }
         ]
     }

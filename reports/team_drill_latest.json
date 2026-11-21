@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-20 11:56:46",
+  "timestamp": "2026-11-21 16:32:39",
   "teams_tested": [
     "red",
     "blue",
@@ -13,10 +13,10 @@
     "re",
     "antire"
   ],
-  "total_drills": 73,
-  "total_attacks_executed": 220,
-  "total_attacks_detected": 220,
-  "total_attacks_blocked": 220,
+  "total_drills": 77,
+  "total_attacks_executed": 236,
+  "total_attacks_detected": 236,
+  "total_attacks_blocked": 236,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
@@ -53,20 +53,20 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 9,
-      "attacks": 31,
-      "detected": 31,
-      "blocked": 31,
+      "labs_tested": 12,
+      "attacks": 43,
+      "detected": 43,
+      "blocked": 43,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
     },
     "yellow": {
       "team_name": "옐로팀",
-      "labs_tested": 7,
-      "attacks": 20,
-      "detected": 20,
-      "blocked": 20,
+      "labs_tested": 8,
+      "attacks": 24,
+      "detected": 24,
+      "blocked": 24,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "20",
@@ -231,7 +231,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "25",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "07",
@@ -605,7 +605,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "23",
@@ -660,7 +660,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "26",
@@ -715,7 +715,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "40",
@@ -781,7 +781,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "50",
@@ -847,7 +847,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "51",
@@ -913,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "56",
@@ -979,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "01",
@@ -1023,7 +1023,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "03",
@@ -1056,7 +1056,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "05",
@@ -1089,7 +1089,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "13",
@@ -1122,7 +1122,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "23",
@@ -1177,7 +1177,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "38",
@@ -1243,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "50",
@@ -1309,7 +1309,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "56",
@@ -1375,7 +1375,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "02",
@@ -1419,7 +1419,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "10",
@@ -1518,7 +1518,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "49",
@@ -1584,7 +1584,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "54",
@@ -1650,7 +1650,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "58",
@@ -1716,7 +1716,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "59",
@@ -1782,7 +1782,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.18
     },
     {
       "lab_id": "60",
@@ -1848,7 +1848,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "61",
@@ -1914,7 +1914,205 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
+    },
+    {
+      "lab_id": "67",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "Lab 67: Confidential AI Inference & Hardware Enclave Attestation Defense Lab",
+      "cve": "VIBE-2026-6701",
+      "cvss": 10.0,
+      "mitre": "T1659",
+      "kisa": "2.10.3",
+      "nist": "PR.DS-01",
+      "owasp": "LLM06:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "AMD SEV-SNP / TDX Hardware Attestation Monitor",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "하드웨어 TEE 원격 증명(Remote Attestation) 및 VCEK 체인 기반 PCR0 무결성 검증",
+          "red_attack": "신뢰할 수 없는 클라우드 호스트 환경에서 위조된 증명 쿼트를 AMD SEV-SNP/Intel TDX 하드웨어 VCEK 루트 인증서 체인 및 PCR0 해시 검증으로 차단합니다.",
+          "blue_defense": "하드웨어 TEE 원격 증명 쿼트 서명 검증, PCR0 펌웨어 측정치 고정, VCEK 인증 체인 강제.",
+          "detection_rule": "TEE-ENCLAVE-SNP-VCEK-6701-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "엔클레이브 내부 AES-256-XTS 모델 가중치 복호화 & 메모리 평문 덤프 차단",
+          "red_attack": "하이퍼바이저 관리자 권한 메모리 스누핑에 대비하여 가중치를 엔클레이브 내부에서만 복호화하고 AES-256-XTS 하드웨어 암호화로 보호합니다.",
+          "blue_defense": "하드웨어 메모리 암호화(AES-256-XTS), 엔클레이브 외부 평문 가중치 유출 차단 배리어.",
+          "detection_rule": "TEE-ENCLAVE-SNP-VCEK-6701-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "마이크로아키텍처 캐시 타이밍(Flush+Reload/Prime+Probe) 부채널 모델 역공학 방어",
+          "red_attack": "추론 시 Last-Level Cache(LLC) 적중/실패 시간차로 뉴런 활성화 상태를 복원하는 부채널 공격을 상수 시간 연산 및 ORAM 메모리 셔플링으로 방어합니다.",
+          "blue_defense": "상수 시간 행렬곱(Constant-time GEMM), 캐시 플러시 완화, 메모리 접근 패턴 은닉(ORAM), Prime+Probe 탐지 센티널.",
+          "detection_rule": "TEE-ENCLAVE-SNP-VCEK-6701-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "엔클레이브 하드웨어 TPM AIK 기반 추론 출력 위변조 방지 암호학적 서명 (Capstone)",
+          "red_attack": "프롬프트 입력 및 추론 결과의 중간 변조 및 모델 사칭을 하드웨어 RoT 기반 TPM AIK 서명으로 봉인하여 진본성을 증명합니다.",
+          "blue_defense": "TPM AIK 암호학적 서명 생성, 프롬프트-응답 바인딩 검증, 하드웨어 신뢰점(RoT) 강제.",
+          "detection_rule": "TEE-ENCLAVE-SNP-VCEK-6701-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.07
+    },
+    {
+      "lab_id": "68",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "Lab 68: Autonomous Agent Swarm Security & Byzantine Defense Lab",
+      "cve": "VIBE-2026-6801",
+      "cvss": 10.0,
+      "mitre": "T1190",
+      "kisa": "2.10.1",
+      "nist": "PR.AC-04",
+      "owasp": "LLM07:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Cilium Tetragon eBPF LSM & PBFT Swarm Quorum Engine",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "사칭 워커 에이전트 등록 차단 및 X.509 mTLS / SPIFFE ID 상호 인증 강제",
+          "red_attack": "분산 멀티에이전트 스웜 오케스트레이터에 비인가 사칭 에이전트가 위조된 RPC 인터페이스로 무단 합류하는 것을 SPIFFE ID 및 mTLS 인증서 핑거프린트로 차단합니다.",
+          "blue_defense": "X.509 mTLS 상호 인증, SPIFFE ID 암호학적 바인딩, 워커 신원 고정(Identity Pinning).",
+          "detection_rule": "SWARM-TETRAGON-PBFT-SIGKILL-6801-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "스웜 분산 합의 오염 및 비잔틴 고장(Byzantine Fault) 쿼럼 방어",
+          "red_attack": "오염된 워커 에이전트들이 담합하여 악의적 의사결정을 주입하려는 비잔틴 공격을 PBFT 3단계 합의 프로토콜 및 이상 가중치 필터링으로 무력화합니다.",
+          "blue_defense": "PBFT(Practical Byzantine Fault Tolerance) 합의 정족수(3f+1), 이상치 가중치 제거, 다수결 교차 서명.",
+          "detection_rule": "SWARM-TETRAGON-PBFT-SIGKILL-6801-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "공유 컨텍스트 윈도우 하이재킹 차단 및 Landlock LSM 비특권 네임스페이스 격리",
+          "red_attack": "프롬프트 주입으로 에이전트 간 공유되는 Context Window 메모리를 변조하려는 시도를 Linux Landlock LSM 무특권 샌드박싱 및 읽기 전용 스냅샷으로 봉쇄합니다.",
+          "blue_defense": "Landlock LSM 무특권 샌드박스, 불변 읽기 전용 컨텍스트 락, 휘발성 메모리 네임스페이스 격리.",
+          "detection_rule": "SWARM-TETRAGON-PBFT-SIGKILL-6801-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "워커 간 연쇄 횡적 이동 차단 및 Cilium Tetragon eBPF 0ms SIGKILL 즉시 사살 (Capstone)",
+          "red_attack": "침해된 워커 에이전트가 로컬 소켓/IPC를 통해 주변 에이전트로 전파를 시도할 때, 커널 eBPF LSM이 인라인 감지하여 프로세스를 즉시 사살 격리합니다.",
+          "blue_defense": "Cilium Tetragon in-kernel eBPF 실시간 추적, 비인가 IPC 연결 0ms SIGKILL, 제로트러스트 감사 원장.",
+          "detection_rule": "SWARM-TETRAGON-PBFT-SIGKILL-6801-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.04
+    },
+    {
+      "lab_id": "69",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "69 ModelWeightStegoLab AI 신경망 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩",
+      "cve": "VIBE-2026-6901",
+      "cvss": 10.0,
+      "mitre": "T1195.002",
+      "kisa": "2.10.4",
+      "nist": "PR.DS-06",
+      "owasp": "LLM04:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "SafeTensors Zero-Deserialization Parser & Sigstore Rekor Verifier",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "레거시 PyTorch/Pickle 임의 코드 실행(RCE) 차단 및 SafeTensors 헤더 엄격 검증",
+          "red_attack": "악성 바이트코드(__reduce__)가 은닉된 Pickle 바이너리를 차단하고 역직렬화 위험이 없는 SafeTensors JSON 헤더 메타데이터를 정밀 파싱합니다.",
+          "blue_defense": "SafeTensors 제로 역직렬화 포맷 강제, Pickle 매직 바이트 검사 및 위험 바이트코드 차단.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "신경망 가중치 가수부 LSB 은닉 페이로드 추출 및 양자화 비트마스크 살균",
+          "red_attack": "트랜스포머 어텐션 레이어 가중치(float32) 최하위 비트(LSB)에 은닉된 은닉 통신 채널을 비트마스킹 및 동적 양자화 클리핑으로 무력화합니다.",
+          "blue_defense": "가수부 하위 비트 살균, FP8/INT8 동적 양자화 클리핑, 은닉 통신 채널 제거.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "통계적 카이제곱 적합도 검정 및 샤논 엔트로피 이상치 탐지",
+          "red_attack": "가우스 정규분포 적합도 카이제곱 검정(p >= 0.05) 및 텐서 비트 엔트로피(H <= 7.92) 분석을 통해 은밀히 조작된 가중치 이상 패턴을 색출합니다.",
+          "blue_defense": "통계적 적합도 검정 센티널, 엔트로피 기반 이상 가중치 필터링, 정규분포 신뢰구간 검증.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "Sigstore Cosign 머클 트리 원격 증명 및 모델 출처 불변성 검증 (Capstone)",
+          "red_attack": "Sigstore Rekor 투명성 로그 및 SHA-256 머클 루트 해시 서명을 검증하여 공급망 내 모델 가중치의 출처 및 무결성을 보증합니다.",
+          "blue_defense": "Sigstore Cosign 머클 트리 증명, Rekor 분산 투명성 감사 원장, Ed25519 디지털 서명 체인.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "01",
@@ -1958,7 +2156,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "18",
@@ -1991,7 +2189,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "22",
@@ -2046,7 +2244,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "24",
@@ -2101,7 +2299,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "31",
@@ -2156,7 +2354,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "41",
@@ -2222,7 +2420,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "53",
@@ -2288,7 +2486,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
+    },
+    {
+      "lab_id": "69",
+      "team_id": "yellow",
+      "team_name": "옐로팀",
+      "lab_title": "69 ModelWeightStegoLab AI 신경망 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩",
+      "cve": "VIBE-2026-6901",
+      "cvss": 10.0,
+      "mitre": "T1195.002",
+      "kisa": "2.10.4",
+      "nist": "PR.DS-06",
+      "owasp": "LLM04:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "SafeTensors Zero-Deserialization Parser & Sigstore Rekor Verifier",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "레거시 PyTorch/Pickle 임의 코드 실행(RCE) 차단 및 SafeTensors 헤더 엄격 검증",
+          "red_attack": "악성 바이트코드(__reduce__)가 은닉된 Pickle 바이너리를 차단하고 역직렬화 위험이 없는 SafeTensors JSON 헤더 메타데이터를 정밀 파싱합니다.",
+          "blue_defense": "SafeTensors 제로 역직렬화 포맷 강제, Pickle 매직 바이트 검사 및 위험 바이트코드 차단.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "신경망 가중치 가수부 LSB 은닉 페이로드 추출 및 양자화 비트마스크 살균",
+          "red_attack": "트랜스포머 어텐션 레이어 가중치(float32) 최하위 비트(LSB)에 은닉된 은닉 통신 채널을 비트마스킹 및 동적 양자화 클리핑으로 무력화합니다.",
+          "blue_defense": "가수부 하위 비트 살균, FP8/INT8 동적 양자화 클리핑, 은닉 통신 채널 제거.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "통계적 카이제곱 적합도 검정 및 샤논 엔트로피 이상치 탐지",
+          "red_attack": "가우스 정규분포 적합도 카이제곱 검정(p >= 0.05) 및 텐서 비트 엔트로피(H <= 7.92) 분석을 통해 은밀히 조작된 가중치 이상 패턴을 색출합니다.",
+          "blue_defense": "통계적 적합도 검정 센티널, 엔트로피 기반 이상 가중치 필터링, 정규분포 신뢰구간 검증.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "Sigstore Cosign 머클 트리 원격 증명 및 모델 출처 불변성 검증 (Capstone)",
+          "red_attack": "Sigstore Rekor 투명성 로그 및 SHA-256 머클 루트 해시 서명을 검증하여 공급망 내 모델 가중치의 출처 및 무결성을 보증합니다.",
+          "blue_defense": "Sigstore Cosign 머클 트리 증명, Rekor 분산 투명성 감사 원장, Ed25519 디지털 서명 체인.",
+          "detection_rule": "SAFETENSORS-REKOR-SIGSTORE-COSIGN-6901-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "04",
@@ -2321,7 +2585,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "10",
@@ -2354,7 +2618,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "28",
@@ -2409,7 +2673,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "32",
@@ -2464,7 +2728,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "35",
@@ -2519,7 +2783,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "46",
@@ -2585,7 +2849,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "55",
@@ -2651,7 +2915,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "58",
@@ -2717,7 +2981,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "59",
@@ -2783,7 +3047,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "60",
@@ -2849,7 +3113,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "61",
@@ -2959,7 +3223,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "06",
@@ -2992,7 +3256,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "33",
@@ -3047,7 +3311,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "42",
@@ -3113,7 +3377,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "43",
@@ -3179,7 +3443,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "44",
@@ -3245,7 +3509,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "13",
@@ -3278,7 +3542,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "25",
@@ -3333,7 +3597,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "33",
@@ -3388,7 +3652,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "41",
@@ -3454,7 +3718,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "48",
@@ -3520,7 +3784,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "55",
@@ -3586,7 +3850,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "56",
@@ -3652,7 +3916,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "03",
@@ -3685,7 +3949,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "20",
@@ -3729,7 +3993,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "21",
@@ -3773,7 +4037,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "30",
@@ -3828,7 +4092,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "47",
@@ -3894,7 +4158,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "57",
@@ -3960,7 +4224,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "36",
@@ -4015,7 +4279,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "51",
@@ -4081,7 +4345,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "57",
@@ -4147,7 +4411,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.08
     }
   ]
 }

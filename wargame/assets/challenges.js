@@ -702,6 +702,14 @@ const TRACKS = [
     "en": "Autonomous Multi-Agent Swarm Security & Byzantine Defense",
     "desc_ko": "사칭 워커 에이전트 등록 차단·X.509 mTLS/SPIFFE ID 상호 인증·PBFT 비잔틴 합의 오염 방어·Landlock LSM 공유 메모리 격리·Cilium Tetragon eBPF 0ms SIGKILL 즉시 사살.",
     "desc_en": "Rogue worker agent registration denial, X.509 mTLS/SPIFFE ID mutual authentication, PBFT Byzantine consensus defense, Landlock LSM shared memory isolation, and Cilium Tetragon eBPF 0ms SIGKILL containment."
+  },
+  {
+    "id": "weightsec",
+    "icon": "⚖️",
+    "ko": "AI 신경망 가중치 스테가노그래피 & SafeTensors 공급망 방어",
+    "en": "Neural Weight Steganography, SafeTensors Hardening & Sigstore Cosign",
+    "desc_ko": "Pickle RCE 역직렬화 차단·SafeTensors 헤더 무결성 검증·가중치 가수부 LSB 스테가노그래피 은닉 탐지 & 비트마스크 양자화 살균·카이제곱 적합도 검정 및 샤논 엔트로피 이상치 감사·Sigstore Cosign 머클 트리 원격 증명 및 모델 출처 불변성 검증.",
+    "desc_en": "Pickle deserialization RCE mitigation, SafeTensors header integrity validation, weight mantissa LSB steganography detection and quantization sanitization, Chi-Square goodness-of-fit and Shannon entropy anomaly auditing, and Sigstore Cosign Merkle tree attestation."
   }
 ];
 
@@ -79020,6 +79028,916 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_swarmsentry_capstone_full_spectrum_swarm_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_pickle_vs_safetensors_threat_model",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "5110a5d1126e7d2e5159563189fff43d88764082d1e3a9118620f89184eb75f8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "레거시 Pickle 바이트코드 위험과 SafeTensors 제로 역직렬화 위협 모델",
+      "en": "Legacy Pickle Bytecode Risks & SafeTensors Zero-Deserialization Threat Model"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 레거시 Pickle 바이트코드 위험과 SafeTensors 제로 역직렬화 위협 모델\n상세 분석 지침:\n- PyTorch 가중치 저장 포맷(.pt/.bin)의 임의 코드 실행 위험과 SafeTensors의 제로 역직렬화 안전 모델을 비교 분석합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_pickle_vs_safetensors_threat_model`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Legacy Pickle Bytecode Risks & SafeTensors Zero-Deserialization Threat Model\nAnalysis Requirements:\n- Compare arbitrary code execution risks of PyTorch legacy formats (.pt/.bin) with SafeTensors zero-deserialization guarantees.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_pickle_vs_safetensors_threat_model`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_pickle_vs_safetensors_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_pickle_vs_safetensors_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_neural_weight_lsb_stego_concepts",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "6b2a7e549e1585dd466a6c396808ab5ca5bd8932a66f0864658a97f90f8dccf2",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "신경망 가중치 부동소수점 가수부 LSB 은닉 채널 개념",
+      "en": "Neural Network Float32 Mantissa LSB Covert Channel Concepts"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 신경망 가중치 부동소수점 가수부 LSB 은닉 채널 개념\n상세 분석 지침:\n- 딥러닝 가중치 부동소수점 최하위 비트에 모델 출력 손실 없이 악성 셸코드나 C2 주소를 은닉하는 원리를 학습합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_neural_weight_lsb_stego_concepts`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Neural Network Float32 Mantissa LSB Covert Channel Concepts\nAnalysis Requirements:\n- Study the principles of embedding covert shellcode or C2 payloads into floating-point mantissa least significant bits.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_neural_weight_lsb_stego_concepts`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_neural_weight_lsb_stego_concepts` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_neural_weight_lsb_stego_concepts`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_model_supply_chain_poisoning_vectors",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "4a9a855b913c3cf61f3ba1f876356eb866b0304f6534898992fad0de6e364eab",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "모델 레지스트리 가중치 오염 및 비인가 가중치 주입 공격 표면",
+      "en": "Model Registry Supply Chain Poisoning & Weight Injection Surfaces"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 모델 레지스트리 가중치 오염 및 비인가 가중치 주입 공격 표면\n상세 분석 지침:\n- Hugging Face 등 오픈소스 허브에서 서명되지 않은 가중치 체크포인트를 배포하여 시스템을 장악하는 공격 경로를 검토합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_model_supply_chain_poisoning_vectors`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Model Registry Supply Chain Poisoning & Weight Injection Surfaces\nAnalysis Requirements:\n- Analyze attack pathways exploiting unsigned model checkpoints across open-source hubs to compromise downstream systems.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_model_supply_chain_poisoning_vectors`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_model_supply_chain_poisoning_vectors` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_model_supply_chain_poisoning_vectors`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_weight_quantization_bitmask_theory",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "2dab0de5d51f27fcd69cabfdf5b6db7eb81e07951b54365044597adcf565f612",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FP8/INT8 동적 양자화 및 비트마스크 살균 방어 이론",
+      "en": "FP8/INT8 Dynamic Quantization & Bitmask Sanitization Defense Theory"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: FP8/INT8 동적 양자화 및 비트마스크 살균 방어 이론\n상세 분석 지침:\n- 부동소수점 정밀도를 양자화하거나 가수부 하위 비트를 강제 마스킹하여 은닉 채널을 무력화하는 방어 메커니즘을 학습합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_weight_quantization_bitmask_theory`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: FP8/INT8 Dynamic Quantization & Bitmask Sanitization Defense Theory\nAnalysis Requirements:\n- Learn defense mechanisms eliminating covert channels via dynamic quantization and mantissa low-bit masking.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_weight_quantization_bitmask_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_weight_quantization_bitmask_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_weight_quantization_bitmask_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_gaussian_weight_distribution_metrics",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "e57af26014996abfcae615a01c7cd1d87f47848568dc66be55daf156577044c9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "정규분포 가중치 통계 지표 및 분산 이상치 분석 원리",
+      "en": "Gaussian Weight Distribution Metrics & Variance Anomaly Detection"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 정규분포 가중치 통계 지표 및 분산 이상치 분석 원리\n상세 분석 지침:\n- 사전학습된 신경망 가중치의 평균, 표준편차, 첨도 지표를 기준으로 인위적 조작 패턴을 색출하는 통계 원리를 분석합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_gaussian_weight_distribution_metrics`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Gaussian Weight Distribution Metrics & Variance Anomaly Detection\nAnalysis Requirements:\n- Analyze statistical metrics (mean, stddev, kurtosis) in pre-trained weights to detect artificial tampering patterns.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_gaussian_weight_distribution_metrics`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_gaussian_weight_distribution_metrics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_gaussian_weight_distribution_metrics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_sigstore_cosign_provenance_fundamentals",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "89ff3d3cd90e79902bf1d1b595dfaec7b76657e9af4430f3d95f7cb18567f59b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Sigstore Cosign 및 Rekor 투명성 원장 모델 출처 증명 기초",
+      "en": "Sigstore Cosign & Rekor Transparency Log Model Provenance Fundamentals"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Sigstore Cosign 및 Rekor 투명성 원장 모델 출처 증명 기초\n상세 분석 지침:\n- OIDC 기반 무키 서명(Keyless Signing)과 Rekor 투명성 감사 원장을 활용하여 모델 출처를 암호학적으로 검증하는 원리를 학습합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_sigstore_cosign_provenance_fundamentals`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Sigstore Cosign & Rekor Transparency Log Model Provenance Fundamentals\nAnalysis Requirements:\n- Study cryptographic model provenance verification using OIDC keyless signing and Rekor transparency logs.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_sigstore_cosign_provenance_fundamentals`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_sigstore_cosign_provenance_fundamentals` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_sigstore_cosign_provenance_fundamentals`."
+      ]
+    }
+  },
+  {
+    "id": "t0_weightsec_huggingface_hub_model_audit_principles",
+    "tier": 0,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 25,
+    "ci": false,
+    "hash": "68f5b90755af518749d6079ffa64487bcad13f35c520d597388da67033223f92",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "공개 모델 허브 체크포인트 보안 감사 원칙",
+      "en": "Open Model Hub Checkpoint Security Audit Principles"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 공개 모델 허브 체크포인트 보안 감사 원칙\n상세 분석 지침:\n- 외부 레지스트리에서 다운로드한 사전학습 가중치 파일의 해시 무결성과 악성 파이썬 실행 가능성을 선제 평가하는 감사 수칙을 정립합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_huggingface_hub_model_audit_principles`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Open Model Hub Checkpoint Security Audit Principles\nAnalysis Requirements:\n- Establish security audit guidelines evaluating hash integrity and Python bytecode execution in downloaded checkpoints.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t0_weightsec_huggingface_hub_model_audit_principles`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_weightsec_huggingface_hub_model_audit_principles` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_weightsec_huggingface_hub_model_audit_principles`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_safetensors_header_json_boundary_audit",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "237f65abea26d17adfa36c910cd4ed2b1090377496b91f5d433dd7d14c82e891",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SafeTensors 8바이트 헤더 크기 및 JSON 메타데이터 경계 감사",
+      "en": "SafeTensors 8-Byte Header Size & JSON Metadata Boundary Audit"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: SafeTensors 8바이트 헤더 크기 및 JSON 메타데이터 경계 감사\n상세 분석 지침:\n- SafeTensors 파일 선두 8바이트(u64 little-endian) 길이 필드와 JSON 메타데이터 버퍼 오버플로우 경계를 정밀 검증합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_safetensors_header_json_boundary_audit`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: SafeTensors 8-Byte Header Size & JSON Metadata Boundary Audit\nAnalysis Requirements:\n- Audit the 8-byte u64 little-endian header length field and JSON metadata buffer boundaries in SafeTensors binaries.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_safetensors_header_json_boundary_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_safetensors_header_json_boundary_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_safetensors_header_json_boundary_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_pickle_magic_byte_disassembly_inspection",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "b330ebd5c19123f5ba8f93d05ae105a2ce260f225a29e1d5466faa34371b70f6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Pickle 매직 바이트 및 위험 오프코드 디스어셈블리 검사",
+      "en": "Pickle Magic Bytes & Dangerous Opcode Disassembly Inspection"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Pickle 매직 바이트 및 위험 오프코드 디스어셈블리 검사\n상세 분석 지침:\n- 바이너리 스트림에서 0x80 매직 바이트를 감지하고 pickletools 디스어셈블러로 REDUCE(R), GLOBAL(c), BUILD(b) 명령어를 색출합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_pickle_magic_byte_disassembly_inspection`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Pickle Magic Bytes & Dangerous Opcode Disassembly Inspection\nAnalysis Requirements:\n- Detect 0x80 magic bytes and parse pickletools disassembly to isolate REDUCE, GLOBAL, and BUILD opcodes.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_pickle_magic_byte_disassembly_inspection`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_pickle_magic_byte_disassembly_inspection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_pickle_magic_byte_disassembly_inspection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_float32_mantissa_lsb_extraction",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "fdcfbf21945d20c2dfdcc144713a81a0459cc0ab564990e1c34fea12902ff430",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Float32 가수부 최하위 비트(LSB) 은닉 페이로드 정밀 추출",
+      "en": "Float32 Mantissa Least Significant Bit Covert Payload Extraction"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Float32 가수부 최하위 비트(LSB) 은닉 페이로드 정밀 추출\n상세 분석 지침:\n- IEEE 754 float32 비트 표현식에서 가수부(mantissa) 23비트 중 최하위 1~2비트를 연속 비트 스트림으로 디코딩하여 은닉 데이터를 복원합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_float32_mantissa_lsb_extraction`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Float32 Mantissa Least Significant Bit Covert Payload Extraction\nAnalysis Requirements:\n- Extract the lowest 1-2 bits from the 23-bit mantissa of IEEE 754 float32 weights to reconstruct embedded covert streams.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_float32_mantissa_lsb_extraction`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_float32_mantissa_lsb_extraction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_float32_mantissa_lsb_extraction`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_quantization_clipping_weight_sanitization",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "b91abf0c220563fe74fd76f1105bafd783f0cc8e05cdb83dc1bdba5ef047966d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "동적 양자화 클리핑을 통한 부동소수점 미세 노이즈 제거",
+      "en": "Dynamic Quantization Clipping Weight Noise Sanitization"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 동적 양자화 클리핑을 통한 부동소수점 미세 노이즈 제거\n상세 분석 지침:\n- 텐서 가중치를 대칭형 INT8/FP8 범위로 동적 양자화 후 역양자화하여 가수부 미세 은닉 노이즈를 완전 소멸시킵니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_quantization_clipping_weight_sanitization`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Dynamic Quantization Clipping Weight Noise Sanitization\nAnalysis Requirements:\n- Quantize weights dynamically to symmetric INT8/FP8 and dequantize back to eliminate subtle mantissa covert noise.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_quantization_clipping_weight_sanitization`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_quantization_clipping_weight_sanitization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_quantization_clipping_weight_sanitization`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_shannon_entropy_bit_distribution_audit",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "2c56e33b4aba4066f84be697f079cef2dc78ed056cb81e78b351d8c79933a8e0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "텐서 비트 샤논 엔트로피(H <= 7.92) 측정 및 이상치 감사",
+      "en": "Tensor Bit Shannon Entropy Measurement & Anomaly Audit"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 텐서 비트 샤논 엔트로피(H <= 7.92) 측정 및 이상치 감사\n상세 분석 지침:\n- 가중치 바이트 분포의 샤논 엔트로피를 계산하여 정상 가우스 분포(7.2~7.8)를 초과하는 압축/암호화 은닉 블록을 색출합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_shannon_entropy_bit_distribution_audit`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Tensor Bit Shannon Entropy Measurement & Anomaly Audit\nAnalysis Requirements:\n- Calculate Shannon entropy across weight bytes to identify compressed or encrypted covert blocks exceeding Gaussian baselines.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_shannon_entropy_bit_distribution_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_shannon_entropy_bit_distribution_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_shannon_entropy_bit_distribution_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_rekor_transparency_log_inclusion_verification",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "296aa255ddd9bbead27cdfe55e5e65286d80952bac40916b1f003d2bd98b812e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Rekor 투명성 로그 머클 포함 증명 검증",
+      "en": "Rekor Transparency Log Merkle Inclusion Proof Verification"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Rekor 투명성 로그 머클 포함 증명 검증\n상세 분석 지침:\n- Sigstore Rekor REST API로부터 모델 아티팩트의 로그 인덱스와 머클 트리 포함 증명(Inclusion Proof)을 감사하여 위조 배포를 차단합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_rekor_transparency_log_inclusion_verification`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Rekor Transparency Log Merkle Inclusion Proof Verification\nAnalysis Requirements:\n- Verify Merkle inclusion proofs and log indices from the Sigstore Rekor transparency ledger to block rogue distributions.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_rekor_transparency_log_inclusion_verification`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_rekor_transparency_log_inclusion_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_rekor_transparency_log_inclusion_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t1_weightsec_ed25519_model_weight_signature_validation",
+    "tier": 1,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 50,
+    "ci": false,
+    "hash": "f458d023d703176e8d40ea1cad0613138f30debc7f3513d84a0b64e0543fbcfa",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Ed25519 디지털 서명 기반 모델 가중치 파일 무결성 감사",
+      "en": "Ed25519 Digital Signature Model Weight File Integrity Audit"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Ed25519 디지털 서명 기반 모델 가중치 파일 무결성 감사\n상세 분석 지침:\n- 공식 모델 릴리즈 체크포인트의 SHA-256 해시를 추출하고 Ed25519 공개키를 통해 서명 일치 여부를 단일 턴으로 검증합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_ed25519_model_weight_signature_validation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Ed25519 Digital Signature Model Weight File Integrity Audit\nAnalysis Requirements:\n- Compute SHA-256 digests of release checkpoints and validate Ed25519 digital signatures against verified public keys.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t1_weightsec_ed25519_model_weight_signature_validation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_weightsec_ed25519_model_weight_signature_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_weightsec_ed25519_model_weight_signature_validation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_zero_deserialization_safetensors_enforcer",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "67e30f8a371d6e0b23b13ecb82ea1b0119bc9e481bd521830de6c6f4b6456443",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "역직렬화 없는 직접 메모리 맵(mmap) SafeTensors 텐서 로더 구현",
+      "en": "Zero-Deserialization Direct mmap SafeTensors Tensor Loader"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 역직렬화 없는 직접 메모리 맵(mmap) SafeTensors 텐서 로더 구현\n상세 분석 지침:\n- 파이썬 객체 인스턴스화 없이 커널 mmap을 통해 가중치 바이너리를 가상 메모리에 직접 매핑하는 무역직렬화 로더를 구성합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_zero_deserialization_safetensors_enforcer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Zero-Deserialization Direct mmap SafeTensors Tensor Loader\nAnalysis Requirements:\n- Implement a memory-mapped SafeTensors loader mapping raw tensor buffers directly without Python object deserialization.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_zero_deserialization_safetensors_enforcer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_zero_deserialization_safetensors_enforcer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_zero_deserialization_safetensors_enforcer`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_anti_pickle_rce_bytecode_firewall",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "2790863aaf81f8edcba6e0eaa282edc672c1684416ffa0d21f99bb679ecf6334",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Pickle 가상머신(PVM) 바이트코드 정적 분석 인라인 방화벽",
+      "en": "Pickle Virtual Machine (PVM) Bytecode Static Analysis Firewall"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Pickle 가상머신(PVM) 바이트코드 정적 분석 인라인 방화벽\n상세 분석 지침:\n- 임의의 pickle 스트림을 디스패치하기 전에 위험 모듈(os, subprocess, builtins) 로드 요청을 인라인 차단하는 PVM 방화벽을 적용합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_anti_pickle_rce_bytecode_firewall`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Pickle Virtual Machine (PVM) Bytecode Static Analysis Firewall\nAnalysis Requirements:\n- Deploy an inline PVM firewall intercepting unpickler dispatch to block dangerous modules before opcode evaluation.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_anti_pickle_rce_bytecode_firewall`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_anti_pickle_rce_bytecode_firewall` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_anti_pickle_rce_bytecode_firewall`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_lsb_bitmask_sanitizer_pipeline",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "d631c466e88d045e376b6f76e1db602d97f6faafa51cd809d8e6c1279c19c524",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "텐서별 가중치 가수부 하위 비트 강제 0 마스킹 살균 파이프라인",
+      "en": "Per-Tensor Weight Mantissa LSB Zero-Masking Sanitizer Pipeline"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 텐서별 가중치 가수부 하위 비트 강제 0 마스킹 살균 파이프라인\n상세 분석 지침:\n- 신경망 모델의 각 레이어 가중치 텐서에 대해 비트마스크(0xFFFFFFFC) 연산을 적용하여 LSB 2비트를 결정론적으로 초기화합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_lsb_bitmask_sanitizer_pipeline`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Per-Tensor Weight Mantissa LSB Zero-Masking Sanitizer Pipeline\nAnalysis Requirements:\n- Apply deterministic bitmask (0xFFFFFFFC) operations across all layer weight tensors to zero out 2 LSB bits.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_lsb_bitmask_sanitizer_pipeline`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_lsb_bitmask_sanitizer_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_lsb_bitmask_sanitizer_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_chi_square_goodness_of_fit_sentinel",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "e3d24bdd3f4609a6432eece28d62059499382be0677c9e5751a0942fbc297a59",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가우스 정규분포 적합도 카이제곱 검정(p >= 0.05) 센티널",
+      "en": "Gaussian Goodness-of-Fit Chi-Square Sentinel (p >= 0.05)"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 가우스 정규분포 적합도 카이제곱 검정(p >= 0.05) 센티널\n상세 분석 지침:\n- 레이어 가중치 빈(bin) 빈도수를 이론적 정규분포 기대치와 비교하여 카이제곱 유의확률이 0.05 미만인 조작 텐서를 자동 격리합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_chi_square_goodness_of_fit_sentinel`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Gaussian Goodness-of-Fit Chi-Square Sentinel (p >= 0.05)\nAnalysis Requirements:\n- Compare tensor frequency bins with theoretical Gaussian distributions, quarantining layers with Chi-Square p < 0.05.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_chi_square_goodness_of_fit_sentinel`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_chi_square_goodness_of_fit_sentinel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_chi_square_goodness_of_fit_sentinel`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_layer_variance_anomaly_filtering",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "17e0c707e17411d5396d157ebe83ce87bdff517f0c7effa341d051ed78070e67",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "레이어별 가중치 분산 이상치(3-시그마) 탐지 및 자동 격리",
+      "en": "Layer-Wise Weight Variance Anomaly Detection & Auto-Quarantine"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 레이어별 가중치 분산 이상치(3-시그마) 탐지 및 자동 격리\n상세 분석 지침:\n- 트랜스포머 어텐션 프로젝션 레이어의 가중치 분산이 모델 전체 평균 편차의 3-시그마를 초과할 경우 이상치로 판정합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_layer_variance_anomaly_filtering`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Layer-Wise Weight Variance Anomaly Detection & Auto-Quarantine\nAnalysis Requirements:\n- Evaluate layer weight variances across attention projections, isolating layers deviating beyond 3-sigma thresholds.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_layer_variance_anomaly_filtering`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_layer_variance_anomaly_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_layer_variance_anomaly_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_cosign_bundle_fulcio_cert_chain_validation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "0a3e055652788a4960a24bac3b9b660031c124e299f14da81588839216879e62",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Cosign 번들 내 Fulcio X.509 OIDC 인증서 체인 검증",
+      "en": "Cosign Bundle Fulcio X.509 OIDC Certificate Chain Validation"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Cosign 번들 내 Fulcio X.509 OIDC 인증서 체인 검증\n상세 분석 지침:\n- Sigstore Fulcio 루트 CA로부터 발급된 서명자 OIDC ID(GitHub Actions 워크플로 URI)와 SCT 무결성을 정밀 감사합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_cosign_bundle_fulcio_cert_chain_validation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Cosign Bundle Fulcio X.509 OIDC Certificate Chain Validation\nAnalysis Requirements:\n- Audit signer OIDC identities (GitHub Actions workflow URIs) and SCT integrity within Fulcio-issued X.509 cert chains.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_cosign_bundle_fulcio_cert_chain_validation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_cosign_bundle_fulcio_cert_chain_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_cosign_bundle_fulcio_cert_chain_validation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_weightsec_model_provenance_immutable_attestation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 100,
+    "ci": false,
+    "hash": "f19305e887d7a7aa7f736eadcf91086bef12c1487baf50857c29e079ec03db73",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "소프트웨어 공급망 보안 기준(SLSA Level 3) 모델 출처 불변 증명",
+      "en": "SLSA Level 3 Software Supply Chain Model Provenance Attestation"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 소프트웨어 공급망 보안 기준(SLSA Level 3) 모델 출처 불변 증명\n상세 분석 지침:\n- 빌드 환경, 소스 커밋 해시, 훈련 데이터 다이제스트가 기록된 in-toto attestation JSON 메타데이터를 정밀 파싱하고 검증합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_model_provenance_immutable_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: SLSA Level 3 Software Supply Chain Model Provenance Attestation\nAnalysis Requirements:\n- Parse and cryptographically verify in-toto attestation JSON metadata containing source commit and training hashes.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t2_weightsec_model_provenance_immutable_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_weightsec_model_provenance_immutable_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_weightsec_model_provenance_immutable_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_in_kernel_safetensors_integrity_guard",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "d0f75dcdf2733f0064e7566c24e29cf91893d0d48af08330ed742e5dd782ee57",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM 기반 SafeTensors 파일 I/O 변조 방지 실시간 감시",
+      "en": "eBPF LSM SafeTensors File I/O Anti-Tampering Realtime Guard"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: eBPF LSM 기반 SafeTensors 파일 I/O 변조 방지 실시간 감시\n상세 분석 지침:\n- 가중치 파일이 메모리에 로딩된 이후 프로세스 외부에서 파일 디스크립터를 수정하려는 무단 쓰기 시도를 eBPF LSM으로 즉각 차단합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_in_kernel_safetensors_integrity_guard`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: eBPF LSM SafeTensors File I/O Anti-Tampering Realtime Guard\nAnalysis Requirements:\n- Deploy eBPF LSM security hooks intercepting unauthorized write syscalls targeting open SafeTensors file descriptors.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_in_kernel_safetensors_integrity_guard`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_in_kernel_safetensors_integrity_guard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_in_kernel_safetensors_integrity_guard`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_covert_weight_channel_differential_analyzer",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "7e61f355f1eb5f455cceeb71ccce05895b6245ae32666b294fd4860638a77fe4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "원본 모델 대비 양자화 전후 가중치 편차 기반 은닉 채널 차분 분석",
+      "en": "Pre/Post-Quantization Weight Deviation Differential Analyzer"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 원본 모델 대비 양자화 전후 가중치 편차 기반 은닉 채널 차분 분석\n상세 분석 지침:\n- 가중치 행렬의 부동소수점 차분 맵(Delta Matrix)을 생성하여 의도적인 규칙성을 갖는 LSB 스트림을 통계적으로 분리합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_covert_weight_channel_differential_analyzer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Pre/Post-Quantization Weight Deviation Differential Analyzer\nAnalysis Requirements:\n- Generate floating-point delta matrices across quantization steps to isolate deterministic patterns in LSB streams.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_covert_weight_channel_differential_analyzer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_covert_weight_channel_differential_analyzer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_covert_weight_channel_differential_analyzer`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_multimodal_tensor_entropy_anomaly_scanner",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "daa9460b03f28a081b2a6913b8231db927fb367d739ec42cac10e8739dbee85c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "텍스트/비전 복합 트랜스포머 레이어 전수 엔트로피 스캐너",
+      "en": "Multimodal Transformer Layer Full-Spectrum Entropy Scanner"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 텍스트/비전 복합 트랜스포머 레이어 전수 엔트로피 스캐너\n상세 분석 지침:\n- 비전 인코더 및 언어 디코더 전 레이어(수억 개 파라미터)의 비트 레벨 엔트로피를 병렬 계산하여 국소적 이상 블록을 색출합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_multimodal_tensor_entropy_anomaly_scanner`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Multimodal Transformer Layer Full-Spectrum Entropy Scanner\nAnalysis Requirements:\n- Compute bit-level entropy across all vision and language layers in parallel to pinpoint localized anomalies.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_multimodal_tensor_entropy_anomaly_scanner`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_multimodal_tensor_entropy_anomaly_scanner` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_multimodal_tensor_entropy_anomaly_scanner`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_adversarial_weight_backdoor_trigger_mitigation",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "c6a9cb358829433e22f7c1926d2fa5e9ee4b7a515a26a5b5cecf78a6cadc7038",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가중치 트리거 백도어 뉴런 가중치 클리핑 방어",
+      "en": "Adversarial Weight Backdoor Trigger Neuron Clipping Defense"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 가중치 트리거 백도어 뉴런 가중치 클리핑 방어\n상세 분석 지침:\n- 특정 입력 트리거에만 비정상 활성화되는 백도어 가중치를 탐지하고 activation-aware weight clipping(AWAC) 기법으로 무력화합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_adversarial_weight_backdoor_trigger_mitigation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Adversarial Weight Backdoor Trigger Neuron Clipping Defense\nAnalysis Requirements:\n- Detect dormant backdoor weights activated by specific triggers and neutralize them using activation-aware weight clipping.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_adversarial_weight_backdoor_trigger_mitigation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_adversarial_weight_backdoor_trigger_mitigation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_adversarial_weight_backdoor_trigger_mitigation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_sigstore_rekor_merkle_root_cross_verifier",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "5469b07aa4d8520c7d232d404923a22c81e2b86b8a52403c17cbde031f96f4c8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Rekor 분산 투명성 원장 머클 루트 해시 교차 검증 파이프라인",
+      "en": "Rekor Distributed Transparency Merkle Root Cross-Verification Pipeline"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: Rekor 분산 투명성 원장 머클 루트 해시 교차 검증 파이프라인\n상세 분석 지침:\n- 여러 독립된 Rekor 모니터 노드로부터 서명된 트리 헤드(Signed Tree Head, STH)를 수집하여 분산 합의 일치 여부를 감사합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_sigstore_rekor_merkle_root_cross_verifier`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Rekor Distributed Transparency Merkle Root Cross-Verification Pipeline\nAnalysis Requirements:\n- Aggregate Signed Tree Heads (STH) from independent Rekor monitors to verify cross-node consensus integrity.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_sigstore_rekor_merkle_root_cross_verifier`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_sigstore_rekor_merkle_root_cross_verifier` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_sigstore_rekor_merkle_root_cross_verifier`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_ephemeral_key_kdf_weight_decryption",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "bb32fc554d4c6563fc9e47f53cf607f9432bf6b37127b5ee93001daceebf6a7c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "임시 KDF 세션키 기반 엔클레이브 내 모델 가중치 불변 복호화",
+      "en": "Ephemeral KDF Session Key In-Enclave Weight Decryption"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 임시 KDF 세션키 기반 엔클레이브 내 모델 가중치 불변 복호화\n상세 분석 지침:\n- 하드웨어 보안 엔클레이브(TEE) 내부에서만 HKDF-SHA256으로 파생된 30초 휘발성 키로 SafeTensors 텐서를 안전하게 복호화합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_ephemeral_key_kdf_weight_decryption`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Ephemeral KDF Session Key In-Enclave Weight Decryption\nAnalysis Requirements:\n- Decrypt SafeTensors buffers within hardware TEE enclaves using ephemeral HKDF-derived 30-second session keys.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_ephemeral_key_kdf_weight_decryption`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_ephemeral_key_kdf_weight_decryption` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_ephemeral_key_kdf_weight_decryption`."
+      ]
+    }
+  },
+  {
+    "id": "t3_weightsec_automated_model_registry_quarantine_daemon",
+    "tier": 3,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 150,
+    "ci": false,
+    "hash": "9e9a05f7bddcd85806258768f83024d68e375a8ce940298396a853e0fc70971f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "변조 가중치 감지 즉시 레지스트리 비공개 전환 및 격리 데몬",
+      "en": "Automated Model Registry Quarantine & Access Revocation Daemon"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 변조 가중치 감지 즉시 레지스트리 비공개 전환 및 격리 데몬\n상세 분석 지침:\n- 무결성 감사에 실패한 체크포인트의 다운로드 엔드포인트를 0.5초 이내에 차단하고 보안 팀에 격리 텔레메트리를 발송합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_automated_model_registry_quarantine_daemon`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Automated Model Registry Quarantine & Access Revocation Daemon\nAnalysis Requirements:\n- Revoke public download endpoints within 500ms upon integrity audit failure and dispatch quarantine telemetry.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t3_weightsec_automated_model_registry_quarantine_daemon`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_weightsec_automated_model_registry_quarantine_daemon` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_weightsec_automated_model_registry_quarantine_daemon`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_full_spectrum_neural_weight_defense_mesh",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "7f451b8643ee31d0f7bb2f9b7bc732f79da4cd20beab1e31ed205cfb62078e0e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가중치 수집부터 서빙까지 전주기 신경망 무결성 방어 메시",
+      "en": "Full-Spectrum Neural Weight Integrity Defense Mesh"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 가중치 수집부터 서빙까지 전주기 신경망 무결성 방어 메시\n상세 분석 지침:\n- SafeTensors 포맷 강제, LSB 비트마스크 살균, 카이제곱 통계 센티널, Cosign 서명 검증을 결합한 통합 무결성 방어망을 구축합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_full_spectrum_neural_weight_defense_mesh`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Full-Spectrum Neural Weight Integrity Defense Mesh\nAnalysis Requirements:\n- Construct an end-to-end defense mesh coupling SafeTensors, LSB bitmasking, Chi-Square telemetry, and Cosign attestation.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_full_spectrum_neural_weight_defense_mesh`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_full_spectrum_neural_weight_defense_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_full_spectrum_neural_weight_defense_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_hardware_enclave_safetensors_attestation",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "2dc567a707ddff0924e3b53069d179a64ed939a09b1d805e2e07935b8070ae7a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AMD SEV-SNP/TDX TEE 내부 SafeTensors 로딩 및 메모리 암호화",
+      "en": "Hardware Enclave SafeTensors Loading & Memory Encryption"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: AMD SEV-SNP/TDX TEE 내부 SafeTensors 로딩 및 메모리 암호화\n상세 분석 지침:\n- 호스트 OS 커널조차 가중치 메모리를 덤프할 수 없도록 SEV-SNP/TDX 하드웨어 암호화 페이지에 SafeTensors를 안전하게 바인딩합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_hardware_enclave_safetensors_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Hardware Enclave SafeTensors Loading & Memory Encryption\nAnalysis Requirements:\n- Bind SafeTensors memory into SEV-SNP/TDX hardware-encrypted pages preventing host kernel memory snooping.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_hardware_enclave_safetensors_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_hardware_enclave_safetensors_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_hardware_enclave_safetensors_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_zero_leak_weight_steganography_neutralizer",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "fc6801d5bdd39ff90e189284a2f1500dfc2b6141e2049a688aaf9000726d1aab",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "추론 정확도 손실 0% 부동소수점 완전 살균 엔진",
+      "en": "Zero-Accuracy-Loss Floating-Point Sanitization Engine"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 추론 정확도 손실 0% 부동소수점 완전 살균 엔진\n상세 분석 지침:\n- GLUE 및 MMLU 벤치마크 정확도 하락(0.01% 이하) 없이 은닉 바이트를 완전히 소멸시키는 수학적 무작위화 디더링을 적용합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_zero_leak_weight_steganography_neutralizer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Zero-Accuracy-Loss Floating-Point Sanitization Engine\nAnalysis Requirements:\n- Apply mathematical randomization dithering completely eradicating covert bytes with <0.01% downstream accuracy impact.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_zero_leak_weight_steganography_neutralizer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_zero_leak_weight_steganography_neutralizer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_zero_leak_weight_steganography_neutralizer`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_decentralized_merkle_provenance_blockchain",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "3d424217a76e8ee063349971b5910413edb1b815efddf3b297158477f2df1ed4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "모델 체크포인트 불변 분산 머클 감사 원장 연동",
+      "en": "Decentralized Merkle Model Provenance Blockchain Ledger"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: 모델 체크포인트 불변 분산 머클 감사 원장 연동\n상세 분석 지침:\n- 모든 모델 버전의 가중치 루트 해시와 감사 이력을 단일 장애점이 없는 분산 머클 투명성 원장에 영구 기록합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_decentralized_merkle_provenance_blockchain`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Decentralized Merkle Model Provenance Blockchain Ledger\nAnalysis Requirements:\n- Record weight root hashes and audit events onto a decentralized Merkle transparency ledger without single points of failure.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_decentralized_merkle_provenance_blockchain`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_decentralized_merkle_provenance_blockchain` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_decentralized_merkle_provenance_blockchain`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_autonomous_ai_security_weight_auditor",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "e8781f7b3c458439668224a9483ba9ef9de47457379b2393c41fe8ff18416432",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AI 에이전트 자율 신경망 가중치 역공학 및 변조 탐지 시스템",
+      "en": "Autonomous AI Security Agent Neural Weight Reverse Engineering"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: AI 에이전트 자율 신경망 가중치 역공학 및 변조 탐지 시스템\n상세 분석 지침:\n- 자율 보안 에이전트가 텐서 구조를 분석하고 은닉된 C2 도메인 및 셸코드를 사람 개입 없이 자율 추출·보고하는 파이프라인을 운영합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_autonomous_ai_security_weight_auditor`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: Autonomous AI Security Agent Neural Weight Reverse Engineering\nAnalysis Requirements:\n- Deploy autonomous security agents automatically disassembling tensors and carving covert C2 strings without human intervention.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_autonomous_ai_security_weight_auditor`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_autonomous_ai_security_weight_auditor` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_autonomous_ai_security_weight_auditor`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_capstone_safe_ai_model_supply_chain_defense",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "1073f95002304f615a88053672da1b0ff0f056ab25d42ce7c4b57ec2f2cfd802",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] SafeTensors + LSB 살균 + 카이제곱 + Sigstore 통합 방어체계",
+      "en": "[Capstone] Unified SafeTensors, LSB Sanitization, Chi-Square & Sigstore Defense"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: [Capstone] SafeTensors + LSB 살균 + 카이제곱 + Sigstore 통합 방어체계\n상세 분석 지침:\n- 복합 모델 공급망 침투 시나리오에서 4단계 전주기 방어 파이프라인을 가동하여 0-결함 방어 플래그를 도출합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_capstone_safe_ai_model_supply_chain_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: [Capstone] Unified SafeTensors, LSB Sanitization, Chi-Square & Sigstore Defense\nAnalysis Requirements:\n- Execute a 4-phase comprehensive defense pipeline across composite supply chain attacks to retrieve the verified flag.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_capstone_safe_ai_model_supply_chain_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_capstone_safe_ai_model_supply_chain_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_capstone_safe_ai_model_supply_chain_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t4_weightsec_capstone_weightsec_sovereign_ai_assurance",
+    "tier": 4,
+    "cat": "ai",
+    "track": "weightsec",
+    "points": 200,
+    "ci": false,
+    "hash": "7a81c702e293cff60ea28493713eec3ca5bb89ac96075d55a28cf0c7b8482db0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 국가 전략급 주권 AI 모델 무결성·출처 보증 아키텍처",
+      "en": "[Capstone] Strategic Sovereign AI Model Integrity & Provenance Assurance"
+    },
+    "prompt": {
+      "ko": "AI 모델 신경망 가중치 스테가노그래피 및 SafeTensors 공급망 방어 실무를 수행합니다.\n\n주제: [Capstone] 국가 전략급 주권 AI 모델 무결성·출처 보증 아키텍처\n상세 분석 지침:\n- 국가 주요 기반시설 및 국방 AI 시스템을 위한 최고 등급의 신경망 가중치 무결성, 하드웨어 증명, 영지식 공급망 보증 체계를 완결합니다.\n- 신경망 가중치 텐서 및 SafeTensors 공급망 무결성을 정밀 감사하십시오.\n- 검증 식별자 WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_capstone_weightsec_sovereign_ai_assurance`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of neural weight steganography and SafeTensors supply chain defense.\n\nTopic: [Capstone] Strategic Sovereign AI Model Integrity & Provenance Assurance\nAnalysis Requirements:\n- Finalize national strategic-grade neural weight integrity, hardware attestation, and zero-knowledge supply chain assurance.\n- Thoroughly audit neural weight tensors and SafeTensors supply chain integrity.\n- Verification Identifier WEIGHTSEC_CHALLENGE_ID: `t4_weightsec_capstone_weightsec_sovereign_ai_assurance`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_weightsec_capstone_weightsec_sovereign_ai_assurance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_weightsec_capstone_weightsec_sovereign_ai_assurance`."
       ]
     }
   }

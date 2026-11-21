@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  model_weight_stego_lab:
+    build: .
+    container_name: vibe-lab-69
+    ports:
+      - "127.0.0.1:8069:8069"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_ID=69
+      - LAB_NAME=model_weight_stego_lab
+    restart: unless-stopped
+    networks:
+      - lab_net
+
+networks:
+  lab_net:
+    driver: bridge
