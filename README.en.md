@@ -262,7 +262,7 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 | 73 | [**Bug Bounty Automation**](#73-bug-bounty-automation) | HackerOne, subfinder/nuclei pipeline, CVSS reports | 6 |
 | 74 | [**Code Auditing**](#74-code-auditing) | Semgrep/CodeQL, source-sink tracing, CI/CD gates | 6 |
 | 75 | [**Red Team Reporting**](#75-red-team-reporting) | ATT&CK mapping, dual-audience reports, debriefs | 6 |
-| 🧪 | [**CTF Practice Labs (labs/)**](#ctf-practice-labs-labs) | Web/binary/network/cloud/full-scenario/firmware/mobile Docker CTF labs | 50 |
+| 🧪 | [**CTF Practice Labs (labs/)**](#ctf-practice-labs-labs) | Web/binary/network/cloud/full-scenario/firmware/mobile Docker CTF labs | 75 |
 
 ---
 
@@ -1520,23 +1520,29 @@ MITRE ATT&CK-based TTP documentation, dual-audience (executive/technical) report
 
 ```
 labs/
-├── 01_web_hacking_lab/          ← SQLi/XSS/SSRF/JWT vulnerable Flask app (Docker-based)
-├── 02_pwn_lab/                  ← BOF/format string/heap exploit vulnerable binary environment
+├── 01_web_hacking_lab/          ← SQLi/XSS/SSRF/JWT vulnerable Flask app (Port 8080)
+├── 02_pwn_lab/                  ← BOF/format string/heap exploit vulnerable binary (Ports 10001~10005)
 ├── 03_network_lab/              ← Packet analysis/MITM/ARP spoofing pcap + practice environment
-├── 04_cloud_container_lab/      ← Vulnerable Docker/K8s environment, container escape scenarios
-├── 05_full_scenario_lab/        ← Recon→Intrusion→Lateral movement→Privilege escalation→Exfiltration
-├── 06_firmware_lab/             ← binwalk extraction · QEMU ARM emulation · hardcoded-credential CTF
-├── 07_mobile_lab/               ← Android APK static analysis · Frida · JWT alg:none bypass CTF
-├── 08_llm_security_lab/         ← Prompt injection · Indirect RAG poisoning · Agent tool abuse CTF
-├── 09_ics_scada_lab/            ← Modbus/TCP coil manipulation · FDI telemetry spoofing · SIS trip CTF
-├── 10_k8s_security_lab/         ← SA token theft · RBAC escalation · hostPath node breakout CTF
-├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting · DCSync replication · Golden Ticket takeover CTF
-├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline (PPE) · Dependency Confusion · Runner Secrets · SLSA Tampering CTF
-├── start_lab.sh                 ← Full lab docker-compose up automation
-└── stop_all.sh                  ← Stop all labs
+├── 04_cloud_container_lab/      ← Vulnerable Docker/K8s environment, container escape scenarios (Port 8040)
+├── 05_full_scenario_lab/        ← Recon→Intrusion→Lateral movement→Privilege escalation→Exfiltration (Port 8888)
+├── ... [Lab 06 ~ Lab 64]        ← Firmware, Mobile, LLM, ICS, eBPF, AD, DFIR, EDR, ZTNA, MicroVM
+├── 65_pqc_hybrid_tls_lab/       ← Kyber/ML-KEM + ML-DSA Post-Quantum TLS 1.3 (Port 8065)
+├── 66_ai_sandbox_escape_lab/    ← AI agent sandbox escape & supply chain isolation (Port 8066)
+├── 67_confidential_ai_lab/      ← AMD SEV-SNP/TDX hardware TEE confidential inference (Port 8067)
+├── 68_autonomous_agent_lab/     ← Autonomous agent swarm security & eBPF mitigation (Port 8068)
+├── 69_model_weight_stego_lab/   ← SafeTensors neural weight LSB steganography defense (Port 8069)
+├── 70_autonomous_kernel_patch/  ← Kernel eBPF LSM 0-day dynamic hotpatching (Port 8070)
+├── 71_hardware_gpu_sidechannel/ ← GPU VRAM zeroization & MIG partition isolation (Port 8071)
+├── 72_agent_memory_poison_lab/  ← AI agent memory poisoning & GraphRAG defense (Port 8072)
+├── 73_silicon_photonics_qkd/    ← Silicon photonics PRN scrambling & QKD mesh (Port 8073)
+├── 74_quantum_neural_hybrid/    ← Quantum neural network QFI adversarial perturbation defense (Port 8074)
+├── 75_photonic_ic_puf_lab/      ← Photonic IC speckle PUF & 15ns irreversible erasure (Port 8075)
+├── start_lab.sh                 ← Interactive runner for Labs 01-75
+├── solvers.py                   ← Deterministic attack-defense solver engine for all 75 labs
+└── stop_all.sh                  ← Stop all running labs safely
 ```
 
-12 Docker-based CTF vulnerable environments — web, binary, network, cloud, full scenario, firmware, mobile, LLM, ICS/SCADA, K8s, AD/Kerberos, and CI/CD supply chain, ready for local practice. Spin up with `start_lab.sh`.
+Complete catalog of **75 Docker-based Hands-on Security Practice Labs** — covering web, binary, network, cloud, PQC, eBPF, AI agents, GPU sidechannels, quantum, and optical PUF hardware security in an isolated `127.0.0.1` loopback sandbox. Launch individual labs with `vhack lab start <id>` or `bash labs/start_lab.sh <id>`.
 
 ---
 

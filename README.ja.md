@@ -241,7 +241,7 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 | 73 | [**バグバウンティ自動化**](#73-バグバウンティ自動化) | HackerOne、subfinder/nucleiパイプライン、CVSSレポート | 6 |
 | 74 | [**コード監査**](#74-コード監査) | Semgrep/CodeQL、Source-Sink追跡、CI/CDゲート | 6 |
 | 75 | [**レッドチームレポート作成**](#75-レッドチームレポート作成) | ATT&CKマッピング、二重読者レポート、デブリーフィング | 6 |
-| 🧪 | [**CTF実習環境（labs/）**](#ctf実習環境labs) | Web・バイナリ・ネットワーク・クラウド・統合・ファームウェア・モバイルDockerラボCTF | 50 |
+| 🧪 | [**CTF実習環境（labs/）**](#ctf実習環境labs) | Web・バイナリ・ネットワーク・クラウド・統合・ファームウェア・モバイルDockerラボCTF | 75 |
 
 ---
 
@@ -1499,23 +1499,29 @@ MITRE ATT&CKベースTTP文書化、経営層/技術チーム二重レポート�
 
 ```
 labs/
-├── 01_web_hacking_lab/          ← SQLi・XSS・SSRF・JWT脆弱Flaskアプリ（Docker）
-├── 02_pwn_lab/                  ← BOF・フォーマット文字列・ヒープ脆弱バイナリ環境
+├── 01_web_hacking_lab/          ← SQLi・XSS・SSRF・JWT脆弱Flaskアプリ（ポート 8080）
+├── 02_pwn_lab/                  ← BOF・フォーマット文字列・ヒープ脆弱バイナリ（ポート 10001~10005）
 ├── 03_network_lab/              ← パケット分析・MITM・ARPスプーフィングpcap+実習環境
-├── 04_cloud_container_lab/      ← 脆弱Docker/K8s環境、コンテナ脱出シナリオ
-├── 05_full_scenario_lab/        ← 偵察→侵入→横断移動→権限昇格→流出 統合シナリオ
-├── 06_firmware_lab/             ← binwalk抽出・QEMU ARMエミュレーション・ハードコード資格情報CTF
-├── 07_mobile_lab/               ← Android APK静的解析・Frida・JWT alg:none バイパスCTF
-├── 08_llm_security_lab/         ← プロンプトインジェクション・間接RAG汚染・AIツール悪用CTF
-├── 09_ics_scada_lab/            ← Modbus/TCPコイル操作・FDI偽装・SIS安全トリップCTF
-├── 10_k8s_security_lab/         ← SAトークン奪取・RBAC昇格・hostPathノード脱出CTF
-├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting・DCSync複製・Golden Ticketドメイン掌握CTF
-├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline(PPE)・依存関係混同・ランナーシークレット・SLSA改ざんCTF
-├── start_lab.sh                 ← 全ラボdocker-compose up自動化
-└── stop_all.sh                  ← 全ラボ停止
+├── 04_cloud_container_lab/      ← 脆弱Docker/K8s環境、コンテナ脱出シナリオ（ポート 8040）
+├── 05_full_scenario_lab/        ← 偵察→侵入→横断移動→権限昇格→流出 統合シナリオ（ポート 8888）
+├── ... [Lab 06 ~ Lab 64]        ← ファームウェア、モバイル、LLM、ICS、eBPF、AD、DFIR、EDR、ZTNA
+├── 65_pqc_hybrid_tls_lab/       ← Kyber/ML-KEM + ML-DSA 耐量子TLS 1.3（ポート 8065）
+├── 66_ai_sandbox_escape_lab/    ← AIサンドボックス脱出およびサプライチェーン隔離（ポート 8066）
+├── 67_confidential_ai_lab/      ← AMD SEV-SNP/TDX ハードウェアTEE機密推論（ポート 8067）
+├── 68_autonomous_agent_lab/     ← 自律エージェントスウォームセキュリティ&eBPF防御（ポート 8068）
+├── 69_model_weight_stego_lab/   ← SafeTensors重みLSBステガノグラフィ防御（ポート 8069）
+├── 70_autonomous_kernel_patch/  ← カーネルeBPF LSM 0-Day動的ホットパッチ（ポート 8070）
+├── 71_hardware_gpu_sidechannel/ ← GPU VRAMゼロ化およびMIGパーティション隔離（ポート 8071）
+├── 72_agent_memory_poison_lab/  ← AIエージェント長期メモリ汚染&GraphRAG防御（ポート 8072）
+├── 73_silicon_photonics_qkd/    ← 光バス擬似乱数スクランブル&QKDメッシュ（ポート 8073）
+├── 74_quantum_neural_hybrid/    ← 量子ニューラルネットQFI敵対的摂動防御（ポート 8074）
+├── 75_photonic_ic_puf_lab/      ← 光集積回路(Photonic IC)スペックルPUF（ポート 8075）
+├── start_lab.sh                 ← 全ラボ01~75対話型起動スクリプト
+├── solvers.py                   ← 全75ラボ決定論的攻撃・防御ソルバーエンジン
+└── stop_all.sh                  ← 全ラボ安全一括停止スクリプト
 ```
 
-12個のDockerベースCTF脆弱環境 — Web・バイナリ・ネットワーク・クラウド・統合シナリオ・ファームウェア・モバイル・LLM・ICS/SCADA・K8s・AD/Kerberos・CI/CDサプライチェーンをローカルで即座に実習。`start_lab.sh` 一発で全環境起動。
+全**75個のDockerベース実践セキュリティ実習環境**完備 — Web、バイナリ、ネットワーク、クラウド、PQC、eBPF、AIエージェント、GPU、量子、光PUFまでローカル`127.0.0.1`ループバックで即座に安全実習可能。`vhack lab start <番号>`または`bash labs/start_lab.sh <番号>`で単独隔離起動。
 
 ---
 

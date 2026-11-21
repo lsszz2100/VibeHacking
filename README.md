@@ -28,20 +28,37 @@
 <br/>
 
 커뮤니티 · 문의 &nbsp;→&nbsp; [![Discussions](https://img.shields.io/badge/Discussions-커뮤니티_Q%26A-00FF41?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/discussions) &nbsp; [![Security Advisories](https://img.shields.io/badge/보안_권고문-Security_Advisories-EA4335?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/security/advisories)
-&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%202%2C835%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+69+labs)+and+terminal+wargame+with+2905+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
+&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%20v2.25.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%203%2C045%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+75+labs)+and+terminal+wargame+with+3045+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
 
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="https://img.shields.io/badge/TERMINAL-root@vibehacking:~%23-00FF41?style=flat-square&logo=gnometerminal&logoColor=black&labelColor=0d0d0d" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/SHELL-bash%20v5.2-lightgrey?style=flat-square&labelColor=161b22" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/ARCH-Linux_x86__64_/_Kernel_eBPF-blue?style=flat-square&labelColor=161b22" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/CORE-v2.25.0_RELEASE-blueviolet?style=flat-square&labelColor=161b22" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/AUDIT-100%25_ALL_GREEN-brightgreen?style=flat-square&labelColor=161b22" />
 </div>
 
 <br/>
 
 ```console
 root@vibehacking:~# cat mission.txt
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  이론부터 실습까지, CTF·버그바운티·모의해킹·레드팀에 실전 투입 가능한 수준으로  ║
-║  정리한 한국어 보안 지식 저장소.                                               ║
-║  2026년 Claude Opus 5.5·Fable 5.2·GPT-6.1/5.6·Gemini 4 Pro·3.8 Flash 시대 취약점 연구  ║
-║  클라우드·무선·암호학·OT/ICS까지 완전 정복.                                    ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+──────────────────────────────────────────────────────────────────────────────
+  [MISSION] 실전 사이버보안 완전 정복 바이블 & AI 보안 에이전트 벤치마크
+──────────────────────────────────────────────────────────────────────────────
+  • 실전 투입 역량 : 이론부터 실습까지, CTF · 버그바운티 · 모의해킹 · 레드팀 실전 완벽 투입
+  • 지식 베이스    : 75개 전 섹션 · 492개 챕터 · 75개 도커 실습 랩 체계적 집대성
+  • 2026 프론티어  : Claude Opus 5.5 · GPT-6.1/5.6 · Gemini 4 Pro 시대 취약점 연구
+  • 전문 도메인    : 광학 PUF · 양자 신경망 · 커널 eBPF · GPU 사이드채널 · OT/ICS
+  • 인터랙티브     : 87개 전문 트랙 · 3,045개 챌린지 · 41개 아키텍처 시뮬레이터
+──────────────────────────────────────────────────────────────────────────────
 root@vibehacking:~# █
 ```
 
@@ -54,29 +71,32 @@ root@vibehacking:~# █
 <td width="55%">
 
 ```python
-# VibeHacking Feature Matrix
+# VibeHacking Feature Matrix (v2.25.0)
 features = {
-    "실전 코드 우선"  : "모든 섹션 복붙 가능한 완성형 CLI",
-    "AI 통합"        : "Claude + GPT-6.1/5.6 보안 워크플로",
-    "최신 동향"      : "2026년 AI 보안 생태계 완전 반영",
-    "한국어 완성도"  : "처음부터 한국어로 기획·작성",
-    "이중언어"       : "한국어 / English 전 파일 제공",
-    "완전한 커버리지": "75섹션 전 보안 영역",
-    "CTF 실습 환경"  : "도커 기반 46개 랩 즉시 구동",
+    "실전 코드 우선"  : "모든 섹션 복붙 가능한 완성형 CLI (vhack.py)",
+    "AI 통합 체계"    : "Claude Opus 5.5 + GPT-6.1 / 5.6 보안 워크플로",
+    "최신 첨단 동향"  : "2026년 프론티어 AI · 양자 PQC · 광학 RoT 보안",
+    "한국어 완성도"  : "처음부터 한국어로 기획·작성된 보안 지식 SSOT",
+    "글로벌 다국어"  : "한국어 / English / 日本語 / 中文 4개 국어 지원",
+    "완전한 커버리지": "75개 섹션 · 492개 실전 챕터 전 보안 도메인",
+    "골든 실습 환경"  : "도커 기반 75개 랩 완비 (127.0.0.1 루프백 격리)",
+    "브라우저 워게임": "87개 전문 트랙 · 3,045개 챌린지 · 41개 시뮬레이터",
 }
-assert all(features.values()), "All checks passed ✓"
+assert all(features.values()), "All checks passed ✓ (808 Tests 100% Green)"
 ```
 
 </td>
 <td width="45%">
 
-| 카테고리 | 섹션 | 비중 |
-|:---------|:----:|:----:|
-| 🔴 기초·시스템 | 01–10 | Foundation |
-| 🟠 공격·레드팀 | 11–25 | Offensive |
-| 🟡 고급 기법 | 26–40 | Advanced |
-| 🟢 전문 영역 | 41–75 | Specialist |
-| 🧪 실습 랩 | labs/ | CTF Ready |
+| 핵심 카테고리 | 규모 / 비중 | 상태 및 특징 |
+|:--------------|:-----------:|:------------:|
+| 🔴 기초·시스템 | 01–10 섹션 | Foundation (60 챕터) |
+| 🟠 공격·레드팀 | 11–25 섹션 | Offensive (90 챕터) |
+| 🟡 고급 기법 | 26–40 섹션 | Advanced (90 챕터) |
+| 🟢 전문 영역 | 41–75 섹션 | Specialist (252 챕터) |
+| 🧪 Hands-on 랩 | **75개 Labs** | 100% 127.0.0.1 격리 |
+| 🎮 터미널 워게임 | **87 Tracks** | 3,045제 · 41 시뮬레이터 |
+| 🤖 AI 에이전트 평가 | **Agent-Eval 2.0** | SuperSec 100점 만점 SOTA |
 
 </td>
 </tr>
@@ -172,7 +192,7 @@ python3 vhack.py alias remove           # alias 제거
 
 # 대시보드 & 벤치마크
 python3 vhack.py dashboard              # 시스템/랩/워게임 통합 관제 대시보드 (alias: status, stats)
-python3 vhack.py benchmark --all        # 전체 65개 랩 성능 및 지연시간 벤치마크 진단
+python3 vhack.py benchmark --all        # 전체 75개 랩 성능 및 지연시간 벤치마크 진단
 
 # 업데이트
 python3 vhack.py update                 # git pull
@@ -182,7 +202,7 @@ python3 vhack.py update                 # git pull
 
 | 명령어 | 설명 |
 |--------|------|
-| `vhack dashboard` | 시스템 리소스, 65개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
+| `vhack dashboard` | 시스템 리소스, 75개 랩 상태, 워게임 진행도 통합 대시보드 (`vhack status`, `vhack stats`) |
 | `vhack benchmark` | 실습 랩 기동 지연시간, 헬스체크 및 성능 벤치마크 (`--all`, `--dry-run`, `-o`) |
 | `vhack list` | 전체 75개 섹션 목록 |
 | `vhack list --search <키워드>` | 섹션명 필터링 |
@@ -202,25 +222,89 @@ python3 vhack.py update                 # git pull
 | `vhack alias remove` | alias 제거 |
 | `vhack update` | `git pull` 로 최신화 |
 
-### 실습 환경 (Docker 기반)
+### 실습 환경 (Docker 기반 75개 랩 완비 — 127.0.0.1 루프백 격리)
 
-| 번호 | 랩 이름 | 내용 | 접속 | 난이도 |
-|:----:|---------|------|------|:------:|
-| **01** | 웹 해킹 랩 | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
-| **02** | 바이너리 익스플로잇 랩 | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
-| **03** | 네트워크 해킹 랩 | SSH · FTP · DNS · SMTP 취약 서비스 | docker exec 진입 | ★★☆ |
-| **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDS · K8s 탈출 | http://localhost:8040 | ★★★ |
-| **05** | 전체 시나리오 통합 랩 | APT 공격 체인 시뮬레이션 | http://localhost:8888 | ★★★★ |
-| **06** | 펌웨어 해킹 랩 | binwalk · QEMU 에뮬레이션 · 하드코딩 자격증명 | http://localhost:8062 | ★★★ |
-| **07** | 모바일 보안 랩 | APK 정적분석 · Frida · JWT alg:none 우회 | http://localhost:8072 | ★★★ |
-| **08** | LLM 보안 랩 | 프롬프트 인젝션 · RAG 오염 · 가드레일 탈옥 | http://localhost:8088 | ★★★ |
-| **09** | ICS/SCADA 보안 랩 | Modbus 프로토콜 조작 · PLC 레지스터 공격 | Modbus: 5020 / Web: 8089 | ★★★ |
-| **10** | Kubernetes 보안 랩 | RBAC 권한 상승 · Kubelet 익스플로잇 · Pod 탈출 | http://localhost:8090 | ★★★★ |
-| **11** | Active Directory / Kerberos 랩 | Kerberoasting · AS-REP Roasting · Pass-the-Hash | http://localhost:8011 | ★★★★ |
-| **12** | CI/CD 공급망 보안 랩 | GitHub Actions 포이즈닝 · 의존성 혼선 파이프라인 탈취 | http://localhost:8012 | ★★★ |
-| **13** | eBPF / 커널 보안 랩 | eBPF 루트킷 탐지 우회 · Syscall 후킹 · 런타임 보안 | http://localhost:8013 | ★★★★★ |
-| **14** | 악성 문서(Maldoc) 분석 랩 | VBA 매크로 난독화 해제 · RTF/OOXML 익스플로잇 | http://localhost:8014 | ★★★★ |
-| **15** | Web3 & 스마트 컨트랙트 보안 랩 | Reentrancy · 정수 오버플로 · tx.origin · Flash Loan | http://localhost:8015 | ★★★★ |
+> **무결점 샌드박스 원칙**: 모든 랩은 외부 네트워크 노출이 원천 차단된 `127.0.0.1` 루프백 인터페이스에만 안전하게 바인딩됩니다.
+
+| 번호 | 랩 이름 | 핵심 시나리오 & 타겟 공격 | 접속 엔드포인트 | 난이도 |
+|:----:|---------|--------------------------|----------------|:------:|
+| **01** | 웹 해킹 랩 | DVWA · Juice Shop · WebGoat — SQLi, XSS, CSRF | `http://localhost:8080` / `3001` / `8081` | ★★☆ |
+| **02** | 바이너리 익스플로잇 랩 | BOF · ret2libc · ROP · fmtstr · tcache heap | `nc localhost 10001~10005` | ★★★ |
+| **03** | 네트워크 해킹 랩 | SSH · FTP · DNS zone transfer · SMTP relay 피버팅 | `docker exec` 침투 | ★★☆ |
+| **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDSv1 자격증명 탈취 · K8s Pod 탈출 | `http://localhost:8040` | ★★★ |
+| **05** | 전체 시나리오 통합 랩 | 외부 침투 → 내부 피버팅 → 권한상승 → 데이터 유출 APT | `http://localhost:8888` | ★★★★ |
+| **08** | AI/LLM 보안 랩 | 프롬프트 인젝션 · RAG 간접 주입 · 에이전트 도구 남용 | `http://localhost:8088` | ★★★ |
+| **10** | Kubernetes 보안 랩 | RBAC 과다 권한 남용 · hostPath 루트 마운트 탈출 | `http://localhost:8090` | ★★★★ |
+| **11** | Active Directory 랩 | Kerberoasting · AS-REP Roasting · DCSync 복제 | `http://localhost:8011` | ★★★★ |
+| **13** | eBPF 커널 보안 랩 | Kprobe 도청 · bpf_probe_write_user 권한상승 방어 | `http://localhost:8013` | ★★★★★ |
+| **15** | Web3 스마트 컨트랙트 랩 | Reentrancy · tx.origin · Flash Loan 차익 공격 | `http://localhost:8015` | ★★★★ |
+| **38** | EDR 유저랜드 후킹 우회 랩 | NTDLL 언후킹 · Indirect Syscall · 메모리 스캔 회피 | `http://localhost:8038` | ★★★★★ |
+| **54** | AI 에이전트 MCP 보안 랩 | 도구 실행 인젝션 차단 · Landlock LSM 프로세스 격리 | `http://localhost:8054` | ★★★★★ |
+| **59** | TEE 기밀 컴퓨팅 랩 | AMD SEV-SNP & Intel TDX 메모리 암호화 및 원격 증명 | `http://localhost:8059` | ★★★★★ |
+| **60** | 양자내성(PQC) 암호 랩 | ML-KEM-1024 하이브리드 키 교환 및 격자 공격 방어 | `http://localhost:8060` | ★★★★★ |
+| **65** | 양자내성 PQC-TLS 1.3 랩 | Kyber/ML-KEM + ML-DSA 포스트 양자 핸드셰이크 | `http://localhost:8065` | ★★★★★ |
+| **66** | AI 공급망 격리 랩 | AI 샌드박스 탈출 차단 및 PyPI 공급망 백도어 격리 | `http://localhost:8066` | ★★★★★ |
+| **67** | TEE 기밀 AI 추론 랩 | 하드웨어 엔클레이브 모델 가중치 암호화 및 VCEK 검증 | `http://localhost:8067` | ★★★★★ |
+| **68** | 자율 에이전트 스웜 보안 랩 | 비잔틴 합의 쿼럼 교란 방어 및 eBPF 런타임 즉시 차단 | `http://localhost:8068` | ★★★★★ |
+| **69** | 신경망 가중치 스테가노그래피 랩 | SafeTensors 제로 역직렬화 & 가중치 LSB 은닉 탐지 | `http://localhost:8069` | ★★★★★ |
+| **70** | 커널 eBPF LSM 핫패칭 랩 | 0-Day 런타임 제어 및 Seccomp-BPF 동적 핫패치 | `http://localhost:8070` | ★★★★★ |
+| **71** | GPU 사이드채널 & VRAM 랩 | VRAM 잔류 메모리 제로화 & MIG 하드웨어 파티션 격리 | `http://localhost:8071` | ★★★★★ |
+| **72** | AI 메모리 오염 방어 랩 | 에피소딕 컨텍스트 오염 정제 & GraphRAG 출처 증명 | `http://localhost:8072` | ★★★★★ |
+| **73** | 실리콘 포토닉스 QKD 랩 | 광 버스 의사난수 스크램블링 & QKD 지속 키 로테이션 | `http://localhost:8073` | ★★★★★ |
+| **74** | 양자 신경망(QNN) 방어 랩 | QFI 매니폴드 적대적 섭동 감시 & Pauli Twirling 리셋 | `http://localhost:8074` | ★★★★★ |
+| **75** | 광학 집적회로 PUF 랩 | 실리콘 포토닉스 스페클 지문 추출 & 15ns 비가역 소광 | `http://localhost:8075` | ★★★★★ |
+
+<details>
+<summary><b>📂 전체 75개 Hands-on 실습 랩 카탈로그 펼쳐보기 (Lab 01 ~ Lab 75)</b></summary>
+
+```
+  [기초 & 침투 공격 랩]
+  • Lab 01: 웹 해킹 랩 (DVWA · Juice Shop · WebGoat)               • Lab 02: 바이너리 익스플로잇 랩 (BOF · ROP · Heap)
+  • Lab 03: 네트워크 해킹 & 피버팅 랩 (SSH · DNS · SMTP)          • Lab 04: 클라우드 & 컨테이너 탈출 랩 (SSRF · IMDS)
+  • Lab 05: 풀체인 시나리오 통합 랩 (Full-Chain APT Attack)         • Lab 06: 임베디드 펌웨어 역공학 랩 (QEMU · Binwalk)
+  • Lab 07: 모바일 앱 침투 랩 (Frida · APK Decompile)              • Lab 08: AI/LLM 프롬프트 인젝션 & 가드레일 랩
+  • Lab 09: ICS/SCADA 제어 보안 랩 (Modbus/TCP · PLC FDI)         • Lab 10: Kubernetes RBAC & Pod 노드 탈출 랩
+
+  [엔터프라이즈 & 고급 방어 랩]
+  • Lab 11: Active Directory & Kerberos 도메인 장악 랩           • Lab 12: CI/CD 소프트웨어 공급망 침투 랩
+  • Lab 13: eBPF 커널 침투 및 런타임 보안 랩                      • Lab 14: 문서형 악성코드 & PDF 포렌식 랩
+  • Lab 15: Web3 스마트 컨트랙트 보안 랩                          • Lab 16: 휘발성 메모리 포렌식 랩 (Volatility 3)
+  • Lab 17: 엔터프라이즈 무선 WPA2/WPA3 침투 랩                   • Lab 18: API 보안 & BOLA 침투 랩 (OWASP API Top 10)
+  • Lab 19: BGP 라우팅 하이재킹 & RPKI 보안 랩                    • Lab 20: Windows 바이너리 & 커널 드라이버 랩
+  • Lab 21: 클라우드 네이티브 보안 랩 (eBPF Falco)                 • Lab 22: 자동차 CAN Bus & UDS 진단 침투 랩
+  • Lab 23: SCADA PLC 산업용 프로토콜 랩                         • Lab 24: 소프트웨어 퍼징 & 취약점 발굴 랩
+  • Lab 25: AI 레드팀 적대적 프롬프트 랩                          • Lab 26: 악성코드 샌드박스 & 동적 분석 랩
+  • Lab 27: 블루투스 BLE & RF 신호 분석 랩                       • Lab 28: Cisco 네트워크 인프라 보안 랩
+  • Lab 29: AD CS & Kerberos 위임 공격 랩 (CertPwn)              • Lab 30: Ghidra 바이너리 디오브퍼스케이션 랩
+
+  [클라우드 · 아이덴티티 · 제로트러스트 랩]
+  • Lab 31: OAuth 2.0 & OIDC SSO 보안 랩                         • Lab 32: BGP RouteGuard 네트워크 방어 랩
+  • Lab 33: KISA 주요정보통신기반시설 감사 랩                      • Lab 34: OSINT 공격 표면 정찰 랩
+  • Lab 35: 클라우드 IAM 권한 상승 방어 랩                        • Lab 36: 엔터프라이즈 데이터베이스 보안 랩
+  • Lab 37: BLE 패킷 스니핑 & SDR 해킹 랩                         • Lab 38: EDR 유저랜드 후킹 우회 & 차세대 C2 랩
+  • Lab 39: 제로 트러스트 엔터프라이즈 mTLS 랩                   • Lab 40: 위협 헌팅 & SIEM 룰 엔지니어링 랩
+  • Lab 41: 정보보안기사 & ISMS-P 감사 실전 랩                    • Lab 42: 스마트 컨트랙트 취약점 감사 랩
+  • Lab 43: 물리적 보안 침투 & RFID 클로닝 랩                    • Lab 44: 인시던트 대응(DFIR) & 침해사고 분석 랩
+  • Lab 45: 차세대 악성코드 개발 & 탐지 우회 랩                  • Lab 46: PQC 포스트 양자 암호 마이그레이션 랩
+  • Lab 47: 모바일 포렌식 & 증거 분석 랩                         • Lab 48: 위협 모델링 & 보안 아키텍처 랩
+  • Lab 49: 레드팀 C2 인프라 구축 & 은닉 랩                      • Lab 50: 게임 메모리 해킹 & 안티치트 우회 랩
+
+  [프론티어 런타임 & 하드웨어 RoT 첨단 랩]
+  • Lab 51: 브라우저 익스플로잇 & V8 샌드박스 랩                 • Lab 52: C2 네트워크 터널링 & 은닉 채널 랩
+  • Lab 53: 서버리스 람다 보안 랩                                • Lab 54: AI 에이전트 MCP 도구 보안 랩
+  • Lab 55: 리눅스 커널 하드닝 & PAM 랩                          • Lab 56: eBPF 커널 런타임 보안 랩
+  • Lab 57: 안티 리버스 엔지니어링 능동 방어 랩                   • Lab 58: MicroVM 하이퍼바이저 탈출 방어 랩
+  • Lab 59: AMD SEV-SNP & Intel TDX TEE 기밀 컴퓨팅 랩          • Lab 60: 양자 하이브리드 KEM 키 교환 랩
+  • Lab 61: 제로 트러스트 API 게이트웨이 랩                      • Lab 62: AI 에이전트 MCP 보안 랩
+  • Lab 63: 자율 방어 에이전트 랩 (Autonomous Defense)          • Lab 64: 컨테이너 탈출 & LSM 커널 방어 랩
+  • Lab 65: 양자내성 PQC-TLS 1.3 랩 (포트 8065)                  • Lab 66: AI 샌드박스 탈출 및 공급망 격리 랩 (포트 8066)
+  • Lab 67: 기밀 AI 추론 및 TEE 원격 증명 랩 (포트 8067)         • Lab 68: 자율 에이전트 스웜 보안 랩 (포트 8068)
+  • Lab 69: SafeTensors 신경망 가중치 스테가노그래피 랩 (포트 8069) • Lab 70: 커널 eBPF LSM 동적 핫패칭 랩 (포트 8070)
+  • Lab 71: GPU 사이드채널 & VRAM 격리 랩 (포트 8071)            • Lab 72: AI 에이전트 장기 메모리 오염 방어 랩 (포트 8072)
+  • Lab 73: 실리콘 포토닉스 QKD 양자 키 메시 랩 (포트 8073)       • Lab 74: 양자 신경망(QNN) 적대적 섭동 방어 랩 (포트 8074)
+  • Lab 75: 광 집적회로(Photonic IC) PUF 실전 랩 (포트 8075)
+```
+</details>
 
 ```bash
 # 빠른 실습 예시: 웹 해킹
@@ -330,34 +414,44 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 | 73 | [버그바운티 자동화](#73-버그바운티-자동화) | HackerOne, subfinder·nuclei 파이프라인, CVSS 리포트 | 🟣 | 6 |
 | 74 | [코드 감사](#74-코드-감사) | Semgrep·CodeQL, Source/Sink 추적, CI/CD 보안 게이트 | 🟣 | 6 |
 | 75 | [레드팀 보고서 작성](#75-레드팀-보고서-작성) | ATT&CK 매핑, 이중 독자 보고서, 디브리핑 | 🟣 | 6 |
-| 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·펌웨어·모바일 도커 랩 | 🔴 | 50 |
+| 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·PQC·AI·광PUF 도커 랩 | 🔴 | 75 |
 
 ---
 
-## 🗺️ 학습 로드맵
+## 🗺️ 학습 로드맵 (Cybersecurity Mastery Roadmap)
 
+```mermaid
+flowchart TD
+    subgraph S1 ["🟢 BEGINNER (기초 & 네트워크 침투)"]
+        A1["01 Linux & Kali 기초"] --> A2["02 네트워크 패킷 분석 & MITM"]
+        A2 --> A3["05 웹 해킹 & OWASP Top 10"]
+    end
+
+    subgraph S2 ["🟡 INTERMEDIATE (시스템 & 리버싱)"]
+        A3 --> B1["06 악성코드 정적·동적 분석"]
+        B1 --> B2["08 파이썬 보안 자동화"]
+        B2 --> B3["03 시스템 해킹 & 권한 상승"]
+        B3 --> B4["04 리버스 엔지니어링 & Ghidra"]
+    end
+
+    subgraph S3 ["🔴 ADVANCED (익스플로잇 & 인프라)"]
+        B4 --> C1["09 익스플로잇 개발 (ROP/Heap)"]
+        C1 --> C2["10 침투 테스트 방법론 & OSINT"]
+        C2 --> C3["14 클라우드 & Kubernetes 보안"]
+        C3 --> C4["11 Active Directory & Kerberos"]
+    end
+
+    subgraph S4 ["⚫ EXPERT & FRONTIER AI (2026 첨단 공방전)"]
+        C4 --> D1["11 / 56 AI 보안 & LLM 레드팀"]
+        C4 --> D2["17 / 49 레드팀 C2 & EDR 우회"]
+        C4 --> D3["13 / 70 커널 eBPF LSM 핫패칭"]
+        C4 --> D4["65 / 75 PQC 양자내성 · TEE · 광학 PUF"]
+    end
 ```
-╔═══════════════════════════════════════════════════════════════╗
-║                     VIBEHACKING ROADMAP                       ║
-╠═══════════════════════════════════════════════════════════════╣
-║                                                               ║
-║  [🟢 BEGINNER]                                               ║
-║   01 Linux  ──►  02 Network  ──►  05 Web Hacking             ║
-║                                         │                     ║
-║  [🟡 INTERMEDIATE]                      ▼                    ║
-║   03 System  ◄──  08 Python  ◄──  06 Malware Analysis        ║
-║       │                                                       ║
-║       ▼                                                       ║
-║  [🔴 ADVANCED]                                               ║
-║   04 Rev.Eng  ──►  09 Exploit  ──►  10 Pentest Methodology   ║
-║       │                                     │                 ║
-║  [⚫ EXPERT]                                ▼                ║
-║   17 Red Team  ──►  14 Cloud  ──►  12 Bug Bounty             ║
-║   16 Crypto    ──►  13 SOC    ──►  11 AI Security            ║
-║   45 Malware   ──►  54 AD     ──►  49 Red Team Infra         ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-```
+
+<div align="center">
+  <sub>💡 <b>단계별 권장 학습 경로</b>: 🟢 기초(01-05) ➜ 🟡 분석·시스템(06-08, 03-04) ➜ 🔴 심화·인프라(09-10, 14, 11) ➜ ⚫ 프론티어(AI, eBPF, PQC, RoT)</sub>
+</div>
 
 ---
 
@@ -1593,23 +1687,29 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ```
 labs/
-├── 01_web_hacking_lab/          ← SQLi·XSS·SSRF·JWT 취약 Flask 앱 (도커 기반)
-├── 02_pwn_lab/                  ← BOF·포맷스트링·힙 익스플로잇 취약 바이너리 환경
-├── 03_network_lab/              ← 패킷 분석·MITM·ARP 스푸핑 pcap + 실습 환경
-├── 04_cloud_container_lab/      ← 취약 Docker/K8s 환경, 컨테이너 탈출 시나리오
-├── 05_full_scenario_lab/        ← 정찰→침투→횡이동→권한상승→유출 통합 시나리오
-├── 06_firmware_lab/             ← binwalk 추출·QEMU ARM 에뮬레이션·하드코딩 자격증명 CTF
-├── 07_mobile_lab/               ← Android APK 정적분석·Frida·JWT alg:none 우회 CTF
-├── 08_llm_security_lab/         ← 프롬프트 인젝션·RAG 간접 주입·에이전트 위험 도구 남용 CTF
-├── 09_ics_scada_lab/            ← Modbus/TCP 코일 조작·FDI 텔레메트리 기만·SIS 안전 트립 CTF
-├── 10_k8s_security_lab/         ← SA 토큰 탈취·RBAC 권한 상승·hostPath 노드 탈출 CTF
-├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting·DCSync 복제·Golden Ticket 도메인 장악 CTF
-├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline(PPE)·의존성 혼동·러너 시크릿·SLSA 릴리스 변조 CTF
-├── start_lab.sh                 ← 전체 랩 docker-compose up 자동화
-└── stop_all.sh                  ← 전체 랩 종료
+├── 01_web_hacking_lab/          ← SQLi·XSS·SSRF·JWT 취약 Flask 앱 (포트 8080)
+├── 02_pwn_lab/                  ← BOF·포맷스트링·힙 익스플로잇 바이너리 (포트 10001~10005)
+├── 03_network_lab/              ← 패킷 분석·MITM·ARP 스푸핑 pcap + 네트워크 실습 환경
+├── 04_cloud_container_lab/      ← AWS IMDSv1 탈취 및 K8s 컨테이너 탈출 실습 (포트 8040)
+├── 05_full_scenario_lab/        ← 정찰→침투→피버팅→권한상승→유출 통합 APT (포트 8888)
+├── ... [Lab 06 ~ Lab 64]        ← 펌웨어·모바일·LLM·ICS·eBPF·AD·DFIR·EDR·ZTNA·MicroVM
+├── 65_pqc_hybrid_tls_lab/       ← Kyber/ML-KEM + ML-DSA 포스트 양자 TLS 1.3 (포트 8065)
+├── 66_ai_sandbox_escape_lab/    ← AI 에이전트 샌드박스 탈출 및 공급망 격리 (포트 8066)
+├── 67_confidential_ai_lab/      ← AMD SEV-SNP/TDX 하드웨어 TEE 기밀 추론 (포트 8067)
+├── 68_autonomous_agent_lab/     ← 자율 에이전트 스웜 보안 & eBPF 차단 (포트 8068)
+├── 69_model_weight_stego_lab/   ← SafeTensors 가중치 LSB 스테가노그래피 (포트 8069)
+├── 70_autonomous_kernel_patch/  ← 커널 eBPF LSM 0-Day 동적 핫패칭 (포트 8070)
+├── 71_hardware_gpu_sidechannel/ ← GPU VRAM 제로화 및 MIG 파티션 격리 (포트 8071)
+├── 72_agent_memory_poison_lab/  ← AI 에이전트 장기 메모리 오염 & GraphRAG 방어 (포트 8072)
+├── 73_silicon_photonics_qkd/    ← 광 버스 의사난수 스크램블링 & QKD 메시 (포트 8073)
+├── 74_quantum_neural_hybrid/    ← 양자 신경망(QNN) 적대적 섭동 & QPU 격리 (포트 8074)
+├── 75_photonic_ic_puf_lab/      ← 광 집적회로(Photonic IC) 스페클 PUF & 15ns 소광 (포트 8075)
+├── start_lab.sh                 ← 전체 랩 01~75 대화형 기동 쉘 스크립트
+├── solvers.py                   ← 75개 랩 전수 자동 익스플로잇 & 방어 솔버 엔진
+└── stop_all.sh                  ← 전체 랩 일괄 안전 종료 스크립트
 ```
 
-12개 도커 기반 CTF 취약 환경 — 웹·바이너리·네트워크·클라우드·통합 시나리오·펌웨어·모바일·LLM·ICS/SCADA·K8s·AD/Kerberos·CI/CD 공급망을 로컬에서 즉시 실습. `start_lab.sh` 한 번으로 전체 환경 기동.
+총 **75개 도커 기반 Hands-on 보안 실습 환경 완비** — 웹·바이너리·네트워크·클라우드·PQC·eBPF·AI 에이전트·GPU·양자·광학 PUF까지 로컬 `127.0.0.1` 루프백 환경에서 안전하게 즉시 실습 가능합니다. `vhack lab start <번호>` 또는 `bash labs/start_lab.sh <번호>` 한 번으로 원하는 랩을 단독 격리 기동할 수 있습니다.
 
 ---
 

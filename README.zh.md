@@ -241,7 +241,7 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 | 73 | [**漏洞赏金自动化**](#73-漏洞赏金自动化) | HackerOne、subfinder/nuclei流水线、CVSS报告 | 6 |
 | 74 | [**代码审计**](#74-代码审计) | Semgrep/CodeQL、Source-Sink追踪、CI/CD安全门 | 6 |
 | 75 | [**红队报告撰写**](#75-红队报告撰写) | ATT&CK映射、双受众报告、复盘 | 6 |
-| 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景/固件/移动Docker CTF实验 | 50 |
+| 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景/固件/移动Docker CTF实验 | 75 |
 
 ---
 
@@ -1499,23 +1499,29 @@ Semgrep/Bandit/CodeQL静态分析、Source→Sink数据流追踪、CI/CD安全�
 
 ```
 labs/
-├── 01_web_hacking_lab/          ← SQLi/XSS/SSRF/JWT漏洞Flask应用（Docker）
-├── 02_pwn_lab/                  ← BOF/格式字符串/堆利用漏洞二进制环境
+├── 01_web_hacking_lab/          ← SQLi/XSS/SSRF/JWT漏洞Flask应用（端口 8080）
+├── 02_pwn_lab/                  ← BOF/格式化字符串/堆利用漏洞二进制（端口 10001~10005）
 ├── 03_network_lab/              ← 数据包分析/MITM/ARP欺骗pcap+实验环境
-├── 04_cloud_container_lab/      ← 漏洞Docker/K8s环境、容器逃逸场景
-├── 05_full_scenario_lab/        ← 侦察→入侵→横向移动→权限提升→数据外泄综合场景
-├── 06_firmware_lab/             ← binwalk 提取 · QEMU ARM 仿真 · 硬编码凭证 CTF
-├── 07_mobile_lab/               ← Android APK 静态分析 · Frida · JWT alg:none 绕过 CTF
-├── 08_llm_security_lab/         ← 提示词注入 · 间接RAG投毒 · Agent高危工具滥用 CTF
-├── 09_ics_scada_lab/            ← Modbus/TCP 线圈操纵 · FDI遥测欺骗 · SIS安全跳闸 CTF
-├── 10_k8s_security_lab/         ← SA令牌窃取 · RBAC权限提升 · hostPath节点逃逸 CTF
-├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting · DCSync复制 · Golden Ticket域权限掌控 CTF
-├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline (PPE) · 依赖混淆 · Runner凭证窃取 · SLSA篡改 CTF
-├── start_lab.sh                 ← 一键docker-compose up启动全部实验
-└── stop_all.sh                  ← 停止全部实验
+├── 04_cloud_container_lab/      ← 漏洞Docker/K8s环境、容器逃逸场景（端口 8040）
+├── 05_full_scenario_lab/        ← 侦察→入侵→横向移动→提权→数据外泄综合场景（端口 8888）
+├── ... [Lab 06 ~ Lab 64]        ← 固件、移动、LLM、ICS、eBPF、AD、DFIR、EDR、ZTNA
+├── 65_pqc_hybrid_tls_lab/       ← Kyber/ML-KEM + ML-DSA 抗量子TLS 1.3（端口 8065）
+├── 66_ai_sandbox_escape_lab/    ← AI沙箱逃逸与供应链隔离防御（端口 8066）
+├── 67_confidential_ai_lab/      ← AMD SEV-SNP/TDX 硬件TEE机密推理（端口 8067）
+├── 68_autonomous_agent_lab/     ← 自主智能体蜂群安全与eBPF拦截（端口 8068）
+├── 69_model_weight_stego_lab/   ← SafeTensors模型权重LSB隐写防御（端口 8069）
+├── 70_autonomous_kernel_patch/  ← 内核eBPF LSM 0-Day动态热补丁（端口 8070）
+├── 71_hardware_gpu_sidechannel/ ← GPU VRAM清零与MIG分区隔离（端口 8071）
+├── 72_agent_memory_poison_lab/  ← AI智能体长期记忆投毒与GraphRAG防御（端口 8072）
+├── 73_silicon_photonics_qkd/    ← 光总线伪随机加扰与QKD网格（端口 8073）
+├── 74_quantum_neural_hybrid/    ← 量子神经网络QFI对抗扰动防御（端口 8074）
+├── 75_photonic_ic_puf_lab/      ← 光学集成电路(Photonic IC)斑图PUF（端口 8075）
+├── start_lab.sh                 ← 全靶场01~75交互式启动脚本
+├── solvers.py                   ← 75个靶场确定性攻防求解引擎
+└── stop_all.sh                  ← 一键安全停止全部实验
 ```
 
-12个Docker化CTF漏洞环境——Web、二进制、网络、云原生、综合场景、固件、移动、LLM、ICS/SCADA、K8s、AD/Kerberos、CI/CD供应链，可在本地即时实验。`start_lab.sh`一键启动全部环境。
+完备提供 **75个Docker化实战安全演练靶场** —— 涵盖Web、二进制、网络、云原生、PQC、eBPF、AI智能体、GPU、量子与光学PUF硬件安全，完全在本地 `127.0.0.1` 环回接口隔离运行。使用 `vhack lab start <编号>` 或 `bash labs/start_lab.sh <编号>` 即可一键启动单个隔离环境。
 
 ---
 
