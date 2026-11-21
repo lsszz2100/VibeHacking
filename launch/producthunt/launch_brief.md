@@ -1,9 +1,9 @@
-# Product Hunt Launch Package: VibeHacking v2.21.0
+# Product Hunt Launch Package: VibeHacking v2.22.0
 
 ## 1. Product Metadata
 
 - **Product Name**: VibeHacking
-- **Tagline**: Open-source cybersecurity bible & 2,905-challenge browser wargame + AI Security Agent Bench
+- **Tagline**: Open-source cybersecurity bible & 2,940-challenge browser wargame + AI Security Agent Bench
 - **Target URL**: [https://lsszz2100.github.io/VibeHacking/](https://lsszz2100.github.io/VibeHacking/)
 - **Repository URL**: [https://github.com/lsszz2100/VibeHacking](https://github.com/lsszz2100/VibeHacking)
 - **License**: MIT License (100% Free & Open Source)
@@ -19,10 +19,10 @@ VibeHacking is an all-in-one open-source offensive & defensive cybersecurity mas
 ### Key Pillars:
 1. **75 In-Depth Textbook Sections**:
    Comprehensive coverage spanning binary exploitation, reverse engineering, kernel exploitation, EDR telemetry bypass, cloud/Kubernetes security, quantum-resistant cryptography (PQC), confidential computing (TEE), and autonomous AI agent red teaming (492 complete chapters across KO, EN, JA, ZH).
-2. **71 Reproducible Docker Labs**:
-   Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 67: Confidential AI Inference & Hardware TEE Remote Attestation Lab** (`127.0.0.1:8067`), **Lab 68: Autonomous Agent Swarm Security & Byzantine Defense Lab** (`127.0.0.1:8068`), **Lab 69: Neural Weight Steganography & SafeTensors Supply Chain Defense Lab** (`127.0.0.1:8069`), **Lab 70: Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense Lab** (`127.0.0.1:8070`), and **Lab 71: Hardware GPU Sidechannel & VRAM Isolation Defense Lab** (`127.0.0.1:8071`).
-3. **In-Browser Terminal Wargame (83 Tracks, 2,905 Challenges)**:
-   A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 37 interactive visual architecture simulators.
+2. **72 Reproducible Docker Labs**:
+   Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 67: Confidential AI Inference & Hardware TEE Remote Attestation Lab** (`127.0.0.1:8067`), **Lab 68: Autonomous Agent Swarm Security & Byzantine Defense Lab** (`127.0.0.1:8068`), **Lab 69: Neural Weight Steganography & SafeTensors Supply Chain Defense Lab** (`127.0.0.1:8069`), **Lab 70: Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense Lab** (`127.0.0.1:8070`), and **Lab 71: Hardware GPU Sidechannel & VRAM Isolation Defense Lab** (`127.0.0.1:8071`), and **Lab 72: AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense Lab** (`127.0.0.1:8072`).
+3. **In-Browser Terminal Wargame (84 Tracks, 2,940 Challenges)**:
+   A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 38 interactive visual architecture simulators.
 4. **AI Security Agent Benchmark Leaderboard**:
    An automated evaluation engine measuring autonomous AI cybersecurity agents on Pass@1 exploit generation, tool safety, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0 standards.
 

@@ -684,6 +684,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM06:2025",
         "owasp_name": "Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering",
     },
+    "72": {
+        "kisa_id": "2.10.7",
+        "kisa_name": "AI 에이전트 인지 메모리 및 지식 그래프 무결성 통제 (에피소딕 컨텍스트 정제, HMAC 세션 출처 및 GraphRAG 위상 방어)",
+        "nist_csf_id": "PR.DS-08",
+        "nist_csf_name": "Autonomous Agent Long-Term Context Memory Sanitization, Cryptographic Provenance Attestation & GraphRAG Permission Invariants",
+        "owasp_id": "LLM07:2025",
+        "owasp_name": "Sleeper Prompt Injection, Vector Store Semantic Embedding Hijacking & Graph Relationship Tampering",
+    },
 }
 
 @dataclass
@@ -2003,6 +2011,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Multi-tenant AI accelerator environment fails to scrub and zeroize VRAM buffers between distinct inference sessions, leaks GEMM matrix operation timing patterns across the PCIe bus, and lacks hardware-enforced MIG cross-partition DMA access barriers.",
                 "affected_component": "HardwareGpuSidechannelLab VRAM Memory Controller & Accelerator Interface (Port 8071)",
                 "remediation": "Enact strict cuda_mem_zero_on_free memory scrubbing, inject constant-time padding and noise on PCIe telemetry, mandate hardware Multi-Instance GPU (MIG) partition isolation with L2 cache quarantine, and verify cryptographic GPU firmware signatures against Merkle roots."
+            }
+        ]
+    },
+    "72": {
+        "title": "72 AgentMemoryPoisonLab AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense",
+        "category": "AI Agent Security & Cognitive Architecture Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7201",
+                "name": "Agentic Episodic Memory Poisoning, Sleeper Prompt Latent Trigger & GraphRAG Privilege Edge Hijacking",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1565.001",
+                "mitre_technique": "Data Manipulation: Stored Context and Vector Memory Tampering",
+                "mitre_tactic": "Persistence / Privilege Escalation / Impact",
+                "impact": "Unsanitized external inputs stored in agent long-term memory or vector database hijack subsequent high-privilege executive tasks via latent prompt injection, semantic cosine drift, or unauthorized knowledge graph relationships.",
+                "description": "Autonomous AI agent architecture ingests untrusted conversational data directly into long-term episodic memory and vector stores without prompt delimiter sanitization, allowing attackers to plant latent sleeper triggers and tamper with GraphRAG entity privilege edges.",
+                "affected_component": "AgentMemoryPoisonLab Cognitive Memory Engine & GraphRAG Gateway (Port 8072)",
+                "remediation": "Enforce strict prompt delimiter stripping and untrusted memory quarantine partitioning, mandate HMAC-SHA256 session provenance attestation, filter adversarial semantic cosine drift clusters, and cryptographically attest knowledge graph topological invariants."
             }
         ]
     }

@@ -3257,6 +3257,57 @@ for (const id of GPUSEC_IDS) {
     }
   });
 }
+const AGENTMEM_IDS = [
+  "t0_agentmem_long_term_memory_threat_model",
+  "t0_agentmem_vector_store_embedding_foundations",
+  "t0_agentmem_episodic_context_retrieval_risks",
+  "t0_agentmem_knowledge_graphrag_schema_basics",
+  "t0_agentmem_session_provenance_attestation_theory",
+  "t0_agentmem_sleeper_prompt_latent_trigger_mechanisms",
+  "t0_agentmem_dual_observer_cognitive_firewall_intro",
+  "t1_agentmem_context_injection_boundary_validation",
+  "t1_agentmem_hmac_memory_node_signature_check",
+  "t1_agentmem_cosine_anomaly_drift_telemetry",
+  "t1_agentmem_untrusted_node_quarantine_enforcement",
+  "t1_agentmem_knowledge_graph_relationship_audit",
+  "t1_agentmem_episodic_reclamation_and_scrubbing",
+  "t1_agentmem_agent_task_executor_prompt_boundary",
+  "t2_agentmem_adversarial_embedding_collision_analysis",
+  "t2_agentmem_covert_sleeper_instruction_defusal",
+  "t2_agentmem_graphrag_triplet_poison_containment",
+  "t2_agentmem_session_key_rotation_memory_reencryption",
+  "t2_agentmem_cross_agent_context_isolation_audit",
+  "t2_agentmem_dynamic_cognitive_firewall_policy",
+  "t2_agentmem_vector_db_multi_tenant_segregation",
+  "t3_agentmem_latent_trigger_activation_evasion_probe",
+  "t3_agentmem_semantic_embedding_watermarking_guard",
+  "t3_agentmem_graph_topology_permission_invariant",
+  "t3_agentmem_dual_observer_cognitive_arbitration",
+  "t3_agentmem_ephemeral_context_zeroization_pipeline",
+  "t3_agentmem_secure_memory_compaction_and_summarization",
+  "t3_agentmem_autonomous_privilege_escalation_interception",
+  "t4_agentmem_capstone_agentic_memory_adversarial_drill",
+  "t4_agentmem_capstone_enterprise_graphrag_cognitive_shield",
+  "t4_agentmem_capstone_zero_trust_memory_mesh_attestation",
+  "t4_agentmem_capstone_neural_cognitive_firewall_hardening",
+  "t4_agentmem_capstone_multi_modal_context_provenance_defense",
+  "t4_agentmem_capstone_distributed_memory_byzantine_isolation",
+  "t4_agentmem_capstone_sovereign_ai_cognitive_infrastructure"
+];
+
+for (const id of AGENTMEM_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/AGENTMEM_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_agentmem_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

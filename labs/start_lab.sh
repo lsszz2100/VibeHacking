@@ -144,6 +144,7 @@ start_lab() {
         "69_model_weight_stego_lab"
         "70_autonomous_kernel_patch_lab"
         "71_hardware_gpu_sidechannel_lab"
+        "72_agent_memory_poison_lab"
     )
 
     local lab_names=(
@@ -294,10 +295,11 @@ start_lab() {
         "웹 콘솔 & 모델 가중치 레지스트리: http://localhost:8069"
         "웹 콘솔 & 커널 eBPF LSM 핫패처: http://localhost:8070"
         "웹 콘솔 & GPU VRAM 사이드채널 인스펙터: http://localhost:8071"
+        "웹 콘솔 & 에이전트 인지 메모리 방화벽: http://localhost:8072"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 71 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~71 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 72 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~72 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

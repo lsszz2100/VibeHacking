@@ -726,6 +726,14 @@ const TRACKS = [
     "en": "Hardware GPU Sidechannel & VRAM Isolation Defense",
     "desc_ko": "VRAM 잔류 메모리 제로화(Zeroization) & 이전 세션 가중치/임베딩 누출 차단·PCIe 버스 타이밍 및 전력 사이드채널 노이즈 주입 방어·Multi-Instance GPU (MIG) 하드웨어 파티션 경계 및 DMA 탈출 격리·암호학적 GPU 펌웨어 무결성 및 머클 트리 원격 증명.",
     "desc_en": "VRAM residual memory zeroization and model weight leak mitigation, PCIe bus timing and power sidechannel noise injection, Multi-Instance GPU (MIG) hardware partition DMA isolation, and cryptographic GPU firmware Merkle tree remote attestation."
+  },
+  {
+    "id": "agentmem",
+    "icon": "🧠",
+    "ko": "AI 에이전트 장기 메모리 오염 & 지식 그래프 방어",
+    "en": "Agent Long-Term Memory & Knowledge Graph Defense",
+    "desc_ko": "에피소딕/벡터 메모리 시맨틱 코사인 유사도 하이재킹 차단·HMAC-SHA256 세션 출처(Provenance) 및 암호학적 메모리 노드 원격 증명·지식 그래프(GraphRAG) 권한 엣지 위조 및 슬리퍼 프롬프트 지연 폭탄 격리·이중 관찰자(Dual-Observer) 인지 메모리 격리 방화벽.",
+    "desc_en": "Episodic and vector memory semantic cosine similarity hijacking mitigation, HMAC-SHA256 session provenance and cryptographic memory node remote attestation, GraphRAG knowledge graph permission edge tampering and sleeper prompt delayed injection isolation, and dual-observer cognitive memory firewall containment."
   }
 ];
 
@@ -81776,6 +81784,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_sovereign_ai_gpu_infrastructure`."
+      ]
+    }
+  },
+  // Track 84: agentmem - AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense (35 challenges)
+  {
+    "id": "t0_agentmem_long_term_memory_threat_model",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "d8c3fdd8555de3b99befd51bf4fea10bb76db2facc436e07619743612fb86859",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AI 에이전트 장기 메모리 및 지식 그래프 위협 모델",
+      "en": "AI Agent Long-Term Memory & Knowledge Graph Threat Model"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: AI 에이전트 장기 메모리 및 지식 그래프 위협 모델\n상세 분석 지침:\n- 장기 기억(Episodic, Semantic Vector, GraphRAG) 아키텍처에서 발생하는 지속성 공격 표면과 잠복 지침 위협을 분석합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_long_term_memory_threat_model`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: AI Agent Long-Term Memory & Knowledge Graph Threat Model\nAnalysis Requirements:\n- Analyze persistence attack surfaces and latent instruction threats across episodic, semantic vector, and GraphRAG architectures.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_long_term_memory_threat_model`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_long_term_memory_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_long_term_memory_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_agentmem_vector_store_embedding_foundations",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "64756df4b7947a6ca0ed663e751aa96e83739054c3779ab765016f685e154f41",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "벡터 저장소 임베딩 생성 및 코사인 유사도 검색 원리",
+      "en": "Vector Store Embedding Generation & Cosine Similarity Search Principles"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 벡터 저장소 임베딩 생성 및 코사인 유사도 검색 원리\n상세 분석 지침:\n- 문맥 청크의 고차원 벡터 임베딩 변환 및 최근접 이웃(KNN) 기반 코사인 유사도 검색 인출 메커니즘을 학습합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_vector_store_embedding_foundations`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Vector Store Embedding Generation & Cosine Similarity Search Principles\nAnalysis Requirements:\n- Study high-dimensional vector embedding transformation of context chunks and KNN cosine similarity retrieval mechanics.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_vector_store_embedding_foundations`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_vector_store_embedding_foundations` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_vector_store_embedding_foundations`."
+      ]
+    }
+  },
+  {
+    "id": "t0_agentmem_episodic_context_retrieval_risks",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "df2f157ffedfd9a1980205c4faf4dec83e952df8227b8aee2cdd8a9f2f0facae",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에피소딕 컨텍스트 저장과 비신뢰 데이터 인입 위험성",
+      "en": "Episodic Context Persistence & Untrusted Input Ingestion Hazards"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 에피소딕 컨텍스트 저장과 비신뢰 데이터 인입 위험성\n상세 분석 지침:\n- 외부 대화 입력이 정제 없이 에이전트 장기 기억에 축적될 때 발생하는 인지 오염 및 교차 세션 오작동 위험을 파악합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_episodic_context_retrieval_risks`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Episodic Context Persistence & Untrusted Input Ingestion Hazards\nAnalysis Requirements:\n- Examine cognitive contamination and cross-session malfunction hazards from ingesting unscrubbed external inputs into episodic stores.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_episodic_context_retrieval_risks`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_episodic_context_retrieval_risks` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_episodic_context_retrieval_risks`."
+      ]
+    }
+  },
+  {
+    "id": "t0_agentmem_knowledge_graphrag_schema_basics",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "e8bdc0ea071795757e0bd12b64d589fec256ad0e5490bb1cb58242f27ff67504",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphRAG 지식 그래프 트리플렛 구조 및 노드 신뢰도",
+      "en": "GraphRAG Knowledge Graph Triplet Structure & Node Trustworthiness"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: GraphRAG 지식 그래프 트리플렛 구조 및 노드 신뢰도\n상세 분석 지침:\n- 엔터티-관계-엔터티 트리플렛 그래프 구조와 지식 그래프 인덱싱 시 신뢰도 가중치 부여 원리를 분석합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_knowledge_graphrag_schema_basics`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: GraphRAG Knowledge Graph Triplet Structure & Node Trustworthiness\nAnalysis Requirements:\n- Analyze entity-relationship-entity triplet graph representations and trust weight assignment during knowledge graph indexing.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_knowledge_graphrag_schema_basics`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_knowledge_graphrag_schema_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_knowledge_graphrag_schema_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_agentmem_session_provenance_attestation_theory",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "e7c0afd3c90c84321b82ff4a998afba0aabfb464763dbd974f6a0f97d43f1c16",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "세션 출처(Provenance) 및 암호학적 메모리 서명 이론",
+      "en": "Session Provenance & Cryptographic Memory Attestation Theory"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 세션 출처(Provenance) 및 암호학적 메모리 서명 이론\n상세 분석 지침:\n- 기억 노드 생성 주체와 세션 무결성을 암호학적으로 바인딩하는 출처 증명 이론과 해시 체이닝 구조를 학습합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_session_provenance_attestation_theory`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Session Provenance & Cryptographic Memory Attestation Theory\nAnalysis Requirements:\n- Learn provenance attestation theory and hash-chaining structures cryptographically binding memory creation to authentic sessions.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_session_provenance_attestation_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_session_provenance_attestation_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_session_provenance_attestation_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t0_agentmem_sleeper_prompt_latent_trigger_mechanisms",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "62d9ee9830a911f92d453e3dd82d384407df9ea9b85dd6db0e9dfb183a59d504",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "슬리퍼 프롬프트 잠복 패턴 및 지연 인출 메커니즘",
+      "en": "Sleeper Prompt Latent Patterns & Delayed Retrieval Mechanisms"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 슬리퍼 프롬프트 잠복 패턴 및 지연 인출 메커니즘\n상세 분석 지침:\n- 평상시 휴면 상태를 유지하다가 특정 관리자 질의 인입 시 코사인 유사도에 의해 활성화되는 지연 트리거 패턴을 탐색합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_sleeper_prompt_latent_trigger_mechanisms`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Sleeper Prompt Latent Patterns & Delayed Retrieval Mechanisms\nAnalysis Requirements:\n- Explore delayed trigger patterns remaining dormant until activated by specific administrative queries matching cosine thresholds.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_sleeper_prompt_latent_trigger_mechanisms`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_sleeper_prompt_latent_trigger_mechanisms` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_sleeper_prompt_latent_trigger_mechanisms`."
+      ]
+    }
+  },
+  {
+    "id": "t0_agentmem_dual_observer_cognitive_firewall_intro",
+    "tier": 0,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 25,
+    "ci": false,
+    "hash": "9422fb7e0419d8df883e6f446d3f3c8b9dac6e3d2b7e025df6ff83a3f4860bbb",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이중 관찰자 인지 방화벽 및 메모리 격리 아키텍처",
+      "en": "Dual-Observer Cognitive Firewall & Memory Partition Architecture"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 이중 관찰자 인지 방화벽 및 메모리 격리 아키텍처\n상세 분석 지침:\n- 에이전트 실행 파이프라인과 독립된 보조 인지 모델이 인출된 컨텍스트의 안전성을 상호 검증하는 격리 아키텍처를 이해합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_dual_observer_cognitive_firewall_intro`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Dual-Observer Cognitive Firewall & Memory Partition Architecture\nAnalysis Requirements:\n- Understand partitioned architectures where an independent auxiliary cognitive model verifies retrieved contexts before execution.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t0_dual_observer_cognitive_firewall_intro`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t0_dual_observer_cognitive_firewall_intro` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t0_dual_observer_cognitive_firewall_intro`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_context_injection_boundary_validation",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "add914ecd2499e34f70ca0ee633c1594d9ba4177ee53187ce3f54be106d19d69",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메모리 인입 데이터 경계 검증 및 메타데이터 정제",
+      "en": "Memory Ingestion Boundary Validation & Metadata Sanitization"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 메모리 인입 데이터 경계 검증 및 메타데이터 정제\n상세 분석 지침:\n- 에피소딕 메모리에 저장되기 전 프롬프트 구분자 및 시스템 지침 메타데이터를 정규식으로 박멸하는 경계 필터를 구현합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_context_injection_boundary_validation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Memory Ingestion Boundary Validation & Metadata Sanitization\nAnalysis Requirements:\n- Implement boundary filters stripping prompt delimiters and system instruction metadata before episodic storage.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_context_injection_boundary_validation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_context_injection_boundary_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_context_injection_boundary_validation`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_hmac_memory_node_signature_check",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "eec1b31c445189f8df9da5a09b8e616107ed93f62992f72036f18bbff423abea",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "HMAC-SHA256 메모리 노드 무결성 서명 및 세션 바인딩",
+      "en": "HMAC-SHA256 Memory Node Signature & Session Cryptographic Binding"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: HMAC-SHA256 메모리 노드 무결성 서명 및 세션 바인딩\n상세 분석 지침:\n- 메모리 노드 저장 시 마스터키 기반 HMAC-SHA256 토큰을 발행하고 인출 시 변조 여부를 0-오차로 검증합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_hmac_memory_node_signature_check`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: HMAC-SHA256 Memory Node Signature & Session Cryptographic Binding\nAnalysis Requirements:\n- Issue master-key HMAC-SHA256 tokens upon memory insertion and verify integrity with zero tolerance upon retrieval.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_hmac_memory_node_signature_check`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_hmac_memory_node_signature_check` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_hmac_memory_node_signature_check`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_cosine_anomaly_drift_telemetry",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "74bd50c35d47682f84ef97b3fcef77be0f81d096cd6c3b2310ac4a53f8a62f0e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "시맨틱 벡터 코사인 드리프트 및 이상치 탐지 텔레메트리",
+      "en": "Semantic Vector Cosine Drift & Outlier Anomaly Telemetry"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 시맨틱 벡터 코사인 드리프트 및 이상치 탐지 텔레메트리\n상세 분석 지침:\n- 정상적인 지식 클러스터 중심점으로부터 비정상적으로 편향된 적대적 임베딩 벡터의 코사인 거리 이상치를 감지합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_cosine_anomaly_drift_telemetry`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Semantic Vector Cosine Drift & Outlier Anomaly Telemetry\nAnalysis Requirements:\n- Detect cosine distance outliers in adversarial embeddings drifting aberrantly from legitimate knowledge cluster centroids.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_cosine_anomaly_drift_telemetry`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_cosine_anomaly_drift_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_cosine_anomaly_drift_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_untrusted_node_quarantine_enforcement",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "db123ad24f629f43040fa7f0597b99c2abd5afa1450cbe5288279c87f6b188f6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비신뢰 외부 입력 노드 격리 파티셔닝 강제",
+      "en": "Untrusted Input Node Quarantine Partitioning Enforcement"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 비신뢰 외부 입력 노드 격리 파티셔닝 강제\n상세 분석 지침:\n- 외부 웹 및 사용자 입력에서 생성된 메모리 노드를 비신뢰(Untrusted)로 분류하여 특권 작업 인출에서 강제 배제합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_untrusted_node_quarantine_enforcement`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Untrusted Input Node Quarantine Partitioning Enforcement\nAnalysis Requirements:\n- Enforce untrusted tagging on external web/user memory nodes, strictly quarantining them from privileged executive tasks.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_untrusted_node_quarantine_enforcement`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_untrusted_node_quarantine_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_untrusted_node_quarantine_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_knowledge_graph_relationship_audit",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "be58a65fc640dacf37ceb20b6dd2d345ef816e4897f92387994c0b3c373b076f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "지식 그래프 엔터티 관계 엣지 및 권한 불변성 감사",
+      "en": "Knowledge Graph Entity Relation Edge & Privilege Immutability Audit"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 지식 그래프 엔터티 관계 엣지 및 권한 불변성 감사\n상세 분석 지침:\n- GraphRAG 지식 그래프 내에서 인가되지 않은 권한 부여 관계 엣지 생성을 동적으로 탐지하고 차단합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_knowledge_graph_relationship_audit`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Knowledge Graph Entity Relation Edge & Privilege Immutability Audit\nAnalysis Requirements:\n- Dynamically audit and intercept unauthorized privilege relationship edges generated within the GraphRAG knowledge graph.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_knowledge_graph_relationship_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_knowledge_graph_relationship_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_knowledge_graph_relationship_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_episodic_reclamation_and_scrubbing",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "09031a223e2368864ad6cc1ed32daedf7e1eb6482aa94efd6fa769b97a154165",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메모리 회수(Reclamation) 및 잔류 컨텍스트 소각 루틴",
+      "en": "Memory Reclamation & Residual Context Scrubbing Routine"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 메모리 회수(Reclamation) 및 잔류 컨텍스트 소각 루틴\n상세 분석 지침:\n- 세션 종료 시 휘발성 컨텍스트 버퍼를 제로화(Zeroization)하고 회수된 메모리 슬롯의 데이터 잔류를 영구 소각합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_episodic_reclamation_and_scrubbing`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Memory Reclamation & Residual Context Scrubbing Routine\nAnalysis Requirements:\n- Zeroize volatile context buffers upon session closure and scrub reclaimed memory slots to eliminate residual data.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_episodic_reclamation_and_scrubbing`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_episodic_reclamation_and_scrubbing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_episodic_reclamation_and_scrubbing`."
+      ]
+    }
+  },
+  {
+    "id": "t1_agentmem_agent_task_executor_prompt_boundary",
+    "tier": 1,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 50,
+    "ci": false,
+    "hash": "e8e4aa35cba4ee9e2d513e745e037b475add6e55e0ed2943abb4790f81104bd6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에이전트 태스크 실행기 프롬프트 격리 경계 보호",
+      "en": "Agent Task Executor Prompt Isolation Boundary Protection"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 에이전트 태스크 실행기 프롬프트 격리 경계 보호\n상세 분석 지침:\n- 인출된 장기 메모리 텍스트를 실행 프롬프트에 주입할 때 샌드박스 인클로저로 감싸 실행 지침 오염을 방지합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_agent_task_executor_prompt_boundary`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Agent Task Executor Prompt Isolation Boundary Protection\nAnalysis Requirements:\n- Enclose retrieved long-term memory texts in sandbox delimiters when injecting into task executor prompts.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t1_agent_task_executor_prompt_boundary`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t1_agent_task_executor_prompt_boundary` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t1_agent_task_executor_prompt_boundary`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_adversarial_embedding_collision_analysis",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "368e50d533a6cb9b06458a947b20987d2c21b86987b7aadc29a57a54e15ab703",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "적대적 임베딩 충돌 및 의미론적 하이재킹 분석",
+      "en": "Adversarial Embedding Collision & Semantic Hijacking Analysis"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 적대적 임베딩 충돌 및 의미론적 하이재킹 분석\n상세 분석 지침:\n- 임베딩 공간 상에서 관리자 시스템 프롬프트와 극도로 가까운 거리를 갖도록 조작된 적대적 텍스트 충돌 공격을 분석합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_adversarial_embedding_collision_analysis`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Adversarial Embedding Collision & Semantic Hijacking Analysis\nAnalysis Requirements:\n- Analyze adversarial collision attacks crafted to achieve minimal distance to administrator prompt vectors in embedding space.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_adversarial_embedding_collision_analysis`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_adversarial_embedding_collision_analysis` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_adversarial_embedding_collision_analysis`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_covert_sleeper_instruction_defusal",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "54bae6b6b6844886875293834d478a61b4485fb21a68c83045cd82d993cf6333",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "잠복형 슬리퍼 지침 탐지 및 프롬프트 인젝션 중화",
+      "en": "Covert Sleeper Instruction Detection & Prompt Injection Defusal"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 잠복형 슬리퍼 지침 탐지 및 프롬프트 인젝션 중화\n상세 분석 지침:\n- 메모리 청크 내에 침투된 지연형 시스템 오버라이드 지시어를 신경망 인지 필터로 분석하여 사전에 무력화합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_covert_sleeper_instruction_defusal`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Covert Sleeper Instruction Detection & Prompt Injection Defusal\nAnalysis Requirements:\n- Examine and defuse covert delayed system override instructions embedded within memory chunks using neural cognitive filters.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_covert_sleeper_instruction_defusal`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_covert_sleeper_instruction_defusal` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_covert_sleeper_instruction_defusal`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_graphrag_triplet_poison_containment",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "e7bb0798ffe181f60f3d641611a7c7ba4e0a7a8eb49aed92bab75e7f4f6e5044",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphRAG 트리플렛 위조 탐지 및 악성 엣지 차단",
+      "en": "GraphRAG Triplet Forgery Detection & Malicious Edge Containment"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: GraphRAG 트리플렛 위조 탐지 및 악성 엣지 차단\n상세 분석 지침:\n- 공격자가 주입한 가짜 관리자 역할 부여 트리플렛 노드를 식별하고 그래프 추론 경로에서 즉각 차단합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_graphrag_triplet_poison_containment`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: GraphRAG Triplet Forgery Detection & Malicious Edge Containment\nAnalysis Requirements:\n- Identify spoofed administrative role triplet nodes injected by adversaries and sever them from graph inference paths.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_graphrag_triplet_poison_containment`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_graphrag_triplet_poison_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_graphrag_triplet_poison_containment`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_session_key_rotation_memory_reencryption",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "cddd68ccdae7ce6a77cfa6d4f261bd70736b6ff61a275a14736a5439f65cfd1e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "세션 마스터키 교체에 따른 장기 메모리 재암호화",
+      "en": "Session Master Key Rotation & Long-Term Memory Re-Encryption"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 세션 마스터키 교체에 따른 장기 메모리 재암호화\n상세 분석 지침:\n- 주기적 세션 키 로테이션 시 기존 벡터 및 그래프 메모리 블록을 새로운 HMAC 키로 재암호화하고 검증합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_session_key_rotation_memory_reencryption`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Session Master Key Rotation & Long-Term Memory Re-Encryption\nAnalysis Requirements:\n- Re-encrypt and verify existing vector and graph memory blocks under new HMAC keys during periodic session key rotation.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_session_key_rotation_memory_reencryption`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_session_key_rotation_memory_reencryption` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_session_key_rotation_memory_reencryption`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_cross_agent_context_isolation_audit",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "fc8e24fe1e90d586ed0844b53c2f609207e6c54028ed14b2c986ebe3c3f34300",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멀티 에이전트 간 컨텍스트 메모리 교차 유출 감사",
+      "en": "Cross-Agent Context Memory Leak Audit & Boundary Verification"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 멀티 에이전트 간 컨텍스트 메모리 교차 유출 감사\n상세 분석 지침:\n- 스웜 에이전트 간 공유 메모리 인덱스에서 권한이 서로 다른 워커 간의 컨텍스트 오염 및 정보 누출을 감사 통제합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_cross_agent_context_isolation_audit`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Cross-Agent Context Memory Leak Audit & Boundary Verification\nAnalysis Requirements:\n- Audit and enforce context separation across shared memory indexes to prevent contamination between different worker agents.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_cross_agent_context_isolation_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_cross_agent_context_isolation_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_cross_agent_context_isolation_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_dynamic_cognitive_firewall_policy",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "0bb1901d89752de534130078718e43cf63eede51f1621fc152ad063d44ace9b0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "동적 인지 방화벽 룰셋 컴파일 및 시스템 지침 보호",
+      "en": "Dynamic Cognitive Firewall Policy Compilation & System Prompt Shield"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 동적 인지 방화벽 룰셋 컴파일 및 시스템 지침 보호\n상세 분석 지침:\n- 에이전트 인출 컨텍스트에 포함될 수 없는 위험 토큰 룰셋을 동적으로 컴파일하여 시스템 코어 지침을 보호합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_dynamic_cognitive_firewall_policy`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Dynamic Cognitive Firewall Policy Compilation & System Prompt Shield\nAnalysis Requirements:\n- Dynamically compile cognitive firewall rule sets restricting dangerous token classes from retrieved agent contexts.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_dynamic_cognitive_firewall_policy`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_dynamic_cognitive_firewall_policy` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_dynamic_cognitive_firewall_policy`."
+      ]
+    }
+  },
+  {
+    "id": "t2_agentmem_vector_db_multi_tenant_segregation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 100,
+    "ci": false,
+    "hash": "19733c1eb91cfdcc996b27db91348c586affca0e7d38e269237907a611cf615a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "벡터 데이터베이스 멀티 테넌트 인덱스 분리 검증",
+      "en": "Vector Database Multi-Tenant Index Segregation Verification"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 벡터 데이터베이스 멀티 테넌트 인덱스 분리 검증\n상세 분석 지침:\n- 단일 벡터 DB 인스턴스 내에서 테넌트 네임스페이스 및 메타데이터 필터링 강제를 통해 교차 테넌트 인출을 원천 방어합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_vector_db_multi_tenant_segregation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Vector Database Multi-Tenant Index Segregation Verification\nAnalysis Requirements:\n- Enforce strict tenant namespace and metadata filtering within vector databases to block cross-tenant context retrieval.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t2_vector_db_multi_tenant_segregation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t2_vector_db_multi_tenant_segregation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t2_vector_db_multi_tenant_segregation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_latent_trigger_activation_evasion_probe",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "461cb164ca6cda8517f414449d8265d657e84c7e093ce8f345fdb515ac6d8219",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "지연 폭탄 트리거 활성화 회피 기법 분석 및 방어",
+      "en": "Latent Trigger Activation Evasion Analysis & Defense"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 지연 폭탄 트리거 활성화 회피 기법 분석 및 방어\n상세 분석 지침:\n- 다단계 논리 연쇄(Multi-Hop Reasoning)를 거쳐 은밀하게 시스템 권한을 획득하려는 지연 인젝션 기법을 정밀 분석합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_latent_trigger_activation_evasion_probe`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Latent Trigger Activation Evasion Analysis & Defense\nAnalysis Requirements:\n- Probe delayed injection techniques exploiting multi-hop reasoning chains to covertly escalate system authority.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_latent_trigger_activation_evasion_probe`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_latent_trigger_activation_evasion_probe` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_latent_trigger_activation_evasion_probe`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_semantic_embedding_watermarking_guard",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "89a47165aad5cf7bb821d56f69c579e93a747bcfe9b90330f5be64935c6f6eef",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "시맨틱 임베딩 워터마킹 및 무단 변조 탐지 가드",
+      "en": "Semantic Embedding Watermarking & Tampering Detection Guard"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 시맨틱 임베딩 워터마킹 및 무단 변조 탐지 가드\n상세 분석 지침:\n- 고차원 임베딩 벡터에 암호학적 워터마크 신호를 분산 인코딩하여 외부 주입이나 데이터 오염을 실시간 검증합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_semantic_embedding_watermarking_guard`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Semantic Embedding Watermarking & Tampering Detection Guard\nAnalysis Requirements:\n- Dispersively encode cryptographic watermarks across high-dimensional embedding vectors to detect unauthorized injection.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_semantic_embedding_watermarking_guard`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_semantic_embedding_watermarking_guard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_semantic_embedding_watermarking_guard`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_graph_topology_permission_invariant",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "91c7ad7ea8d30a97973fae0f5e03f57dcd47773d7e889502b7c6abdda551c904",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "지식 그래프 위상 권한 불변성 수학적 증명 검증",
+      "en": "Knowledge Graph Topological Privilege Invariant Proof Verification"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 지식 그래프 위상 권한 불변성 수학적 증명 검증\n상세 분석 지침:\n- 지식 그래프의 권한 위상학적 불변식을 형식 증명 기법으로 대조하여 변조된 인접 행렬을 즉시 거부합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_graph_topology_permission_invariant`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Knowledge Graph Topological Privilege Invariant Proof Verification\nAnalysis Requirements:\n- Validate topological privilege invariants in knowledge graphs using formal proofs to reject tampered adjacency matrices.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_graph_topology_permission_invariant`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_graph_topology_permission_invariant` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_graph_topology_permission_invariant`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_dual_observer_cognitive_arbitration",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "7a24509897f082e2e3aa641b60439013940bfa4ca972d2537043ae51dd80601e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이중 관찰자 독립 검증 엔진 및 인출 컨텍스트 중재",
+      "en": "Dual-Observer Independent Verification Engine & Retrieval Arbitration"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 이중 관찰자 독립 검증 엔진 및 인출 컨텍스트 중재\n상세 분석 지침:\n- 서로 다른 아키텍처의 두 인지 엔진이 인출된 메모리의 의도를 병렬 교차 평가하여 일치할 때만 인출을 승인합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_dual_observer_cognitive_arbitration`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Dual-Observer Independent Verification Engine & Retrieval Arbitration\nAnalysis Requirements:\n- Cross-evaluate retrieved memory intent in parallel across dual heterogeneous cognitive engines, arbitrating on consensus.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_dual_observer_cognitive_arbitration`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_dual_observer_cognitive_arbitration` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_dual_observer_cognitive_arbitration`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_ephemeral_context_zeroization_pipeline",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "c8a6d18851abea8392ccdc9e100171cf825a7c69da547446c789f862ff017f12",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "임시 컨텍스트 파이프라인 제로화 및 누출 원천 방지",
+      "en": "Ephemeral Context Pipeline Zeroization & Leak Prevention"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 임시 컨텍스트 파이프라인 제로화 및 누출 원천 방지\n상세 분석 지침:\n- 인출 후 사용된 단기 메모리 파이프라인 버퍼를 암호학적으로 제로화하여 메모리 덤프 공격에 의한 누출을 방지합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_ephemeral_context_zeroization_pipeline`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Ephemeral Context Pipeline Zeroization & Leak Prevention\nAnalysis Requirements:\n- Cryptographically zeroize short-term retrieval pipeline buffers after execution to prevent memory dump exfiltration.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_ephemeral_context_zeroization_pipeline`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_ephemeral_context_zeroization_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_ephemeral_context_zeroization_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_secure_memory_compaction_and_summarization",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "ea758f27d4aa1fce898422aa3ec7974e7cde271fd4f65ab42259a72a8142cb8c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "안전한 메모리 요약·압축 및 적대적 잔류물 제거",
+      "en": "Secure Memory Summarization, Compaction & Adversarial Residue Purging"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 안전한 메모리 요약·압축 및 적대적 잔류물 제거\n상세 분석 지침:\n- 장기 메모리 요약 압축 과정에서 요약 모델이 적대적 지시어를 증폭하거나 계승하지 않도록 정제 루프를 적용합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_secure_memory_compaction_and_summarization`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Secure Memory Summarization, Compaction & Adversarial Residue Purging\nAnalysis Requirements:\n- Apply recursive sanitization during memory summarization to prevent compression models from inheriting hostile directives.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_secure_memory_compaction_and_summarization`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_secure_memory_compaction_and_summarization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_secure_memory_compaction_and_summarization`."
+      ]
+    }
+  },
+  {
+    "id": "t3_agentmem_autonomous_privilege_escalation_interception",
+    "tier": 3,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 200,
+    "ci": false,
+    "hash": "dee22e000f5c47dd43896ea3df773ba1e1690bf6e7f918b9938c0e7755cce3a8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "장기 기억 기반 자율 권한 상승 행위 실시간 차단",
+      "en": "Long-Term Memory Autonomous Privilege Escalation Interception"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: 장기 기억 기반 자율 권한 상승 행위 실시간 차단\n상세 분석 지침:\n- 오염된 기억을 바탕으로 에이전트가 관리자 명령을 자율 발행하려는 이상 징후를 시스템 콜 경계에서 차단합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_autonomous_privilege_escalation_interception`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: Long-Term Memory Autonomous Privilege Escalation Interception\nAnalysis Requirements:\n- Intercept anomalous autonomous administrative command issuances at system call boundaries triggered by poisoned memories.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t3_autonomous_privilege_escalation_interception`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t3_autonomous_privilege_escalation_interception` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t3_autonomous_privilege_escalation_interception`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_agentic_memory_adversarial_drill",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "b2a34bd37926f2d88ebedf88eeac2add718e2609c0316b1b9b49b979ec498491",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 장기 메모리 오염 대항 실전 자율 공방 훈련",
+      "en": "[Capstone] Agentic Memory Poisoning Adversarial Red-Blue Drill"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 장기 메모리 오염 대항 실전 자율 공방 훈련\n상세 분석 지침:\n- 실전 공격 체인(잠복형 슬리퍼 주입, 임베딩 충돌, 그래프 변조)에 맞서 메모리 정제, HMAC 증명, 인지 방화벽 전 과정을 통합 실증합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_agentic_memory_adversarial_drill`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Agentic Memory Poisoning Adversarial Red-Blue Drill\nAnalysis Requirements:\n- Validate integrated defenses spanning memory sanitization, HMAC attestation, and cognitive firewalls against live attack chains.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_agentic_memory_adversarial_drill`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_agentic_memory_adversarial_drill` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_agentic_memory_adversarial_drill`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_enterprise_graphrag_cognitive_shield",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "d6b1bcb8047aeeedc5b2ef3766de0e6d8f9c42cdfc8e2c2c9501a483eab28f28",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 엔터프라이즈 GraphRAG 인지 방어 인프라 종합 구축",
+      "en": "[Capstone] Enterprise GraphRAG Cognitive Defense Infrastructure Deployment"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 엔터프라이즈 GraphRAG 인지 방어 인프라 종합 구축\n상세 분석 지침:\n- 대규모 엔터프라이즈 GraphRAG 시스템에서 권한 위상 불변성, 트리플렛 출처 검증, 악성 엣지 격리 체계를 완성합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_enterprise_graphrag_cognitive_shield`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Enterprise GraphRAG Cognitive Defense Infrastructure Deployment\nAnalysis Requirements:\n- Deploy full enterprise GraphRAG defenses covering topological privilege invariants, triplet provenance, and edge isolation.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_enterprise_graphrag_cognitive_shield`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_enterprise_graphrag_cognitive_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_enterprise_graphrag_cognitive_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_zero_trust_memory_mesh_attestation",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "2a9f7929062b833e10724aec73c20ff52e85bd83c9fd7668bbf579b3eb9558ff",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 제로 트러스트 메모리 메시 암호학적 원격 증명 체계",
+      "en": "[Capstone] Zero-Trust Memory Mesh Cryptographic Remote Attestation System"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 제로 트러스트 메모리 메시 암호학적 원격 증명 체계\n상세 분석 지침:\n- 모든 분산 메모리 노드에 제로 트러스트 암호학적 출처 토큰을 강제하고 런타임 위변조를 실시간 원격 증명합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_zero_trust_memory_mesh_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Zero-Trust Memory Mesh Cryptographic Remote Attestation System\nAnalysis Requirements:\n- Mandate zero-trust cryptographic provenance tokens across distributed memory meshes with real-time remote attestation.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_zero_trust_memory_mesh_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_zero_trust_memory_mesh_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_zero_trust_memory_mesh_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_neural_cognitive_firewall_hardening",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "a5059923fd5c97737b0c6fdcb0348055ebf898588439f6d16e8589331a839e54",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 신경망 인지 방화벽 및 시스템 프롬프트 철벽 방어",
+      "en": "[Capstone] Neural Cognitive Firewall & System Prompt Impenetrable Shield"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 신경망 인지 방화벽 및 시스템 프롬프트 철벽 방어\n상세 분석 지침:\n- 이중 관찰자 신경망 인지 방화벽을 가동하여 인출 컨텍스트의 모든 지연형 지시어와 적대적 유도 신호를 100% 무력화합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_neural_cognitive_firewall_hardening`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Neural Cognitive Firewall & System Prompt Impenetrable Shield\nAnalysis Requirements:\n- Deploy dual-observer neural cognitive firewalls neutralizing 100% of delayed directives and adversarial steering cues.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_neural_cognitive_firewall_hardening`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_neural_cognitive_firewall_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_neural_cognitive_firewall_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_multi_modal_context_provenance_defense",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "ca5a84d75c004a13ec388386a6f6386697ea0f564a06830a8f6adff558efdb05",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 멀티모달 컨텍스트 메모리 출처 무결성 보증 아키텍처",
+      "en": "[Capstone] Multi-Modal Context Memory Provenance Assurance Architecture"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 멀티모달 컨텍스트 메모리 출처 무결성 보증 아키텍처\n상세 분석 지침:\n- 이미지·오디오 임베딩과 텍스트가 혼합된 멀티모달 장기 기억에서 스테가노그래피 및 은닉 프롬프트 주입을 원천 방어합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_multi_modal_context_provenance_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Multi-Modal Context Memory Provenance Assurance Architecture\nAnalysis Requirements:\n- Defend multi-modal long-term memory spanning text, image, and audio embeddings from steganographic prompt injection.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_multi_modal_context_provenance_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_multi_modal_context_provenance_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_multi_modal_context_provenance_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_distributed_memory_byzantine_isolation",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "5bad6dc903c71d4a92dd4f682e23259860c5e9b301d8d69d284762350eee4d28",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 분산 에이전트 메모리 비잔틴 변조 및 노드 격리 캡스톤",
+      "en": "[Capstone] Distributed Agent Memory Byzantine Fault & Node Isolation Capstone"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 분산 에이전트 메모리 비잔틴 변조 및 노드 격리 캡스톤\n상세 분석 지침:\n- 비잔틴 변조된 악성 에이전트 노드가 분산 메모리 풀을 오염시키려 할 때 합의 알고리즘으로 오염 노드를 즉각 배제합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_distributed_memory_byzantine_isolation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Distributed Agent Memory Byzantine Fault & Node Isolation Capstone\nAnalysis Requirements:\n- Isolate Byzantine-compromised agent nodes attempting to poison shared memory pools using cryptographic consensus algorithms.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_distributed_memory_byzantine_isolation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_distributed_memory_byzantine_isolation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_distributed_memory_byzantine_isolation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_agentmem_capstone_sovereign_ai_cognitive_infrastructure",
+    "tier": 4,
+    "cat": "ai",
+    "track": "agentmem",
+    "points": 400,
+    "ci": false,
+    "hash": "b01e197da8121205cb295b57500adb18cc073f7a0f46b09271578a3c0c0e9582",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 주권 AI(Sovereign AI) 인지 인프라 전방위 장기 메모리 방어 체계",
+      "en": "[Capstone] Sovereign AI Cognitive Infrastructure Full-Spectrum Memory Defense System"
+    },
+    "prompt": {
+      "ko": "AI 에이전트 장기 메모리 오염 및 지식 그래프 방어 실무를 수행합니다.\n\n주제: [Capstone] 주권 AI(Sovereign AI) 인지 인프라 전방위 장기 메모리 방어 체계\n상세 분석 지침:\n- 국가 핵심 AI 에이전트 시스템의 장기 메모리, 벡터 DB, GraphRAG를 잠복 침투로부터 영구 보호하는 최고도 주권 방어망을 확립합니다.\n- 에이전트 인지 메모리 오염 벡터 및 GraphRAG 위상 무결성을 정밀 감사하십시오.\n- 검증 식별자 AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_sovereign_ai_cognitive_infrastructure`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of agent memory poisoning and knowledge graph defense.\n\nTopic: [Capstone] Sovereign AI Cognitive Infrastructure Full-Spectrum Memory Defense System\nAnalysis Requirements:\n- Establish sovereign defense shields protecting critical AI agent long-term memory, vector DBs, and GraphRAG from latent sabotage.\n- Thoroughly audit agent cognitive memory poisoning vectors and GraphRAG topological integrity.\n- Verification Identifier AGENTMEM_CHALLENGE_ID: `ch_agentmem_t4_capstone_sovereign_ai_cognitive_infrastructure`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_agentmem_t4_capstone_sovereign_ai_cognitive_infrastructure` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_sovereign_ai_cognitive_infrastructure`."
       ]
     }
   }

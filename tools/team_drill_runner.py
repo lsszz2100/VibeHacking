@@ -3,7 +3,7 @@
 tools/team_drill_runner.py — 10대 보안 기술팀 공방전 자동 훈련 엔진 (Team Drill Runner)
 
 HumanAPI_Lab/Security/Technical_Team/Technical_Team.md의 10대 팀 매트릭스와
-VibeHacking 71개 랩 및 83개 워게임 트랙을 연계하여
+VibeHacking 72개 랩 및 84개 워게임 트랙을 연계하여
 Red Team(공격 재현) vs Blue Team(탐지 및 차단) 공방전 시뮬레이션을 수행하고
 Purple Team 탐지율 및 보안 점수를 정량 산출합니다.
 """
@@ -35,7 +35,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "레드팀",
         "name_en": "Red Team",
         "mission": "실전 모의 침투, APT 공격 체인 재현, C2 터널링, EDR 우회, 익스플로잇 실증",
-        "labs": ["03", "05", "20", "25", "29", "38", "52", "54", "70", "71"],
+        "labs": ["03", "05", "20", "25", "29", "38", "52", "54", "70", "71", "72"],
         "tactics": ["Initial Access", "Privilege Escalation", "Defense Evasion", "Credential Access", "Command and Control"],
         "tools": ["Sliver", "Havoc", "Metasploit", "Mimikatz", "SharpHound", "Custom PoC"],
     },
@@ -44,7 +44,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "블루팀",
         "name_en": "Blue Team",
         "mission": "SIEM/XDR 이벤트 수집, 네트워크 IDS/IPS, 엔드포인트 포렌식, eBPF 커널 실시간 차단",
-        "labs": ["07", "13", "23", "26", "40", "50", "51", "56", "70", "71"],
+        "labs": ["07", "13", "23", "26", "40", "50", "51", "56", "70", "71", "72"],
         "tactics": ["Threat Detection", "Log Ingestion", "Kernel Tracing", "Incident Response", "Forensic Carving"],
         "tools": ["Wazuh", "Suricata", "Tetragon", "Sigma Rules", "Volatility 3", "Zeek"],
     },
@@ -62,7 +62,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "화이트팀",
         "name_en": "White Team",
         "mission": "훈련 환경·범위·규칙 통제, 127.0.0.1 루프백 샌드박스 격리 통제, 킬스위치 즉시 가동",
-        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68", "69", "70", "71"],
+        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68", "69", "70", "71", "72"],
         "tactics": ["Safety Bounds", "Isolation Enforcement", "Exercise Adjudication", "Audit Logging"],
         "tools": ["Docker Guard", "Landlock LSM", "Cgroup Confinement", "Port Sentinel"],
     },
@@ -227,6 +227,12 @@ BLUE_DETECTIONS: Dict[str, Dict[str, str]] = {
         "rule_id": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101",
         "action": "SCRUB_VRAM_RESIDUE_AND_INJECT_PCIE_JITTER",
         "technique": "T1499 / Endpoint Denial of Service: Hardware Accelerator Sidechannel",
+    },
+    "72": {
+        "engine": "Cognitive Memory Shield & GraphRAG Attestation Guard",
+        "rule_id": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201",
+        "action": "STRIP_PROMPT_DELIMITERS_AND_QUARANTINE_UNTRUSTED",
+        "technique": "T1565.001 / Data Manipulation: Stored Context and Vector Memory Tampering",
     },
 }
 
@@ -483,7 +489,7 @@ def main() -> None:
     )
     parser.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     parser.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    parser.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 71개 랩 종합 공방전 실행")
+    parser.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 72개 랩 종합 공방전 실행")
     parser.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     parser.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     parser.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")

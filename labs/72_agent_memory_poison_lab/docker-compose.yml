@@ -1,0 +1,8 @@
+services:
+  agent_memory_poison_lab:
+    build: .
+    ports:
+      - "127.0.0.1:8072:8072"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

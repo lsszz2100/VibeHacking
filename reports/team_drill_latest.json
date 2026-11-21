@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-21 18:09:03",
+  "timestamp": "2026-11-21 18:43:49",
   "teams_tested": [
     "red",
     "blue",
@@ -13,30 +13,30 @@
     "re",
     "antire"
   ],
-  "total_drills": 83,
-  "total_attacks_executed": 260,
-  "total_attacks_detected": 260,
-  "total_attacks_blocked": 260,
+  "total_drills": 86,
+  "total_attacks_executed": 272,
+  "total_attacks_detected": 272,
+  "total_attacks_blocked": 272,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
   "team_breakdown": {
     "red": {
       "team_name": "레드팀",
-      "labs_tested": 10,
-      "attacks": 30,
-      "detected": 30,
-      "blocked": 30,
+      "labs_tested": 11,
+      "attacks": 34,
+      "detected": 34,
+      "blocked": 34,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
     },
     "blue": {
       "team_name": "블루팀",
-      "labs_tested": 10,
-      "attacks": 32,
-      "detected": 32,
-      "blocked": 32,
+      "labs_tested": 11,
+      "attacks": 36,
+      "detected": 36,
+      "blocked": 36,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 14,
-      "attacks": 51,
-      "detected": 51,
-      "blocked": 51,
+      "labs_tested": 15,
+      "attacks": 55,
+      "detected": 55,
+      "blocked": 55,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.11
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "20",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "29",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.12
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "70",
@@ -605,7 +605,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "71",
@@ -674,6 +674,72 @@
       "elapsed_ms": 0.04
     },
     {
+      "lab_id": "72",
+      "team_id": "red",
+      "team_name": "레드팀",
+      "lab_title": "72 AgentMemoryPoisonLab AI 에이전트 장기 메모리 오염 & 지식 그래프 방어 랩",
+      "cve": "VIBE-2026-7201",
+      "cvss": 10.0,
+      "mitre": "T1565.001",
+      "kisa": "2.10.7",
+      "nist": "PR.DS-08",
+      "owasp": "LLM07:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Cognitive Memory Shield & GraphRAG Attestation Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "에피소딕 컨텍스트 메모리 정제 및 비신뢰 노드 격리 파티셔닝",
+          "red_attack": "외부에서 인입되는 데이터가 에피소딕 메모리에 저장될 때 프롬프트 구분자 및 시스템 지시자를 정제하고, 격리된 비신뢰 파티션에 격리 배치합니다.",
+          "blue_defense": "프롬프트 구분자 박멸, 비신뢰 메모리 태깅, 인지 메모리 격리 파티셔닝.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "암호학적 세션 출처(Provenance) 검증 및 HMAC-SHA256 증명",
+          "red_attack": "메모리 인출 시 세션 ID와 컨텍스트 해시가 결합된 HMAC-SHA256 암호학적 서명을 대조하여 미검증된 악성 컨텍스트 주입을 원천 차단합니다.",
+          "blue_defense": "HMAC-SHA256 세션 출처 증명, 암호학적 서명 검증, 위변조 메모리 거부.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "시맨틱 임베딩 코사인 드리프트 이상치 탐지 및 적대적 클러스터 필터링",
+          "red_attack": "시스템 관리자 권한 프롬프트 임베딩과 비정상적으로 근접한 적대적 임베딩 클러스터의 코사인 유사도 드리프트를 탐지하여 인출에서 배제합니다.",
+          "blue_defense": "코사인 유사도 드리프트 필터링, 적대적 클러스터 탐지, 멀티 테넌트 벡터 인덱스 격리.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "GraphRAG 지식 그래프 위상 권한 불변성 검증 및 슬리퍼 트리거 무력화 (Capstone)",
+          "red_attack": "지식 그래프 내 권한 관계 엣지의 위상학적 불변성을 HMAC으로 검증하고, 슬리퍼 프롬프트의 지연 실행 트리거를 사전에 무력화합니다.",
+          "blue_defense": "GraphRAG 위상 권한 불변성 검증, 불법 관계 엣지 자동 가지치기, 슬리퍼 트리거 박멸.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.07
+    },
+    {
       "lab_id": "07",
       "team_id": "blue",
       "team_name": "블루팀",
@@ -704,7 +770,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "13",
@@ -737,7 +803,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "23",
@@ -847,7 +913,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "40",
@@ -913,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "50",
@@ -979,7 +1045,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "51",
@@ -1177,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "71",
@@ -1243,6 +1309,72 @@
           "ttd_ms": 29.3
         }
       ],
+      "elapsed_ms": 0.05
+    },
+    {
+      "lab_id": "72",
+      "team_id": "blue",
+      "team_name": "블루팀",
+      "lab_title": "72 AgentMemoryPoisonLab AI 에이전트 장기 메모리 오염 & 지식 그래프 방어 랩",
+      "cve": "VIBE-2026-7201",
+      "cvss": 10.0,
+      "mitre": "T1565.001",
+      "kisa": "2.10.7",
+      "nist": "PR.DS-08",
+      "owasp": "LLM07:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Cognitive Memory Shield & GraphRAG Attestation Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "에피소딕 컨텍스트 메모리 정제 및 비신뢰 노드 격리 파티셔닝",
+          "red_attack": "외부에서 인입되는 데이터가 에피소딕 메모리에 저장될 때 프롬프트 구분자 및 시스템 지시자를 정제하고, 격리된 비신뢰 파티션에 격리 배치합니다.",
+          "blue_defense": "프롬프트 구분자 박멸, 비신뢰 메모리 태깅, 인지 메모리 격리 파티셔닝.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "암호학적 세션 출처(Provenance) 검증 및 HMAC-SHA256 증명",
+          "red_attack": "메모리 인출 시 세션 ID와 컨텍스트 해시가 결합된 HMAC-SHA256 암호학적 서명을 대조하여 미검증된 악성 컨텍스트 주입을 원천 차단합니다.",
+          "blue_defense": "HMAC-SHA256 세션 출처 증명, 암호학적 서명 검증, 위변조 메모리 거부.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "시맨틱 임베딩 코사인 드리프트 이상치 탐지 및 적대적 클러스터 필터링",
+          "red_attack": "시스템 관리자 권한 프롬프트 임베딩과 비정상적으로 근접한 적대적 임베딩 클러스터의 코사인 유사도 드리프트를 탐지하여 인출에서 배제합니다.",
+          "blue_defense": "코사인 유사도 드리프트 필터링, 적대적 클러스터 탐지, 멀티 테넌트 벡터 인덱스 격리.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "GraphRAG 지식 그래프 위상 권한 불변성 검증 및 슬리퍼 트리거 무력화 (Capstone)",
+          "red_attack": "지식 그래프 내 권한 관계 엣지의 위상학적 불변성을 HMAC으로 검증하고, 슬리퍼 프롬프트의 지연 실행 트리거를 사전에 무력화합니다.",
+          "blue_defense": "GraphRAG 위상 권한 불변성 검증, 불법 관계 엣지 자동 가지치기, 슬리퍼 트리거 박멸.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
       "elapsed_ms": 0.03
     },
     {
@@ -1287,7 +1419,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "03",
@@ -1320,7 +1452,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "05",
@@ -1353,7 +1485,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "13",
@@ -1386,7 +1518,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "23",
@@ -1507,7 +1639,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.15
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "50",
@@ -1573,7 +1705,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "56",
@@ -1639,7 +1771,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.32
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "02",
@@ -1683,7 +1815,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "10",
@@ -1716,7 +1848,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "39",
@@ -1782,7 +1914,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "49",
@@ -1848,7 +1980,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "54",
@@ -1914,7 +2046,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "58",
@@ -1980,7 +2112,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.17
     },
     {
       "lab_id": "59",
@@ -2046,7 +2178,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.35
     },
     {
       "lab_id": "60",
@@ -2112,7 +2244,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.83
     },
     {
       "lab_id": "61",
@@ -2178,7 +2310,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "67",
@@ -2244,7 +2376,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.67
+      "elapsed_ms": 0.11
     },
     {
       "lab_id": "68",
@@ -2310,7 +2442,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 1.77
+      "elapsed_ms": 0.63
     },
     {
       "lab_id": "69",
@@ -2508,7 +2640,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.06
+    },
+    {
+      "lab_id": "72",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "72 AgentMemoryPoisonLab AI 에이전트 장기 메모리 오염 & 지식 그래프 방어 랩",
+      "cve": "VIBE-2026-7201",
+      "cvss": 10.0,
+      "mitre": "T1565.001",
+      "kisa": "2.10.7",
+      "nist": "PR.DS-08",
+      "owasp": "LLM07:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Cognitive Memory Shield & GraphRAG Attestation Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "에피소딕 컨텍스트 메모리 정제 및 비신뢰 노드 격리 파티셔닝",
+          "red_attack": "외부에서 인입되는 데이터가 에피소딕 메모리에 저장될 때 프롬프트 구분자 및 시스템 지시자를 정제하고, 격리된 비신뢰 파티션에 격리 배치합니다.",
+          "blue_defense": "프롬프트 구분자 박멸, 비신뢰 메모리 태깅, 인지 메모리 격리 파티셔닝.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "암호학적 세션 출처(Provenance) 검증 및 HMAC-SHA256 증명",
+          "red_attack": "메모리 인출 시 세션 ID와 컨텍스트 해시가 결합된 HMAC-SHA256 암호학적 서명을 대조하여 미검증된 악성 컨텍스트 주입을 원천 차단합니다.",
+          "blue_defense": "HMAC-SHA256 세션 출처 증명, 암호학적 서명 검증, 위변조 메모리 거부.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "시맨틱 임베딩 코사인 드리프트 이상치 탐지 및 적대적 클러스터 필터링",
+          "red_attack": "시스템 관리자 권한 프롬프트 임베딩과 비정상적으로 근접한 적대적 임베딩 클러스터의 코사인 유사도 드리프트를 탐지하여 인출에서 배제합니다.",
+          "blue_defense": "코사인 유사도 드리프트 필터링, 적대적 클러스터 탐지, 멀티 테넌트 벡터 인덱스 격리.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "GraphRAG 지식 그래프 위상 권한 불변성 검증 및 슬리퍼 트리거 무력화 (Capstone)",
+          "red_attack": "지식 그래프 내 권한 관계 엣지의 위상학적 불변성을 HMAC으로 검증하고, 슬리퍼 프롬프트의 지연 실행 트리거를 사전에 무력화합니다.",
+          "blue_defense": "GraphRAG 위상 권한 불변성 검증, 불법 관계 엣지 자동 가지치기, 슬리퍼 트리거 박멸.",
+          "detection_rule": "AGENT-MEM-POISON-HMAC-PROVENANCE-7201-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "01",
@@ -2552,7 +2750,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "18",
@@ -2585,7 +2783,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "22",
@@ -2640,7 +2838,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.42
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "24",
@@ -2695,7 +2893,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.13
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "31",
@@ -2750,7 +2948,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "41",
@@ -2816,7 +3014,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "53",
@@ -2948,7 +3146,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "04",
@@ -2981,7 +3179,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "10",
@@ -3014,7 +3212,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "28",
@@ -3179,7 +3377,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "46",
@@ -3245,7 +3443,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "55",
@@ -3311,7 +3509,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "58",
@@ -3377,7 +3575,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.2
     },
     {
       "lab_id": "59",
@@ -3443,7 +3641,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.13
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "60",
@@ -3575,7 +3773,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "01",
@@ -3619,7 +3817,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "06",
@@ -3652,7 +3850,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "33",
@@ -3707,7 +3905,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "42",
@@ -3773,7 +3971,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "43",
@@ -3839,7 +4037,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "44",
@@ -3905,7 +4103,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "13",
@@ -3938,7 +4136,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -4048,7 +4246,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "41",
@@ -4114,7 +4312,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.07
     },
     {
       "lab_id": "48",
@@ -4180,7 +4378,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.12
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "55",
@@ -4246,7 +4444,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "56",
@@ -4345,7 +4543,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -4488,7 +4686,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "47",
@@ -4554,7 +4752,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.96
     },
     {
       "lab_id": "57",
@@ -4620,7 +4818,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.28
     },
     {
       "lab_id": "36",
@@ -4741,7 +4939,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.36
     },
     {
       "lab_id": "57",
@@ -4807,7 +5005,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.62
     }
   ]
 }

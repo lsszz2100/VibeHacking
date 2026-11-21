@@ -1,11 +1,11 @@
 {
   "report_title": "VibeHacking Enterprise Security Diagnostic & Threat Assessment Report",
   "metadata": {
-    "total_labs": 71,
-    "total_findings": 71,
+    "total_labs": 72,
+    "total_findings": 72,
     "average_cvss": 8.8,
     "severity_counts": {
-      "Critical": 37,
+      "Critical": 38,
       "High": 28,
       "Medium": 6,
       "Low": 0,
@@ -35,7 +35,8 @@
       "Initial Access / Lateral Movement / Impact": 1,
       "Initial Access / Defense Evasion / Persistence": 1,
       "Privilege Escalation / Defense Evasion / Persistence": 1,
-      "Exfiltration / Privilege Escalation / Impact": 1
+      "Exfiltration / Privilege Escalation / Impact": 1,
+      "Persistence / Privilege Escalation / Impact": 1
     },
     "category_counts": {
       "Web Security": 3,
@@ -94,7 +95,8 @@
       "Autonomous AI Agent Swarm Defense & Byzantine Fault Tolerance": 1,
       "AI Security & Model Supply Chain Defense": 1,
       "Kernel Security & Autonomous eBPF Defense": 1,
-      "Hardware Security & AI Accelerator Hardening": 1
+      "Hardware Security & AI Accelerator Hardening": 1,
+      "AI Agent Security & Cognitive Architecture Hardening": 1
     },
     "kisa_counts": {
       "2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)": 1,
@@ -167,7 +169,8 @@
       "2.10.1 보안 시스템 접근 통제 및 분산 에이전트 상호 인증 (Autonomous Agent Swarm & PBFT 합의 방어)": 1,
       "2.10.4 소프트웨어 개발 보안 및 AI 모델 공급망 무결성 통제 (SafeTensors 및 신경망 가중치 스테가노그래피 방어)": 1,
       "2.10.5 시스템 및 서비스 운영 보안 및 커널 런타임 능동 보호 (eBPF LSM 동적 핫패칭 및 0-Day 방어)": 1,
-      "2.10.6 하드웨어 가속기 및 AI GPU 격리 보안 통제 (VRAM 메모리 제로화, MIG 파티셔닝 및 사이드채널 방어)": 1
+      "2.10.6 하드웨어 가속기 및 AI GPU 격리 보안 통제 (VRAM 메모리 제로화, MIG 파티셔닝 및 사이드채널 방어)": 1,
+      "2.10.7 AI 에이전트 인지 메모리 및 지식 그래프 무결성 통제 (에피소딕 컨텍스트 정제, HMAC 세션 출처 및 GraphRAG 위상 방어)": 1
     },
     "nist_csf_counts": {
       "PR.PS-01 Platform Security / PR.DS-01 Data Security": 2,
@@ -238,7 +241,8 @@
       "PR.AC-04 Multi-Agent Swarm Identity Pinning, PBFT Byzantine Fault Tolerance & Landlock LSM Memory Isolation": 1,
       "PR.DS-06 Neural Weight Steganography Mitigation, SafeTensors Deserialization Hardening & Sigstore Cosign Attestation": 1,
       "PR.PS-02 In-Kernel eBPF LSM Security Policy Enactment, Zero-Day Syscall Quarantine & Merkle Patch Attestation": 1,
-      "PR.DS-07 GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation": 1
+      "PR.DS-07 GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation": 1,
+      "PR.DS-08 Autonomous Agent Long-Term Context Memory Sanitization, Cryptographic Provenance Attestation & GraphRAG Permission Invariants": 1
     },
     "owasp_counts": {
       "A03:2021 Injection": 4,
@@ -274,10 +278,11 @@
       "LLM07:2025 System Prompt & Shared Context Window Hijacking in Autonomous Swarm Workflows": 1,
       "LLM04:2025 Model Denial of Service & Neural Weight Manipulation / Supply Chain Poisoning": 1,
       "LLM05:2025 Autonomous Agent Kernel Privilege Escalation & Unverified Dynamic Binary Code Injection": 1,
-      "LLM06:2025 Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering": 1
+      "LLM06:2025 Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering": 1,
+      "LLM07:2025 Sleeper Prompt Injection, Vector Store Semantic Embedding Hijacking & Graph Relationship Tampering": 1
     },
     "live_active_labs": 0,
-    "generated_at": "2026-11-21 18:09:10"
+    "generated_at": "2026-11-21 19:26:00"
   },
   "findings": [
     {
@@ -1983,6 +1988,30 @@
       "nist_csf_name": "GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation",
       "owasp_id": "LLM06:2025",
       "owasp_name": "Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering"
+    },
+    {
+      "vuln_id": "VIBE-2026-7201",
+      "lab_id": "72",
+      "lab_title": "72 AgentMemoryPoisonLab AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense",
+      "name": "Agentic Episodic Memory Poisoning, Sleeper Prompt Latent Trigger & GraphRAG Privilege Edge Hijacking",
+      "category": "AI Agent Security & Cognitive Architecture Hardening",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+      "mitre_id": "T1565.001",
+      "mitre_technique": "Data Manipulation: Stored Context and Vector Memory Tampering",
+      "mitre_tactic": "Persistence / Privilege Escalation / Impact",
+      "impact": "Unsanitized external inputs stored in agent long-term memory or vector database hijack subsequent high-privilege executive tasks via latent prompt injection, semantic cosine drift, or unauthorized knowledge graph relationships.",
+      "description": "Autonomous AI agent architecture ingests untrusted conversational data directly into long-term episodic memory and vector stores without prompt delimiter sanitization, allowing attackers to plant latent sleeper triggers and tamper with GraphRAG entity privilege edges.",
+      "affected_component": "AgentMemoryPoisonLab Cognitive Memory Engine & GraphRAG Gateway (Port 8072)",
+      "remediation": "Enforce strict prompt delimiter stripping and untrusted memory quarantine partitioning, mandate HMAC-SHA256 session provenance attestation, filter adversarial semantic cosine drift clusters, and cryptographically attest knowledge graph topological invariants.",
+      "calculated_score": 10.0,
+      "severity": "Critical",
+      "live_active": false,
+      "kisa_id": "2.10.7",
+      "kisa_name": "AI 에이전트 인지 메모리 및 지식 그래프 무결성 통제 (에피소딕 컨텍스트 정제, HMAC 세션 출처 및 GraphRAG 위상 방어)",
+      "nist_csf_id": "PR.DS-08",
+      "nist_csf_name": "Autonomous Agent Long-Term Context Memory Sanitization, Cryptographic Provenance Attestation & GraphRAG Permission Invariants",
+      "owasp_id": "LLM07:2025",
+      "owasp_name": "Sleeper Prompt Injection, Vector Store Semantic Embedding Hijacking & Graph Relationship Tampering"
     }
   ]
 }

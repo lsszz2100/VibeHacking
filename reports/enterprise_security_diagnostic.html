@@ -68,9 +68,9 @@
         <header>
             <h1>🛡️ VibeHacking Enterprise Security Diagnostic Report</h1>
             <div class="header-meta">
-                <span><b>Generated:</b> 2026-11-21 18:09:08</span>
-                <span><b>Assessment Scope:</b> 71 Labs</span>
-                <span><b>Total Vulnerabilities:</b> 71 Findings</span>
+                <span><b>Generated:</b> 2026-11-21 19:25:59</span>
+                <span><b>Assessment Scope:</b> 72 Labs</span>
+                <span><b>Total Vulnerabilities:</b> 72 Findings</span>
                 <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
@@ -80,7 +80,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Assessed Labs</div>
-                    <div class="stat-value">71</div>
+                    <div class="stat-value">72</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Average CVSS</div>
@@ -88,7 +88,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Critical Findings</div>
-                    <div class="stat-value" style="color: var(--crit-color)">37</div>
+                    <div class="stat-value" style="color: var(--crit-color)">38</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">High Findings</div>
@@ -102,21 +102,21 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">KISA ISMS-P Controls</div>
-                    <div class="stat-value" style="color: #34d399">71</div>
+                    <div class="stat-value" style="color: #34d399">72</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">NIST CSF 2.0 Categories</div>
-                    <div class="stat-value" style="color: var(--accent-blue)">69</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">70</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">OWASP Top 10 Categories</div>
-                    <div class="stat-value" style="color: var(--med-color)">34</div>
+                    <div class="stat-value" style="color: var(--med-color)">35</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2 class="section-title">3. Detailed Findings (71 Findings)</h2>
+            <h2 class="section-title">3. Detailed Findings (72 Findings)</h2>
             
             <div class="finding-card critical">
                 <div class="finding-header">
@@ -2103,6 +2103,34 @@
                 <div class="remediation-box">
                     <b>🛡️ 대응 권고사항 (Remediation):</b>
                     <pre>Enact strict cuda_mem_zero_on_free memory scrubbing, inject constant-time padding and noise on PCIe telemetry, mandate hardware Multi-Instance GPU (MIG) partition isolation with L2 cache quarantine, and verify cryptographic GPU firmware signatures against Merkle roots.</pre>
+                </div>
+            </div>
+            
+            <div class="finding-card critical">
+                <div class="finding-header">
+                    <div class="finding-title-group">
+                        <span class="finding-num">#72</span>
+                        <span class="badge critical">CRITICAL 10.0</span>
+                        
+                        <h3 class="finding-title">Agentic Episodic Memory Poisoning, Sleeper Prompt Latent Trigger &amp; GraphRAG Privilege Edge Hijacking</h3>
+                    </div>
+                    <span class="vuln-id">VIBE-2026-7201</span>
+                </div>
+                <div class="finding-meta">
+                    <span class="meta-item"><b>Target:</b> 72 AgentMemoryPoisonLab AI Agent Long-Term Context Memory &amp; Knowledge Graph Poisoning Defense</span>
+                    <span class="meta-item"><b>Category:</b> AI Agent Security &amp; Cognitive Architecture Hardening</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">T1565.001</span> Data Manipulation: Stored Context and Vector Memory Tampering (Persistence / Privilege Escalation / Impact)</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P 2.10.7</span> <span class="tag comp-nist">NIST PR.DS-08</span> <span class="tag comp-owasp">LLM07:2025</span></span>
+                </div>
+                <div class="vector-box"><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H</code></div>
+                <div class="finding-body">
+                    <p><b>🔍 취약점 분석:</b> Autonomous AI agent architecture ingests untrusted conversational data directly into long-term episodic memory and vector stores without prompt delimiter sanitization, allowing attackers to plant latent sleeper triggers and tamper with GraphRAG entity privilege edges.</p>
+                    <p><b>💥 영향도:</b> Unsanitized external inputs stored in agent long-term memory or vector database hijack subsequent high-privilege executive tasks via latent prompt injection, semantic cosine drift, or unauthorized knowledge graph relationships.</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>AgentMemoryPoisonLab Cognitive Memory Engine &amp; GraphRAG Gateway (Port 8072)</code></p>
+                </div>
+                <div class="remediation-box">
+                    <b>🛡️ 대응 권고사항 (Remediation):</b>
+                    <pre>Enforce strict prompt delimiter stripping and untrusted memory quarantine partitioning, mandate HMAC-SHA256 session provenance attestation, filter adversarial semantic cosine drift clusters, and cryptographically attest knowledge graph topological invariants.</pre>
                 </div>
             </div>
             

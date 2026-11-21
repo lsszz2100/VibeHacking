@@ -2289,6 +2289,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ GPU firmware Merkle attestation verified -> FLAG{v221_s4_gpu_firmware_merkle_attested}"
             }
         ]
+    },
+    "72": {
+        "title": "72 AgentMemoryPoisonLab AI 에이전트 장기 메모리 오염 & 지식 그래프 방어 랩",
+        "steps": [
+            {
+                "step": 1,
+                "name": "에피소딕 컨텍스트 메모리 정제 및 비신뢰 노드 격리 파티셔닝",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "외부에서 인입되는 데이터가 에피소딕 메모리에 저장될 때 프롬프트 구분자 및 시스템 지시자를 정제하고, 격리된 비신뢰 파티션에 격리 배치합니다.",
+                "exploit_payload": '{"sanitization_policy": "strip_prompt_delimiters_and_quarantine", "untrusted_tagging_active": true, "quarantine_partition_enabled": true, "blocked_directive_patterns": ["ROLE: SYSTEM", "EXEC_CMD:"]}',
+                "defense": "프롬프트 구분자 박멸, 비신뢰 메모리 태깅, 인지 메모리 격리 파티셔닝.",
+                "sample_output": "✓ Episodic context sanitized -> FLAG{v222_s1_episodic_context_sanitized_and_quarantined}"
+            },
+            {
+                "step": 2,
+                "name": "암호학적 세션 출처(Provenance) 검증 및 HMAC-SHA256 증명",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "메모리 인출 시 세션 ID와 컨텍스트 해시가 결합된 HMAC-SHA256 암호학적 서명을 대조하여 미검증된 악성 컨텍스트 주입을 원천 차단합니다.",
+                "exploit_payload": '{"memory_node_id": "mem_node_session_attested_01", "session_id": "session_frontier_agent_2026", "context_hash": "<context_hash>", "attestation_sig": "sig_agent_mem_v222_verified_ok", "provenance_hmac": "<provenance_hmac>"}',
+                "defense": "HMAC-SHA256 세션 출처 증명, 암호학적 서명 검증, 위변조 메모리 거부.",
+                "sample_output": "✓ Session provenance verified -> FLAG{v222_s2_session_provenance_hmac_attested}"
+            },
+            {
+                "step": 3,
+                "name": "시맨틱 임베딩 코사인 드리프트 이상치 탐지 및 적대적 클러스터 필터링",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "시스템 관리자 권한 프롬프트 임베딩과 비정상적으로 근접한 적대적 임베딩 클러스터의 코사인 유사도 드리프트를 탐지하여 인출에서 배제합니다.",
+                "exploit_payload": '{"embedding_model": "vibe-semantic-embed-v222", "cosine_drift_threshold": 0.28, "adversarial_cluster_filter_active": true, "vector_index_isolation_enforced": true}',
+                "defense": "코사인 유사도 드리프트 필터링, 적대적 클러스터 탐지, 멀티 테넌트 벡터 인덱스 격리.",
+                "sample_output": "✓ Cosine anomaly filtered -> FLAG{v222_s3_cosine_anomaly_adversarial_cluster_filtered}"
+            },
+            {
+                "step": 4,
+                "name": "GraphRAG 지식 그래프 위상 권한 불변성 검증 및 슬리퍼 트리거 무력화 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "지식 그래프 내 권한 관계 엣지의 위상학적 불변성을 HMAC으로 검증하고, 슬리퍼 프롬프트의 지연 실행 트리거를 사전에 무력화합니다.",
+                "exploit_payload": '{"graph_schema_validation": "strict_topological_invariant", "unauthorized_edge_pruning": true, "admin_relationship_hmac": "<admin_relationship_hmac>", "sleeper_trigger_neutralized": true}',
+                "defense": "GraphRAG 위상 권한 불변성 검증, 불법 관계 엣지 자동 가지치기, 슬리퍼 트리거 박멸.",
+                "sample_output": "✓ GraphRAG topological invariant secured -> FLAG{v222_s4_graphrag_topological_permission_shielded}"
+            }
+        ]
     }
 }
 
