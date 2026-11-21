@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Hacking // Hardware AI GPU Sidechannel & VRAM Isolation Inspector (Simulator #37)</title>
+  <style>
+    :root {
+      --bg: #03080e;
+      --bg2: #071524;
+      --card-bg: #0a1f33;
+      --green: #27ff8b;
+      --green-dim: #1aa85c;
+      --green-deep: #0a4427;
+      --amber: #ffcf4d;
+      --red: #ff4d5e;
+      --blue: #5cc8ff;
+      --purple: #b07cff;
+      --txt: #cce9ff;
+      --muted: #4e7a9e;
+      --line: #0d3857;
+      --mono: 'Fira Code', 'JetBrains Mono', Consolas, 'D2Coding', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      background: var(--green-deep);
+      color: var(--green);
+      border: 1px solid var(--green-dim);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(39, 255, 139, 0.1);
+      border: 1px solid var(--green);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--green);
+    }
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; filter: drop-shadow(0 0 4px var(--green)); }
+      100% { opacity: 0.4; }
+    }
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 340px 1fr 360px;
+      gap: 16px;
+      padding: 16px;
+      overflow: hidden;
+    }
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-hdr {
+      background: rgba(13, 56, 87, 0.4);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 14px;
+      font-weight: bold;
+      color: var(--blue);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-body {
+      padding: 14px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .card-title {
+      font-weight: bold;
+      color: var(--green);
+      margin-bottom: 8px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    select, button {
+      width: 100%;
+      background: #040e1a;
+      border: 1px solid var(--line);
+      color: var(--txt);
+      font-family: var(--mono);
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    select:focus, button:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+    button.btn-primary {
+      background: var(--green-deep);
+      border-color: var(--green);
+      color: var(--green);
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    button.btn-primary:hover {
+      background: var(--green-dim);
+      color: #000;
+    }
+    button.btn-danger {
+      background: rgba(255, 77, 94, 0.2);
+      border-color: var(--red);
+      color: var(--red);
+      font-weight: bold;
+    }
+    button.btn-danger:hover {
+      background: var(--red);
+      color: #fff;
+    }
+    .grid-vram {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .vram-cell {
+      height: 28px;
+      background: #041220;
+      border: 1px solid #0d3857;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .vram-cell.clean { background: rgba(39, 255, 139, 0.15); color: var(--green); border-color: var(--green-dim); }
+    .vram-cell.dirty { background: rgba(255, 77, 94, 0.25); color: var(--red); border-color: var(--red); animation: blink 1s infinite; }
+    .vram-cell.isolated { background: rgba(92, 200, 255, 0.2); color: var(--blue); border-color: var(--blue); }
+    @keyframes blink { 50% { opacity: 0.6; } }
+    .bus-wave {
+      height: 60px;
+      background: #02070d;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      padding: 4px;
+      overflow: hidden;
+    }
+    .bus-bar {
+      flex: 1;
+      background: var(--blue);
+      border-radius: 2px 2px 0 0;
+      transition: height 0.2s;
+    }
+    .bus-bar.noise { background: var(--amber); }
+    .bus-bar.leak { background: var(--red); }
+    .log-stream {
+      flex: 1;
+      background: #010408;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 11px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .log-entry { display: flex; gap: 8px; }
+    .log-ts { color: var(--muted); }
+    .log-info { color: var(--txt); }
+    .log-warn { color: var(--amber); }
+    .log-err { color: var(--red); }
+    .log-succ { color: var(--green); }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(13, 56, 87, 0.5);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 18px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #0b2238;
+      border: 1px solid var(--line);
+      transition: .3s;
+      border-radius: 18px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--muted);
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--green-deep); border-color: var(--green); }
+    input:checked + .slider:before { transform: translateX(18px); background-color: var(--green); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span style="font-size: 18px;">⚡</span>
+      <span style="font-weight: bold; font-size: 15px; letter-spacing: 0.5px;">VibeHacking</span>
+      <span class="badge">SIMULATOR #37</span>
+      <span style="color: var(--muted); font-size: 12px;">Hardware AI GPU Sidechannel & VRAM Isolation Inspector</span>
+    </div>
+    <div class="status-pill">
+      <div class="pulse"></div>
+      <span id="connStatus">MIG-HW-ENFORCED: 127.0.0.1:8071</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: Threat Simulation -->
+    <section class="panel">
+      <div class="panel-hdr">
+        <span>1. Hardware Exploit Primitives</span>
+        <span style="color: var(--amber); font-size: 11px;">RED TEAM</span>
+      </div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Target AI Accelerator Profile</div>
+          <p style="font-size: 11px; color: var(--muted); margin-bottom: 8px;">NVIDIA H100 SXM5 / B200 Multi-Tenant Cluster</p>
+          <select id="attackSelect">
+            <option value="vram_leak">1. VRAM Residue Unscrubbed Weight Dump</option>
+            <option value="pcie_timing">2. PCIe Bus GEMM Timing Sidechannel</option>
+            <option value="mig_dma">3. Multi-Instance GPU (MIG) DMA Escape</option>
+            <option value="firmware_mod">4. vBIOS / GSP Microcode Rootkit Injection</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Payload Configuration</div>
+          <p id="attackDesc" style="font-size: 11px; color: var(--txt); margin-bottom: 10px;">
+            Target uninitialized VRAM heap after context deallocation to recover residual FP16 model weights and token embeddings.
+          </p>
+          <button id="btnTrigger" class="btn-danger">⚡ INJECT HARDWARE ATTACK</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Telemetry Probes</div>
+          <div style="font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--muted);">VRAM Scrub Latency:</span>
+              <span id="statScrub">0.12 ms</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--muted);">PCIe Bus SNR:</span>
+              <span id="statSnr">-14.2 dB</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--muted);">MIG Isolation Health:</span>
+              <span style="color: var(--green);">100.0% SECURE</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--muted);">Merkle Provenance:</span>
+              <span style="color: var(--blue);">SHA256: 7f4a...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Center: Architecture Visualizer -->
+    <section class="panel">
+      <div class="panel-hdr">
+        <span>2. Physical Accelerator Architecture & Memory Layout</span>
+        <span style="color: var(--green); font-size: 11px;">REAL-TIME INSPECTOR</span>
+      </div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">
+            <span>High Bandwidth Memory (HBM3) VRAM Blocks</span>
+            <span id="vramStatus" style="color: var(--green); font-size: 11px;">CLEAN / ZEROIZED</span>
+          </div>
+          <div class="grid-vram" id="vramGrid">
+            <!-- 32 cells dynamically populated -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>PCIe Gen5 x16 Bus Activity & Telemetry Spectrum</span>
+            <span id="pcieMode" style="color: var(--amber); font-size: 11px;">JITTER NOISE ACTIVE</span>
+          </div>
+          <div class="bus-wave" id="busWave">
+            <!-- 32 bars dynamically populated -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Multi-Instance GPU (MIG) Hardware Partitioning</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="border: 1px solid var(--blue); padding: 8px; border-radius: 4px; background: rgba(92, 200, 255, 0.05);">
+              <div style="color: var(--blue); font-weight: bold; font-size: 11px;">Instance #1 (Tenant A)</div>
+              <div style="font-size: 10px; color: var(--muted); margin-top: 4px;">42 SMs · 40GB HBM3 · IOMMU Strict</div>
+              <div style="font-size: 10px; color: var(--green); margin-top: 2px;">DMA: ISOLATED</div>
+            </div>
+            <div style="border: 1px solid var(--purple); padding: 8px; border-radius: 4px; background: rgba(176, 124, 255, 0.05);">
+              <div style="color: var(--purple); font-weight: bold; font-size: 11px;">Instance #2 (Tenant B)</div>
+              <div style="font-size: 10px; color: var(--muted); margin-top: 4px;">42 SMs · 40GB HBM3 · IOMMU Strict</div>
+              <div style="font-size: 10px; color: var(--green); margin-top: 2px;">DMA: ISOLATED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Autonomous Defense Console -->
+    <section class="panel">
+      <div class="panel-hdr">
+        <span>3. Autonomous Defense & Merkle Audit</span>
+        <span style="color: var(--blue); font-size: 11px;">BLUE TEAM</span>
+      </div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Active Security Enforcements</div>
+          <div class="toggle-row">
+            <span>cuda_mem_zero_on_free (VRAM Scrubbing)</span>
+            <label class="switch">
+              <input type="checkbox" id="chkZero" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Constant-Time GEMM & Noise Jitter</span>
+            <label class="switch">
+              <input type="checkbox" id="chkJitter" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>MIG Hardware IOMMU Boundary</span>
+            <label class="switch">
+              <input type="checkbox" id="chkMig" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Cryptographic Firmware Attestation</span>
+            <label class="switch">
+              <input type="checkbox" id="chkFirmware" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+          <div class="card-title">Live Security Telemetry Stream</div>
+          <div class="log-stream" id="logStream">
+            <div class="log-entry"><span class="log-ts">[INIT]</span><span class="log-succ">Hardware GPU Sidechannel Lab initialized (Port 8071).</span></div>
+            <div class="log-entry"><span class="log-ts">[POLICY]</span><span class="log-info">cuda_mem_zero_on_free activated: VRAM scrubbing 100%.</span></div>
+            <div class="log-entry"><span class="log-ts">[TELEMETRY]</span><span class="log-info">Constant-time GEMM padding enabled. SNR dropped by 18dB.</span></div>
+            <div class="log-entry"><span class="log-ts">[ATTEST]</span><span class="log-succ">vBIOS Merkle root attestation verified with Ed25519 root.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const vramGrid = document.getElementById('vramGrid');
+    const busWave = document.getElementById('busWave');
+    const logStream = document.getElementById('logStream');
+    const attackSelect = document.getElementById('attackSelect');
+    const attackDesc = document.getElementById('attackDesc');
+    const btnTrigger = document.getElementById('btnTrigger');
+    const vramStatus = document.getElementById('vramStatus');
+
+    const chkZero = document.getElementById('chkZero');
+    const chkJitter = document.getElementById('chkJitter');
+    const chkMig = document.getElementById('chkMig');
+    const chkFirmware = document.getElementById('chkFirmware');
+
+    // Populate VRAM Grid (32 cells)
+    const vramCells = [];
+    for (let i = 0; i < 32; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'vram-cell clean';
+      cell.textContent = '0x00';
+      vramGrid.appendChild(cell);
+      vramCells.push(cell);
+    }
+
+    // Populate Bus Wave (32 bars)
+    const busBars = [];
+    for (let i = 0; i < 32; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bus-bar';
+      bar.style.height = (20 + Math.random() * 30) + 'px';
+      busWave.appendChild(bar);
+      busBars.push(bar);
+    }
+
+    // Dynamic wave animation
+    setInterval(() => {
+      busBars.forEach((bar) => {
+        if (!bar.classList.contains('leak')) {
+          const base = chkJitter.checked ? 35 : 20;
+          bar.style.height = (base + Math.random() * 25) + 'px';
+        }
+      });
+    }, 200);
+
+    const ATTACK_INFOS = {
+      vram_leak: "Target uninitialized VRAM heap after context deallocation to recover residual FP16 model weights and token embeddings.",
+      pcie_timing: "Profile PCIe bus packet transmission bursts during GEMM matrix multiplication to infer layer dimensions and weight bits.",
+      mig_dma: "Issue cross-partition Peer-to-Peer DMA requests to read neighbor tenant VRAM across hardware boundaries.",
+      firmware_mod: "Flash compromised vBIOS microcode into GPU system processor (GSP) to install an in-silicon rootkit."
+    };
+
+    attackSelect.addEventListener('change', () => {
+      attackDesc.textContent = ATTACK_INFOS[attackSelect.value];
+    });
+
+    function log(type, msg) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      const now = new Date().toTimeString().split(' ')[0];
+      entry.innerHTML = `<span class="log-ts">[${now}]</span><span class="log-${type}">${msg}</span>`;
+      logStream.appendChild(entry);
+      logStream.scrollTop = logStream.scrollHeight;
+    }
+
+    btnTrigger.addEventListener('click', () => {
+      const atk = attackSelect.value;
+      if (atk === 'vram_leak') {
+        log('warn', 'EXPLOIT: Probing unscrubbed VRAM allocations for model weights...');
+        if (!chkZero.checked) {
+          // Exploit success
+          vramCells.slice(0, 16).forEach(c => {
+            c.className = 'vram-cell dirty';
+            c.textContent = 'W:0.8';
+          });
+          vramStatus.textContent = 'VRAM COMPROMISED (RESIDUE DUMPED)';
+          vramStatus.style.color = 'var(--red)';
+          log('err', 'BREACH: Residual LLM weights recovered from unscrubbed VRAM buffers!');
+        } else {
+          // Blocked
+          vramCells.forEach(c => {
+            c.className = 'vram-cell clean';
+            c.textContent = '0x00';
+          });
+          vramStatus.textContent = 'ZEROIZATION ACTIVE (BLOCKED)';
+          vramStatus.style.color = 'var(--green)';
+          log('succ', 'DEFENSE: cuda_mem_zero_on_free scrubbed buffers. Flag: FLAG{v221_s1_vram_context_zeroization_scrubbed}');
+        }
+      } else if (atk === 'pcie_timing') {
+        log('warn', 'EXPLOIT: Sniffing PCIe bus packet timing for GEMM profiling...');
+        if (!chkJitter.checked) {
+          busBars.slice(10, 22).forEach(b => {
+            b.className = 'bus-bar leak';
+            b.style.height = '58px';
+          });
+          log('err', 'BREACH: High-SNR GEMM timing bursts leaked neural architecture dimensions!');
+        } else {
+          busBars.forEach(b => {
+            b.className = 'bus-bar noise';
+          });
+          log('succ', 'DEFENSE: Constant-time padding & noise injected. Flag: FLAG{v221_s2_pcie_sidechannel_noise_injected}');
+        }
+      } else if (atk === 'mig_dma') {
+        log('warn', 'EXPLOIT: Transmitting illegal P2P DMA request across MIG partition...');
+        if (!chkMig.checked) {
+          log('err', 'BREACH: DMA bypassed soft boundary, reading neighbor tenant memory space!');
+        } else {
+          log('succ', 'DEFENSE: Hardware IOMMU blocked cross-partition DMA. Flag: FLAG{v221_s3_mig_hardware_partition_isolated}');
+        }
+      } else if (atk === 'firmware_mod') {
+        log('warn', 'EXPLOIT: Attempting untrusted microcode flash to GPU System Processor...');
+        if (!chkFirmware.checked) {
+          log('err', 'BREACH: Unverified firmware executed in GSP root-of-trust boundary!');
+        } else {
+          log('succ', 'DEFENSE: Cryptographic Merkle attestation rejected flash. Flag: FLAG{v221_s4_gpu_firmware_merkle_attested}');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

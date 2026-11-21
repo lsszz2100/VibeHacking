@@ -718,6 +718,14 @@ const TRACKS = [
     "en": "Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense",
     "desc_ko": "eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단·BPF_MAP_TYPE_HASH 실시간 룩업 & RingBuffer 비동기 텔레메트리 격리·Seccomp-BPF 동적 핫패칭을 통한 io_uring_enter 시스템 콜 격리·머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명.",
     "desc_en": "eBPF LSM security_bprm_check hook execution blocking, BPF_MAP_TYPE_HASH realtime lookups and RingBuffer telemetry quarantine, dynamic Seccomp-BPF io_uring_enter isolation, and Merkle tree Ed25519 hotpatch attestation."
+  },
+  {
+    "id": "gpusec",
+    "icon": "⚡",
+    "ko": "AI 가속기 GPU 사이드채널 & VRAM 격리 방어",
+    "en": "Hardware GPU Sidechannel & VRAM Isolation Defense",
+    "desc_ko": "VRAM 잔류 메모리 제로화(Zeroization) & 이전 세션 가중치/임베딩 누출 차단·PCIe 버스 타이밍 및 전력 사이드채널 노이즈 주입 방어·Multi-Instance GPU (MIG) 하드웨어 파티션 경계 및 DMA 탈출 격리·암호학적 GPU 펌웨어 무결성 및 머클 트리 원격 증명.",
+    "desc_en": "VRAM residual memory zeroization and model weight leak mitigation, PCIe bus timing and power sidechannel noise injection, Multi-Instance GPU (MIG) hardware partition DMA isolation, and cryptographic GPU firmware Merkle tree remote attestation."
   }
 ];
 
@@ -80857,6 +80865,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance`."
+      ]
+    }
+  },
+  // Track 83: gpusec - Hardware GPU Acceleration Sidechannel & VRAM Isolation Defense (35 challenges)
+  {
+    "id": "t0_gpusec_gpu_sidechannel_threat_model",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "d74119f49e9edee2269bde6553f2c6a706a83f731b7e6feaeda446b23be912d9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AI 가속기 GPU 사이드채널 및 하드웨어 공격 표면 위협 모델",
+      "en": "AI Accelerator GPU Sidechannel & Hardware Attack Surface Threat Model"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: AI 가속기 GPU 사이드채널 및 하드웨어 공격 표면 위협 모델\n상세 분석 지침:\n- 멀티 테넌트 클라우드 환경에서 GPU 하드웨어 가속기의 공유 메모리, 버스, 전력 프로파일링을 통한 사이드채널 위협을 분석합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_gpu_sidechannel_threat_model`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: AI Accelerator GPU Sidechannel & Hardware Attack Surface Threat Model\nAnalysis Requirements:\n- Analyze sidechannel threats exploiting shared memory, bus channels, and power profiling on multi-tenant AI accelerator GPUs.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_gpu_sidechannel_threat_model`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_gpu_sidechannel_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_gpu_sidechannel_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_gpusec_vram_memory_architecture_basics",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "3dca11c2d35d9f2916b2fdcc4b9ed681c1de979c392ecda1feee62f6ace51291",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU VRAM 고대역폭 메모리(HBM) 구조 및 잔류 데이터 누출 원리",
+      "en": "GPU VRAM High Bandwidth Memory Architecture & Residual Leakage Principles"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU VRAM 고대역폭 메모리(HBM) 구조 및 잔류 데이터 누출 원리\n상세 분석 지침:\n- 고대역폭 메모리(HBM) 스택의 물리적 배치 및 프로세스 종료 후 초기화되지 않은 VRAM 버퍼의 데이터 잔류 원리를 학습합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_vram_memory_architecture_basics`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU VRAM High Bandwidth Memory Architecture & Residual Leakage Principles\nAnalysis Requirements:\n- Study physical organization of HBM stacks and mechanisms behind unscrubbed VRAM data remanence after session deallocation.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_vram_memory_architecture_basics`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_vram_memory_architecture_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_vram_memory_architecture_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_gpusec_pcie_bus_sniffing_and_telemetry",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "de631afb8a23f0732e41e5380678d9a287cc8a704fd5746e519b6014b0cc13c5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PCIe 버스 패킷 모니터링 및 텐서 전송 패턴 분석 이론",
+      "en": "PCIe Bus Packet Monitoring & Tensor Transfer Pattern Analysis Theory"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: PCIe 버스 패킷 모니터링 및 텐서 전송 패턴 분석 이론\n상세 분석 지침:\n- 호스트 CPU와 디바이스 GPU 간 PCIe 버스를 통해 전송되는 텐서 크기 및 통신 주기를 분석하는 감청 공격 이론을 학습합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_pcie_bus_sniffing_and_telemetry`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: PCIe Bus Packet Monitoring & Tensor Transfer Pattern Analysis Theory\nAnalysis Requirements:\n- Examine sniffing attack theory profiling tensor transfer burst sizes and timing cycles across the host-to-device PCIe bus.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_pcie_bus_sniffing_and_telemetry`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_pcie_bus_sniffing_and_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_pcie_bus_sniffing_and_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t0_gpusec_mig_hardware_partitioning_theory",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "56ebaa8b0574297872e1464e6f6aff41de1b2416782a877ccc567be13b86a156",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Multi-Instance GPU(MIG) 하드웨어 분할 아키텍처",
+      "en": "Multi-Instance GPU (MIG) Hardware Partitioning Architecture"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: Multi-Instance GPU(MIG) 하드웨어 분할 아키텍처\n상세 분석 지침:\n- 단일 물리적 GPU를 여러 개의 격리된 인스턴스로 물리 분할하여 연산 코어와 메모리 버스를 분리하는 원리를 분석합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_mig_hardware_partitioning_theory`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Multi-Instance GPU (MIG) Hardware Partitioning Architecture\nAnalysis Requirements:\n- Analyze principles of slicing a physical GPU into hardware-isolated instances with dedicated compute cores and memory paths.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_mig_hardware_partitioning_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_mig_hardware_partitioning_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_mig_hardware_partitioning_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t0_gpusec_gpu_power_and_timing_sidechannel",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "d466470dc29a143012cc7bba04fbc44dffbdee5a289ab06d3868f2b57f7dc9b3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "행렬 곱 연산(GEMM) 전력 소모 및 실행 시간 사이드채널",
+      "en": "Matrix Multiplication (GEMM) Power Consumption & Timing Sidechannel"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 행렬 곱 연산(GEMM) 전력 소모 및 실행 시간 사이드채널\n상세 분석 지침:\n- 신경망 레이어의 행렬 곱셈 연산 시 발생하는 전력 스파이크 및 지연시간 편차를 프로파일링하여 가중치를 추론하는 원리를 학습합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_gpu_power_and_timing_sidechannel`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Matrix Multiplication (GEMM) Power Consumption & Timing Sidechannel\nAnalysis Requirements:\n- Understand weight inference principles by profiling power spikes and latency variances during matrix multiplication passes.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_gpu_power_and_timing_sidechannel`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_gpu_power_and_timing_sidechannel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_gpu_power_and_timing_sidechannel`."
+      ]
+    }
+  },
+  {
+    "id": "t0_gpusec_gpu_firmware_and_vbios_security",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "65c248099c7c3af64c7f20270015f76adf1797c12ce55e4f5f93b9b43c82fddf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU vBIOS 마이크로코드 및 펌웨어 공격 표면",
+      "en": "GPU vBIOS Microcode & Firmware Attack Surface"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU vBIOS 마이크로코드 및 펌웨어 공격 표면\n상세 분석 지침:\n- GPU 부팅 과정에서 로드되는 초기화 롬(ROM)과 시스템 프로세서 펌웨어의 무결성 검증 실패 시 발생하는 보안 위협을 분석합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_gpu_firmware_and_vbios_security`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU vBIOS Microcode & Firmware Attack Surface\nAnalysis Requirements:\n- Review security hazards arising from missing cryptographic integrity checks on initialization ROMs and GPU system processor firmware.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_gpu_firmware_and_vbios_security`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_gpu_firmware_and_vbios_security` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_gpu_firmware_and_vbios_security`."
+      ]
+    }
+  },
+  {
+    "id": "t0_gpusec_constant_time_cuda_kernel_theory",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 25,
+    "ci": false,
+    "hash": "46095a8dc607b8cbe47d135c6614e602645a8fb645b6c9ba6b22d78f01f3b4f0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "상수 시간 GPU 연산 설계 및 타이밍 편차 제거 이론",
+      "en": "Constant-Time GPU Computation Design & Timing Variance Elimination"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 상수 시간 GPU 연산 설계 및 타이밍 편차 제거 이론\n상세 분석 지침:\n- 조건부 분기와 데이터 의존적 인덱싱을 제거하여 연산 시간으로부터 입력 데이터를 유추할 수 없도록 설계하는 기법을 학습합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_constant_time_cuda_kernel_theory`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Constant-Time GPU Computation Design & Timing Variance Elimination\nAnalysis Requirements:\n- Study techniques that eliminate conditional branches and data-dependent memory indexing to prevent timing leakage on GPUs.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t0_constant_time_cuda_kernel_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t0_constant_time_cuda_kernel_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t0_constant_time_cuda_kernel_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_cuda_mem_zero_residual_scrub",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "81f3ada57d61f787228ac8bdb75b062f8bd56b45d906788718e883c11479a411",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU 메모리 할당 해제 시점 VRAM 제로화 스크러빙 기법",
+      "en": "GPU Memory Deallocation Time VRAM Zeroization Scrubbing Method"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU 메모리 할당 해제 시점 VRAM 제로화 스크러빙 기법\n상세 분석 지침:\n- 컨텍스트 종료 즉시 비동기 메모리 클리어 루틴을 호출하여 민감한 신경망 가중치와 토큰 임베딩을 물리적으로 영구 소각합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_cuda_mem_zero_residual_scrub`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU Memory Deallocation Time VRAM Zeroization Scrubbing Method\nAnalysis Requirements:\n- Call asynchronous memory clearing routines on context termination to physically scrub sensitive neural weights and token embeddings.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_cuda_mem_zero_residual_scrub`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_cuda_mem_zero_residual_scrub` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_cuda_mem_zero_residual_scrub`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_pcie_traffic_padding_defense",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "5ed4a3eae68a97a5af94447cf2e17a2b0af9772aafb52f9f10b8ae198a2f6a8e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PCIe 패킷 크기 균일화 및 전송 지연시간 패딩 적용",
+      "en": "PCIe Packet Size Normalization & Transfer Latency Padding Defense"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: PCIe 패킷 크기 균일화 및 전송 지연시간 패딩 적용\n상세 분석 지침:\n- 텐서 통신 시 전송 패킷을 고정 크기로 정규화하고 난수 지연을 추가하여 버스 트래픽 분석을 방어합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_pcie_traffic_padding_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: PCIe Packet Size Normalization & Transfer Latency Padding Defense\nAnalysis Requirements:\n- Normalize tensor communication packets to fixed sizes and inject pseudo-random delays to defend against traffic profiling.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_pcie_traffic_padding_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_pcie_traffic_padding_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_pcie_traffic_padding_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_mig_sm_and_l2_cache_quarantine",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "50a2a5a734b0e2703d4956145aca87698002027edf0796abb14d4407456bccd6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MIG 인스턴스 연산 코어 및 L2 캐시 격리 감사",
+      "en": "MIG Instance Compute Core & L2 Cache Isolation Audit"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: MIG 인스턴스 연산 코어 및 L2 캐시 격리 감사\n상세 분석 지침:\n- 하드웨어 파티션 간 L2 캐시와 메모리 제어기가 분리되어 캐시 타이밍 공격이 불가능한지 상태를 정밀 감사합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_mig_sm_and_l2_cache_quarantine`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: MIG Instance Compute Core & L2 Cache Isolation Audit\nAnalysis Requirements:\n- Audit configuration states ensuring L2 cache lines and memory controllers are partitioned to block cross-instance cache attacks.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_mig_sm_and_l2_cache_quarantine`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_mig_sm_and_l2_cache_quarantine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_mig_sm_and_l2_cache_quarantine`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_gpu_driver_ioctl_fuzzing_audit",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "2cece12a32e32a53f772001ee84b53922b44b3f521f7d320df681354f18a6dd2",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 GPU 드라이버 IOCTL 인터페이스 취약점 감사",
+      "en": "Kernel GPU Driver IOCTL Interface Vulnerability Audit"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 커널 GPU 드라이버 IOCTL 인터페이스 취약점 감사\n상세 분석 지침:\n- 사용자 영역에서 커널 드라이버로 전달되는 디바이스 제어 파라미터를 검사하여 메모리 손상 결함을 탐지합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_gpu_driver_ioctl_fuzzing_audit`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Kernel GPU Driver IOCTL Interface Vulnerability Audit\nAnalysis Requirements:\n- Audit device control parameters passed to the kernel GPU driver to prevent memory corruption and unauthorized privileged calls.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_gpu_driver_ioctl_fuzzing_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_gpu_driver_ioctl_fuzzing_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_gpu_driver_ioctl_fuzzing_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_vram_dump_forensic_inspection",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "b5fbcef824a0bd5e6a7129c84d525112a3621465d1c834c8fefea4120710be8b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이전 AI 세션 잔류 VRAM 덤프 분석 및 차단 기술",
+      "en": "Prior AI Session Residual VRAM Dump Analysis & Blocking Technique"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 이전 AI 세션 잔류 VRAM 덤프 분석 및 차단 기술\n상세 분석 지침:\n- 미소거된 VRAM 영역에 남아 있는 부동소수점 텐서 데이터를 재구성하는 공격을 탐지하고 차단합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_vram_dump_forensic_inspection`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Prior AI Session Residual VRAM Dump Analysis & Blocking Technique\nAnalysis Requirements:\n- Detect and block attacks that reconstruct floating-point tensors from residual unscrubbed VRAM allocations.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_vram_dump_forensic_inspection`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_vram_dump_forensic_inspection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_vram_dump_forensic_inspection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_matrix_multiplication_jitter_injection",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "35280223621406a8c9efc7387640c578c3f231d92922bc702fa21453d840e459",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "행렬 연산 타이밍 지터 주입 및 전력 프로파일 난독화",
+      "en": "Matrix Operation Timing Jitter Injection & Power Profile Obfuscation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 행렬 연산 타이밍 지터 주입 및 전력 프로파일 난독화\n상세 분석 지침:\n- 행렬 연산 주기에 미세한 인공 지터와 더미 연산을 삽입하여 외부 프로파일링 공격을 무력화합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_matrix_multiplication_jitter_injection`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Matrix Operation Timing Jitter Injection & Power Profile Obfuscation\nAnalysis Requirements:\n- Insert microsecond-level artificial jitter and dummy operations into compute loops to invalidate power profiling attacks.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_matrix_multiplication_jitter_injection`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_matrix_multiplication_jitter_injection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_matrix_multiplication_jitter_injection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpusec_gpu_context_switch_leak_prevention",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 50,
+    "ci": false,
+    "hash": "c8084aed902964aceda85cbaac1bd5ad87b828d390771924ac135da3099e68b1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU 컨텍스트 스위칭 간 잔류 레지스터 클리어링",
+      "en": "GPU Context Switch Residual Register Clearing Defense"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU 컨텍스트 스위칭 간 잔류 레지스터 클리어링\n상세 분석 지침:\n- 다중 프로세스 실행 시 컨텍스트 전환 과정에서 범용 레지스터와 조건 레지스터에 잔존하는 값을 초기화합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_gpu_context_switch_leak_prevention`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU Context Switch Residual Register Clearing Defense\nAnalysis Requirements:\n- Wipe general-purpose registers and predicate flags during GPU context transitions across concurrent workloads.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t1_gpu_context_switch_leak_prevention`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t1_gpu_context_switch_leak_prevention` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t1_gpu_context_switch_leak_prevention`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_hbm_residue_entropy_analysis",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "6c6574250f8c4f1086fd7e02bbd74c1ec3dc77c90555b9285e82491ee7aed9c5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VRAM 미소거 영역 샤논 엔트로피 검사 및 가중치 검출",
+      "en": "VRAM Residual Area Shannon Entropy Inspection & Weight Detection"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: VRAM 미소거 영역 샤논 엔트로피 검사 및 가중치 검출\n상세 분석 지침:\n- 고밀도 부동소수점 가중치가 지닌 고유 엔트로피 분포를 측정하여 메모리 미정리 영역을 자동 식별합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_hbm_residue_entropy_analysis`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: VRAM Residual Area Shannon Entropy Inspection & Weight Detection\nAnalysis Requirements:\n- Measure unique Shannon entropy distributions of floating-point weights to automatically detect unscrubbed memory zones.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_hbm_residue_entropy_analysis`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_hbm_residue_entropy_analysis` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_hbm_residue_entropy_analysis`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_pcie_flit_telemetry_obfuscation",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "43c299f7bfee7b2d3aabf5e18065c4ccd86f5cdbb11dd6473313237dca95feb0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PCIe 플로우 제어 단위 텔레메트리 난독화 설계",
+      "en": "PCIe Flow Control Unit Telemetry Obfuscation Design"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: PCIe 플로우 제어 단위 텔레메트리 난독화 설계\n상세 분석 지침:\n- PCIe 링크 계층의 패킷 흐름 텔레메트리를 분산시켜 통신 시간 기반 역공학 시도를 방어합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_pcie_flit_telemetry_obfuscation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: PCIe Flow Control Unit Telemetry Obfuscation Design\nAnalysis Requirements:\n- Disperse packet flow telemetry at the PCIe link layer to prevent reverse engineering of neural model layers.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_pcie_flit_telemetry_obfuscation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_pcie_flit_telemetry_obfuscation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_pcie_flit_telemetry_obfuscation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_mig_cross_partition_dma_containment",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "c7094f9d6e8114b8c3b2fc3e6bf34afe5a222031469803e91920d00eb1aa9b33",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MIG 테넌트 간 P2P 직접 메모리 접근 불법 침투 격리",
+      "en": "MIG Cross-Partition P2P Direct Memory Access Containment"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: MIG 테넌트 간 P2P 직접 메모리 접근 불법 침투 격리\n상세 분석 지침:\n- 하드웨어 파티션 간 허용되지 않은 P2P DMA 요청을 차단하고 IOMMU 주소 변환 경계를 강제합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_mig_cross_partition_dma_containment`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: MIG Cross-Partition P2P Direct Memory Access Containment\nAnalysis Requirements:\n- Block unauthorized P2P direct memory access across hardware partitions and enforce strict IOMMU translation barriers.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_mig_cross_partition_dma_containment`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_mig_cross_partition_dma_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_mig_cross_partition_dma_containment`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_vbios_cryptographic_signature_verify",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "4c84d6cf23e52339f999c7f0f245893b32aa6f60b753fce0909c1424f3d1181d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU vBIOS 암호학적 서명 체인 유효성 검증",
+      "en": "GPU vBIOS Cryptographic Signature Chain Validity Verification"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU vBIOS 암호학적 서명 체인 유효성 검증\n상세 분석 지침:\n- 하드웨어 제조사의 공개키로 vBIOS 및 펌웨어 바이너리의 디지털 서명을 검증하여 비인가 변조를 차단합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_vbios_cryptographic_signature_verify`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU vBIOS Cryptographic Signature Chain Validity Verification\nAnalysis Requirements:\n- Verify digital signatures on vBIOS and firmware binaries using hardware vendor public keys to prevent tampering.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_vbios_cryptographic_signature_verify`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_vbios_cryptographic_signature_verify` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_vbios_cryptographic_signature_verify`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_cuda_kernel_constant_time_profiler",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "aab2dd1bf66257ddd9896dc3f40f04f1dd97e033b55dfba92893e9b761da5206",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU 연산 커널 분기문 제거 및 비트 연산 기반 상수 시간화",
+      "en": "GPU Kernel Branch Elimination & Bitwise Constant-Time Profiling"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU 연산 커널 분기문 제거 및 비트 연산 기반 상수 시간화\n상세 분석 지침:\n- 워프 발산(Warp Divergence)을 유발하는 if-else 분기를 산술 마스킹 비트 연산으로 치환하여 실행 시간을 일정하게 유지합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_cuda_kernel_constant_time_profiler`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU Kernel Branch Elimination & Bitwise Constant-Time Profiling\nAnalysis Requirements:\n- Replace warp-divergent if-else branches with arithmetic bitmask operations to maintain strictly uniform execution times.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_cuda_kernel_constant_time_profiler`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_cuda_kernel_constant_time_profiler` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_cuda_kernel_constant_time_profiler`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_sr_iov_virtual_gpu_isolation",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "47899d6fb2dde12a25a59036a46ce8c8d7bb5d7003e7df4635958aafa3df0112",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SR-IOV 기반 가상 GPU 메모리 공간 하드웨어 격리",
+      "en": "SR-IOV Virtual GPU Memory Space Hardware Isolation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: SR-IOV 기반 가상 GPU 메모리 공간 하드웨어 격리\n상세 분석 지침:\n- 단일 물리 디바이스를 가상 기능(VF) 단위로 나누고 DMA 리매핑을 활성화하여 가상머신 간 완전 분리를 실현합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_sr_iov_virtual_gpu_isolation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: SR-IOV Virtual GPU Memory Space Hardware Isolation\nAnalysis Requirements:\n- Partition physical devices into Virtual Functions with DMA remapping enabled to ensure total hypervisor isolation.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_sr_iov_virtual_gpu_isolation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_sr_iov_virtual_gpu_isolation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_sr_iov_virtual_gpu_isolation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gpusec_gpu_merkle_provenance_attestation",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 100,
+    "ci": false,
+    "hash": "e7f7b973123af8c8909388626bee768ed01896a13b1b22849acbc6b138a67203",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU 실행 바이너리 및 커널 코드 머클 트리 무결성 증명",
+      "en": "GPU Execution Binary & Kernel Code Merkle Tree Attestation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU 실행 바이너리 및 커널 코드 머클 트리 무결성 증명\n상세 분석 지침:\n- GPU 디바이스 메모리에 로드되는 연산 커널 코드 블록들을 머클 트리로 해싱하여 실시간 변조 여부를 증명합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_gpu_merkle_provenance_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU Execution Binary & Kernel Code Merkle Tree Attestation\nAnalysis Requirements:\n- Hash compute kernel code blocks loaded into GPU memory into a Merkle tree to continuously prove runtime integrity.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t2_gpu_merkle_provenance_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t2_gpu_merkle_provenance_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t2_gpu_merkle_provenance_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_advanced_power_sidechannel_filtering",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "1de01d13d2175dc3e7d0d43bd08cc334a6a0fb73eea009d1643ff7ecbc5613bc",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "차분 전력 분석(DPA) 공격 방어 필터 및 파워 마스킹",
+      "en": "Differential Power Analysis (DPA) Defense Filter & Power Masking"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 차분 전력 분석(DPA) 공격 방어 필터 및 파워 마스킹\n상세 분석 지침:\n- 연산 단계별 전력 소비량을 균일화하기 위한 동적 전력 조절 및 마스킹 회로를 구현하여 DPA 공격을 차단합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_advanced_power_sidechannel_filtering`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Differential Power Analysis (DPA) Defense Filter & Power Masking\nAnalysis Requirements:\n- Implement dynamic power conditioning and digital masking circuits to homogenize power draw and defeat DPA attacks.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_advanced_power_sidechannel_filtering`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_advanced_power_sidechannel_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_advanced_power_sidechannel_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_gpu_enclave_confidential_computing",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "d3f4631dbb81b8eeb5c47d8262a4ef0bc7d7aa8a7f621b9054dfe08033789f6b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기밀 컴퓨팅 GPU 엔클레이브 및 디바이스 암호화 격리",
+      "en": "Confidential Computing GPU Enclave & Device Encryption Isolation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 기밀 컴퓨팅 GPU 엔클레이브 및 디바이스 암호화 격리\n상세 분석 지침:\n- 하드웨어 기반 암호화 엔진을 사용하여 PCIe 버스 및 VRAM에 저장되는 모든 텐서 데이터를 실시간 암호화합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_gpu_enclave_confidential_computing`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Confidential Computing GPU Enclave & Device Encryption Isolation\nAnalysis Requirements:\n- Encrypt all tensor data in transit over PCIe and at rest in VRAM in real time using dedicated hardware engines.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_gpu_enclave_confidential_computing`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_gpu_enclave_confidential_computing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_gpu_enclave_confidential_computing`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_zero_copy_pinned_memory_tampering",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "882e9d6cb68d830d76fe254994fae8909fcb1775d182667b924fe13ae8659b26",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "호스트 공유 핀드 메모리 경쟁 상태 및 변조 방어",
+      "en": "Host Shared Pinned Memory Race Condition & Tampering Defense"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 호스트 공유 핀드 메모리 경쟁 상태 및 변조 방어\n상세 분석 지침:\n- 호스트와 디바이스가 공유하는 고정 메모리 버퍼의 동시 접근 및 유저랜드 경쟁 상태 공격을 메모리 잠금으로 차단합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_zero_copy_pinned_memory_tampering`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Host Shared Pinned Memory Race Condition & Tampering Defense\nAnalysis Requirements:\n- Defend against concurrency exploits and userland race conditions targeting host-device shared pinned memory buffers.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_zero_copy_pinned_memory_tampering`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_zero_copy_pinned_memory_tampering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_zero_copy_pinned_memory_tampering`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_gsp_firmware_runtime_attestation",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "5732676805f26c765512ae711cdbec567fee83418469daab62bdc393220264e2",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU 시스템 프로세서 펌웨어 런타임 무결성 원격 측정",
+      "en": "GPU System Processor Firmware Runtime Integrity Remote Attestation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU 시스템 프로세서 펌웨어 런타임 무결성 원격 측정\n상세 분석 지침:\n- GPU 내부 관리 프로세서(GSP)의 상태를 원격 증명 토큰으로 발행하여 펌웨어 변조를 중앙 관제소에서 실시간 검증합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_gsp_firmware_runtime_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU System Processor Firmware Runtime Integrity Remote Attestation\nAnalysis Requirements:\n- Issue remote attestation tokens of internal GPU management processors to verify runtime firmware state centrally.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_gsp_firmware_runtime_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_gsp_firmware_runtime_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_gsp_firmware_runtime_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_sidechannel_resilient_precision_scaling",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "d1bd6748ff7b0c03fb5d2d632ee83c91211136874b101c6665f360acfdfbfa25",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "사이드채널 내성 저정밀도 수치 축약 및 노이즈 주입 설계",
+      "en": "Sidechannel-Resilient Numeric Precision Scaling & Noise Design"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 사이드채널 내성 저정밀도 수치 축약 및 노이즈 주입 설계\n상세 분석 지침:\n- 저정밀도(INT4/FP8) 수치 압축 연산 시 노이즈를 미세 주입하여 정보 누출 없이 고속 추론을 수행합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_sidechannel_resilient_precision_scaling`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Sidechannel-Resilient Numeric Precision Scaling & Noise Design\nAnalysis Requirements:\n- Inject micro-noise during low-precision numeric scaling inference passes to perform high-speed compute without leakage.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_sidechannel_resilient_precision_scaling`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_sidechannel_resilient_precision_scaling` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_sidechannel_resilient_precision_scaling`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_tensor_core_power_masking_engine",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "f86d59bfceb0f9e49b0735d29b9f2ecdd382481f4464037a64da83c2b3c0ce9e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "텐서 코어 전력 시그니처 분산 및 동적 주파수 무작위화",
+      "en": "Tensor Core Power Signature Dispersal & Frequency Randomization"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: 텐서 코어 전력 시그니처 분산 및 동적 주파수 무작위화\n상세 분석 지침:\n- 텐서 연산 코어의 동작 클럭을 무작위로 미세 변조하여 고주파 전자기 방출 스펙트럼 분석을 무력화합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_tensor_core_power_masking_engine`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: Tensor Core Power Signature Dispersal & Frequency Randomization\nAnalysis Requirements:\n- Randomize tensor core clock frequencies at sub-millisecond intervals to neutralize electromagnetic radiation analysis.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_tensor_core_power_masking_engine`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_tensor_core_power_masking_engine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_tensor_core_power_masking_engine`."
+      ]
+    }
+  },
+  {
+    "id": "t3_gpusec_gpu_memory_controller_rowhammer_defense",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 200,
+    "ci": false,
+    "hash": "6f7c8ae946e43df9b66071a5caf4405eebd5237f6bc7c80a276879985eaa345f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GPU 고대역폭 메모리 제로화 및 리프레시 방어",
+      "en": "GPU High Bandwidth Memory Zeroization & Refresh Defenses"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: GPU 고대역폭 메모리 제로화 및 리프레시 방어\n상세 분석 지침:\n- 고밀도 HBM 메모리 셀의 전하 누출로 인한 인접 비트 플립(Rowhammer) 공격을 타깃 리프레시 증가로 방어합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_gpu_memory_controller_rowhammer_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: GPU High Bandwidth Memory Zeroization & Refresh Defenses\nAnalysis Requirements:\n- Counter adjacent bit flips caused by charge leakage in dense HBM cells through targeted row refresh acceleration.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t3_gpu_memory_controller_rowhammer_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t3_gpu_memory_controller_rowhammer_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t3_gpu_memory_controller_rowhammer_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_autonomous_gpu_hardening",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "c9cfb65f4c8af4baa05c4f84578b7b1bf726274669dcb712360923835c600db1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] AI 가속기 엔터프라이즈 하드웨어 보안 오케스트레이션",
+      "en": "[Capstone] AI Accelerator Enterprise Hardware Security Orchestration"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] AI 가속기 엔터프라이즈 하드웨어 보안 오케스트레이션\n상세 분석 지침:\n- VRAM 제로화, 버스 패딩, MIG 하드웨어 분할을 하나의 자율 보안 제어 데몬으로 통합 오케스트레이션합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_autonomous_gpu_hardening`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] AI Accelerator Enterprise Hardware Security Orchestration\nAnalysis Requirements:\n- Unify VRAM scrubbing, bus padding, and MIG hardware partitioning under an autonomous security control daemon.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_autonomous_gpu_hardening`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_autonomous_gpu_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_autonomous_gpu_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_cross_tenant_vram_leak_elimination",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "8f250a830d84bcd6451a42c28741400423b53081fbc5fb93db9f2b1290087332",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 멀티 테넌트 VRAM 누출 제로화 및 증명 파이프라인",
+      "en": "[Capstone] Multi-Tenant VRAM Leak Zeroization & Proof Pipeline"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] 멀티 테넌트 VRAM 누출 제로화 및 증명 파이프라인\n상세 분석 지침:\n- 대규모 AI 클러스터에서 테넌트 교체 시 이전 세션의 가중치 잔류 데이터를 100% 소각하고 암호학적 증명서를 발급합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_cross_tenant_vram_leak_elimination`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] Multi-Tenant VRAM Leak Zeroization & Proof Pipeline\nAnalysis Requirements:\n- Scrub 100% of residual model weights during tenant rotation in AI clusters and generate cryptographic audit proofs.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_cross_tenant_vram_leak_elimination`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_cross_tenant_vram_leak_elimination` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_cross_tenant_vram_leak_elimination`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_high_frequency_pcie_shield",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "8fac2532e709a1a3fb95e180d85a3b5fa237a4d789b75064855244d28e95f6c3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 초고주파 PCIe 버스 감청 차단 및 동적 노이즈 실드",
+      "en": "[Capstone] High-Frequency PCIe Bus Intercept Blocking & Dynamic Noise Shield"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] 초고주파 PCIe 버스 감청 차단 및 동적 노이즈 실드\n상세 분석 지침:\n- 하드웨어 인터포저를 활용한 물리적 PCIe 감청 시도를 트래픽 패딩과 의사 난수 텐서 스트리밍으로 차단합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_high_frequency_pcie_shield`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] High-Frequency PCIe Bus Intercept Blocking & Dynamic Noise Shield\nAnalysis Requirements:\n- Defeat physical PCIe bus tapping by interleaving deterministic traffic padding with pseudo-random tensor streaming.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_high_frequency_pcie_shield`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_high_frequency_pcie_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_high_frequency_pcie_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_mig_hardware_boundary_enforcer",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "cf7e27e3cc9355325d3d944ec0bbdaf1fbb84cfad37ee68ec8a93919f4c15685",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] MIG 하드웨어 경계 및 IOMMU 주소 공간 완전 격리",
+      "en": "[Capstone] MIG Hardware Boundary & IOMMU Address Space Total Isolation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] MIG 하드웨어 경계 및 IOMMU 주소 공간 완전 격리\n상세 분석 지침:\n- 커널과 하이퍼바이저 수준에서 MIG 파티션의 물리 주소 매핑을 완벽히 격리하여 교차 테넌트 익스플로잇을 근절합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_mig_hardware_boundary_enforcer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] MIG Hardware Boundary & IOMMU Address Space Total Isolation\nAnalysis Requirements:\n- Enforce total physical address isolation for MIG partitions at kernel and hypervisor levels to eliminate cross-tenant exploits.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_mig_hardware_boundary_enforcer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_mig_hardware_boundary_enforcer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_mig_hardware_boundary_enforcer`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_cryptographic_root_of_trust_gpu",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "5e9b46acadef1d8b0224bc03c967302e7a139fcfe1eff138a19bafa5e50702b6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 하드웨어 Root-of-Trust 기반 GPU 엔드투엔드 원격 증명",
+      "en": "[Capstone] Hardware Root-of-Trust GPU End-to-End Remote Attestation"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] 하드웨어 Root-of-Trust 기반 GPU 엔드투엔드 원격 증명\n상세 분석 지침:\n- GPU 실리콘 내부 암호키와 인증서를 기반으로 호스트 운영체제에 변조되지 않은 신뢰 실행 환경을 수학적으로 증명합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_cryptographic_root_of_trust_gpu`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] Hardware Root-of-Trust GPU End-to-End Remote Attestation\nAnalysis Requirements:\n- Mathematically prove untampered trusted execution environments using GPU on-die private keys and root certificates.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_cryptographic_root_of_trust_gpu`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_cryptographic_root_of_trust_gpu` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_cryptographic_root_of_trust_gpu`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_ai_accelerator_adversarial_drill",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "71da7e0062f3e32f9e178fa9f36082a7ed8061f78241877e43e7c21a7eedfda0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] AI 가속기 공격 시뮬레이션 vs 방어 하드닝 공방전",
+      "en": "[Capstone] AI Accelerator Adversarial Emulation vs Hardening Drill"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] AI 가속기 공격 시뮬레이션 vs 방어 하드닝 공방전\n상세 분석 지침:\n- 공격자의 GEMM 프로파일링 및 VRAM 덤프 시도에 대응하여 시스템이 실시간 노이즈 주입과 메모리 격리를 가동합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_ai_accelerator_adversarial_drill`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] AI Accelerator Adversarial Emulation vs Hardening Drill\nAnalysis Requirements:\n- Counter adversarial GEMM profiling and VRAM dump exploits with automated telemetry noise injection and memory isolation.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_ai_accelerator_adversarial_drill`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_ai_accelerator_adversarial_drill` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_ai_accelerator_adversarial_drill`."
+      ]
+    }
+  },
+  {
+    "id": "t4_gpusec_capstone_sovereign_ai_gpu_infrastructure",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "gpusec",
+    "points": 400,
+    "ci": false,
+    "hash": "3a08436c482a7f9d945d0a2a84ad66d365e99eb105632df10efec414c935a175",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "[Capstone] 주권 AI(Sovereign AI) 데이터센터 가속기 전방위 방어 체계",
+      "en": "[Capstone] Sovereign AI Data Center Accelerator Full-Spectrum Defense System"
+    },
+    "prompt": {
+      "ko": "AI 가속기 GPU 사이드채널 및 VRAM 격리 방어 실무를 수행합니다.\n\n주제: [Capstone] 주권 AI(Sovereign AI) 데이터센터 가속기 전방위 방어 체계\n상세 분석 지침:\n- 국가 핵심 AI 인프라의 GPU 클러스터를 사이드채널, 공급망 변조, VRAM 데이터 유출로부터 보호하는 종합 방어막을 완성합니다.\n- GPU 가속기 사이드채널 벡터 및 VRAM 메모리 격리 무결성을 정밀 감사하십시오.\n- 검증 식별자 GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_sovereign_ai_gpu_infrastructure`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of hardware GPU sidechannel and VRAM isolation defense.\n\nTopic: [Capstone] Sovereign AI Data Center Accelerator Full-Spectrum Defense System\nAnalysis Requirements:\n- Deploy full-spectrum defenses protecting sovereign AI GPU clusters from sidechannels, supply chain tampering, and VRAM leaks.\n- Thoroughly audit GPU accelerator sidechannel vectors and VRAM memory isolation integrity.\n- Verification Identifier GPUSEC_CHALLENGE_ID: `ch_gpusec_t4_capstone_sovereign_ai_gpu_infrastructure`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `ch_gpusec_t4_capstone_sovereign_ai_gpu_infrastructure` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `ch_gpusec_t4_capstone_sovereign_ai_gpu_infrastructure`."
       ]
     }
   }

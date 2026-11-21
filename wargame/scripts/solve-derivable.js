@@ -3206,6 +3206,57 @@ for (const id of KERNELZERO_IDS) {
     }
   });
 }
+const GPUSEC_IDS = [
+  "t0_gpusec_gpu_sidechannel_threat_model",
+  "t0_gpusec_vram_memory_architecture_basics",
+  "t0_gpusec_pcie_bus_sniffing_and_telemetry",
+  "t0_gpusec_mig_hardware_partitioning_theory",
+  "t0_gpusec_gpu_power_and_timing_sidechannel",
+  "t0_gpusec_gpu_firmware_and_vbios_security",
+  "t0_gpusec_constant_time_cuda_kernel_theory",
+  "t1_gpusec_cuda_mem_zero_residual_scrub",
+  "t1_gpusec_pcie_traffic_padding_defense",
+  "t1_gpusec_mig_sm_and_l2_cache_quarantine",
+  "t1_gpusec_gpu_driver_ioctl_fuzzing_audit",
+  "t1_gpusec_vram_dump_forensic_inspection",
+  "t1_gpusec_matrix_multiplication_jitter_injection",
+  "t1_gpusec_gpu_context_switch_leak_prevention",
+  "t2_gpusec_hbm_residue_entropy_analysis",
+  "t2_gpusec_pcie_flit_telemetry_obfuscation",
+  "t2_gpusec_mig_cross_partition_dma_containment",
+  "t2_gpusec_vbios_cryptographic_signature_verify",
+  "t2_gpusec_cuda_kernel_constant_time_profiler",
+  "t2_gpusec_sr_iov_virtual_gpu_isolation",
+  "t2_gpusec_gpu_merkle_provenance_attestation",
+  "t3_gpusec_advanced_power_sidechannel_filtering",
+  "t3_gpusec_gpu_enclave_confidential_computing",
+  "t3_gpusec_zero_copy_pinned_memory_tampering",
+  "t3_gpusec_gsp_firmware_runtime_attestation",
+  "t3_gpusec_sidechannel_resilient_precision_scaling",
+  "t3_gpusec_tensor_core_power_masking_engine",
+  "t3_gpusec_gpu_memory_controller_rowhammer_defense",
+  "t4_gpusec_capstone_autonomous_gpu_hardening",
+  "t4_gpusec_capstone_cross_tenant_vram_leak_elimination",
+  "t4_gpusec_capstone_high_frequency_pcie_shield",
+  "t4_gpusec_capstone_mig_hardware_boundary_enforcer",
+  "t4_gpusec_capstone_cryptographic_root_of_trust_gpu",
+  "t4_gpusec_capstone_ai_accelerator_adversarial_drill",
+  "t4_gpusec_capstone_sovereign_ai_gpu_infrastructure"
+];
+
+for (const id of GPUSEC_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/GPUSEC_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_gpusec_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

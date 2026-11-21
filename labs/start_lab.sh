@@ -143,6 +143,7 @@ start_lab() {
         "68_autonomous_agent_swarm_lab"
         "69_model_weight_stego_lab"
         "70_autonomous_kernel_patch_lab"
+        "71_hardware_gpu_sidechannel_lab"
     )
 
     local lab_names=(
@@ -217,6 +218,7 @@ start_lab() {
         "자율 멀티에이전트 스웜 보안 & 비잔틴 합의 방어 랩"
         "AI 모델 가중치 스테가노그래피 & SafeTensors 공급망 방어 랩"
         "커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 랩"
+        "GPU 가속기 사이드채널 & VRAM 격리 방어 랩"
     )
 
     local lab_ports=(
@@ -291,10 +293,11 @@ start_lab() {
         "웹 콘솔 & 스웜 메시 게이트웨이: http://localhost:8068"
         "웹 콘솔 & 모델 가중치 레지스트리: http://localhost:8069"
         "웹 콘솔 & 커널 eBPF LSM 핫패처: http://localhost:8070"
+        "웹 콘솔 & GPU VRAM 사이드채널 인스펙터: http://localhost:8071"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 70 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~70 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 71 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~71 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

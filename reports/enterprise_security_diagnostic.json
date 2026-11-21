@@ -1,12 +1,12 @@
 {
   "report_title": "VibeHacking Enterprise Security Diagnostic & Threat Assessment Report",
   "metadata": {
-    "total_labs": 70,
-    "total_findings": 70,
+    "total_labs": 71,
+    "total_findings": 71,
     "average_cvss": 8.8,
     "severity_counts": {
       "Critical": 37,
-      "High": 27,
+      "High": 28,
       "Medium": 6,
       "Low": 0,
       "None": 0
@@ -34,7 +34,8 @@
       "Defense Evasion / Credential Access": 1,
       "Initial Access / Lateral Movement / Impact": 1,
       "Initial Access / Defense Evasion / Persistence": 1,
-      "Privilege Escalation / Defense Evasion / Persistence": 1
+      "Privilege Escalation / Defense Evasion / Persistence": 1,
+      "Exfiltration / Privilege Escalation / Impact": 1
     },
     "category_counts": {
       "Web Security": 3,
@@ -92,7 +93,8 @@
       "Confidential AI Computing, Hardware Enclave Remote Attestation & Side-Channel Shield": 1,
       "Autonomous AI Agent Swarm Defense & Byzantine Fault Tolerance": 1,
       "AI Security & Model Supply Chain Defense": 1,
-      "Kernel Security & Autonomous eBPF Defense": 1
+      "Kernel Security & Autonomous eBPF Defense": 1,
+      "Hardware Security & AI Accelerator Hardening": 1
     },
     "kisa_counts": {
       "2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)": 1,
@@ -164,7 +166,8 @@
       "2.10.3 암호 통제 및 하드웨어 보안 모듈 (AMD SEV-SNP/Intel TDX 기밀 컴퓨팅 및 원격 증명)": 1,
       "2.10.1 보안 시스템 접근 통제 및 분산 에이전트 상호 인증 (Autonomous Agent Swarm & PBFT 합의 방어)": 1,
       "2.10.4 소프트웨어 개발 보안 및 AI 모델 공급망 무결성 통제 (SafeTensors 및 신경망 가중치 스테가노그래피 방어)": 1,
-      "2.10.5 시스템 및 서비스 운영 보안 및 커널 런타임 능동 보호 (eBPF LSM 동적 핫패칭 및 0-Day 방어)": 1
+      "2.10.5 시스템 및 서비스 운영 보안 및 커널 런타임 능동 보호 (eBPF LSM 동적 핫패칭 및 0-Day 방어)": 1,
+      "2.10.6 하드웨어 가속기 및 AI GPU 격리 보안 통제 (VRAM 메모리 제로화, MIG 파티셔닝 및 사이드채널 방어)": 1
     },
     "nist_csf_counts": {
       "PR.PS-01 Platform Security / PR.DS-01 Data Security": 2,
@@ -234,7 +237,8 @@
       "PR.DS-01 Hardware TEE Remote Attestation, In-Enclave AES-256-XTS & Side-Channel Mitigation": 1,
       "PR.AC-04 Multi-Agent Swarm Identity Pinning, PBFT Byzantine Fault Tolerance & Landlock LSM Memory Isolation": 1,
       "PR.DS-06 Neural Weight Steganography Mitigation, SafeTensors Deserialization Hardening & Sigstore Cosign Attestation": 1,
-      "PR.PS-02 In-Kernel eBPF LSM Security Policy Enactment, Zero-Day Syscall Quarantine & Merkle Patch Attestation": 1
+      "PR.PS-02 In-Kernel eBPF LSM Security Policy Enactment, Zero-Day Syscall Quarantine & Merkle Patch Attestation": 1,
+      "PR.DS-07 GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation": 1
     },
     "owasp_counts": {
       "A03:2021 Injection": 4,
@@ -269,10 +273,11 @@
       "LLM06:2025 Sensitive Information Disclosure & Hardware TEE Weight Protection": 1,
       "LLM07:2025 System Prompt & Shared Context Window Hijacking in Autonomous Swarm Workflows": 1,
       "LLM04:2025 Model Denial of Service & Neural Weight Manipulation / Supply Chain Poisoning": 1,
-      "LLM05:2025 Autonomous Agent Kernel Privilege Escalation & Unverified Dynamic Binary Code Injection": 1
+      "LLM05:2025 Autonomous Agent Kernel Privilege Escalation & Unverified Dynamic Binary Code Injection": 1,
+      "LLM06:2025 Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering": 1
     },
     "live_active_labs": 0,
-    "generated_at": "2026-11-21 17:26:51"
+    "generated_at": "2026-11-21 18:09:10"
   },
   "findings": [
     {
@@ -1954,6 +1959,30 @@
       "nist_csf_name": "In-Kernel eBPF LSM Security Policy Enactment, Zero-Day Syscall Quarantine & Merkle Patch Attestation",
       "owasp_id": "LLM05:2025",
       "owasp_name": "Autonomous Agent Kernel Privilege Escalation & Unverified Dynamic Binary Code Injection"
+    },
+    {
+      "vuln_id": "VIBE-2026-7101",
+      "lab_id": "71",
+      "lab_title": "71 HardwareGpuSidechannelLab Hardware GPU Acceleration Sidechannel & VRAM Isolation Defense",
+      "name": "GPU VRAM Residual Memory Leak, PCIe Bus Timing Sidechannel & Multi-Tenant MIG DMA Boundary Escape",
+      "category": "Hardware Security & AI Accelerator Hardening",
+      "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:C/C:H/I:H/A:H",
+      "mitre_id": "T1499",
+      "mitre_technique": "Endpoint Denial of Service: Hardware Accelerator Sidechannel",
+      "mitre_tactic": "Exfiltration / Privilege Escalation / Impact",
+      "impact": "Malicious co-located multi-tenant workload probes PCIe bus activity, recovers LLM model weights via timing/power profiling, or dumps residual unscrubbed VRAM buffers.",
+      "description": "Multi-tenant AI accelerator environment fails to scrub and zeroize VRAM buffers between distinct inference sessions, leaks GEMM matrix operation timing patterns across the PCIe bus, and lacks hardware-enforced MIG cross-partition DMA access barriers.",
+      "affected_component": "HardwareGpuSidechannelLab VRAM Memory Controller & Accelerator Interface (Port 8071)",
+      "remediation": "Enact strict cuda_mem_zero_on_free memory scrubbing, inject constant-time padding and noise on PCIe telemetry, mandate hardware Multi-Instance GPU (MIG) partition isolation with L2 cache quarantine, and verify cryptographic GPU firmware signatures against Merkle roots.",
+      "calculated_score": 7.8,
+      "severity": "High",
+      "live_active": false,
+      "kisa_id": "2.10.6",
+      "kisa_name": "하드웨어 가속기 및 AI GPU 격리 보안 통제 (VRAM 메모리 제로화, MIG 파티셔닝 및 사이드채널 방어)",
+      "nist_csf_id": "PR.DS-07",
+      "nist_csf_name": "GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation",
+      "owasp_id": "LLM06:2025",
+      "owasp_name": "Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering"
     }
   ]
 }

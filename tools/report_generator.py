@@ -676,6 +676,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM05:2025",
         "owasp_name": "Autonomous Agent Kernel Privilege Escalation & Unverified Dynamic Binary Code Injection",
     },
+    "71": {
+        "kisa_id": "2.10.6",
+        "kisa_name": "하드웨어 가속기 및 AI GPU 격리 보안 통제 (VRAM 메모리 제로화, MIG 파티셔닝 및 사이드채널 방어)",
+        "nist_csf_id": "PR.DS-07",
+        "nist_csf_name": "GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation",
+        "owasp_id": "LLM06:2025",
+        "owasp_name": "Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering",
+    },
 }
 
 @dataclass
@@ -1977,6 +1985,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Linux kernel fails to isolate vulnerable system call surfaces (io_uring_enter) prior to vendor patching, lacks sub-microsecond eBPF LSM telemetry for malicious execution primitives in security_bprm_check, and executes unverified hotpatch bytecodes without Merkle root provenance attestation.",
                 "affected_component": "AutonomousKernelPatchLab Hotpatch Engine & Kernel LSM Gateway (Port 8070)",
                 "remediation": "Deploy BPF_PROG_TYPE_LSM hooks with security_bprm_check binary filtering, enact dynamic Seccomp-BPF filters isolating vulnerable io_uring system calls with zero latency, leverage BPF_MAP_TYPE_HASH and RingBuffer for <1µs telemetry, and mandate Ed25519-signed Merkle tree cryptographic verification for all hotpatches."
+            }
+        ]
+    },
+    "71": {
+        "title": "71 HardwareGpuSidechannelLab Hardware GPU Acceleration Sidechannel & VRAM Isolation Defense",
+        "category": "Hardware Security & AI Accelerator Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7101",
+                "name": "GPU VRAM Residual Memory Leak, PCIe Bus Timing Sidechannel & Multi-Tenant MIG DMA Boundary Escape",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1499",
+                "mitre_technique": "Endpoint Denial of Service: Hardware Accelerator Sidechannel",
+                "mitre_tactic": "Exfiltration / Privilege Escalation / Impact",
+                "impact": "Malicious co-located multi-tenant workload probes PCIe bus activity, recovers LLM model weights via timing/power profiling, or dumps residual unscrubbed VRAM buffers.",
+                "description": "Multi-tenant AI accelerator environment fails to scrub and zeroize VRAM buffers between distinct inference sessions, leaks GEMM matrix operation timing patterns across the PCIe bus, and lacks hardware-enforced MIG cross-partition DMA access barriers.",
+                "affected_component": "HardwareGpuSidechannelLab VRAM Memory Controller & Accelerator Interface (Port 8071)",
+                "remediation": "Enact strict cuda_mem_zero_on_free memory scrubbing, inject constant-time padding and noise on PCIe telemetry, mandate hardware Multi-Instance GPU (MIG) partition isolation with L2 cache quarantine, and verify cryptographic GPU firmware signatures against Merkle roots."
             }
         ]
     }

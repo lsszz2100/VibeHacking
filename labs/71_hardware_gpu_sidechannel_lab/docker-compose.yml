@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  hardware_gpu_sidechannel_lab:
+    build: .
+    container_name: vibe-lab-71-gpu-sidechannel
+    ports:
+      - "127.0.0.1:8071:8071"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

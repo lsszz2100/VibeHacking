@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-21 17:26:36",
+  "timestamp": "2026-11-21 18:09:03",
   "teams_tested": [
     "red",
     "blue",
@@ -13,30 +13,30 @@
     "re",
     "antire"
   ],
-  "total_drills": 80,
-  "total_attacks_executed": 248,
-  "total_attacks_detected": 248,
-  "total_attacks_blocked": 248,
+  "total_drills": 83,
+  "total_attacks_executed": 260,
+  "total_attacks_detected": 260,
+  "total_attacks_blocked": 260,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
   "team_breakdown": {
     "red": {
       "team_name": "레드팀",
-      "labs_tested": 9,
-      "attacks": 26,
-      "detected": 26,
-      "blocked": 26,
+      "labs_tested": 10,
+      "attacks": 30,
+      "detected": 30,
+      "blocked": 30,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
     },
     "blue": {
       "team_name": "블루팀",
-      "labs_tested": 9,
-      "attacks": 28,
-      "detected": 28,
-      "blocked": 28,
+      "labs_tested": 10,
+      "attacks": 32,
+      "detected": 32,
+      "blocked": 32,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 13,
-      "attacks": 47,
-      "detected": 47,
-      "blocked": 47,
+      "labs_tested": 14,
+      "attacks": 51,
+      "detected": 51,
+      "blocked": 51,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "70",
@@ -608,6 +608,72 @@
       "elapsed_ms": 0.05
     },
     {
+      "lab_id": "71",
+      "team_id": "red",
+      "team_name": "레드팀",
+      "lab_title": "71 HardwareGpuSidechannelLab GPU 가속기 사이드채널 & VRAM 격리 방어 랩",
+      "cve": "VIBE-2026-7101",
+      "cvss": 7.8,
+      "mitre": "T1499",
+      "kisa": "2.10.6",
+      "nist": "PR.DS-07",
+      "owasp": "LLM06:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Hardware GPU Sidechannel & VRAM Isolation Inspector",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "VRAM 잔류 메모리 제로화 및 이전 AI 세션 가중치/임베딩 누출 차단",
+          "red_attack": "멀티 테넌트 GPU 환경에서 이전 컨텍스트 반환 후 VRAM 메모리를 0으로 즉시 초기화(Zeroization)하여 LLM 가중치 및 프롬프트 잔류 덤프를 원천 차단합니다.",
+          "blue_defense": "VRAM Context Zeroization, cudaMemsetAsync 스크러빙, GPU 메모리 누출 실시간 감시.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "PCIe 버스 타이밍 및 전력 사이드채널 노이즈 주입을 통한 신경망 구조 유출 차단",
+          "red_attack": "행렬 곱(GEMM) 연산 시 발생하는 PCIe 버스 전송 타이밍 및 전력 소비 패턴 프로파일링에 상수 시간 패딩과 노이즈를 주입하여 가중치 비트 추론을 방어합니다.",
+          "blue_defense": "Constant-time 패딩, PCIe 버스 타이밍 노이즈 주입, 고해상도 연산 프로파일링 난독화.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "Multi-Instance GPU (MIG) 하드웨어 파티션 경계 및 DMA 탈출 격리",
+          "red_attack": "공유 SM 및 L2 캐시를 물리적으로 분할하는 MIG 하드웨어 인스턴스 정책을 강제하고, 테넌트 간 불법 직접 메모리 접근(DMA)을 엄격히 차단합니다.",
+          "blue_defense": "MIG 하드웨어 분할 격리, 교차 테넌트 DMA 원천 차단, L2 캐시 파티션 격리.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "암호학적 GPU 펌웨어 무결성 및 머클 트리 원격 증명 (Capstone)",
+          "red_attack": "GPU vBIOS 및 GSP 마이크로코드의 SHA-256 머클 루트 해시와 공급자 암호 서명을 검증하여 악성 GPU 루팅 및 펌웨어 변조를 원천 무력화합니다.",
+          "blue_defense": "GPU vBIOS/GSP 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 펌웨어 감사 HMAC 연동.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.04
+    },
+    {
       "lab_id": "07",
       "team_id": "blue",
       "team_name": "블루팀",
@@ -671,7 +737,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -726,7 +792,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "26",
@@ -781,7 +847,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "40",
@@ -847,7 +913,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "50",
@@ -913,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "51",
@@ -1045,7 +1111,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "70",
@@ -1111,7 +1177,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.04
+    },
+    {
+      "lab_id": "71",
+      "team_id": "blue",
+      "team_name": "블루팀",
+      "lab_title": "71 HardwareGpuSidechannelLab GPU 가속기 사이드채널 & VRAM 격리 방어 랩",
+      "cve": "VIBE-2026-7101",
+      "cvss": 7.8,
+      "mitre": "T1499",
+      "kisa": "2.10.6",
+      "nist": "PR.DS-07",
+      "owasp": "LLM06:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Hardware GPU Sidechannel & VRAM Isolation Inspector",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "VRAM 잔류 메모리 제로화 및 이전 AI 세션 가중치/임베딩 누출 차단",
+          "red_attack": "멀티 테넌트 GPU 환경에서 이전 컨텍스트 반환 후 VRAM 메모리를 0으로 즉시 초기화(Zeroization)하여 LLM 가중치 및 프롬프트 잔류 덤프를 원천 차단합니다.",
+          "blue_defense": "VRAM Context Zeroization, cudaMemsetAsync 스크러빙, GPU 메모리 누출 실시간 감시.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "PCIe 버스 타이밍 및 전력 사이드채널 노이즈 주입을 통한 신경망 구조 유출 차단",
+          "red_attack": "행렬 곱(GEMM) 연산 시 발생하는 PCIe 버스 전송 타이밍 및 전력 소비 패턴 프로파일링에 상수 시간 패딩과 노이즈를 주입하여 가중치 비트 추론을 방어합니다.",
+          "blue_defense": "Constant-time 패딩, PCIe 버스 타이밍 노이즈 주입, 고해상도 연산 프로파일링 난독화.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "Multi-Instance GPU (MIG) 하드웨어 파티션 경계 및 DMA 탈출 격리",
+          "red_attack": "공유 SM 및 L2 캐시를 물리적으로 분할하는 MIG 하드웨어 인스턴스 정책을 강제하고, 테넌트 간 불법 직접 메모리 접근(DMA)을 엄격히 차단합니다.",
+          "blue_defense": "MIG 하드웨어 분할 격리, 교차 테넌트 DMA 원천 차단, L2 캐시 파티션 격리.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "암호학적 GPU 펌웨어 무결성 및 머클 트리 원격 증명 (Capstone)",
+          "red_attack": "GPU vBIOS 및 GSP 마이크로코드의 SHA-256 머클 루트 해시와 공급자 암호 서명을 검증하여 악성 GPU 루팅 및 펌웨어 변조를 원천 무력화합니다.",
+          "blue_defense": "GPU vBIOS/GSP 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 펌웨어 감사 HMAC 연동.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "01",
@@ -1221,7 +1353,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "13",
@@ -1254,7 +1386,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -1375,7 +1507,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.15
     },
     {
       "lab_id": "50",
@@ -1441,7 +1573,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "56",
@@ -1507,7 +1639,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.11
+      "elapsed_ms": 0.32
     },
     {
       "lab_id": "02",
@@ -1551,7 +1683,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "10",
@@ -1584,7 +1716,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "39",
@@ -1650,7 +1782,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "49",
@@ -1716,7 +1848,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "54",
@@ -1782,7 +1914,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "58",
@@ -1848,7 +1980,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "59",
@@ -1914,7 +2046,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "60",
@@ -1980,7 +2112,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "61",
@@ -2046,7 +2178,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.12
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "67",
@@ -2112,7 +2244,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.67
     },
     {
       "lab_id": "68",
@@ -2178,7 +2310,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 1.77
     },
     {
       "lab_id": "69",
@@ -2244,7 +2376,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "70",
@@ -2310,7 +2442,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.05
+    },
+    {
+      "lab_id": "71",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "71 HardwareGpuSidechannelLab GPU 가속기 사이드채널 & VRAM 격리 방어 랩",
+      "cve": "VIBE-2026-7101",
+      "cvss": 7.8,
+      "mitre": "T1499",
+      "kisa": "2.10.6",
+      "nist": "PR.DS-07",
+      "owasp": "LLM06:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Hardware GPU Sidechannel & VRAM Isolation Inspector",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "VRAM 잔류 메모리 제로화 및 이전 AI 세션 가중치/임베딩 누출 차단",
+          "red_attack": "멀티 테넌트 GPU 환경에서 이전 컨텍스트 반환 후 VRAM 메모리를 0으로 즉시 초기화(Zeroization)하여 LLM 가중치 및 프롬프트 잔류 덤프를 원천 차단합니다.",
+          "blue_defense": "VRAM Context Zeroization, cudaMemsetAsync 스크러빙, GPU 메모리 누출 실시간 감시.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "PCIe 버스 타이밍 및 전력 사이드채널 노이즈 주입을 통한 신경망 구조 유출 차단",
+          "red_attack": "행렬 곱(GEMM) 연산 시 발생하는 PCIe 버스 전송 타이밍 및 전력 소비 패턴 프로파일링에 상수 시간 패딩과 노이즈를 주입하여 가중치 비트 추론을 방어합니다.",
+          "blue_defense": "Constant-time 패딩, PCIe 버스 타이밍 노이즈 주입, 고해상도 연산 프로파일링 난독화.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "Multi-Instance GPU (MIG) 하드웨어 파티션 경계 및 DMA 탈출 격리",
+          "red_attack": "공유 SM 및 L2 캐시를 물리적으로 분할하는 MIG 하드웨어 인스턴스 정책을 강제하고, 테넌트 간 불법 직접 메모리 접근(DMA)을 엄격히 차단합니다.",
+          "blue_defense": "MIG 하드웨어 분할 격리, 교차 테넌트 DMA 원천 차단, L2 캐시 파티션 격리.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "암호학적 GPU 펌웨어 무결성 및 머클 트리 원격 증명 (Capstone)",
+          "red_attack": "GPU vBIOS 및 GSP 마이크로코드의 SHA-256 머클 루트 해시와 공급자 암호 서명을 검증하여 악성 GPU 루팅 및 펌웨어 변조를 원천 무력화합니다.",
+          "blue_defense": "GPU vBIOS/GSP 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 펌웨어 감사 HMAC 연동.",
+          "detection_rule": "GPU-VRAM-ZEROIZATION-MIG-ISOLATION-7101-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "01",
@@ -2354,7 +2552,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "18",
@@ -2387,7 +2585,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "22",
@@ -2442,7 +2640,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.42
     },
     {
       "lab_id": "24",
@@ -2497,7 +2695,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.21
+      "elapsed_ms": 0.13
     },
     {
       "lab_id": "31",
@@ -2552,7 +2750,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "41",
@@ -2618,7 +2816,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "53",
@@ -2750,7 +2948,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "04",
@@ -2783,7 +2981,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "10",
@@ -2816,7 +3014,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "28",
@@ -2871,7 +3069,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "32",
@@ -2926,7 +3124,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "35",
@@ -2981,7 +3179,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "46",
@@ -3047,7 +3245,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "55",
@@ -3113,7 +3311,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "58",
@@ -3179,7 +3377,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "59",
@@ -3245,7 +3443,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.13
     },
     {
       "lab_id": "60",
@@ -3311,7 +3509,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "61",
@@ -3377,7 +3575,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "01",
@@ -3421,7 +3619,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "06",
@@ -3575,7 +3773,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "43",
@@ -3641,7 +3839,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "44",
@@ -3707,7 +3905,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "13",
@@ -3740,7 +3938,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "25",
@@ -3795,7 +3993,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "33",
@@ -3850,7 +4048,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "41",
@@ -3916,7 +4114,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "48",
@@ -3982,7 +4180,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.12
     },
     {
       "lab_id": "55",
@@ -4048,7 +4246,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "56",
@@ -4114,7 +4312,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "03",
@@ -4147,7 +4345,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "20",
@@ -4290,7 +4488,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "47",
@@ -4356,7 +4554,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "57",
@@ -4422,7 +4620,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "36",
@@ -4477,7 +4675,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "51",
@@ -4543,7 +4741,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "57",
@@ -4609,7 +4807,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.04
     }
   ]
 }

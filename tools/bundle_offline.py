@@ -135,7 +135,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print(" VibeHacking v2.20.0 Offline Release & Audit Pipeline")
+    print(" VibeHacking v2.21.0 Offline Release & Audit Pipeline")
     print("==================================================")
     
     checks = [check_textbook(), check_labs(), check_wargame(), check_offline_assets()]

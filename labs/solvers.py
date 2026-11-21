@@ -2248,6 +2248,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Kernel hotpatch Merkle root attestation verified & protection established -> FLAG{v220_s4_kernel_patch_merkle_provenance_attested}"
             }
         ]
+    },
+    "71": {
+        "title": "71 HardwareGpuSidechannelLab GPU 가속기 사이드채널 & VRAM 격리 방어 랩",
+        "steps": [
+            {
+                "step": 1,
+                "name": "VRAM 잔류 메모리 제로화 및 이전 AI 세션 가중치/임베딩 누출 차단",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "멀티 테넌트 GPU 환경에서 이전 컨텍스트 반환 후 VRAM 메모리를 0으로 즉시 초기화(Zeroization)하여 LLM 가중치 및 프롬프트 잔류 덤프를 원천 차단합니다.",
+                "exploit_payload": '{"zeroization_policy": "cuda_mem_zero_on_free", "vram_scrub_enabled": true, "leak_detection_active": true, "scrub_patterns": ["0x00_fill_pattern", "cuda_memset_context_clear"]}',
+                "defense": "VRAM Context Zeroization, cudaMemsetAsync 스크러빙, GPU 메모리 누출 실시간 감시.",
+                "sample_output": "✓ VRAM residual memory scrubbed -> FLAG{v221_s1_vram_context_zeroization_scrubbed}"
+            },
+            {
+                "step": 2,
+                "name": "PCIe 버스 타이밍 및 전력 사이드채널 노이즈 주입을 통한 신경망 구조 유출 차단",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "행렬 곱(GEMM) 연산 시 발생하는 PCIe 버스 전송 타이밍 및 전력 소비 패턴 프로파일링에 상수 시간 패딩과 노이즈를 주입하여 가중치 비트 추론을 방어합니다.",
+                "exploit_payload": '{"defense_mode": "constant_time_padding", "noise_injection_level": 4, "pcie_telemetry_obfuscated": true, "sub_millisecond_jitter": true}',
+                "defense": "Constant-time 패딩, PCIe 버스 타이밍 노이즈 주입, 고해상도 연산 프로파일링 난독화.",
+                "sample_output": "✓ PCIe bus timing sidechannel obfuscated -> FLAG{v221_s2_pcie_sidechannel_noise_injected}"
+            },
+            {
+                "step": 3,
+                "name": "Multi-Instance GPU (MIG) 하드웨어 파티션 경계 및 DMA 탈출 격리",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "공유 SM 및 L2 캐시를 물리적으로 분할하는 MIG 하드웨어 인스턴스 정책을 강제하고, 테넌트 간 불법 직접 메모리 접근(DMA)을 엄격히 차단합니다.",
+                "exploit_payload": '{"mig_instance_id": "mig_profile_3g_40gb", "cross_partition_dma_blocked": true, "shared_l2_cache_quarantine": true, "hardware_isolation_enforced": true}',
+                "defense": "MIG 하드웨어 분할 격리, 교차 테넌트 DMA 원천 차단, L2 캐시 파티션 격리.",
+                "sample_output": "✓ MIG hardware partition boundary enforced -> FLAG{v221_s3_mig_hardware_partition_isolated}"
+            },
+            {
+                "step": 4,
+                "name": "암호학적 GPU 펌웨어 무결성 및 머클 트리 원격 증명 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "GPU vBIOS 및 GSP 마이크로코드의 SHA-256 머클 루트 해시와 공급자 암호 서명을 검증하여 악성 GPU 루팅 및 펌웨어 변조를 원천 무력화합니다.",
+                "exploit_payload": '{"firmware_sha256": "<firmware_sha256>", "merkle_root_hash": "<merkle_root>", "attestation_sig": "sig_gpu_firmware_v221_verified_ok", "firmware_audit_hmac": "<audit_hmac>"}',
+                "defense": "GPU vBIOS/GSP 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 펌웨어 감사 HMAC 연동.",
+                "sample_output": "✓ GPU firmware Merkle attestation verified -> FLAG{v221_s4_gpu_firmware_merkle_attested}"
+            }
+        ]
     }
 }
 
