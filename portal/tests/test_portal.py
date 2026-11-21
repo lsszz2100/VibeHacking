@@ -238,9 +238,10 @@ def test_portal_team_labs_status(client):
     assert res.status_code == 200
     data = res.json()
     assert data["team_id"] == "antire"
-    assert data["total_labs"] == 3
+    assert data["total_labs"] == 4
     ids = [l["id"] for l in data["labs"]]
     assert "57" in ids
+    assert "75" in ids
 
     # 404 test for unknown team
     res_404 = client.get("/api/teams/unknown_team/labs")

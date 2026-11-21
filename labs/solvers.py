@@ -2413,6 +2413,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ QPU circuit Merkle attestation verified -> FLAG{v224_s4_qnn_circuit_merkle_provenance_attested}"
             }
         ]
+    },
+    "75": {
+        "title": "Lab 75: PhotonicIcPufSecurityLab - 광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩",
+        "description": "실리콘 포토닉스 다이 광학 위상 편차 기반 PUF 키 유도, 마이크로 링 공진기 CRP 모델링 공격 능동 스크램블링 차단, 칩let 분리 감지 비가역적 광학 소광 및 NIST FIPS 204 ML-DSA-87 상호 원격 증명",
+        "steps": [
+            {
+                "step": 1,
+                "name": "실리콘 포토닉스 다이 광학 스페클 위상 지문 추출 및 PUF 키 유도",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "반도체 실리콘 포토닉스 다이 제조 공정의 미세 광학 위상 편차와 MRR 공진 Q-팩터를 측정하여 256비트 엔트로피의 고유 하드웨어 키를 유도합니다.",
+                "exploit_payload": "{\"silicon_die_id\": \"die_sp_die_2026_chiplet_a01\", \"optical_speckle_phase_rad\": 1.95, \"mrr_resonance_q_factor\": 25000.0, \"speckle_entropy_bits\": 256.0}",
+                "defense": "광학 스페클 엔트로피 감사, 물리적 위상 편차 경계 검증, 실리콘 다이 지문 락킹.",
+                "sample_output": "✓ Optical PUF speckle phase authenticated -> FLAG{v225_s1_photonic_puf_speckle_key_derived_ok}"
+            },
+            {
+                "step": 2,
+                "name": "마이크로 링 공진기 CRP 머신러닝 모델링 공격 차단 및 능동 위상 스크램블링",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "공격자의 CMA-ES 기반 챌린지-응답 쌍(CRP) 머신러닝 역추정 모델링 공격을 10GHz 이상의 능동 위상 스크램블링 노이즈를 주입하여 99.99% 무력화합니다.",
+                "exploit_payload": "{\"crp_modeling_defense_active\": true, \"phase_scrambler_rate_ghz\": 12.5, \"cmaes_prediction_resistance\": 0.9999, \"puf_session_id\": \"puf_sess_epoch_2026_01\", \"puf_session_hmac\": \"<puf_hmac>\"}",
+                "defense": "고속 광학 위상 스크램블러 인가, CRP 머신러닝 예측 저항성 강제, 세션 HMAC 검증.",
+                "sample_output": "✓ MRR CRP modeling attack scrambled -> FLAG{v225_s2_mrr_crp_modeling_attack_scrambled}"
+            },
+            {
+                "step": 3,
+                "name": "광 칩let 물리적 분리 감지 비가역적 광학 소광 및 하드웨어 RoT 바인딩",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "광학 버스 감쇠 임계치(3.0dB 이상) 및 침해 탐지 시 50ns 이내에 도파관 위상을 파괴적으로 소광(Optical Erasure)하여 키 탈취를 물리적으로 방지합니다.",
+                "exploit_payload": "{\"anti_tamper_optical_monitor\": true, \"chiplet_disconnection_threshold_db\": 4.5, \"optical_erasure_latency_ns\": 15.0, \"hardware_rot_binding_active\": true}",
+                "defense": "광학 파워 연속 모니터링, 초고속 비가역적 광학 소광 회로, 불변 하드웨어 RoT 바인딩.",
+                "sample_output": "✓ Chiplet tamper optical erasure enforced -> FLAG{v225_s3_chiplet_optical_erasure_rot_secured}"
+            },
+            {
+                "step": 4,
+                "name": "NIST FIPS 204 ML-DSA-87 서명 기반 칩let 상호 원격 증명 및 도파관 머클 검증",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "칩let 펌웨어 SHA-256 해시와 광 도파관 레이아웃 머클 트리를 결합하여 NIST FIPS 204 표준 ML-DSA-87 포스트 양자 디지털 서명으로 원격 증명합니다.",
+                "exploit_payload": "{\"chiplet_firmware_sha256\": \"<firmware_sha>\", \"photonic_waveguide_merkle_root\": \"<merkle_root>\", \"ml_dsa_attestation_sig\": \"sig_photonic_puf_v225_verified_ok\", \"hardware_puf_audit_hmac\": \"<audit_hmac>\"}",
+                "defense": "ML-DSA-87 포스트 양자 전자서명, 도파관 머클 트리 무결성, 하드웨어 PUF HMAC 감사.",
+                "sample_output": "✓ ML-DSA-87 chiplet attestation passed -> FLAG{v225_s4_mldsa87_chiplet_remote_attestation_passed}"
+            }
+        ]
     }
 }
 

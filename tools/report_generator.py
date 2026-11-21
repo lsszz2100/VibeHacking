@@ -708,6 +708,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM09:2025",
         "owasp_name": "Quantum Adversarial Perturbations, Cross-Tenant QPU Coherence Bleed & Variational Quantum Circuit Inversion",
     },
+    "75": {
+        "kisa_id": "2.10.10",
+        "kisa_name": "반도체 실리콘 포토닉스 물리적 복제 방지(PUF) 및 칩let 하드웨어 무결성 통제 (광학 스페클 위상 지문 추출, CRP 모델링 능동 스크램블링, 광학 소광 RoT 바인딩, ML-DSA-87 상호 원격 증명)",
+        "nist_csf_id": "PR.DS-11",
+        "nist_csf_name": "Silicon Photonic IC Physical Unclonable Function (PUF), Micro-Ring CRP Modeling Resistance & Inter-Chiplet Destructive Optical Erasure RoT",
+        "owasp_id": "LLM10:2025",
+        "owasp_name": "Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tapping & Photonic Hardware Trojan Injection",
+    },
 }
 
 @dataclass
@@ -2081,6 +2089,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Hybrid quantum neural network architecture lacks Quantum Fisher Information manifold filtering and QPU active zeroization protocols, allowing adversarial quantum noise injection to compromise model predictions and qubit residual state bleed to leak multi-tenant computation artifacts.",
                 "affected_component": "QuantumNeuralHybridLab QNN Gateway & QPU Control Microcode (Port 8074)",
                 "remediation": "Enforce Quantum Fisher Information metric divergence thresholds, deploy active reset with Pauli Twirling rounds (>=64), isolate parameter gradients within ML-KEM-1024 PQC enclaves with differential privacy noise, and attest QPU microcode and quantum circuit Merkle trees before execution."
+            }
+        ]
+    },
+    "75": {
+        "title": "75 PhotonicIcPufSecurityLab Photonic IC Physical Unclonable Function (PUF) & Silicon Hardware Security Lab",
+        "category": "Silicon Hardware Security & Optical PUF Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7501",
+                "name": "Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tap & Hardware Trojan Insertion",
+                "cvss_vector": "CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1200",
+                "mitre_technique": "Hardware Additions: Photonic Inter-Chiplet Micro-Bending Tap & PUF CRP Modeling",
+                "mitre_tactic": "Initial Access / Collection / Defense Evasion",
+                "impact": "Adversary predicts silicon optical PUF cryptographic keys via machine learning regression, clones chiplet identities, injects hardware trojans across multi-chiplet photonic packages, and compromises sovereign hardware root keys.",
+                "description": "Silicon photonics chiplet architecture lacks dynamic optical phase scrambling and physical-layer tamper erasure, allowing adversaries to execute CMA-ES machine learning modeling attacks against Challenge-Response Pairs (CRPs) and tap inter-chiplet optical buses without triggering hardware Root-of-Trust invalidation.",
+                "affected_component": "PhotonicIcPufSecurityLab Optical PUF Gateway & Micro-Ring Resonators (Port 8075)",
+                "remediation": "Deploy gigahertz-rate optical phase scrambling against CRP modeling attacks, enforce active optical power monitoring with sub-50ns destructive optical erasure, bind hardware RoT to silicon die min-entropy speckle distributions, and verify inter-chiplet NIST FIPS 204 ML-DSA-87 remote attestation signatures against hardware Merkle roots."
             }
         ]
     }

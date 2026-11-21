@@ -26,8 +26,9 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 86
-    assert len(challenges) == 3010
+    assert len(tracks) == 87
+    assert len(challenges) == 3045
+    assert any(t["id"] == "photonicpuf" for t in tracks)
     assert any(t["id"] == "quantumnn" for t in tracks)
     assert any(t["id"] == "qkdmesh" for t in tracks)
     assert any(t["id"] == "agentmem" for t in tracks)

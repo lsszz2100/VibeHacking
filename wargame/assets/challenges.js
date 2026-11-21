@@ -750,6 +750,14 @@ const TRACKS = [
     "en": "Quantum Neural Hybrid & QPU Isolation",
     "desc_ko": "양자 어닐링/QPU 신경망 적대적 섭동 방어, QPU 메모리 잔류 상태 제로화, 하이브리드 PQC 엔클레이브 및 양자 회로 머클 증명.",
     "desc_en": "Quantum-assisted adversarial perturbation defense, QPU memory residual state zeroization, hybrid PQC enclaves, and quantum circuit Merkle attestation."
+  },
+  {
+    "id": "photonicpuf",
+    "icon": "💎",
+    "ko": "광 집적회로 PUF & 실리콘 하드웨어 보안",
+    "en": "Photonic IC PUF & Silicon Security",
+    "desc_ko": "실리콘 포토닉스 다이 광학 스페클 PUF 키 유도, 마이크로 링 공진기 CRP 모델링 능동 스크램블링 차단, 칩let 분리 감지 비가역적 광학 소광 및 ML-DSA-87 상호 원격 증명.",
+    "desc_en": "Silicon photonics die optical speckle PUF key derivation, micro-ring resonator CRP modeling active scrambling defense, chiplet detachment destructive optical erasure, and ML-DSA-87 mutual attestation."
   }
 ];
 
@@ -84533,6 +84541,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_quantumnn_sovereign_quantum_neural_hybrid_defense_capstone`."
+      ]
+    }
+  },
+  // Track 87: photonicpuf - Photonic IC Physical Unclonable Function & Silicon Hardware Security (35 challenges)
+  {
+    "id": "t0_photonicpuf_photonic_ic_silicon_die_speckle_foundations",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "fd75c56c6b79ff0834f32ecaf7fbbfbe59032d301ffae0513bdabbdcd922f87a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "실리콘 포토닉스 다이 표면 광학 스페클 간섭계 기초",
+      "en": "Silicon Photonics Die Surface Optical Speckle Interferometry Foundations"
+    },
+    "prompt": {
+      "ko": "반도체 제조 공정의 나노미터 거칠기에서 발생하는 광학 스페클 패턴과 고유 위상 편차 원리를 분석합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_photonic_ic_silicon_die_speckle_foundations``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze optical speckle interference mechanics and intrinsic phase deviation arising from submicron semiconductor die surface roughness.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_photonic_ic_silicon_die_speckle_foundations``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_photonic_ic_silicon_die_speckle_foundations` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_photonic_ic_silicon_die_speckle_foundations`."
+      ]
+    }
+  },
+  {
+    "id": "t0_photonicpuf_mrr_micro_ring_resonator_physical_unclonable_nature",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "43ee9d0f72a6ff8e2babd294a6f793bae1bfb6f0d779d4d31eb47077ac90b642",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "마이크로 링 공진기(MRR) 복제 불가능 물리적 특성 평가",
+      "en": "Micro-Ring Resonator (MRR) Physical Unclonable Characteristic Assessment"
+    },
+    "prompt": {
+      "ko": "실리콘 도파관 에칭 오차에 따른 마이크로 링 공진기의 공진 파장 변이 및 물리적 복제 방지 특성을 학습합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_mrr_micro_ring_resonator_physical_unclonable_nature``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Study resonant wavelength shift and physical unclonability across micro-ring resonators induced by silicon waveguide etching tolerances.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_mrr_micro_ring_resonator_physical_unclonable_nature``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_mrr_micro_ring_resonator_physical_unclonable_nature` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_mrr_micro_ring_resonator_physical_unclonable_nature`."
+      ]
+    }
+  },
+  {
+    "id": "t0_photonicpuf_optical_puf_challenge_response_pair_threat_model",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "312b708d390bd9dd010b67a990864e195016a3fe72658e9f7086a56402836300",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 PUF 챌린지-응답 쌍(CRP) 질의 위협 모델 분석",
+      "en": "Optical PUF Challenge-Response Pair (CRP) Query Threat Model Analysis"
+    },
+    "prompt": {
+      "ko": "다양한 입사각 및 파장의 광학 챌린지 펄스에 대한 스페클 응답의 상관관계와 정보 노출 위험을 평가합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_optical_puf_challenge_response_pair_threat_model``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Evaluate speckle response correlation and information exposure risks across multi-angle and multi-wavelength optical challenge pulses.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_optical_puf_challenge_response_pair_threat_model``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_optical_puf_challenge_response_pair_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_optical_puf_challenge_response_pair_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_photonicpuf_silicon_chiplet_waveguide_probing_surfaces",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "014968da7e92b1f5140c778fdfd926de9a1a6b1c299dbbbd9a4582fb301801af",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "실리콘 칩let 도파관 마이크로 프로빙 물리적 공격 표면",
+      "en": "Silicon Chiplet Waveguide Micro-Probing Physical Attack Surfaces"
+    },
+    "prompt": {
+      "ko": "집적회로 패키지 내부 광 도파관에 마이크로 벤딩 및 산란 프로브를 근접 배치하는 물리적 도청 위협을 식별합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_silicon_chiplet_waveguide_probing_surfaces``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Identify physical tapping threats involving micro-bending and scattering probes placed adjacent to in-package optical waveguides.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_silicon_chiplet_waveguide_probing_surfaces``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_silicon_chiplet_waveguide_probing_surfaces` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_silicon_chiplet_waveguide_probing_surfaces`."
+      ]
+    }
+  },
+  {
+    "id": "t0_photonicpuf_optical_phase_scrambler_high_speed_principles",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "f844fb8328865582f04753de6fceea5d7445ab06bcedba0c569fc452d0626b4e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "초고속 광학 위상 스크램블러 동작 원리 및 노이즈 주입",
+      "en": "High-Speed Optical Phase Scrambler Mechanics & Noise Injection"
+    },
+    "prompt": {
+      "ko": "전광 변조기를 이용해 측정 위상에 10GHz 이상의 제어된 동적 스크램블링 노이즈를 인가하는 원리를 검토합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_optical_phase_scrambler_high_speed_principles``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Examine applying dynamic controlled scrambling noise exceeding 10GHz to measured optical phases via electro-optic modulators.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_optical_phase_scrambler_high_speed_principles``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_optical_phase_scrambler_high_speed_principles` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_optical_phase_scrambler_high_speed_principles`."
+      ]
+    }
+  },
+  {
+    "id": "t0_photonicpuf_destructive_optical_erasure_circuit_theory",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "c2ecf68de0f3a4809f968a1d3ab8d4c11cfdae962e7f677d3c8895d4fd4eaa0c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 소광(Optical Erasure) 회로 구조 및 물리적 보안",
+      "en": "Destructive Optical Erasure Circuit Architecture & Physical Security"
+    },
+    "prompt": {
+      "ko": "패키지 침해 발생 시 수십 나노초 이내에 도파관 위상을 영구 소광하여 저장된 엔트로피를 소멸시키는 회로를 이해합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_destructive_optical_erasure_circuit_theory``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Understand circuits destructively quenching waveguide phases within tens of nanoseconds during tamper events to erase entropy.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_destructive_optical_erasure_circuit_theory``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_destructive_optical_erasure_circuit_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_destructive_optical_erasure_circuit_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t0_photonicpuf_hardware_rot_immutable_die_binding_intro",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 25,
+    "ci": false,
+    "hash": "751ce0c1a9765ce38a030d444f2e127ccb865a722abdec264d0dde8d095295ba",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 신뢰점(RoT) 실리콘 다이 불변 바인딩 개요",
+      "en": "Hardware Root-of-Trust (RoT) Immutable Die Binding Overview"
+    },
+    "prompt": {
+      "ko": "광학 PUF에서 추출된 최소 엔트로피를 온칩 하드웨어 RoT와 영구 암호학적으로 결합하는 아키텍처를 분석합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_hardware_rot_immutable_die_binding_intro``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze architectures cryptographically binding min-entropy derived from optical PUFs to on-chip hardware Root-of-Trust cores.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t0_photonicpuf_hardware_rot_immutable_die_binding_intro``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_photonicpuf_hardware_rot_immutable_die_binding_intro` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_photonicpuf_hardware_rot_immutable_die_binding_intro`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_optical_speckle_phase_digitization_pipeline",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "83014b2a01e8db35f19079ea6943ed8f2cf903e5f1d5a21c04d897e393d01a6a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 스페클 위상 지문 디지타이징 파이프라인 구현",
+      "en": "Optical Speckle Phase Digitization Pipeline Implementation"
+    },
+    "prompt": {
+      "ko": "광 검출기 센서 어레이에서 수신한 간섭 스페클 아날로그 신호를 256비트 디지털 지문으로 양자화하는 모듈을 구축합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_optical_speckle_phase_digitization_pipeline``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Build a module quantizing analog interference speckle signals from optical detector arrays into 256-bit digital hardware fingerprints.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_optical_speckle_phase_digitization_pipeline``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_optical_speckle_phase_digitization_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_optical_speckle_phase_digitization_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_mrr_resonance_q_factor_calibration_routine",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "26bc04dba9b24fcc7656f342f6b884bdf9e44c2bcfa027d23533647447d9646a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MRR 공진 Q-팩터 정밀 캘리브레이션 루틴 구현",
+      "en": "MRR Resonance Q-Factor Precision Calibration Routine"
+    },
+    "prompt": {
+      "ko": "마이크로 링 공진기의 Q-팩터(>=15,000)를 측정하여 열 변동에 따른 오검출을 방지하는 안정화 루틴을 구현합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_mrr_resonance_q_factor_calibration_routine``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Implement stabilization routines measuring micro-ring resonator Q-factors (>=15,000) to prevent thermal drift misdetection.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_mrr_resonance_q_factor_calibration_routine``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_mrr_resonance_q_factor_calibration_routine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_mrr_resonance_q_factor_calibration_routine`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_puf_crp_cmaes_prediction_resistance_eval",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "7e8383306cb276427cf8a9b4eecaeda8b573ff7ff775cf4e91554e335f44cf53",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PUF CRP 대상 CMA-ES 예측 저항성 정량 평가",
+      "en": "PUF CRP CMA-ES Machine Learning Prediction Resistance Evaluation"
+    },
+    "prompt": {
+      "ko": "진화 전략 알고리즘을 사용한 응답 예측 모델에 대해 99.9% 이상의 예측 저항성을 검증하는 평가 파이프라인을 구축합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_puf_crp_cmaes_prediction_resistance_eval``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Establish an evaluation pipeline verifying 99.9%+ prediction resistance against evolutionary strategy machine learning models.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_puf_crp_cmaes_prediction_resistance_eval``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_puf_crp_cmaes_prediction_resistance_eval` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_puf_crp_cmaes_prediction_resistance_eval`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_phase_scrambler_10ghz_clock_synchronization",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "371b9976864ade66836d9b5698237a4c62f446f65fc0d43798a8ad8b1547927c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "10GHz+ 광학 위상 스크램블러 클럭 동기화 구현",
+      "en": "10GHz+ Optical Phase Scrambler Clock Synchronization Execution"
+    },
+    "prompt": {
+      "ko": "고속 위상 변조기 드라이버와 실리콘 레이저 소스 간 클럭을 동기화하여 연속 스캐닝 공격을 능동 교란합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_phase_scrambler_10ghz_clock_synchronization``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Synchronize clocks between high-speed phase modulators and on-chip lasers to actively perturb continuous scanning attacks.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_phase_scrambler_10ghz_clock_synchronization``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_phase_scrambler_10ghz_clock_synchronization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_phase_scrambler_10ghz_clock_synchronization`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_inter_chiplet_optical_loss_telemetry_monitor",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "df8ddcb2a6ef1d3a0e572b4bba57d9865372ac6ccd6f347107e113d5cf6db19f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "칩let 간 광학 파워 감쇠 텔레메트리 모니터 구축",
+      "en": "Inter-Chiplet Optical Power Attenuation Telemetry Monitor"
+    },
+    "prompt": {
+      "ko": "칩let 간 인터커넥트 도파관의 광학 파워를 실시간 감시하여 3.0dB 이상의 이상 감쇠를 즉시 감지합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_inter_chiplet_optical_loss_telemetry_monitor``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Monitor optical power across inter-chiplet waveguides in real time to instantly flag anomalous attenuation exceeding 3.0dB.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_inter_chiplet_optical_loss_telemetry_monitor``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_inter_chiplet_optical_loss_telemetry_monitor` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_inter_chiplet_optical_loss_telemetry_monitor`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_optical_erasure_sub_50ns_trigger_verification",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "c5a4abe9c69ec94f895d9be802c8b45e704c611b7e55bd33610b2836f9fc47de",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "50ns 이하 고속 광학 소광 트리거 타이밍 검증",
+      "en": "Sub-50ns High-Speed Optical Erasure Trigger Timing Verification"
+    },
+    "prompt": {
+      "ko": "물리적 침해 신호 수신 후 15ns 이내에 도파관 위상 격자를 무효화하는 초고속 소광 트리거 회로를 검증합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_optical_erasure_sub_50ns_trigger_verification``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify high-speed quenching trigger circuits invalidating optical waveguide gratings within 15ns of physical tamper signals.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_optical_erasure_sub_50ns_trigger_verification``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_optical_erasure_sub_50ns_trigger_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_optical_erasure_sub_50ns_trigger_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t1_photonicpuf_chiplet_firmware_sha256_hash_register_lock",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 50,
+    "ci": false,
+    "hash": "4c50afd5e039c764624fa32d62cd09db0433ee7c85b18d929c9a795380e94760",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "칩let 제어 펌웨어 SHA-256 해시 레지스터 락킹",
+      "en": "Chiplet Control Firmware SHA-256 Hash Register Locking"
+    },
+    "prompt": {
+      "ko": "광 트랜시버 펌웨어 바이너리의 SHA-256 해시를 하드웨어 eFuse 레지스터에 영구 기록하여 변조를 방지합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_chiplet_firmware_sha256_hash_register_lock``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Permanently burn SHA-256 hashes of optical transceiver firmware into hardware eFuse registers to prevent modification.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t1_photonicpuf_chiplet_firmware_sha256_hash_register_lock``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_photonicpuf_chiplet_firmware_sha256_hash_register_lock` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_photonicpuf_chiplet_firmware_sha256_hash_register_lock`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_fuzzy_extractor_syndrome_helper_data_generation",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "807204fd64cbb0ab02078220f5a2d88dab495b38808dfa8dfc7df19b095f732f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 PUF 퍼지 추출기(Fuzzy Extractor) 헬퍼 데이터 생성",
+      "en": "Optical PUF Fuzzy Extractor Helper Data Generation & Key Recovery"
+    },
+    "prompt": {
+      "ko": "BCH 오류 정정 부호를 적용하여 광학 스페클 노이즈 환경에서도 안정적으로 동일한 256비트 암호키를 복원합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_fuzzy_extractor_syndrome_helper_data_generation``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Apply BCH error correction codes to reliably reconstruct identical 256-bit cryptographic keys amidst optical speckle noise.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_fuzzy_extractor_syndrome_helper_data_generation``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_fuzzy_extractor_syndrome_helper_data_generation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_fuzzy_extractor_syndrome_helper_data_generation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_mrr_crp_space_nonlinear_permutation_network",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "95afcb42feb48ef5063f48ad7f114714cf0e6706eae0144bafdfc6ef622dfc5b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "MRR CRP 공간 비선형 순열 네트워크(Permutation) 방어",
+      "en": "MRR CRP Space Nonlinear Permutation Network Architecture"
+    },
+    "prompt": {
+      "ko": "마이크로 링 공진기 어레이의 광학 경로를 비선형 순열 스위치로 교차 연결하여 선형 머신러닝 피팅 공격을 차단합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_mrr_crp_space_nonlinear_permutation_network``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Cross-connect micro-ring resonator arrays using nonlinear optical permutation switches to defeat linear regression attacks.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_mrr_crp_space_nonlinear_permutation_network``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_mrr_crp_space_nonlinear_permutation_network` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_mrr_crp_space_nonlinear_permutation_network`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_hardware_puf_session_token_cryptographic_signing",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "924447e5722eb9ca3f401a2e5b874a1b609d9b4da42d96998f3c5753f5f51480",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 PUF 세션 토큰 암호학적 서명 파이프라인",
+      "en": "Hardware PUF Session Token Cryptographic Signing Pipeline"
+    },
+    "prompt": {
+      "ko": "인증된 광학 PUF 응답과 세션 식별자를 결합하여 전사 공유 비밀키 기반 암호학적 무결성 토큰을 발급합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_hardware_puf_session_token_cryptographic_signing``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Issue enterprise cryptographic integrity tokens combining authenticated optical PUF responses with session identifiers.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_hardware_puf_session_token_cryptographic_signing``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_hardware_puf_session_token_cryptographic_signing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_hardware_puf_session_token_cryptographic_signing`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_photonic_chiplet_dielectric_shield_hardening",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "dbb0bbfeffdd9d2e9ee9f55a9404576f897424dad5d8d997a29c09ceb56173b3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포토닉 칩let 유전체 물리적 실드 하드닝 설계",
+      "en": "Photonic Chiplet Dielectric Physical Shield Hardening Design"
+    },
+    "prompt": {
+      "ko": "칩let 상단에 유전체 광 반사 차폐막을 증착하여 외부 현미경 적외선 카메라를 통한 내부 광학 도파관 관측을 차단합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_photonic_chiplet_dielectric_shield_hardening``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deposit dielectric reflective coatings across chiplets to prevent optical waveguide inspection via external infrared microscopes.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_photonic_chiplet_dielectric_shield_hardening``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_photonic_chiplet_dielectric_shield_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_photonic_chiplet_dielectric_shield_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_inter_chiplet_mutual_attestation_handshake_flow",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "f9bde4d7ccafcd498800c0d126dfd5823289d63775e8165d17a04a8ae175582b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이종 칩let 간 상호 광학 원격 증명 핸드셰이크 프로토콜",
+      "en": "Heterogeneous Inter-Chiplet Mutual Optical Attestation Protocol"
+    },
+    "prompt": {
+      "ko": "포토닉 칩let과 전자 연산 칩let 간 양방향 광학 서명 교환을 통해 중간자 트로이목마 칩let 주입을 차단합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_inter_chiplet_mutual_attestation_handshake_flow``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Block adversary man-in-the-middle chiplet injections via bidirectional optical signature handshakes between chiplet dies.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_inter_chiplet_mutual_attestation_handshake_flow``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_inter_chiplet_mutual_attestation_handshake_flow` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_inter_chiplet_mutual_attestation_handshake_flow`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_waveguide_layout_merkle_tree_construction",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "46fd20f09705c803ee704bf8bfa60804197e5591e6d2600155c20bd0776261ac",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 도파관 물리 레이아웃 머클 트리 불변성 검증",
+      "en": "Optical Waveguide Physical Layout Merkle Tree Verification"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 레이아웃 GDSII 블록들의 머클 트리를 구성하고 루트 해시를 칩let RoT에 락킹합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_waveguide_layout_merkle_tree_construction``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Construct Merkle trees of silicon photonics layout GDSII blocks and lock root hashes into on-chip Root-of-Trust registers.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_waveguide_layout_merkle_tree_construction``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_waveguide_layout_merkle_tree_construction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_waveguide_layout_merkle_tree_construction`."
+      ]
+    }
+  },
+  {
+    "id": "t2_photonicpuf_optical_sidechannel_differential_power_masking",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 100,
+    "ci": false,
+    "hash": "a3d554ce403a7ad50d1cde06bf50ce79be7c65ea6bfce5c26a75549b51118d70",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 전력 차분 사이드채널 마스킹 회로 구현",
+      "en": "Optical Power Differential Sidechannel Masking Circuit Implementation"
+    },
+    "prompt": {
+      "ko": "광학 도파관 버스에 더미 광 펄스를 지속 보충하여 전력 소비 파형 분석을 통한 PUF 키 유출을 차단합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_optical_sidechannel_differential_power_masking``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Continuously inject complementary dummy pulses into optical waveguides to prevent PUF key leakage via power trace analysis.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t2_photonicpuf_optical_sidechannel_differential_power_masking``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_photonicpuf_optical_sidechannel_differential_power_masking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_photonicpuf_optical_sidechannel_differential_power_masking`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_cmaes_gradient_free_crp_attack_neutralization",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "e99819ceda5451ae77b16444869f14dfc3fecfd6e12d07e2006b4c500bfc788c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CMA-ES 무그래디언트 CRP 머신러닝 공격 완전 무력화",
+      "en": "CMA-ES Gradient-Free CRP Machine Learning Attack Neutralization"
+    },
+    "prompt": {
+      "ko": "공격자가 공분산 행렬 적응 진화 전략(CMA-ES)으로 비선형 위상 파라미터를 탐색하는 모델링을 동적 위상 왜곡으로 방어합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_cmaes_gradient_free_crp_attack_neutralization``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Neutralize adversary CMA-ES covariance matrix evolution searching nonlinear optical parameters using dynamic phase perturbations.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_cmaes_gradient_free_crp_attack_neutralization``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_cmaes_gradient_free_crp_attack_neutralization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_cmaes_gradient_free_crp_attack_neutralization`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_optical_bistability_hardware_trojan_detection",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "d9747f3ec4d75433bbdb858dde9e272ce8eeee69cca756aa8b11ab0d2111e8fb",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 쌍안정성(Bistability) 기반 하드웨어 트로이목마 탐지",
+      "en": "Optical Bistability Silicon Hardware Trojan Anomaly Detection"
+    },
+    "prompt": {
+      "ko": "도파관 내 비인가 기생 공진기가 유발하는 광학 쌍안정성 이력 곡선(Hysteresis)을 측정하여 하드웨어 트로이를 적출합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_optical_bistability_hardware_trojan_detection``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Detect hardware trojans by measuring optical bistability hysteresis induced by unauthorized parasitic micro-cavities.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_optical_bistability_hardware_trojan_detection``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_optical_bistability_hardware_trojan_detection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_optical_bistability_hardware_trojan_detection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_inter_chiplet_destructive_erasure_safety_circuit",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "98d67e18afef1b4f3d0a0e21d0a9bcca86b4d16879672b564cca73a323597c1b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "칩let 간 비가역적 광학 소광 세이프티 차단 파이프라인",
+      "en": "Inter-Chiplet Destructive Optical Erasure Safety Trigger Pipeline"
+    },
+    "prompt": {
+      "ko": "광 결합기 분리 신호 수신 즉시 극초단 레이저 펄스를 역인가하여 스페클 유발 위상 격자를 완전 파괴 소멸시킵니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_inter_chiplet_destructive_erasure_safety_circuit``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Trigger ultra-short laser pulses upon detecting optical coupler detachment to permanently destroy phase grating structures.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_inter_chiplet_destructive_erasure_safety_circuit``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_inter_chiplet_destructive_erasure_safety_circuit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_inter_chiplet_destructive_erasure_safety_circuit`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_ml_dsa_87_chiplet_firmware_post_quantum_attestation",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "e85ac92d043d84bbb28bfa19c21e34199215ffe41b92778a8235c79b4542dec3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NIST ML-DSA-87 기반 포토닉 칩let 포스트 양자 원격 증명",
+      "en": "NIST ML-DSA-87 Photonic Chiplet Post-Quantum Remote Attestation"
+    },
+    "prompt": {
+      "ko": "양자 컴퓨터 공격에도 안전한 NIST FIPS 204 표준 ML-DSA-87 모듈 격자 디지털 서명을 적용하여 칩let 출처를 증명합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_ml_dsa_87_chiplet_firmware_post_quantum_attestation``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Prove chiplet authenticity against quantum adversaries using NIST FIPS 204 standard ML-DSA-87 module-lattice digital signatures.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_ml_dsa_87_chiplet_firmware_post_quantum_attestation``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_ml_dsa_87_chiplet_firmware_post_quantum_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_ml_dsa_87_chiplet_firmware_post_quantum_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_photonic_ic_supply_chain_counterfeit_quarantine",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "0ee7ff5b93341feeec05f9cb01e50edf2a3591fb1b92e2a3a32afe10e2b47c5e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포토닉 IC 공급망 위조 다이 격리 및 불량 칩let 무효화",
+      "en": "Photonic IC Supply Chain Counterfeit Die Quarantine & Revocation"
+    },
+    "prompt": {
+      "ko": "공급망 단계에서 비인가 복제된 실리콘 다이의 광학 스페클 엔트로피 결핍을 탐지하여 패키징 전에 자동 격리합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_photonic_ic_supply_chain_counterfeit_quarantine``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Identify counterfeit silicon dies during packaging by detecting optical speckle entropy deficits to proactively revoke them.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_photonic_ic_supply_chain_counterfeit_quarantine``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_photonic_ic_supply_chain_counterfeit_quarantine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_photonic_ic_supply_chain_counterfeit_quarantine`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_cross_domain_optical_bus_spiffe_attestation_mesh",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "36ee8af15549e23a06c66846107a34592b108a0bfbddcb755c74b264771ac82f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 버스 도메인 간 SPIFFE 워크로드 신뢰 메시 수립",
+      "en": "Cross-Domain Optical Bus SPIFFE Workload Hardware Attestation Mesh"
+    },
+    "prompt": {
+      "ko": "광학 인터커넥트를 경유하는 칩let 통신 프레임에 SPIFFE SVID와 하드웨어 PUF 암호 토큰을 하드웨어 레벨에서 바인딩합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_cross_domain_optical_bus_spiffe_attestation_mesh``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Hardware-bind SPIFFE SVIDs and optical PUF cryptographic tokens to inter-chiplet interconnect communication frames.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_cross_domain_optical_bus_spiffe_attestation_mesh``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_cross_domain_optical_bus_spiffe_attestation_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_cross_domain_optical_bus_spiffe_attestation_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t3_photonicpuf_photonic_zero_trust_root_of_trust_enforcement",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 200,
+    "ci": false,
+    "hash": "791c70dbaaa003842c16bdc09ac2c05510ac8f4feb4a4c9dd91108aaffe55329",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포토닉 제로 트러스트 하드웨어 신뢰점(RoT) 강제 통제",
+      "en": "Photonic Zero-Trust Hardware Root-of-Trust Enforcement"
+    },
+    "prompt": {
+      "ko": "칩let 내부 부팅 시 광학 PUF 응답이 일치하지 않을 경우 전원 분배 네트워크(PDN)를 물리적으로 차단하는 제로 트러스트를 수립합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_photonic_zero_trust_root_of_trust_enforcement``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce zero trust by physically cutting power distribution networks (PDN) whenever optical PUF responses fail at boot.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t3_photonicpuf_photonic_zero_trust_root_of_trust_enforcement``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_photonicpuf_photonic_zero_trust_root_of_trust_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_photonicpuf_photonic_zero_trust_root_of_trust_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_photonic_ic_adversarial_tamper_offensive_eval",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "3bd14612f92dc77fa972f8d2ea3118ac44c9be09cabbef30208abe178860ee07",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포토닉 IC 물리적 칩let 침해 적대적 모의 공격 실증",
+      "en": "Photonic IC Physical Chiplet Tamper Penetration Drill & Offensive Eval"
+    },
+    "prompt": {
+      "ko": "광학 도파관 마이크로 프로빙 공격자와 능동 소광 및 위상 스크램블링 방어 체계 간 실시간 물리 공방을 시뮬레이션합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_photonic_ic_adversarial_tamper_offensive_eval``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Perform real-time offensive vs defensive penetration simulations between optical micro-probing attackers and erasure defenses.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_photonic_ic_adversarial_tamper_offensive_eval``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_photonic_ic_adversarial_tamper_offensive_eval` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_photonic_ic_adversarial_tamper_offensive_eval`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_enterprise_photonic_puf_manufacturing_pipeline",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "81f4fed34470a91b7720de22f74b5c0cec9a2cda906404ab7d86c1b816bc8191",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 광학 PUF 반도체 양산 검증 인프라 배포",
+      "en": "Enterprise Optical PUF Semiconductor Manufacturing Infrastructure"
+    },
+    "prompt": {
+      "ko": "웨이퍼 레벨 대량 생산 시 광학 스페클 엔트로피 측정 및 ML-DSA-87 인증서 프로비저닝을 완전 자동화 배포합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_enterprise_photonic_puf_manufacturing_pipeline``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy fully automated optical speckle entropy verification and ML-DSA-87 certificate provisioning during wafer manufacturing.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_enterprise_photonic_puf_manufacturing_pipeline``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_enterprise_photonic_puf_manufacturing_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_enterprise_photonic_puf_manufacturing_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_photonic_sidechannel_cryogenic_microwave_shielding",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "ce624c3d97f4c85e7f79ac41fb81af570eb179b68cfca585a4c8479ad8c81945",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포토닉 사이드채널 및 고주파 전자기파 다층 유전체 밀폐",
+      "en": "Photonic Sidechannel & RF Microwave Multi-Layer Dielectric Sealing"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 인터커넥트 주변의 광 전력 변화 및 고주파 방출 사이드채널을 다층 나노 유전체 실드로 밀폐합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_photonic_sidechannel_cryogenic_microwave_shielding``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Seal optical power fluctuation and RF microwave emission sidechannels using multi-layer nano-dielectric physical shielding.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_photonic_sidechannel_cryogenic_microwave_shielding``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_photonic_sidechannel_cryogenic_microwave_shielding` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_photonic_sidechannel_cryogenic_microwave_shielding`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_compromised_chiplet_optical_bus_isolation_protocol",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "74223726a4c5fffdef63ff4ddf24de30164696438b29ed6d83985fb01d0de418",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "침해된 칩let 광학 버스 긴급 단선 및 큐비트 격리 프로토콜",
+      "en": "Compromised Chiplet Optical Bus Emergency Disconnect Protocol"
+    },
+    "prompt": {
+      "ko": "비정상 위상 패턴을 송출하는 악의적 칩let을 10나노초 내에 광학 크로스바 스위치에서 긴급 격리하고 전원을 차단합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_compromised_chiplet_optical_bus_isolation_protocol``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Isolate malicious chiplets broadcasting anomalous phase patterns within 10ns via optical crossbar switches and cut power.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_compromised_chiplet_optical_bus_isolation_protocol``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_compromised_chiplet_optical_bus_isolation_protocol` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_compromised_chiplet_optical_bus_isolation_protocol`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_cross_domain_chiplet_pqc_zero_trust_mesh",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "8fd4ff530e059d9c4adb61834d90897b4b0619b297c42018c78de8b28c3d4797",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "도메인 간 광 칩let 포스트 양자 제로 트러스트 상호 증명 체계",
+      "en": "Cross-Domain Photonic Chiplet Post-Quantum Zero-Trust Mesh"
+    },
+    "prompt": {
+      "ko": "이기종 반도체 팹(Fab)에서 제조된 칩let 간 모든 광학 데이터 전송을 ML-KEM 키 교환 및 ML-DSA 서명으로 인가합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_cross_domain_chiplet_pqc_zero_trust_mesh``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Authorize all optical data transfers between heterogeneous fabrication fab chiplets using ML-KEM key exchange and ML-DSA signatures.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_cross_domain_chiplet_pqc_zero_trust_mesh``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_cross_domain_chiplet_pqc_zero_trust_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_cross_domain_chiplet_pqc_zero_trust_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_photonic_ai_accelerator_waveguide_confidentiality",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "88676579a8b222d173a87dd4d636449ae756c028768174a26f43923250f2bcbc",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 AI 가속기 도파관 가중치 텐서 물리적 기밀성 통제",
+      "en": "Photonic AI Accelerator Waveguide Tensor Physical Confidentiality"
+    },
+    "prompt": {
+      "ko": "광학 매트릭스 곱셈(GEMM) 가속기 내부 도파관 텐서 전달 시 광학 PUF로 유도된 마스크를 실시간 가산하여 도청을 차단합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_photonic_ai_accelerator_waveguide_confidentiality``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Prevent eavesdropping across optical GEMM accelerators by adding real-time optical PUF masks to in-waveguide tensor streams.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_photonic_ai_accelerator_waveguide_confidentiality``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_photonic_ai_accelerator_waveguide_confidentiality` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_photonic_ai_accelerator_waveguide_confidentiality`."
+      ]
+    }
+  },
+  {
+    "id": "t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "photonicpuf",
+    "points": 400,
+    "ci": false,
+    "hash": "fd370020537dd92cfe299fc3a4499ba4681651df90c12c105fbd7ea89b4a3e54",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 광 집적회로(Photonic IC) 하드웨어 보안 완성 캡스톤",
+      "en": "Sovereign Photonic IC Hardware Security Master Capstone"
+    },
+    "prompt": {
+      "ko": "광학 PUF, 마이크로 링 위상 스크램블러, 비가역 소광 RoT, ML-DSA-87 원격 증명을 단일 반도체 보안 아키텍처로 완성합니다.\n\n[챌린지 식별자]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone``\n\n[문제 안내]\n해당 실리콘 포토닉스 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Synthesize optical PUFs, micro-ring phase scramblers, irreversible erasure RoTs, and ML-DSA-87 attestation into a unified master security architecture.\n\n[Challenge Identifier]\n`PHOTONICPUF_CHALLENGE_ID: `t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone``\n\n[Task]\nAnalyze the silicon photonics hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone`."
       ]
     }
   }

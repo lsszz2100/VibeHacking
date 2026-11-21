@@ -305,8 +305,8 @@ start_lab() {
         "웹 콘솔 & 양자 신경망 QPU 게이트웨이: http://localhost:8074"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 74 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~74 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 75 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~75 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

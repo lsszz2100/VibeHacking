@@ -743,6 +743,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 45, 49, 55, 59, 60, 65, 71, 72, 73],
     },
+    "75": {
+        "name": "광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩",
+        "dir":  "75_photonic_ic_puf_lab",
+        "desc": "PhotonicIcPufSecurityLab: 반도체 실리콘 포토닉스 다이 광학 스페클 위상 지문 추출 및 PUF 키 유도 · 마이크로 링 공진기(MRR) CRP 머신러닝 모델링 공격 능동 스크램블링 차단 · 광 칩let 물리적 분리 감지 비가역적 광학 소광 및 하드웨어 RoT 바인딩 · NIST FIPS 204 ML-DSA-87 서명 기반 칩let 상호 원격 증명 및 도파관 머클 검증",
+        "url":  "웹 콘솔 & 광학 PUF 하드웨어 게이트웨이: http://localhost:8075",
+        "difficulty": "★★★★★",
+        "related": [11, 48, 59, 60, 65, 71, 73, 74, 75],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1796,6 +1804,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8072, "Lab 72 (AgentMemoryPoisonLab AI Agent Memory Defense Lab)"),
         (8073, "Lab 73 (SiliconPhotonicsQkdLab Optical QKD Mesh Lab)"),
         (8074, "Lab 74 (QuantumNeuralHybridLab QNN & QPU Memory Defense Lab)"),
+        (8075, "Lab 75 (PhotonicIcPufSecurityLab Optical PUF & Silicon Defense Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2670,7 +2679,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
         "knowledge_base": {
             "sections": total_sections,
             "chapters": 492,
-            "simulators": 40,
+            "simulators": 41,
         }
     }
 

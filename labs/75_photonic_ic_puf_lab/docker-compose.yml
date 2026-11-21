@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  photonic_ic_puf_lab:
+    build: .
+    container_name: photonic_ic_puf_lab
+    ports:
+      - "127.0.0.1:8075:8075"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8075
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

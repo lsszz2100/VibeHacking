@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-21 21:16:17",
+  "timestamp": "2026-11-21 22:34:55",
   "teams_tested": [
     "red",
     "blue",
@@ -13,30 +13,30 @@
     "re",
     "antire"
   ],
-  "total_drills": 92,
-  "total_attacks_executed": 296,
-  "total_attacks_detected": 296,
-  "total_attacks_blocked": 296,
+  "total_drills": 96,
+  "total_attacks_executed": 312,
+  "total_attacks_detected": 312,
+  "total_attacks_blocked": 312,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
   "team_breakdown": {
     "red": {
       "team_name": "레드팀",
-      "labs_tested": 13,
-      "attacks": 42,
-      "detected": 42,
-      "blocked": 42,
+      "labs_tested": 14,
+      "attacks": 46,
+      "detected": 46,
+      "blocked": 46,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
     },
     "blue": {
       "team_name": "블루팀",
-      "labs_tested": 13,
-      "attacks": 44,
-      "detected": 44,
-      "blocked": 44,
+      "labs_tested": 14,
+      "attacks": 48,
+      "detected": 48,
+      "blocked": 48,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 17,
-      "attacks": 63,
-      "detected": 63,
-      "blocked": 63,
+      "labs_tested": 18,
+      "attacks": 67,
+      "detected": 67,
+      "blocked": 67,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -113,10 +113,10 @@
     },
     "antire": {
       "team_name": "역공학 방지팀",
-      "labs_tested": 3,
-      "attacks": 11,
-      "detected": 11,
-      "blocked": 11,
+      "labs_tested": 4,
+      "attacks": 15,
+      "detected": 15,
+      "blocked": 15,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "54",
@@ -737,7 +737,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "73",
@@ -872,6 +872,72 @@
       "elapsed_ms": 0.02
     },
     {
+      "lab_id": "75",
+      "team_id": "red",
+      "team_name": "레드팀",
+      "lab_title": "Lab 75: PhotonicIcPufSecurityLab - 광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩",
+      "cve": "VIBE-2026-7501",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.10",
+      "nist": "PR.DS-11",
+      "owasp": "LLM10:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Speckle PUF & Phase Scrambler Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "실리콘 포토닉스 다이 광학 스페클 위상 지문 추출 및 PUF 키 유도",
+          "red_attack": "반도체 실리콘 포토닉스 다이 제조 공정의 미세 광학 위상 편차와 MRR 공진 Q-팩터를 측정하여 256비트 엔트로피의 고유 하드웨어 키를 유도합니다.",
+          "blue_defense": "광학 스페클 엔트로피 감사, 물리적 위상 편차 경계 검증, 실리콘 다이 지문 락킹.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "마이크로 링 공진기 CRP 머신러닝 모델링 공격 차단 및 능동 위상 스크램블링",
+          "red_attack": "공격자의 CMA-ES 기반 챌린지-응답 쌍(CRP) 머신러닝 역추정 모델링 공격을 10GHz 이상의 능동 위상 스크램블링 노이즈를 주입하여 99.99% 무력화합니다.",
+          "blue_defense": "고속 광학 위상 스크램블러 인가, CRP 머신러닝 예측 저항성 강제, 세션 HMAC 검증.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 칩let 물리적 분리 감지 비가역적 광학 소광 및 하드웨어 RoT 바인딩",
+          "red_attack": "광학 버스 감쇠 임계치(3.0dB 이상) 및 침해 탐지 시 50ns 이내에 도파관 위상을 파괴적으로 소광(Optical Erasure)하여 키 탈취를 물리적으로 방지합니다.",
+          "blue_defense": "광학 파워 연속 모니터링, 초고속 비가역적 광학 소광 회로, 불변 하드웨어 RoT 바인딩.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "NIST FIPS 204 ML-DSA-87 서명 기반 칩let 상호 원격 증명 및 도파관 머클 검증",
+          "red_attack": "칩let 펌웨어 SHA-256 해시와 광 도파관 레이아웃 머클 트리를 결합하여 NIST FIPS 204 표준 ML-DSA-87 포스트 양자 디지털 서명으로 원격 증명합니다.",
+          "blue_defense": "ML-DSA-87 포스트 양자 전자서명, 도파관 머클 트리 무결성, 하드웨어 PUF HMAC 감사.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
+    },
+    {
       "lab_id": "07",
       "team_id": "blue",
       "team_name": "블루팀",
@@ -990,7 +1056,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "26",
@@ -1045,7 +1111,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "40",
@@ -1642,6 +1708,72 @@
       "elapsed_ms": 0.02
     },
     {
+      "lab_id": "75",
+      "team_id": "blue",
+      "team_name": "블루팀",
+      "lab_title": "Lab 75: PhotonicIcPufSecurityLab - 광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩",
+      "cve": "VIBE-2026-7501",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.10",
+      "nist": "PR.DS-11",
+      "owasp": "LLM10:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Speckle PUF & Phase Scrambler Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "실리콘 포토닉스 다이 광학 스페클 위상 지문 추출 및 PUF 키 유도",
+          "red_attack": "반도체 실리콘 포토닉스 다이 제조 공정의 미세 광학 위상 편차와 MRR 공진 Q-팩터를 측정하여 256비트 엔트로피의 고유 하드웨어 키를 유도합니다.",
+          "blue_defense": "광학 스페클 엔트로피 감사, 물리적 위상 편차 경계 검증, 실리콘 다이 지문 락킹.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "마이크로 링 공진기 CRP 머신러닝 모델링 공격 차단 및 능동 위상 스크램블링",
+          "red_attack": "공격자의 CMA-ES 기반 챌린지-응답 쌍(CRP) 머신러닝 역추정 모델링 공격을 10GHz 이상의 능동 위상 스크램블링 노이즈를 주입하여 99.99% 무력화합니다.",
+          "blue_defense": "고속 광학 위상 스크램블러 인가, CRP 머신러닝 예측 저항성 강제, 세션 HMAC 검증.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 칩let 물리적 분리 감지 비가역적 광학 소광 및 하드웨어 RoT 바인딩",
+          "red_attack": "광학 버스 감쇠 임계치(3.0dB 이상) 및 침해 탐지 시 50ns 이내에 도파관 위상을 파괴적으로 소광(Optical Erasure)하여 키 탈취를 물리적으로 방지합니다.",
+          "blue_defense": "광학 파워 연속 모니터링, 초고속 비가역적 광학 소광 회로, 불변 하드웨어 RoT 바인딩.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "NIST FIPS 204 ML-DSA-87 서명 기반 칩let 상호 원격 증명 및 도파관 머클 검증",
+          "red_attack": "칩let 펌웨어 SHA-256 해시와 광 도파관 레이아웃 머클 트리를 결합하여 NIST FIPS 204 표준 ML-DSA-87 포스트 양자 디지털 서명으로 원격 증명합니다.",
+          "blue_defense": "ML-DSA-87 포스트 양자 전자서명, 도파관 머클 트리 무결성, 하드웨어 PUF HMAC 감사.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
+    },
+    {
       "lab_id": "01",
       "team_id": "purple",
       "team_name": "퍼플팀",
@@ -1683,7 +1815,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "03",
@@ -1969,7 +2101,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -2035,7 +2167,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "02",
@@ -2178,7 +2310,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "49",
@@ -2310,7 +2442,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "58",
@@ -2376,7 +2508,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.11
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "59",
@@ -2442,7 +2574,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "60",
@@ -2640,7 +2772,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "68",
@@ -2706,7 +2838,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "69",
@@ -3036,7 +3168,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "74",
@@ -3096,6 +3228,72 @@
           "red_attack": "QPU 제어 마이크로코드의 SHA-256 해시와 실행 양자 회로 AST의 머클 트리를 암호학적으로 검증하여 악의적인 회로 주입 및 펌웨어 백도어를 봉쇄합니다.",
           "blue_defense": "QPU 마이크로코드 서명 검증, 양자 회로 머클 트리 원격 증명, 하드웨어 RoT 보증.",
           "detection_rule": "QUANTUM-NN-QFI-ZEROIZATION-PQC-7401-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
+    },
+    {
+      "lab_id": "75",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "Lab 75: PhotonicIcPufSecurityLab - 광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩",
+      "cve": "VIBE-2026-7501",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.10",
+      "nist": "PR.DS-11",
+      "owasp": "LLM10:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Speckle PUF & Phase Scrambler Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "실리콘 포토닉스 다이 광학 스페클 위상 지문 추출 및 PUF 키 유도",
+          "red_attack": "반도체 실리콘 포토닉스 다이 제조 공정의 미세 광학 위상 편차와 MRR 공진 Q-팩터를 측정하여 256비트 엔트로피의 고유 하드웨어 키를 유도합니다.",
+          "blue_defense": "광학 스페클 엔트로피 감사, 물리적 위상 편차 경계 검증, 실리콘 다이 지문 락킹.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "마이크로 링 공진기 CRP 머신러닝 모델링 공격 차단 및 능동 위상 스크램블링",
+          "red_attack": "공격자의 CMA-ES 기반 챌린지-응답 쌍(CRP) 머신러닝 역추정 모델링 공격을 10GHz 이상의 능동 위상 스크램블링 노이즈를 주입하여 99.99% 무력화합니다.",
+          "blue_defense": "고속 광학 위상 스크램블러 인가, CRP 머신러닝 예측 저항성 강제, 세션 HMAC 검증.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 칩let 물리적 분리 감지 비가역적 광학 소광 및 하드웨어 RoT 바인딩",
+          "red_attack": "광학 버스 감쇠 임계치(3.0dB 이상) 및 침해 탐지 시 50ns 이내에 도파관 위상을 파괴적으로 소광(Optical Erasure)하여 키 탈취를 물리적으로 방지합니다.",
+          "blue_defense": "광학 파워 연속 모니터링, 초고속 비가역적 광학 소광 회로, 불변 하드웨어 RoT 바인딩.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "NIST FIPS 204 ML-DSA-87 서명 기반 칩let 상호 원격 증명 및 도파관 머클 검증",
+          "red_attack": "칩let 펌웨어 SHA-256 해시와 광 도파관 레이아웃 머클 트리를 결합하여 NIST FIPS 204 표준 ML-DSA-87 포스트 양자 디지털 서명으로 원격 증명합니다.",
+          "blue_defense": "ML-DSA-87 포스트 양자 전자서명, 도파관 머클 트리 무결성, 하드웨어 PUF HMAC 감사.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S4",
           "status": "DEFENDED",
           "detected": true,
           "blocked": true,
@@ -3289,7 +3487,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "31",
@@ -3344,7 +3542,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -3718,7 +3916,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "35",
@@ -4169,7 +4367,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -4213,7 +4411,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "06",
@@ -4246,7 +4444,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -4301,7 +4499,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "42",
@@ -4367,7 +4565,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "43",
@@ -4433,7 +4631,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.89
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "44",
@@ -4499,7 +4697,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "13",
@@ -4532,7 +4730,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -4587,7 +4785,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -4642,7 +4840,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -4708,7 +4906,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.1
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "48",
@@ -4774,7 +4972,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "55",
@@ -4840,7 +5038,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -4906,7 +5104,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "03",
@@ -4983,7 +5181,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "21",
@@ -5027,7 +5225,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "30",
@@ -5082,7 +5280,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "47",
@@ -5148,7 +5346,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.11
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -5214,7 +5412,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "36",
@@ -5269,7 +5467,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -5335,7 +5533,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -5401,7 +5599,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.07
+    },
+    {
+      "lab_id": "75",
+      "team_id": "antire",
+      "team_name": "역공학 방지팀",
+      "lab_title": "Lab 75: PhotonicIcPufSecurityLab - 광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩",
+      "cve": "VIBE-2026-7501",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.10",
+      "nist": "PR.DS-11",
+      "owasp": "LLM10:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Speckle PUF & Phase Scrambler Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "실리콘 포토닉스 다이 광학 스페클 위상 지문 추출 및 PUF 키 유도",
+          "red_attack": "반도체 실리콘 포토닉스 다이 제조 공정의 미세 광학 위상 편차와 MRR 공진 Q-팩터를 측정하여 256비트 엔트로피의 고유 하드웨어 키를 유도합니다.",
+          "blue_defense": "광학 스페클 엔트로피 감사, 물리적 위상 편차 경계 검증, 실리콘 다이 지문 락킹.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "마이크로 링 공진기 CRP 머신러닝 모델링 공격 차단 및 능동 위상 스크램블링",
+          "red_attack": "공격자의 CMA-ES 기반 챌린지-응답 쌍(CRP) 머신러닝 역추정 모델링 공격을 10GHz 이상의 능동 위상 스크램블링 노이즈를 주입하여 99.99% 무력화합니다.",
+          "blue_defense": "고속 광학 위상 스크램블러 인가, CRP 머신러닝 예측 저항성 강제, 세션 HMAC 검증.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 칩let 물리적 분리 감지 비가역적 광학 소광 및 하드웨어 RoT 바인딩",
+          "red_attack": "광학 버스 감쇠 임계치(3.0dB 이상) 및 침해 탐지 시 50ns 이내에 도파관 위상을 파괴적으로 소광(Optical Erasure)하여 키 탈취를 물리적으로 방지합니다.",
+          "blue_defense": "광학 파워 연속 모니터링, 초고속 비가역적 광학 소광 회로, 불변 하드웨어 RoT 바인딩.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "NIST FIPS 204 ML-DSA-87 서명 기반 칩let 상호 원격 증명 및 도파관 머클 검증",
+          "red_attack": "칩let 펌웨어 SHA-256 해시와 광 도파관 레이아웃 머클 트리를 결합하여 NIST FIPS 204 표준 ML-DSA-87 포스트 양자 디지털 서명으로 원격 증명합니다.",
+          "blue_defense": "ML-DSA-87 포스트 양자 전자서명, 도파관 머클 트리 무결성, 하드웨어 PUF HMAC 감사.",
+          "detection_rule": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
     }
   ]
 }

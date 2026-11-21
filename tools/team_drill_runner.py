@@ -3,7 +3,7 @@
 tools/team_drill_runner.py — 10대 보안 기술팀 공방전 자동 훈련 엔진 (Team Drill Runner)
 
 HumanAPI_Lab/Security/Technical_Team/Technical_Team.md의 10대 팀 매트릭스와
-VibeHacking 72개 랩 및 84개 워게임 트랙을 연계하여
+VibeHacking 75개 랩 및 87개 워게임 트랙을 연계하여
 Red Team(공격 재현) vs Blue Team(탐지 및 차단) 공방전 시뮬레이션을 수행하고
 Purple Team 탐지율 및 보안 점수를 정량 산출합니다.
 """
@@ -35,7 +35,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "레드팀",
         "name_en": "Red Team",
         "mission": "실전 모의 침투, APT 공격 체인 재현, C2 터널링, EDR 우회, 익스플로잇 실증",
-        "labs": ["03", "05", "20", "25", "29", "38", "52", "54", "70", "71", "72", "73", "74"],
+        "labs": ["03", "05", "20", "25", "29", "38", "52", "54", "70", "71", "72", "73", "74", "75"],
         "tactics": ["Initial Access", "Privilege Escalation", "Defense Evasion", "Credential Access", "Command and Control"],
         "tools": ["Sliver", "Havoc", "Metasploit", "Mimikatz", "SharpHound", "Custom PoC"],
     },
@@ -44,7 +44,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "블루팀",
         "name_en": "Blue Team",
         "mission": "SIEM/XDR 이벤트 수집, 네트워크 IDS/IPS, 엔드포인트 포렌식, eBPF 커널 실시간 차단",
-        "labs": ["07", "13", "23", "26", "40", "50", "51", "56", "70", "71", "72", "73", "74"],
+        "labs": ["07", "13", "23", "26", "40", "50", "51", "56", "70", "71", "72", "73", "74", "75"],
         "tactics": ["Threat Detection", "Log Ingestion", "Kernel Tracing", "Incident Response", "Forensic Carving"],
         "tools": ["Wazuh", "Suricata", "Tetragon", "Sigma Rules", "Volatility 3", "Zeek"],
     },
@@ -62,7 +62,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "화이트팀",
         "name_en": "White Team",
         "mission": "훈련 환경·범위·규칙 통제, 127.0.0.1 루프백 샌드박스 격리 통제, 킬스위치 즉시 가동",
-        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68", "69", "70", "71", "72", "73", "74"],
+        "labs": ["02", "10", "39", "49", "54", "58", "59", "60", "61", "67", "68", "69", "70", "71", "72", "73", "74", "75"],
         "tactics": ["Safety Bounds", "Isolation Enforcement", "Exercise Adjudication", "Audit Logging"],
         "tools": ["Docker Guard", "Landlock LSM", "Cgroup Confinement", "Port Sentinel"],
     },
@@ -116,7 +116,7 @@ TEAMS: Dict[str, Dict[str, Any]] = {
         "name": "역공학 방지팀",
         "name_en": "Anti-Reverse Engineering Team",
         "mission": "BLA 대(對) AI 쉴드, 안티디버깅(ptrace/PEB), API Hashing(ROR13), 변형 패커 언패킹 방어, Anti-VM/RDTSC",
-        "labs": ["36", "51", "57"],
+        "labs": ["36", "51", "57", "75"],
         "tactics": ["Anti-Debugging", "API Hashing Obfuscation", "Custom Packing", "Anti-VM Detection", "AI Token Exhaustion"],
         "tools": ["BLA Shield", "OLLVM", "eBPF LSM Hook", "RDTSC Sentinel", "Honey SourceMap"],
     },
@@ -245,6 +245,12 @@ BLUE_DETECTIONS: Dict[str, Dict[str, str]] = {
         "rule_id": "QUANTUM-NN-QFI-ZEROIZATION-PQC-7401",
         "action": "FILTER_QAP_NOISE_AND_EXECUTE_PAULI_TWIRLING_RESET",
         "technique": "T1499 / Hardware State Manipulation: Quantum Adversarial Inversion",
+    },
+    "75": {
+        "engine": "Silicon Photonics Optical Speckle PUF & Phase Scrambler Sentinel",
+        "rule_id": "PHOTONIC-PUF-MRR-PHASE-SCRAMBLE-7501",
+        "action": "TRIGGER_ACTIVE_PHASE_SCRAMBLING_AND_DISCONNECT_ROUTING",
+        "technique": "T1200 / Hardware Additions: Photonic IC Physical Tampering",
     },
 }
 

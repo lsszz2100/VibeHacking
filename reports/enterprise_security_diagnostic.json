@@ -1,12 +1,12 @@
 {
   "report_title": "VibeHacking Enterprise Security Diagnostic & Threat Assessment Report",
   "metadata": {
-    "total_labs": 74,
-    "total_findings": 74,
-    "average_cvss": 8.8,
+    "total_labs": 75,
+    "total_findings": 75,
+    "average_cvss": 8.7,
     "severity_counts": {
       "Critical": 39,
-      "High": 29,
+      "High": 30,
       "Medium": 6,
       "Low": 0,
       "None": 0
@@ -38,7 +38,8 @@
       "Exfiltration / Privilege Escalation / Impact": 1,
       "Persistence / Privilege Escalation / Impact": 1,
       "Collection / Initial Access / Impact": 1,
-      "Defense Evasion / Impact / Initial Access": 1
+      "Defense Evasion / Impact / Initial Access": 1,
+      "Initial Access / Collection / Defense Evasion": 1
     },
     "category_counts": {
       "Web Security": 3,
@@ -100,7 +101,8 @@
       "Hardware Security & AI Accelerator Hardening": 1,
       "AI Agent Security & Cognitive Architecture Hardening": 1,
       "Silicon Photonics Security & Quantum Interconnect Hardening": 1,
-      "Quantum AI Security & QPU Memory Hardening": 1
+      "Quantum AI Security & QPU Memory Hardening": 1,
+      "Silicon Hardware Security & Optical PUF Hardening": 1
     },
     "kisa_counts": {
       "2.8.2 소프트웨어 개발 보안 (입력데이터 검증 및 표현)": 1,
@@ -176,7 +178,8 @@
       "2.10.6 하드웨어 가속기 및 AI GPU 격리 보안 통제 (VRAM 메모리 제로화, MIG 파티셔닝 및 사이드채널 방어)": 1,
       "2.10.7 AI 에이전트 인지 메모리 및 지식 그래프 무결성 통제 (에피소딕 컨텍스트 정제, HMAC 세션 출처 및 GraphRAG 위상 방어)": 1,
       "2.10.8 실리콘 포토닉스 광 버스 물리 계층 난수화 및 QKD 양자 키 메시 무결성 통제 (광 탭 도청 차단, 광 전력 사이드채널 방어, WDM 채널 간섭 격리)": 1,
-      "2.10.9 양자 신경망 적대적 섭동 필터링 및 QPU 메모리 잔류 상태 무결성 통제 (양자 피셔 정보 발산 감시, Pauli Twirling 제로화, 하이브리드 PQC 엔클레이브 격리)": 1
+      "2.10.9 양자 신경망 적대적 섭동 필터링 및 QPU 메모리 잔류 상태 무결성 통제 (양자 피셔 정보 발산 감시, Pauli Twirling 제로화, 하이브리드 PQC 엔클레이브 격리)": 1,
+      "2.10.10 반도체 실리콘 포토닉스 물리적 복제 방지(PUF) 및 칩let 하드웨어 무결성 통제 (광학 스페클 위상 지문 추출, CRP 모델링 능동 스크램블링, 광학 소광 RoT 바인딩, ML-DSA-87 상호 원격 증명)": 1
     },
     "nist_csf_counts": {
       "PR.PS-01 Platform Security / PR.DS-01 Data Security": 2,
@@ -250,7 +253,8 @@
       "PR.DS-07 GPU Hardware VRAM Residual Zeroization, PCIe Telemetry Noise Injection & Cryptographic Firmware Attestation": 1,
       "PR.DS-08 Autonomous Agent Long-Term Context Memory Sanitization, Cryptographic Provenance Attestation & GraphRAG Permission Invariants": 1,
       "PR.DS-09 Silicon Photonics Optical Interconnect Scrambling, Continuous QKD Mesh Rotation & Waveguide Dielectric Isolation": 1,
-      "PR.DS-10 Quantum-assisted Adversarial Perturbation Filtering, QPU Memory Residual Zeroization & Hybrid Classical-Quantum PQC Enclave Shield": 1
+      "PR.DS-10 Quantum-assisted Adversarial Perturbation Filtering, QPU Memory Residual Zeroization & Hybrid Classical-Quantum PQC Enclave Shield": 1,
+      "PR.DS-11 Silicon Photonic IC Physical Unclonable Function (PUF), Micro-Ring CRP Modeling Resistance & Inter-Chiplet Destructive Optical Erasure RoT": 1
     },
     "owasp_counts": {
       "A03:2021 Injection": 4,
@@ -289,10 +293,11 @@
       "LLM06:2025 Hardware Sidechannel Exploitation, Multi-Tenant GPU Context Residual Leak & Firmware Tampering": 1,
       "LLM07:2025 Sleeper Prompt Injection, Vector Store Semantic Embedding Hijacking & Graph Relationship Tampering": 1,
       "LLM08:2025 Silicon Photonics Optical Tap Eavesdropping, Optical Power Differential Sidechannel & WDM Inter-Waveguide Crosstalk": 1,
-      "LLM09:2025 Quantum Adversarial Perturbations, Cross-Tenant QPU Coherence Bleed & Variational Quantum Circuit Inversion": 1
+      "LLM09:2025 Quantum Adversarial Perturbations, Cross-Tenant QPU Coherence Bleed & Variational Quantum Circuit Inversion": 1,
+      "LLM10:2025 Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tapping & Photonic Hardware Trojan Injection": 1
     },
     "live_active_labs": 0,
-    "generated_at": "2026-11-21 21:37:46"
+    "generated_at": "2026-11-21 22:34:56"
   },
   "findings": [
     {
@@ -2070,6 +2075,30 @@
       "nist_csf_name": "Quantum-assisted Adversarial Perturbation Filtering, QPU Memory Residual Zeroization & Hybrid Classical-Quantum PQC Enclave Shield",
       "owasp_id": "LLM09:2025",
       "owasp_name": "Quantum Adversarial Perturbations, Cross-Tenant QPU Coherence Bleed & Variational Quantum Circuit Inversion"
+    },
+    {
+      "vuln_id": "VIBE-2026-7501",
+      "lab_id": "75",
+      "lab_title": "75 PhotonicIcPufSecurityLab Photonic IC Physical Unclonable Function (PUF) & Silicon Hardware Security Lab",
+      "name": "Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tap & Hardware Trojan Insertion",
+      "category": "Silicon Hardware Security & Optical PUF Hardening",
+      "cvss_vector": "CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+      "mitre_id": "T1200",
+      "mitre_technique": "Hardware Additions: Photonic Inter-Chiplet Micro-Bending Tap & PUF CRP Modeling",
+      "mitre_tactic": "Initial Access / Collection / Defense Evasion",
+      "impact": "Adversary predicts silicon optical PUF cryptographic keys via machine learning regression, clones chiplet identities, injects hardware trojans across multi-chiplet photonic packages, and compromises sovereign hardware root keys.",
+      "description": "Silicon photonics chiplet architecture lacks dynamic optical phase scrambling and physical-layer tamper erasure, allowing adversaries to execute CMA-ES machine learning modeling attacks against Challenge-Response Pairs (CRPs) and tap inter-chiplet optical buses without triggering hardware Root-of-Trust invalidation.",
+      "affected_component": "PhotonicIcPufSecurityLab Optical PUF Gateway & Micro-Ring Resonators (Port 8075)",
+      "remediation": "Deploy gigahertz-rate optical phase scrambling against CRP modeling attacks, enforce active optical power monitoring with sub-50ns destructive optical erasure, bind hardware RoT to silicon die min-entropy speckle distributions, and verify inter-chiplet NIST FIPS 204 ML-DSA-87 remote attestation signatures against hardware Merkle roots.",
+      "calculated_score": 7.1,
+      "severity": "High",
+      "live_active": false,
+      "kisa_id": "2.10.10",
+      "kisa_name": "반도체 실리콘 포토닉스 물리적 복제 방지(PUF) 및 칩let 하드웨어 무결성 통제 (광학 스페클 위상 지문 추출, CRP 모델링 능동 스크램블링, 광학 소광 RoT 바인딩, ML-DSA-87 상호 원격 증명)",
+      "nist_csf_id": "PR.DS-11",
+      "nist_csf_name": "Silicon Photonic IC Physical Unclonable Function (PUF), Micro-Ring CRP Modeling Resistance & Inter-Chiplet Destructive Optical Erasure RoT",
+      "owasp_id": "LLM10:2025",
+      "owasp_name": "Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tapping & Photonic Hardware Trojan Injection"
     }
   ]
 }

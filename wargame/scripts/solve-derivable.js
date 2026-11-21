@@ -3410,6 +3410,57 @@ for (const id of QUANTUMNN_IDS) {
     }
   });
 }
+const PHOTONICPUF_IDS = [
+  "t0_photonicpuf_photonic_ic_silicon_die_speckle_foundations",
+  "t0_photonicpuf_mrr_micro_ring_resonator_physical_unclonable_nature",
+  "t0_photonicpuf_optical_puf_challenge_response_pair_threat_model",
+  "t0_photonicpuf_silicon_chiplet_waveguide_probing_surfaces",
+  "t0_photonicpuf_optical_phase_scrambler_high_speed_principles",
+  "t0_photonicpuf_destructive_optical_erasure_circuit_theory",
+  "t0_photonicpuf_hardware_rot_immutable_die_binding_intro",
+  "t1_photonicpuf_optical_speckle_phase_digitization_pipeline",
+  "t1_photonicpuf_mrr_resonance_q_factor_calibration_routine",
+  "t1_photonicpuf_puf_crp_cmaes_prediction_resistance_eval",
+  "t1_photonicpuf_phase_scrambler_10ghz_clock_synchronization",
+  "t1_photonicpuf_inter_chiplet_optical_loss_telemetry_monitor",
+  "t1_photonicpuf_optical_erasure_sub_50ns_trigger_verification",
+  "t1_photonicpuf_chiplet_firmware_sha256_hash_register_lock",
+  "t2_photonicpuf_fuzzy_extractor_syndrome_helper_data_generation",
+  "t2_photonicpuf_mrr_crp_space_nonlinear_permutation_network",
+  "t2_photonicpuf_hardware_puf_session_token_cryptographic_signing",
+  "t2_photonicpuf_photonic_chiplet_dielectric_shield_hardening",
+  "t2_photonicpuf_inter_chiplet_mutual_attestation_handshake_flow",
+  "t2_photonicpuf_waveguide_layout_merkle_tree_construction",
+  "t2_photonicpuf_optical_sidechannel_differential_power_masking",
+  "t3_photonicpuf_cmaes_gradient_free_crp_attack_neutralization",
+  "t3_photonicpuf_optical_bistability_hardware_trojan_detection",
+  "t3_photonicpuf_inter_chiplet_destructive_erasure_safety_circuit",
+  "t3_photonicpuf_ml_dsa_87_chiplet_firmware_post_quantum_attestation",
+  "t3_photonicpuf_photonic_ic_supply_chain_counterfeit_quarantine",
+  "t3_photonicpuf_cross_domain_optical_bus_spiffe_attestation_mesh",
+  "t3_photonicpuf_photonic_zero_trust_root_of_trust_enforcement",
+  "t4_photonicpuf_photonic_ic_adversarial_tamper_offensive_eval",
+  "t4_photonicpuf_enterprise_photonic_puf_manufacturing_pipeline",
+  "t4_photonicpuf_photonic_sidechannel_cryogenic_microwave_shielding",
+  "t4_photonicpuf_compromised_chiplet_optical_bus_isolation_protocol",
+  "t4_photonicpuf_cross_domain_chiplet_pqc_zero_trust_mesh",
+  "t4_photonicpuf_photonic_ai_accelerator_waveguide_confidentiality",
+  "t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone"
+];
+
+for (const id of PHOTONICPUF_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/PHOTONICPUF_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_photonicpuf_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

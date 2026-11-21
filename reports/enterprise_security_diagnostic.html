@@ -68,9 +68,9 @@
         <header>
             <h1>🛡️ VibeHacking Enterprise Security Diagnostic Report</h1>
             <div class="header-meta">
-                <span><b>Generated:</b> 2026-11-21 21:37:46</span>
-                <span><b>Assessment Scope:</b> 74 Labs</span>
-                <span><b>Total Vulnerabilities:</b> 74 Findings</span>
+                <span><b>Generated:</b> 2026-11-21 22:34:56</span>
+                <span><b>Assessment Scope:</b> 75 Labs</span>
+                <span><b>Total Vulnerabilities:</b> 75 Findings</span>
                 <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
@@ -80,11 +80,11 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Assessed Labs</div>
-                    <div class="stat-value">74</div>
+                    <div class="stat-value">75</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Average CVSS</div>
-                    <div class="stat-value">8.8</div>
+                    <div class="stat-value">8.7</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Critical Findings</div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">High Findings</div>
-                    <div class="stat-value" style="color: var(--high-color)">29</div>
+                    <div class="stat-value" style="color: var(--high-color)">30</div>
                 </div>
             </div>
         </section>
@@ -102,21 +102,21 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">KISA ISMS-P Controls</div>
-                    <div class="stat-value" style="color: #34d399">74</div>
+                    <div class="stat-value" style="color: #34d399">75</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">NIST CSF 2.0 Categories</div>
-                    <div class="stat-value" style="color: var(--accent-blue)">72</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">73</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">OWASP Top 10 Categories</div>
-                    <div class="stat-value" style="color: var(--med-color)">37</div>
+                    <div class="stat-value" style="color: var(--med-color)">38</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2 class="section-title">3. Detailed Findings (74 Findings)</h2>
+            <h2 class="section-title">3. Detailed Findings (75 Findings)</h2>
             
             <div class="finding-card critical">
                 <div class="finding-header">
@@ -2187,6 +2187,34 @@
                 <div class="remediation-box">
                     <b>🛡️ 대응 권고사항 (Remediation):</b>
                     <pre>Enforce Quantum Fisher Information metric divergence thresholds, deploy active reset with Pauli Twirling rounds (&gt;=64), isolate parameter gradients within ML-KEM-1024 PQC enclaves with differential privacy noise, and attest QPU microcode and quantum circuit Merkle trees before execution.</pre>
+                </div>
+            </div>
+            
+            <div class="finding-card high">
+                <div class="finding-header">
+                    <div class="finding-title-group">
+                        <span class="finding-num">#75</span>
+                        <span class="badge high">HIGH 7.1</span>
+                        
+                        <h3 class="finding-title">Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tap &amp; Hardware Trojan Insertion</h3>
+                    </div>
+                    <span class="vuln-id">VIBE-2026-7501</span>
+                </div>
+                <div class="finding-meta">
+                    <span class="meta-item"><b>Target:</b> 75 PhotonicIcPufSecurityLab Photonic IC Physical Unclonable Function (PUF) &amp; Silicon Hardware Security Lab</span>
+                    <span class="meta-item"><b>Category:</b> Silicon Hardware Security &amp; Optical PUF Hardening</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">T1200</span> Hardware Additions: Photonic Inter-Chiplet Micro-Bending Tap &amp; PUF CRP Modeling (Initial Access / Collection / Defense Evasion)</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P 2.10.10</span> <span class="tag comp-nist">NIST PR.DS-11</span> <span class="tag comp-owasp">LLM10:2025</span></span>
+                </div>
+                <div class="vector-box"><code>CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H</code></div>
+                <div class="finding-body">
+                    <p><b>🔍 취약점 분석:</b> Silicon photonics chiplet architecture lacks dynamic optical phase scrambling and physical-layer tamper erasure, allowing adversaries to execute CMA-ES machine learning modeling attacks against Challenge-Response Pairs (CRPs) and tap inter-chiplet optical buses without triggering hardware Root-of-Trust invalidation.</p>
+                    <p><b>💥 영향도:</b> Adversary predicts silicon optical PUF cryptographic keys via machine learning regression, clones chiplet identities, injects hardware trojans across multi-chiplet photonic packages, and compromises sovereign hardware root keys.</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>PhotonicIcPufSecurityLab Optical PUF Gateway &amp; Micro-Ring Resonators (Port 8075)</code></p>
+                </div>
+                <div class="remediation-box">
+                    <b>🛡️ 대응 권고사항 (Remediation):</b>
+                    <pre>Deploy gigahertz-rate optical phase scrambling against CRP modeling attacks, enforce active optical power monitoring with sub-50ns destructive optical erasure, bind hardware RoT to silicon die min-entropy speckle distributions, and verify inter-chiplet NIST FIPS 204 ML-DSA-87 remote attestation signatures against hardware Merkle roots.</pre>
                 </div>
             </div>
             

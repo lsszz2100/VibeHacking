@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Vibe Hacking // Photonic IC PUF & Silicon Hardware Security Inspector (Simulator #41)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --panel-bg: #0d121d;
+      --card-bg: #141c2e;
+      --cyan: #06b6d4;
+      --magenta: #ec4899;
+      --amber: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'JetBrains Mono', 'Pretendard', monospace, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); padding: 1.5rem; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.4rem; color: var(--cyan); display: flex; align-items: center; gap: 0.5rem; }
+    .badge { background: rgba(6, 182, 212, 0.15); color: var(--cyan); border: 1px solid var(--cyan); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+    .card h2 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; border-left: 3px solid var(--cyan); padding-left: 0.5rem; }
+    canvas { width: 100%; height: 260px; background: #03060a; border-radius: 6px; border: 1px solid #1e293b; display: block; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .ctrl-group label { font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+    input[type=range] { width: 100%; accent-color: var(--cyan); }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    button { background: var(--card-bg); color: var(--cyan); border: 1px solid var(--cyan); padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
+    button:hover { background: var(--cyan); color: #000; }
+    button.danger { border-color: var(--red); color: var(--red); }
+    button.danger:hover { background: var(--red); color: #fff; }
+    button.success { border-color: var(--green); color: var(--green); }
+    button.success:hover { background: var(--green); color: #000; }
+    .terminal { background: #020408; border: 1px solid #1e293b; border-radius: 6px; padding: 0.85rem; font-size: 0.8rem; line-height: 1.5; height: 160px; overflow-y: auto; color: #a5f3fc; }
+    .status-pill { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; padding: 0.3rem 0.7rem; border-radius: 20px; font-weight: 600; }
+    .status-pill.green { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid var(--green); }
+    .status-pill.red { background: rgba(239, 68, 68, 0.15); color: var(--red); border: 1px solid var(--red); }
+    .metric-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px dashed #1e293b; font-size: 0.85rem; }
+    .metric-val { font-weight: 700; color: var(--amber); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔬 실리콘 포토닉스 IC 물리적 복제 방지(PUF) & 하드웨어 RoT 인스펙터 <span class="badge">SIMULATOR #41</span></h1>
+    <div>
+      <span id="pufStatusBadge" class="status-pill green">● PUF RoT Bound & Secure</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Panel 1: Optical Speckle Interference & MRR Spectrum -->
+    <div class="card">
+      <h2>1. 광학 스페클 간섭계 위상 지문 & MRR 공진 스펙트럼</h2>
+      <canvas id="speckleCanvas"></canvas>
+      <div style="margin-top:0.85rem;">
+        <div class="metric-row">
+          <span>실리콘 다이 ID (Die Fingerprint):</span>
+          <span class="metric-val" id="dieIdDisp">die_sp_2026_chiplet_a01</span>
+        </div>
+        <div class="metric-row">
+          <span>MRR 공진 Q-팩터 (Resonance Q-Factor):</span>
+          <span class="metric-val" id="qFactorDisp">25,480.0</span>
+        </div>
+        <div class="metric-row">
+          <span>최소 엔트로피 (Min-Entropy Min-Bits):</span>
+          <span class="metric-val" id="entropyDisp">256.0 bits</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: CRP Machine Learning Attack & Active Phase Scrambler -->
+    <div class="card">
+      <h2>2. CRP 머신러닝 모델링 공격 감시 & 능동 위상 스크램블러</h2>
+      <div class="ctrl-group">
+        <label>
+          <span>위상 스크램블링 클럭 속도 (Phase Scrambler Rate)</span>
+          <span id="rateLabel">12.5 GHz</span>
+        </label>
+        <input type="range" id="rateSlider" min="1.0" max="25.0" step="0.5" value="12.5">
+      </div>
+      <div class="ctrl-group">
+        <label>
+          <span>광 칩let 감쇠 감지 임계치 (Loss Threshold)</span>
+          <span id="lossLabel">4.5 dB</span>
+        </label>
+        <input type="range" id="lossSlider" min="1.0" max="10.0" step="0.5" value="4.5">
+      </div>
+
+      <div class="btn-row">
+        <button id="btnAttack" class="danger">⚔️ CMA-ES 모델링 공격 주입</button>
+        <button id="btnScramble" class="success">🛡️ 12.5GHz 위상 스크램블 가동</button>
+        <button id="btnTamper" class="danger">⚡ 물리적 칩let 분리 유도</button>
+        <button id="btnAttest" class="success">🔐 ML-DSA-87 원격 증명</button>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h3 style="font-size:0.9rem; color:var(--text-muted); margin-bottom:0.5rem;">실시간 광학 하드웨어 텔레메트리 콘솔</h3>
+        <div class="terminal" id="termLog">
+[SYS] PhotonicIcPufSecurityLab Simulator #41 Online.
+[PUF] Silicon die speckle phase initialized (Entropy: 256.0 bits).
+[ROT] Immutable Root-of-Trust bound to optical waveguide layout.
+[SEC] Ready for ML-DSA-87 attestation handshake.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('speckleCanvas');
+    const ctx = canvas.getContext('2d');
+    const term = document.getElementById('termLog');
+    const badge = document.getElementById('pufStatusBadge');
+
+    let attackActive = false;
+    let scrambled = true;
+    let tampered = false;
+
+    function log(msg) {
+      const ts = new Date().toISOString().substring(11, 19);
+      term.innerHTML += `\\n[${ts}] ${msg}`;
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function resize() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let frame = 0;
+    function draw() {
+      frame++;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      ctx.fillStyle = '#03060a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw Optical Speckle Interference
+      const numPoints = 80;
+      for (let i = 0; i < numPoints; i++) {
+        const x = (Math.sin(i * 99 + frame * 0.02) * 0.5 + 0.5) * w;
+        const y = (Math.cos(i * 33 + frame * 0.03) * 0.5 + 0.5) * h;
+        const r = Math.sin(frame * 0.05 + i) * 8 + 12;
+        
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+        if (tampered) {
+          grad.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+          grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        } else if (attackActive && !scrambled) {
+          grad.addColorStop(0, 'rgba(245, 158, 11, 0.7)');
+          grad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+        } else {
+          grad.addColorStop(0, 'rgba(6, 182, 212, 0.6)');
+          grad.addColorStop(1, 'rgba(6, 182, 212, 0)');
+        }
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw MRR Resonant Waveform
+      ctx.beginPath();
+      ctx.strokeStyle = tampered ? '#ef4444' : (scrambled ? '#10b981' : '#ec4899');
+      ctx.lineWidth = 2;
+      for (let x = 0; x < w; x++) {
+        const freq = scrambled ? 0.08 : 0.02;
+        const y = h / 2 + Math.sin(x * freq + frame * 0.05) * 35 * (tampered ? 0.1 : 1.0);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    document.getElementById('rateSlider').addEventListener('input', (e) => {
+      document.getElementById('rateLabel').innerText = e.target.value + ' GHz';
+    });
+    document.getElementById('lossSlider').addEventListener('input', (e) => {
+      document.getElementById('lossLabel').innerText = e.target.value + ' dB';
+    });
+
+    document.getElementById('btnAttack').addEventListener('click', () => {
+      attackActive = true;
+      scrambled = false;
+      badge.className = 'status-pill red';
+      badge.innerText = '⚠️ CRP Modeling Attack In Progress';
+      log('🚨 Adversary CMA-ES ML modeling attack injected on MRR Challenge-Response pairs!');
+    });
+
+    document.getElementById('btnScramble').addEventListener('click', () => {
+      scrambled = true;
+      attackActive = false;
+      tampered = false;
+      badge.className = 'status-pill green';
+      badge.innerText = '● 12.5GHz Active Phase Scrambled';
+      log('🛡️ 12.5GHz optical phase scrambler active: ML prediction accuracy drops to <0.001% (Neutralized).');
+    });
+
+    document.getElementById('btnTamper').addEventListener('click', () => {
+      tampered = true;
+      badge.className = 'status-pill red';
+      badge.innerText = '💥 Destructive Optical Erasure Executed';
+      log('⚡ Physical chiplet disconnection detected (Loss > 4.5 dB).');
+      log('🔥 15ns Destructive Optical Erasure triggered: Root key zeroized to prevent probe extraction.');
+    });
+
+    document.getElementById('btnAttest').addEventListener('click', () => {
+      if (tampered) {
+        log('❌ Attestation failed: Optical RoT was zeroized due to physical tamper.');
+        return;
+      }
+      log('🔐 NIST FIPS 204 ML-DSA-87 mutual remote attestation requested.');
+      log('✓ Silicon die layout Merkle root verified: 0x9b4f2c8d...');
+      log('✓ Attestation signature: sig_photonic_puf_v225_verified_ok.');
+      log('🎉 Verified Flag: FLAG{v225_s4_mldsa87_chiplet_remote_attestation_passed}');
+    });
+  </script>
+</body>
+</html>

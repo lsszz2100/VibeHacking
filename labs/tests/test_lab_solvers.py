@@ -4,8 +4,8 @@ import pytest
 from labs.solvers import SOLVERS, get_lab_solver, run_lab_solve_step
 
 def test_all_labs_have_solvers():
-    """Check that all 74 labs have defined solvers."""
-    assert len(SOLVERS) == 74
+    """Check that all 75 labs have defined solvers."""
+    assert len(SOLVERS) == 75
     for i in range(1, 75):
         key = str(i).zfill(2)
         assert key in SOLVERS, f"Lab {key} is missing a solver definition"
