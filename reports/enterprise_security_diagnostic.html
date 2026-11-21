@@ -68,9 +68,9 @@
         <header>
             <h1>🛡️ VibeHacking Enterprise Security Diagnostic Report</h1>
             <div class="header-meta">
-                <span><b>Generated:</b> 2026-11-21 19:25:59</span>
-                <span><b>Assessment Scope:</b> 72 Labs</span>
-                <span><b>Total Vulnerabilities:</b> 72 Findings</span>
+                <span><b>Generated:</b> 2026-11-21 20:02:33</span>
+                <span><b>Assessment Scope:</b> 73 Labs</span>
+                <span><b>Total Vulnerabilities:</b> 73 Findings</span>
                 <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
@@ -80,7 +80,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Assessed Labs</div>
-                    <div class="stat-value">72</div>
+                    <div class="stat-value">73</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Average CVSS</div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">High Findings</div>
-                    <div class="stat-value" style="color: var(--high-color)">28</div>
+                    <div class="stat-value" style="color: var(--high-color)">29</div>
                 </div>
             </div>
         </section>
@@ -102,21 +102,21 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">KISA ISMS-P Controls</div>
-                    <div class="stat-value" style="color: #34d399">72</div>
+                    <div class="stat-value" style="color: #34d399">73</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">NIST CSF 2.0 Categories</div>
-                    <div class="stat-value" style="color: var(--accent-blue)">70</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">71</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">OWASP Top 10 Categories</div>
-                    <div class="stat-value" style="color: var(--med-color)">35</div>
+                    <div class="stat-value" style="color: var(--med-color)">36</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2 class="section-title">3. Detailed Findings (72 Findings)</h2>
+            <h2 class="section-title">3. Detailed Findings (73 Findings)</h2>
             
             <div class="finding-card critical">
                 <div class="finding-header">
@@ -2131,6 +2131,34 @@
                 <div class="remediation-box">
                     <b>🛡️ 대응 권고사항 (Remediation):</b>
                     <pre>Enforce strict prompt delimiter stripping and untrusted memory quarantine partitioning, mandate HMAC-SHA256 session provenance attestation, filter adversarial semantic cosine drift clusters, and cryptographically attest knowledge graph topological invariants.</pre>
+                </div>
+            </div>
+            
+            <div class="finding-card high">
+                <div class="finding-header">
+                    <div class="finding-title-group">
+                        <span class="finding-num">#73</span>
+                        <span class="badge high">HIGH 7.1</span>
+                        
+                        <h3 class="finding-title">Optical Waveguide Tap Eavesdropping, Differential Optical Power Sidechannel &amp; WDM Crosstalk</h3>
+                    </div>
+                    <span class="vuln-id">VIBE-2026-7301</span>
+                </div>
+                <div class="finding-meta">
+                    <span class="meta-item"><b>Target:</b> 73 SiliconPhotonicsQkdLab Silicon Photonics Optical Interconnect &amp; Quantum Key Distribution Mesh Defense</span>
+                    <span class="meta-item"><b>Category:</b> Silicon Photonics Security &amp; Quantum Interconnect Hardening</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">T1200</span> Hardware Additions: Optical Bus Micro-Bending &amp; Tap Eavesdropping (Collection / Initial Access / Impact)</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P 2.10.8</span> <span class="tag comp-nist">NIST PR.DS-09</span> <span class="tag comp-owasp">LLM08:2025</span></span>
+                </div>
+                <div class="vector-box"><code>CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H</code></div>
+                <div class="finding-body">
+                    <p><b>🔍 취약점 분석:</b> Silicon photonics optical interconnect bus transmits unpadded plain optical pulses across CPO waveguides without physical-layer pseudo-random bit scrambling or continuous QKD key rotation, enabling physical micro-bending tap eavesdropping and optical power differential sidechannel leakage.</p>
+                    <p><b>💥 영향도:</b> Adversary tapping co-packaged optics (CPO) micro-waveguides or measuring differential optical power variations recovers unencrypted interconnect bus transfers and corrupts multi-chiplet tensor memory sync.</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>SiliconPhotonicsQkdLab Optical Interconnect Bus &amp; QKD Gateway (Port 8073)</code></p>
+                </div>
+                <div class="remediation-box">
+                    <b>🛡️ 대응 권고사항 (Remediation):</b>
+                    <pre>Deploy physical-layer pseudo-random optical bus scrambling, enforce continuous QKD (BB84/B92) symmetric key rotation with QBER anomaly thresholds (&lt;3.0%), apply dielectric shielding against optical crosstalk, and cryptographically verify transceiver microcode signatures against hardware Merkle roots.</pre>
                 </div>
             </div>
             

@@ -36,8 +36,8 @@ def check_labs():
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
     print(f"[2/5] Checking {len(lab_dirs)} Hands-on Labs...")
-    if len(lab_dirs) < 72:
-        return False, f"Expected at least 72 labs, found {len(lab_dirs)}"
+    if len(lab_dirs) < 73:
+        return False, f"Expected at least 73 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,13 +62,13 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count < 2940:
-        return False, f"Expected at least 2,940 challenges in challenges.js, found {id_count}"
+    if id_count < 2975:
+        return False, f"Expected at least 2,975 challenges in challenges.js, found {id_count}"
     
     track_matches = re.findall(r'^\s*"id":\s*"[a-z0-9]+",\s*"icon":', content, re.MULTILINE)
-    track_count = len(track_matches) or 84
-    if track_count < 84:
-        return False, f"Expected at least 84 tracks in challenges.js, found {track_count}"
+    track_count = len(track_matches) or 85
+    if track_count < 85:
+        return False, f"Expected at least 85 tracks in challenges.js, found {track_count}"
     print(f"  ✓ Wargame database verified: {id_count} challenges across {track_count} tracks.")
     return True, f"{id_count} challenges verified"
 
@@ -135,7 +135,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print(" VibeHacking v2.22.0 Offline Release & Audit Pipeline")
+    print(" VibeHacking v2.23.0 Offline Release & Audit Pipeline")
     print("==================================================")
     
     checks = [check_textbook(), check_labs(), check_wargame(), check_offline_assets()]

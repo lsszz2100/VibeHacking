@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-21 18:43:49",
+  "timestamp": "2026-11-21 20:02:08",
   "teams_tested": [
     "red",
     "blue",
@@ -13,30 +13,30 @@
     "re",
     "antire"
   ],
-  "total_drills": 86,
-  "total_attacks_executed": 272,
-  "total_attacks_detected": 272,
-  "total_attacks_blocked": 272,
+  "total_drills": 89,
+  "total_attacks_executed": 284,
+  "total_attacks_detected": 284,
+  "total_attacks_blocked": 284,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
   "team_breakdown": {
     "red": {
       "team_name": "레드팀",
-      "labs_tested": 11,
-      "attacks": 34,
-      "detected": 34,
-      "blocked": 34,
+      "labs_tested": 12,
+      "attacks": 38,
+      "detected": 38,
+      "blocked": 38,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
     },
     "blue": {
       "team_name": "블루팀",
-      "labs_tested": 11,
-      "attacks": 36,
-      "detected": 36,
-      "blocked": 36,
+      "labs_tested": 12,
+      "attacks": 40,
+      "detected": 40,
+      "blocked": 40,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 15,
-      "attacks": 55,
-      "detected": 55,
-      "blocked": 55,
+      "labs_tested": 16,
+      "attacks": 59,
+      "detected": 59,
+      "blocked": 59,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.11
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -231,7 +231,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "25",
@@ -286,7 +286,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "29",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.12
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "54",
@@ -539,7 +539,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "70",
@@ -605,7 +605,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "71",
@@ -671,7 +671,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "72",
@@ -737,6 +737,72 @@
           "ttd_ms": 29.3
         }
       ],
+      "elapsed_ms": 0.02
+    },
+    {
+      "lab_id": "73",
+      "team_id": "red",
+      "team_name": "레드팀",
+      "lab_title": "73 SiliconPhotonicsQkdLab 실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 랩",
+      "cve": "VIBE-2026-7301",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.8",
+      "nist": "PR.DS-09",
+      "owasp": "LLM08:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Bus & QKD Mesh Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "광 버스 물리 계층 의사 난수 스크램블링 및 라인 레이트 패딩",
+          "red_attack": "차세대 CPO 광 버스에서 텐서 전송 시 발생하는 광 전력 차분 신호를 의사 난수 스크램블링과 더미 심볼 패딩으로 은폐하여 전력 사이드채널을 원천 차단합니다.",
+          "blue_defense": "광 버스 의사 난수 스크램블링, 고정 진폭 더미 심볼 패딩, 라인 레이트 지터 주입.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "QKD 지속 양자 키 분배 메시 로테이션 및 QBER 도청 감지",
+          "red_attack": "보조 양자 광 채널을 통해 BB84/E91 기반 지속적 양자 키 분배를 수행하고, 광 분기 탭 도청 시 발생하는 양자 비트 오차율(QBER)을 실시간 감지하여 키를 폐기합니다.",
+          "blue_defense": "BB84/E91 양자 키 분배 메시, QBER 실시간 도청 임계치 감시, 세션 키 동적 무효화.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 도파관 유전체 실드 격리 및 WDM 채널 간섭 차단",
+          "red_attack": "인접 도파관 간의 광학적 신호 누출 및 파장분할다중(WDM) 채널 간 누화를 유전체 피복 차폐와 ITU Grid 100GHz 이상 채널 간격으로 완전 격리합니다.",
+          "blue_defense": "유전체 피복 도파관 격리, WDM 주파수 필터링, 교차 테넌트 광 신호 격리.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "광 트랜시버 마이크로코드 머클 루트 암호학적 원격 증명 (Capstone)",
+          "red_attack": "CPO 광 트랜시버 펌웨어 마이크로코드의 SHA-256 머클 루트와 하드웨어 공급자 암호 서명을 검증하여 광 모듈 공급망 변조 및 불법 루팅을 원천 방어합니다.",
+          "blue_defense": "광 트랜시버 펌웨어 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 실시간 HMAC 감사.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
       "elapsed_ms": 0.07
     },
     {
@@ -770,7 +836,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -803,7 +869,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -858,7 +924,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "26",
@@ -913,7 +979,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "40",
@@ -979,7 +1045,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "50",
@@ -1045,7 +1111,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "51",
@@ -1111,7 +1177,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -1177,7 +1243,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "70",
@@ -1243,7 +1309,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "71",
@@ -1309,7 +1375,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "72",
@@ -1375,7 +1441,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
+    },
+    {
+      "lab_id": "73",
+      "team_id": "blue",
+      "team_name": "블루팀",
+      "lab_title": "73 SiliconPhotonicsQkdLab 실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 랩",
+      "cve": "VIBE-2026-7301",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.8",
+      "nist": "PR.DS-09",
+      "owasp": "LLM08:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Bus & QKD Mesh Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "광 버스 물리 계층 의사 난수 스크램블링 및 라인 레이트 패딩",
+          "red_attack": "차세대 CPO 광 버스에서 텐서 전송 시 발생하는 광 전력 차분 신호를 의사 난수 스크램블링과 더미 심볼 패딩으로 은폐하여 전력 사이드채널을 원천 차단합니다.",
+          "blue_defense": "광 버스 의사 난수 스크램블링, 고정 진폭 더미 심볼 패딩, 라인 레이트 지터 주입.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "QKD 지속 양자 키 분배 메시 로테이션 및 QBER 도청 감지",
+          "red_attack": "보조 양자 광 채널을 통해 BB84/E91 기반 지속적 양자 키 분배를 수행하고, 광 분기 탭 도청 시 발생하는 양자 비트 오차율(QBER)을 실시간 감지하여 키를 폐기합니다.",
+          "blue_defense": "BB84/E91 양자 키 분배 메시, QBER 실시간 도청 임계치 감시, 세션 키 동적 무효화.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 도파관 유전체 실드 격리 및 WDM 채널 간섭 차단",
+          "red_attack": "인접 도파관 간의 광학적 신호 누출 및 파장분할다중(WDM) 채널 간 누화를 유전체 피복 차폐와 ITU Grid 100GHz 이상 채널 간격으로 완전 격리합니다.",
+          "blue_defense": "유전체 피복 도파관 격리, WDM 주파수 필터링, 교차 테넌트 광 신호 격리.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "광 트랜시버 마이크로코드 머클 루트 암호학적 원격 증명 (Capstone)",
+          "red_attack": "CPO 광 트랜시버 펌웨어 마이크로코드의 SHA-256 머클 루트와 하드웨어 공급자 암호 서명을 검증하여 광 모듈 공급망 변조 및 불법 루팅을 원천 방어합니다.",
+          "blue_defense": "광 트랜시버 펌웨어 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 실시간 HMAC 감사.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -1419,7 +1551,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "03",
@@ -1452,7 +1584,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "05",
@@ -1485,7 +1617,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "13",
@@ -1518,7 +1650,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "23",
@@ -1573,7 +1705,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "38",
@@ -1639,7 +1771,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "50",
@@ -1705,7 +1837,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -1771,7 +1903,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "02",
@@ -1815,7 +1947,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "10",
@@ -1914,7 +2046,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "49",
@@ -1980,7 +2112,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "54",
@@ -2046,7 +2178,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "58",
@@ -2112,7 +2244,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.17
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "59",
@@ -2178,7 +2310,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.35
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "60",
@@ -2244,7 +2376,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.83
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "61",
@@ -2310,7 +2442,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "67",
@@ -2376,7 +2508,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.11
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "68",
@@ -2442,7 +2574,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.63
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "69",
@@ -2508,7 +2640,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "70",
@@ -2574,7 +2706,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "71",
@@ -2640,7 +2772,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "72",
@@ -2706,7 +2838,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.02
+    },
+    {
+      "lab_id": "73",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "73 SiliconPhotonicsQkdLab 실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 랩",
+      "cve": "VIBE-2026-7301",
+      "cvss": 7.1,
+      "mitre": "T1200",
+      "kisa": "2.10.8",
+      "nist": "PR.DS-09",
+      "owasp": "LLM08:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Silicon Photonics Optical Bus & QKD Mesh Sentinel",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "광 버스 물리 계층 의사 난수 스크램블링 및 라인 레이트 패딩",
+          "red_attack": "차세대 CPO 광 버스에서 텐서 전송 시 발생하는 광 전력 차분 신호를 의사 난수 스크램블링과 더미 심볼 패딩으로 은폐하여 전력 사이드채널을 원천 차단합니다.",
+          "blue_defense": "광 버스 의사 난수 스크램블링, 고정 진폭 더미 심볼 패딩, 라인 레이트 지터 주입.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "QKD 지속 양자 키 분배 메시 로테이션 및 QBER 도청 감지",
+          "red_attack": "보조 양자 광 채널을 통해 BB84/E91 기반 지속적 양자 키 분배를 수행하고, 광 분기 탭 도청 시 발생하는 양자 비트 오차율(QBER)을 실시간 감지하여 키를 폐기합니다.",
+          "blue_defense": "BB84/E91 양자 키 분배 메시, QBER 실시간 도청 임계치 감시, 세션 키 동적 무효화.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "광 도파관 유전체 실드 격리 및 WDM 채널 간섭 차단",
+          "red_attack": "인접 도파관 간의 광학적 신호 누출 및 파장분할다중(WDM) 채널 간 누화를 유전체 피복 차폐와 ITU Grid 100GHz 이상 채널 간격으로 완전 격리합니다.",
+          "blue_defense": "유전체 피복 도파관 격리, WDM 주파수 필터링, 교차 테넌트 광 신호 격리.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "광 트랜시버 마이크로코드 머클 루트 암호학적 원격 증명 (Capstone)",
+          "red_attack": "CPO 광 트랜시버 펌웨어 마이크로코드의 SHA-256 머클 루트와 하드웨어 공급자 암호 서명을 검증하여 광 모듈 공급망 변조 및 불법 루팅을 원천 방어합니다.",
+          "blue_defense": "광 트랜시버 펌웨어 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 실시간 HMAC 감사.",
+          "detection_rule": "PHOTONICS-OPTICAL-SCRAMBLING-QKD-MESH-7301-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -2750,7 +2948,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "18",
@@ -2838,7 +3036,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "24",
@@ -2893,7 +3091,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "31",
@@ -2948,7 +3146,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.09
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -3014,7 +3212,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "53",
@@ -3080,7 +3278,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "69",
@@ -3146,7 +3344,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "04",
@@ -3179,7 +3377,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "10",
@@ -3267,7 +3465,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "32",
@@ -3322,7 +3520,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "35",
@@ -3377,7 +3575,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "46",
@@ -3443,7 +3641,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "55",
@@ -3509,7 +3707,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "58",
@@ -3575,7 +3773,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.2
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "59",
@@ -3641,7 +3839,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "60",
@@ -3707,7 +3905,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "61",
@@ -3773,7 +3971,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -3817,7 +4015,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "06",
@@ -3850,7 +4048,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -3905,7 +4103,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "42",
@@ -4037,7 +4235,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "44",
@@ -4103,7 +4301,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "13",
@@ -4136,7 +4334,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "25",
@@ -4246,7 +4444,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "41",
@@ -4312,7 +4510,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "48",
@@ -4378,7 +4576,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "55",
@@ -4444,7 +4642,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -4510,7 +4708,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "03",
@@ -4631,7 +4829,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "30",
@@ -4686,7 +4884,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "47",
@@ -4752,7 +4950,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.96
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -4818,7 +5016,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.28
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "36",
@@ -4873,7 +5071,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -4939,7 +5137,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.36
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -5005,7 +5203,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.62
+      "elapsed_ms": 0.02
     }
   ]
 }

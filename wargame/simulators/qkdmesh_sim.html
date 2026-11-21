@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Hacking // Silicon Photonics Optical Interconnect & QKD Mesh Inspector (Simulator #39)</title>
+  <style>
+    :root {
+      --bg: #03080e;
+      --bg2: #071524;
+      --card-bg: #0a1f33;
+      --cyan: #00e5ff;
+      --cyan-dim: #0099b8;
+      --cyan-deep: #003644;
+      --green: #27ff8b;
+      --green-dim: #1aa85c;
+      --green-deep: #0a4427;
+      --amber: #ffcf4d;
+      --red: #ff4d5e;
+      --blue: #5cc8ff;
+      --purple: #c084fc;
+      --txt: #cce9ff;
+      --muted: #4e7a9e;
+      --line: #0d3857;
+      --mono: 'Fira Code', 'JetBrains Mono', Consolas, 'D2Coding', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      background: var(--cyan-deep);
+      color: var(--cyan);
+      border: 1px solid var(--cyan-dim);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 360px 1fr 380px;
+      gap: 16px;
+      padding: 16px;
+      flex: 1;
+    }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cyan);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .toggle-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toggle-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg2);
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #1e354d;
+      transition: .3s;
+      border-radius: 22px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background-color: #8dbadb;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--cyan-deep); border: 1px solid var(--cyan); }
+    input:checked + .slider:before { transform: translateX(22px); background-color: var(--cyan); }
+    .btn {
+      background: var(--bg2);
+      color: var(--txt);
+      border: 1px solid var(--line);
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      transition: .2s;
+    }
+    .btn:hover { background: #0c2b45; border-color: var(--cyan); color: #fff; }
+    .btn-danger { border-color: var(--red); color: var(--red); }
+    .btn-danger:hover { background: #3b1117; color: #ff808d; }
+    .btn-primary { border-color: var(--cyan); color: var(--cyan); }
+    .btn-primary:hover { background: var(--cyan-deep); color: #fff; }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .stat-box {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-val { font-size: 18px; font-weight: 700; color: var(--cyan); }
+    .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    #waveCanvas {
+      width: 100%;
+      height: 380px;
+      background: #02070e;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      display: block;
+    }
+    .log-box {
+      background: #02070e;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 10px;
+      flex: 1;
+      overflow-y: auto;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 480px;
+    }
+    .log-entry { display: flex; gap: 8px; }
+    .log-time { color: var(--muted); }
+    .log-info { color: var(--cyan); }
+    .log-warn { color: var(--amber); }
+    .log-err { color: var(--red); }
+    .log-succ { color: var(--green); }
+    .slider-range {
+      width: 100%;
+      accent-color: var(--cyan);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span style="font-size:18px;">⚛️</span>
+      <strong>VibeHacking Silicon Photonics & QKD Mesh Inspector</strong>
+      <span class="badge">Simulator #39</span>
+      <span class="badge" style="border-color:var(--green-dim); color:var(--green); background:var(--green-deep);">Lab 73 / Track 85</span>
+    </div>
+    <div style="color:var(--muted); font-size:12px;">Co-Packaged Optics & Quantum Key Mesh Defense</div>
+  </header>
+
+  <div class="container">
+    <!-- Left Panel: Controls & Defense Config -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>광 버스 &amp; QKD 방어 설정</span>
+        <span style="font-size:11px; color:var(--muted);">Physical Controls</span>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-item">
+          <div>
+            <div>비트 스크램블링 (LFSR Scrambler)</div>
+            <div style="font-size:10px; color:var(--muted);">물리 계층 의사 난수 펄스 변조</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chkScramble" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div>
+            <div>더미 펄스 패딩 (Line-Rate Padding)</div>
+            <div style="font-size:10px; color:var(--muted);">상시 균일 광 전력 유지 (DOPA 방어)</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chkPadding" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div>
+            <div>QKD 지속 키 로테이션 (BB84 Mesh)</div>
+            <div style="font-size:10px; color:var(--muted);">1,250 keys/sec 대칭키 교체</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chkQkd" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div>
+            <div>유전체 트렌치 실드 (Dielectric Trench)</div>
+            <div style="font-size:10px; color:var(--muted);">WDM 채널 간 누화 -48dB 차폐</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chkShield" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div>
+            <div>트랜시버 마이크로코드 머클 증명</div>
+            <div style="font-size:10px; color:var(--muted);">ASIC 펌웨어 암호학적 원격 증명</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chkAttest" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between;">
+          <span>레이저 광 출력 (mW)</span>
+          <span id="lblPower">8.5 mW</span>
+        </label>
+        <input type="range" min="1" max="20" value="8" step="0.5" class="slider-range" id="rngPower">
+      </div>
+
+      <div style="margin-top:4px;">
+        <label style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between;">
+          <span>WDM 파장 간격 (GHz)</span>
+          <span id="lblWdm">100 GHz</span>
+        </label>
+        <input type="range" min="25" max="200" value="100" step="25" class="slider-range" id="rngWdm">
+      </div>
+
+      <div class="panel-title" style="margin-top:8px;">
+        <span>적대적 공격 시뮬레이션</span>
+      </div>
+      <button class="btn btn-danger" onclick="injectTap()">⚡ 광 도파관 마이크로 벤딩 탭 도청</button>
+      <button class="btn btn-danger" onclick="injectDopa()">📈 차분 광 전력 분석(DOPA) 사이드채널</button>
+      <button class="btn btn-danger" onclick="injectCrosstalk()">🌊 WDM 인접 파장 누화 간섭 주입</button>
+      <button class="btn btn-primary" onclick="triggerQkdTrip()">🛡️ QBER 이상 감지 및 광 경로 즉각 차단</button>
+    </div>
+
+    <!-- Center Panel: Waveguide & Interconnect Visualization -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>실리콘 포토닉스 광 버스 &amp; CPO 텐서 인터커넥트</span>
+        <span style="font-size:11px; color:var(--green);" id="lblState">● 정상 동작 (SECURE)</span>
+      </div>
+
+      <canvas id="waveCanvas" width="600" height="380"></canvas>
+
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="valQber">1.18%</div>
+          <div class="stat-lbl">QBER (양자 비트 오류율 / 임계치 3.0%)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="valCrosstalk">-51.4 dB</div>
+          <div class="stat-lbl">WDM 채널 누화 (Crosstalk Attenuation)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="valDopa">0.023</div>
+          <div class="stat-lbl">DOPA 사이드채널 상관계수 (SNR)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="valKeyRate">1,250</div>
+          <div class="stat-lbl">QKD 대칭키 갱신율 (Keys / sec)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Event Logs & Audit Feed -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>광 텔레메트리 &amp; 감사 로그</span>
+        <button class="btn" style="padding:2px 8px; font-size:10px;" onclick="clearLogs()">Clear</button>
+      </div>
+
+      <div class="log-box" id="logBox">
+        <!-- Log items dynamically injected -->
+      </div>
+
+      <div class="panel-title" style="margin-top:4px;">
+        <span>종합 보안 점수</span>
+        <span id="scoreText" style="color:var(--green); font-weight:700;">100 / 100</span>
+      </div>
+      <div style="height:10px; background:#0c2b45; border-radius:5px; overflow:hidden;">
+        <div id="scoreBar" style="width:100%; height:100%; background:var(--green); transition:.3s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    const logBox = document.getElementById('logBox');
+
+    let isTapped = false;
+    let isDopaAttacked = false;
+    let isCrosstalkAttacked = false;
+
+    let tick = 0;
+    const photons = [];
+
+    // Initialize photon particles
+    for (let i = 0; i < 60; i++) {
+      photons.push({
+        x: Math.random() * 600,
+        y: 80 + Math.floor(Math.random() * 4) * 60,
+        speed: 2 + Math.random() * 3,
+        color: ['#00e5ff', '#27ff8b', '#ffcf4d', '#c084fc'][Math.floor(Math.random() * 4)],
+        wave: Math.floor(Math.random() * 4)
+      });
+    }
+
+    function addLog(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = 'log-entry';
+      const now = new Date().toTimeString().split(' ')[0] + '.' + String(Date.now() % 1000).padStart(3, '0');
+      el.innerHTML = `<span class="log-time">[${now}]</span> <span class="log-${type}">${msg}</span>`;
+      logBox.appendChild(el);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function clearLogs() {
+      logBox.innerHTML = '';
+      addLog("텔레메트리 로그 버퍼 초기화 완료.", "succ");
+    }
+
+    function updateScore() {
+      let score = 100;
+      const scrambled = document.getElementById('chkScramble').checked;
+      const padded = document.getElementById('chkPadding').checked;
+      const qkd = document.getElementById('chkQkd').checked;
+      const shield = document.getElementById('chkShield').checked;
+      const attest = document.getElementById('chkAttest').checked;
+
+      if (!scrambled && isTapped) score -= 35;
+      if (!padded && isDopaAttacked) score -= 30;
+      if (!shield && isCrosstalkAttacked) score -= 25;
+      if (!qkd && isTapped) score -= 20;
+      if (!attest) score -= 15;
+
+      score = Math.max(0, Math.min(100, score));
+      document.getElementById('scoreText').innerText = `${score} / 100`;
+      const bar = document.getElementById('scoreBar');
+      bar.style.width = score + '%';
+      if (score >= 80) {
+        bar.style.background = 'var(--green)';
+        document.getElementById('lblState').innerText = '● 정상 방어 중 (SECURE)';
+        document.getElementById('lblState').style.color = 'var(--green)';
+      } else if (score >= 50) {
+        bar.style.background = 'var(--amber)';
+        document.getElementById('lblState').innerText = '▲ 취약 노출 경고 (WARNING)';
+        document.getElementById('lblState').style.color = 'var(--amber)';
+      } else {
+        bar.style.background = 'var(--red)';
+        document.getElementById('lblState').innerText = '✕ 신호 도청 및 유출 발생 (COMPROMISED)';
+        document.getElementById('lblState').style.color = 'var(--red)';
+      }
+    }
+
+    function injectTap() {
+      isTapped = true;
+      const qkd = document.getElementById('chkQkd').checked;
+      const scrambled = document.getElementById('chkScramble').checked;
+
+      if (qkd) {
+        document.getElementById('valQber').innerText = '6.45%';
+        document.getElementById('valQber').style.color = 'var(--red)';
+        addLog("🚨 [광 탭 탐지] 도파관 마이크로 벤딩 유출 감지! QBER 6.45% (임계치 3.0% 초과)", "err");
+        addLog("⚡ [QKD 인터록] 양자 상태 붕괴 포착! 광 경로 긴급 차단 및 대체 도파관 즉각 우회", "succ");
+      } else {
+        document.getElementById('valQber').innerText = '0.00% (센서 비활성)';
+        if (!scrambled) {
+          addLog("💀 [공격 성공] QKD 및 스크램블링 비활성화로 인해 평문 광 펄스 패킷 도청 유출!", "err");
+        } else {
+          addLog("🛡️ [부분 방어] QKD 미작동이나 의사 난수 스크램블러로 인해 비트 복원 실패", "warn");
+        }
+      }
+      updateScore();
+    }
+
+    function injectDopa() {
+      isDopaAttacked = true;
+      const padded = document.getElementById('chkPadding').checked;
+      if (padded) {
+        document.getElementById('valDopa').innerText = '0.028';
+        document.getElementById('valDopa').style.color = 'var(--cyan)';
+        addLog("🛡️ [DOPA 차단] 더미 광 펄스 패딩으로 인해 전력 소모 상관계수 SNR 0.028 유지 (평문 복원 불능)", "succ");
+      } else {
+        document.getElementById('valDopa').innerText = '0.842';
+        document.getElementById('valDopa').style.color = 'var(--red)';
+        addLog("🚨 [DOPA 유출] 더미 패딩 부재! 차분 광 전력 분석으로 텐서 가중치 비트 유출 발생", "err");
+      }
+      updateScore();
+    }
+
+    function injectCrosstalk() {
+      isCrosstalkAttacked = true;
+      const shield = document.getElementById('chkShield').checked;
+      if (shield) {
+        document.getElementById('valCrosstalk').innerText = '-49.2 dB';
+        document.getElementById('valCrosstalk').style.color = 'var(--cyan)';
+        addLog("🛡️ [누화 차폐] 유전체 트렌치 실드가 인접 WDM 채널 누화를 -49.2dB로 완벽 감쇠", "succ");
+      } else {
+        document.getElementById('valCrosstalk').innerText = '-16.8 dB';
+        document.getElementById('valCrosstalk').style.color = 'var(--red)';
+        addLog("🚨 [WDM 누화] 유전체 차폐 미비로 인접 파장 채널 간 심각한 신호 간섭 발생!", "err");
+      }
+      updateScore();
+    }
+
+    function triggerQkdTrip() {
+      isTapped = false;
+      isDopaAttacked = false;
+      isCrosstalkAttacked = false;
+      document.getElementById('valQber').innerText = '1.09%';
+      document.getElementById('valQber').style.color = 'var(--cyan)';
+      document.getElementById('valCrosstalk').innerText = '-52.1 dB';
+      document.getElementById('valCrosstalk').style.color = 'var(--cyan)';
+      document.getElementById('valDopa').innerText = '0.021';
+      document.getElementById('valDopa').style.color = 'var(--cyan)';
+      addLog("✅ [QKD 리셋] 양자 키 메시 재협상 및 클린 도파관 채널 복원 완료. (QBER 1.09%)", "succ");
+      updateScore();
+    }
+
+    // Animation loop
+    function render() {
+      tick++;
+      ctx.fillStyle = '#02070e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw 4 optical waveguides
+      for (let w = 0; w < 4; w++) {
+        const y = 80 + w * 60;
+        ctx.strokeStyle = '#0d3857';
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        ctx.moveTo(30, y);
+        ctx.lineTo(570, y);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#061a29';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(30, y);
+        ctx.lineTo(570, y);
+        ctx.stroke();
+
+        // Waveguide labels
+        ctx.fillStyle = '#4e7a9e';
+        ctx.font = '10px monospace';
+        ctx.fillText(`WG-${w+1} (λ=${1310 + w*20}nm)`, 35, y - 12);
+      }
+
+      // Draw tap probe if active
+      if (isTapped) {
+        ctx.strokeStyle = 'var(--red)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(320, 140, 24, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = 'var(--red)';
+        ctx.font = '11px monospace';
+        ctx.fillText('⚡ TAP PROBE DETECTED', 250, 105);
+      }
+
+      // Draw photon pulses
+      const scrambled = document.getElementById('chkScramble').checked;
+      for (const p of photons) {
+        p.x += p.speed;
+        if (p.x > 570) p.x = 30;
+
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        ctx.fillStyle = scrambled ? p.color : '#ffffff';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // Transceiver Blocks
+      ctx.fillStyle = '#071524';
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(10, 40, 30, 280);
+      ctx.fillRect(10, 40, 30, 280);
+
+      ctx.strokeStyle = '#27ff8b';
+      ctx.strokeRect(560, 40, 30, 280);
+      ctx.fillRect(560, 40, 30, 280);
+
+      ctx.fillStyle = '#cce9ff';
+      ctx.font = '9px monospace';
+      ctx.fillText('TX', 18, 55);
+      ctx.fillText('RX', 568, 55);
+
+      requestAnimationFrame(render);
+    }
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener('change', updateScore));
+    document.getElementById('rngPower').addEventListener('input', e => {
+      document.getElementById('lblPower').innerText = `${e.target.value} mW`;
+    });
+    document.getElementById('rngWdm').addEventListener('input', e => {
+      document.getElementById('lblWdm').innerText = `${e.target.value} GHz`;
+    });
+
+    addLog("실리콘 포토닉스 광 인터커넥트 시뮬레이터 #39 초기화 완료.", "succ");
+    addLog("QKD BB84 양자 키 분배 메시 엔진 가동. 대칭키 회전율 1,250 keys/sec.", "info");
+    addLog("유전체 실드 및 의사 난수 광 펄스 스크램블러 활성.", "info");
+    updateScore();
+    render();
+  </script>
+</body>
+</html>

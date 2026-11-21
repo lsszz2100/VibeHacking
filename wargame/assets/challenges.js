@@ -734,6 +734,14 @@ const TRACKS = [
     "en": "Agent Long-Term Memory & Knowledge Graph Defense",
     "desc_ko": "에피소딕/벡터 메모리 시맨틱 코사인 유사도 하이재킹 차단·HMAC-SHA256 세션 출처(Provenance) 및 암호학적 메모리 노드 원격 증명·지식 그래프(GraphRAG) 권한 엣지 위조 및 슬리퍼 프롬프트 지연 폭탄 격리·이중 관찰자(Dual-Observer) 인지 메모리 격리 방화벽.",
     "desc_en": "Episodic and vector memory semantic cosine similarity hijacking mitigation, HMAC-SHA256 session provenance and cryptographic memory node remote attestation, GraphRAG knowledge graph permission edge tampering and sleeper prompt delayed injection isolation, and dual-observer cognitive memory firewall containment."
+  },
+  {
+    "id": "qkdmesh",
+    "icon": "⚛️",
+    "ko": "실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어",
+    "en": "Silicon Photonics Optical Interconnect & Quantum Key Distribution Mesh Defense",
+    "desc_ko": "실리콘 포토닉스 CPO 광 버스 물리 계층 의사 난수 비트 스크램블링 및 라인 레이트 패딩·QKD 지속 양자 키 분배(BB84/B92) 메시 로테이션 및 QBER 이상치 실시간 도청 감지·광 도파관 유전체 실드 격리 및 WDM 채널 누화 차단·광 트랜시버 펌웨어 마이크로코드 머클 루트 암호학적 원격 증명.",
+    "desc_en": "Physical-layer pseudo-random bit scrambling and line-rate padding across silicon photonics CPO optical buses, continuous QKD symmetric key distribution mesh rotation with QBER anomaly detection against physical tap eavesdropping, optical waveguide dielectric shielding and WDM crosstalk isolation, and transceiver firmware microcode cryptographic Merkle root attestation."
   }
 ];
 
@@ -82695,6 +82703,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `ch_agentmem_t4_capstone_sovereign_ai_cognitive_infrastructure`."
+      ]
+    }
+  },
+  // Track 85: qkdmesh - Silicon Photonics Optical Interconnect & QKD Mesh Defense (35 challenges)
+  {
+    "id": "t0_qkdmesh_silicon_photonics_cpo_interconnect_foundations",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "b6eab2e9caeec7d1e297d6b093e5b0e927cf20a11566dcbd7d4bbc9a6ad55eae",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "실리콘 포토닉스 CPO 광 인터커넥트 및 물리 계층 기초",
+      "en": "Silicon Photonics CPO Optical Interconnect & Physical Layer Foundations"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 실리콘 포토닉스 CPO 광 인터커넥트 및 물리 계층 기초\n상세 분석 지침:\n- 코패키징 옵틱스(CPO) 기반 실리콘 포토닉스 도파관 데이터 전송 메커니즘과 광학 버스 위협 표면을 분석합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_silicon_photonics_cpo_interconnect_foundations`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Silicon Photonics CPO Optical Interconnect & Physical Layer Foundations\nAnalysis Requirements:\n- Analyze silicon photonics waveguide transmission mechanics and optical bus threat surfaces across Co-Packaged Optics (CPO) architectures.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_silicon_photonics_cpo_interconnect_foundations`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_silicon_photonics_cpo_interconnect_foundations` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_silicon_photonics_cpo_interconnect_foundations`."
+      ]
+    }
+  },
+  {
+    "id": "t0_qkdmesh_optical_waveguide_microbending_tap_threats",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "be39b71511f94cecf5034929c9d54380078c6e5c0fa5080b9b81e03d8d795b67",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 도파관 마이크로 벤딩 및 물리 탭 도청 공격 모델",
+      "en": "Optical Waveguide Micro-Bending & Physical Tap Eavesdropping Threats"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 도파관 마이크로 벤딩 및 물리 탭 도청 공격 모델\n상세 분석 지침:\n- 광섬유 및 실리콘 도파관 물리적 곡률 변형을 통한 비접촉 광 신호 유출 및 탭 도청 기법을 평가합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_optical_waveguide_microbending_tap_threats`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Optical Waveguide Micro-Bending & Physical Tap Eavesdropping Threats\nAnalysis Requirements:\n- Evaluate non-invasive optical pulse extraction and physical tap eavesdropping through micro-bending deformation on waveguides.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_optical_waveguide_microbending_tap_threats`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_optical_waveguide_microbending_tap_threats` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_optical_waveguide_microbending_tap_threats`."
+      ]
+    }
+  },
+  {
+    "id": "t0_qkdmesh_differential_optical_power_sidechannel_basics",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "2777ae4ffe49fc5c44e520a049b90fa4cf67da2a2ab24ca00972d3ed9ba4625f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 전력 차분 사이드채널 및 신호 변조 감쇠 분석",
+      "en": "Differential Optical Power Sidechannel & Signal Attenuation Basics"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 전력 차분 사이드채널 및 신호 변조 감쇠 분석\n상세 분석 지침:\n- 광 트랜시버 송출 신호의 전력 소모 및 광자 펄스 변조 패턴을 관측하여 데이터 평문을 복원하는 사이드채널을 학습합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_differential_optical_power_sidechannel_basics`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Differential Optical Power Sidechannel & Signal Attenuation Basics\nAnalysis Requirements:\n- Study sidechannel techniques reconstructing plaintext data through transceiver optical emission power and photonic pulse modulation profiles.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_differential_optical_power_sidechannel_basics`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_differential_optical_power_sidechannel_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_differential_optical_power_sidechannel_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_qkdmesh_qkd_bb84_protocol_and_no_cloning_theorem",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "162f3742604d9f1d356a9c26870aba78604b5e1f3433cf3bf4f02315f8f73dc3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "QKD BB84 양자 키 분배 프로토콜 및 복제 불가능성 정리",
+      "en": "QKD BB84 Protocol & Quantum No-Cloning Theorem Principles"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: QKD BB84 양자 키 분배 프로토콜 및 복제 불가능성 정리\n상세 분석 지침:\n- 단일 광자 편광 상태와 양자 복제 불가능성 정리에 기반한 BB84 프로토콜의 정보 이론적 보안 원리를 이해합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_qkd_bb84_protocol_and_no_cloning_theorem`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: QKD BB84 Protocol & Quantum No-Cloning Theorem Principles\nAnalysis Requirements:\n- Understand information-theoretic security principles in BB84 protocols grounded in single-photon polarization states and the no-cloning theorem.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_qkd_bb84_protocol_and_no_cloning_theorem`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_qkd_bb84_protocol_and_no_cloning_theorem` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_qkd_bb84_protocol_and_no_cloning_theorem`."
+      ]
+    }
+  },
+  {
+    "id": "t0_qkdmesh_quantum_bit_error_rate_threshold_telemetry",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "b18d8467db0d7885b773a10b8dd362625c3378c20e65107da38e3fd5e281fe03",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 비트 오류율(QBER) 도청 감지 메커니즘",
+      "en": "Quantum Bit Error Rate (QBER) Eavesdropping Detection Mechanics"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 양자 비트 오류율(QBER) 도청 감지 메커니즘\n상세 분석 지침:\n- 도청자의 관측 개입으로 인해 유발되는 양자 상태 붕괴와 QBER 임계치(3.0% 초과) 이상 탐지 텔레메트리를 검토합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_quantum_bit_error_rate_threshold_telemetry`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Quantum Bit Error Rate (QBER) Eavesdropping Detection Mechanics\nAnalysis Requirements:\n- Examine quantum state collapse and QBER threshold telemetry exceeding 3.0% induced by physical eavesdropping intervention.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_quantum_bit_error_rate_threshold_telemetry`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_quantum_bit_error_rate_threshold_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_quantum_bit_error_rate_threshold_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t0_qkdmesh_wdm_inter_channel_crosstalk_isolation_intro",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "c35c2e602282799c6e911c845ff769f582d41f1b84db5550c853e02b411f507f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "WDM 파장 분할 다중화 채널 간 상호 간섭 격리 원리",
+      "en": "WDM Wavelength-Division Multiplexing Inter-Channel Crosstalk Isolation"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: WDM 파장 분할 다중화 채널 간 상호 간섭 격리 원리\n상세 분석 지침:\n- 단일 도파관 내 다중 파장(WDM) 채널 간 유전체 누화(Crosstalk) 및 인접 채널 신호 간섭 현상을 식별합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_wdm_inter_channel_crosstalk_isolation_intro`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: WDM Wavelength-Division Multiplexing Inter-Channel Crosstalk Isolation\nAnalysis Requirements:\n- Identify dielectric crosstalk and adjacent wavelength interference across multiple optical channels within a shared waveguide.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_wdm_inter_channel_crosstalk_isolation_intro`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_wdm_inter_channel_crosstalk_isolation_intro` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_wdm_inter_channel_crosstalk_isolation_intro`."
+      ]
+    }
+  },
+  {
+    "id": "t0_qkdmesh_photonic_transceiver_microcode_attestation_theory",
+    "tier": 0,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 25,
+    "ci": false,
+    "hash": "348976231ae5cadcf8803ac1a4433fc882e9fcd537d05a19cc8e0671c8f9b7cf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 트랜시버 마이크로코드 및 하드웨어 머클 루트 증명 이론",
+      "en": "Photonic Transceiver Microcode & Hardware Merkle Root Attestation Theory"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 트랜시버 마이크로코드 및 하드웨어 머클 루트 증명 이론\n상세 분석 지침:\n- 광 트랜시버 ASIC 마이크로코드 펌웨어의 무결성을 하드웨어 보안 모듈 및 머클 트리로 암호학적 원격 증명하는 이론을 학습합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t0_photonic_transceiver_microcode_attestation_theory`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic Transceiver Microcode & Hardware Merkle Root Attestation Theory\nAnalysis Requirements:\n- Learn cryptographic remote attestation theory verifying transceiver ASIC microcode firmware against hardware security modules and Merkle roots.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t0_photonic_transceiver_microcode_attestation_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t0_photonic_transceiver_microcode_attestation_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t0_photonic_transceiver_microcode_attestation_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_optical_bus_pseudo_random_scrambler_impl",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "49a22678ce6c2cc9f5b3a4c2e73d9d7f2ebe0c62c64bba1d7c61881f439e4237",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "물리 계층 의사 난수 광 버스 비트 스크램블러 구현",
+      "en": "Physical-Layer Pseudo-Random Optical Bus Bit Scrambler Implementation"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 물리 계층 의사 난수 광 버스 비트 스크램블러 구현\n상세 분석 지침:\n- 광 버스 전송 프레임에 선형 피드백 시프트 레지스터(LFSR) 기반 의사 난수 비트 스크램블링을 적용하여 광 패턴 노출을 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_optical_bus_pseudo_random_scrambler_impl`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Physical-Layer Pseudo-Random Optical Bus Bit Scrambler Implementation\nAnalysis Requirements:\n- Apply LFSR pseudo-random bit scrambling across optical transmission frames to obfuscate photonic pulse patterns against taps.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_optical_bus_pseudo_random_scrambler_impl`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_optical_bus_pseudo_random_scrambler_impl` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_optical_bus_pseudo_random_scrambler_impl`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_line_rate_dummy_pulse_padding_engine",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "abb867ec6dbf8c4fb1b26b9d4d34e23ccaf50a9d60a82c8c499d592b6ebf6144",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "라인 레이트 더미 광 펄스 패딩 및 트래픽 분석 방어",
+      "en": "Line-Rate Dummy Optical Pulse Padding & Traffic Analysis Defense"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 라인 레이트 더미 광 펄스 패딩 및 트래픽 분석 방어\n상세 분석 지침:\n- 트래픽 유무에 관계없이 일정한 전력과 주파수를 유지하는 더미 광 펄스 패딩 엔진을 가동하여 전송량 관측 공격을 무력화합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_line_rate_dummy_pulse_padding_engine`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Line-Rate Dummy Optical Pulse Padding & Traffic Analysis Defense\nAnalysis Requirements:\n- Operate a line-rate dummy optical pulse padding engine maintaining constant power and frequency to defeat traffic volume profiling.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_line_rate_dummy_pulse_padding_engine`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_line_rate_dummy_pulse_padding_engine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_line_rate_dummy_pulse_padding_engine`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_qber_sliding_window_eavesdrop_alarm",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "98a677a3a5bf49693f2b06d9e6733ddca4a45d551d04b73e46582ea197ad7dbf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "실시간 QBER 슬라이딩 윈도우 도청 경보 시스템",
+      "en": "Real-Time QBER Sliding Window Eavesdropping Alarm System"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 실시간 QBER 슬라이딩 윈도우 도청 경보 시스템\n상세 분석 지침:\n- 100밀리초 단위 슬라이딩 윈도우에서 양자 비트 오류율을 계산하여 3.0% 돌파 시 즉각 광 경로를 차단하는 긴급 차폐기를 구현합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_qber_sliding_window_eavesdrop_alarm`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Real-Time QBER Sliding Window Eavesdropping Alarm System\nAnalysis Requirements:\n- Implement an optical trip switch computing QBER over 100ms sliding windows to instantly trip physical paths when exceeding 3.0%.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_qber_sliding_window_eavesdrop_alarm`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_qber_sliding_window_eavesdrop_alarm` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_qber_sliding_window_eavesdrop_alarm`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_waveguide_dielectric_trench_crosstalk_shield",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "7384c9a04e51fd3f317ecc52f6ae0b31b45af8b25c26af93d30417018b4e73f1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "도파관 유전체 트렌치 실드 및 광 누화 차폐 검증",
+      "en": "Waveguide Dielectric Trench Shield & Optical Crosstalk Verification"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 도파관 유전체 트렌치 실드 및 광 누화 차폐 검증\n상세 분석 지침:\n- 인접 도파관 간 깊은 유전체 트렌치 및 흡수층을 배치하여 인접 채널 간 광 누화(Crosstalk)를 -45dB 이하로 감쇠시킵니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_waveguide_dielectric_trench_crosstalk_shield`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Waveguide Dielectric Trench Shield & Optical Crosstalk Verification\nAnalysis Requirements:\n- Deploy deep dielectric trench barriers and absorption layers to suppress inter-waveguide optical crosstalk below -45dB.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_waveguide_dielectric_trench_crosstalk_shield`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_waveguide_dielectric_trench_crosstalk_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_waveguide_dielectric_trench_crosstalk_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_qkd_session_key_continuous_rotation",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "b4ea45fa603e04bdff2345aab53d8846a338af63f5e7bcc454f7b032ffffe1ee",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "QKD 대칭키 지속 스트림 로테이션 및 메시 동기화",
+      "en": "Continuous QKD Symmetric Key Stream Rotation & Mesh Synchronization"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: QKD 대칭키 지속 스트림 로테이션 및 메시 동기화\n상세 분석 지침:\n- 초당 1,000회 이상 지속적으로 생성되는 양자 난수 대칭키를 다중 노드 CPO 인터커넥트에 안전하게 갱신 적용합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_qkd_session_key_continuous_rotation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Continuous QKD Symmetric Key Stream Rotation & Mesh Synchronization\nAnalysis Requirements:\n- Securely rotate and apply continuous quantum random symmetric keys exceeding 1,000 renewals per second across multi-node CPO fabrics.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_qkd_session_key_continuous_rotation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_qkd_session_key_continuous_rotation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_qkd_session_key_continuous_rotation`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_photonic_transceiver_tamper_sensor_telemetry",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "be60ac228206fe0ff82713ccc87b3c01c1f3412f5ff8657f9306dc92a22841ba",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 트랜시버 물리적 패키지 변조 센서 텔레메트리",
+      "en": "Photonic Transceiver Physical Package Anti-Tamper Sensor Telemetry"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 트랜시버 물리적 패키지 변조 센서 텔레메트리\n상세 분석 지침:\n- CPO 패키지 뚜껑 개봉 및 레이저 프로빙 시도를 광센서 및 정전용량 감지 회로로 포착하여 암호키를 즉각 소각합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_photonic_transceiver_tamper_sensor_telemetry`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic Transceiver Physical Package Anti-Tamper Sensor Telemetry\nAnalysis Requirements:\n- Capture CPO package decapsulation and laser probing attempts via photonic sensors to immediately zeroize cryptographic keys.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_photonic_transceiver_tamper_sensor_telemetry`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_photonic_transceiver_tamper_sensor_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_photonic_transceiver_tamper_sensor_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t1_qkdmesh_optical_bist_diagnostic_interface_lockdown",
+    "tier": 1,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 50,
+    "ci": false,
+    "hash": "3839a7a394f2b19cf6c82a1092cdd864cb9f135ee52650d79d5137e8c26c72bf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 반사 자가시험(BIST) 인터페이스 및 진단 포트 하드닝",
+      "en": "Optical Reflection Self-Test (BIST) Interface & Diagnostic Port Hardening"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 반사 자가시험(BIST) 인터페이스 및 진단 포트 하드닝\n상세 분석 지침:\n- 생산 공정용 광 자체 시험 인터페이스와 BIST(내장 시험) 핀에 암호학적 접근 제어를 적용하여 비인가 디버깅을 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t1_optical_bist_diagnostic_interface_lockdown`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Optical Reflection Self-Test (BIST) Interface & Diagnostic Port Hardening\nAnalysis Requirements:\n- Enforce cryptographic access controls on factory optical reflection and BIST interfaces to restrict unauthorized debugging access.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t1_optical_bist_diagnostic_interface_lockdown`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t1_optical_bist_diagnostic_interface_lockdown` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t1_optical_bist_diagnostic_interface_lockdown`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_optical_power_differential_sidechannel_filtering",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "a0dccc7becb860fe8699a582a00217cc70620c641b1be9512e567254a45292e7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "차분 광 전력 분석(DOPA) 사이드채널 노이즈 필터링",
+      "en": "Differential Optical Power Analysis (DOPA) Sidechannel Noise Filtering"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 차분 광 전력 분석(DOPA) 사이드채널 노이즈 필터링\n상세 분석 지침:\n- 광 변조기 구동 드라이버에 전력 평탄화 커패시터 뱅크와 능동 노이즈 주입 회로를 결합하여 DOPA 신호 유출을 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_optical_power_differential_sidechannel_filtering`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Differential Optical Power Analysis (DOPA) Sidechannel Noise Filtering\nAnalysis Requirements:\n- Combine power balancing capacitors and active noise injection on optical drivers to eliminate DOPA sidechannel leakages.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_optical_power_differential_sidechannel_filtering`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_optical_power_differential_sidechannel_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_optical_power_differential_sidechannel_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_waveguide_microbending_evasion_profiling",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "7ba7a4453fe828fd6231cd54a7aabb4f869abbfb7cbfe4553c54f0667b512553",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "초정밀 광 마이크로 벤딩 탭핑 공격 패턴 역분석",
+      "en": "Sub-Micron Optical Waveguide Micro-Bending Tap Reverse Analysis"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 초정밀 광 마이크로 벤딩 탭핑 공격 패턴 역분석\n상세 분석 지침:\n- 도파관 외벽 굴절률 변화를 펨토초 단위 광 시간 영역 반사 측정(OTDR)으로 정밀 측정하여 나노미터급 벤딩 탭을 포착합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_waveguide_microbending_evasion_profiling`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Sub-Micron Optical Waveguide Micro-Bending Tap Reverse Analysis\nAnalysis Requirements:\n- Precisely detect nanometer-scale micro-bending taps using femtosecond Optical Time-Domain Reflectometry (OTDR) reflection profiles.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_waveguide_microbending_evasion_profiling`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_waveguide_microbending_evasion_profiling` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_waveguide_microbending_evasion_profiling`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_quantum_mesh_routing_byzantine_fault_tolerance",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "38ee3480c055d859c778a5a2f934c47ef33f3dfc9edbe72a4d32fee2d1f5ef27",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "QKD 양자 메시 라우팅 및 비잔틴 노드 격리 합의",
+      "en": "QKD Quantum Mesh Routing & Byzantine Node Quarantine Consensus"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: QKD 양자 메시 라우팅 및 비잔틴 노드 격리 합의\n상세 분석 지침:\n- 양자 키 분배 네트워크에서 도청되거나 결함이 발생한 중간 중계 노드를 자동으로 우회하는 비잔틴 내결함성 메시를 구성합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_quantum_mesh_routing_byzantine_fault_tolerance`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: QKD Quantum Mesh Routing & Byzantine Node Quarantine Consensus\nAnalysis Requirements:\n- Construct a Byzantine fault-tolerant routing mesh automatically detouring compromised or noisy intermediate nodes in QKD networks.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_quantum_mesh_routing_byzantine_fault_tolerance`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_quantum_mesh_routing_byzantine_fault_tolerance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_quantum_mesh_routing_byzantine_fault_tolerance`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_wdm_wavelength_hijacking_and_frequency_locking",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "6860b5e39ac66ced9ae23f93d91489893ce7346b5d6e8a9ac337c5dcecb02f6b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "WDM 파장 하이재킹 공격 및 레이저 주파수 고정 방어",
+      "en": "WDM Wavelength Hijacking Attack & Laser Frequency Locking Defense"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: WDM 파장 하이재킹 공격 및 레이저 주파수 고정 방어\n상세 분석 지침:\n- 외부 레이저 주입을 통한 도파관 공진 주파수 변위 공격을 링 공진기 주파수 잠금 루프(PLL)로 엄격히 방어합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_wdm_wavelength_hijacking_and_frequency_locking`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: WDM Wavelength Hijacking Attack & Laser Frequency Locking Defense\nAnalysis Requirements:\n- Defend against optical resonance shifting attacks from external laser injection using optical ring resonator frequency-locked loops.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_wdm_wavelength_hijacking_and_frequency_locking`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_wdm_wavelength_hijacking_and_frequency_locking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_wdm_wavelength_hijacking_and_frequency_locking`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_photonic_transceiver_merkle_attestation_enforcement",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "9c09321817beb39bc0342df9d35b206a8389fb7696f4bf927ddf93ab51b88b74",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 트랜시버 머클 증명 기반 펌웨어 무결성 원격 감사",
+      "en": "Photonic Transceiver Merkle Attestation & Firmware Audit Enforcement"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 트랜시버 머클 증명 기반 펌웨어 무결성 원격 감사\n상세 분석 지침:\n- 부팅 및 런타임 주기마다 광 트랜시버 DSP 펌웨어 바이너리를 머클 검증 경로로 증명하여 변조된 마이크로코드를 즉시 퇴출합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_photonic_transceiver_merkle_attestation_enforcement`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic Transceiver Merkle Attestation & Firmware Audit Enforcement\nAnalysis Requirements:\n- Verify photonic transceiver DSP firmware against Merkle paths at boot and runtime cycles to evict unauthorized microcodes.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_photonic_transceiver_merkle_attestation_enforcement`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_photonic_transceiver_merkle_attestation_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_photonic_transceiver_merkle_attestation_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_photonics_pqc_hybrid_key_encapsulation_pipeline",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "da4537cefd11ee90a59222ff687c2423fec4a768ad70cdc445b3522eca73593d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 통신 하이브리드 PQC-QKD 키 캡슐화 파이프라인",
+      "en": "Photonic Hybrid PQC-QKD Key Encapsulation Pipeline Architecture"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 통신 하이브리드 PQC-QKD 키 캡슐화 파이프라인\n상세 분석 지침:\n- 양자 키 분배(QKD) 대칭키와 후양자 암호(ML-KEM-1024)를 결합한 이중 계층 키 캡슐화 메커니즘을 설계 구축합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_photonics_pqc_hybrid_key_encapsulation_pipeline`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic Hybrid PQC-QKD Key Encapsulation Pipeline Architecture\nAnalysis Requirements:\n- Architect a dual-layer key encapsulation pipeline marrying continuous QKD symmetric keys with post-quantum ML-KEM-1024 primitives.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_photonics_pqc_hybrid_key_encapsulation_pipeline`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_photonics_pqc_hybrid_key_encapsulation_pipeline` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_photonics_pqc_hybrid_key_encapsulation_pipeline`."
+      ]
+    }
+  },
+  {
+    "id": "t2_qkdmesh_optical_clock_recovery_jitter_sidechannel_mitigation",
+    "tier": 2,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 100,
+    "ci": false,
+    "hash": "86ad3794d0cccba4bc29d44670efdfc39a19dcbd624e09c36dfd381cbfc11bb6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 클록 복원 지터 사이드채널 및 타이밍 공격 중화",
+      "en": "Optical Clock Recovery Jitter Sidechannel & Timing Attack Neutralization"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 클록 복원 지터 사이드채널 및 타이밍 공격 중화\n상세 분석 지침:\n- CDR(Clock and Data Recovery) 회로에서 발생하는 광 지터 변조 패턴을 일정 시간 지연 버퍼로 균일화하여 타이밍 유출을 중화합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t2_optical_clock_recovery_jitter_sidechannel_mitigation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Optical Clock Recovery Jitter Sidechannel & Timing Attack Neutralization\nAnalysis Requirements:\n- Neutralize timing leakages by standardizing optical jitter variations across CDR circuits using constant-delay optical buffers.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t2_optical_clock_recovery_jitter_sidechannel_mitigation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t2_optical_clock_recovery_jitter_sidechannel_mitigation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t2_optical_clock_recovery_jitter_sidechannel_mitigation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_photonic_interconnect_adversarial_fault_injection",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "2866e2dd07f11de100960f317c4cf71fbb731588ed10d306f8ca7365e9640410",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 인터커넥트 적대적 레이저 결함 주입(LFI) 차단",
+      "en": "Photonic Interconnect Adversarial Laser Fault Injection (LFI) Mitigation"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 인터커넥트 적대적 레이저 결함 주입(LFI) 차단\n상세 분석 지침:\n- 광 도파관 및 수광 다이오드에 고출력 레이저 펄스를 조사해 비트 플립을 유도하는 결함 주입 공격을 광학 리미터로 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_photonic_interconnect_adversarial_fault_injection`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic Interconnect Adversarial Laser Fault Injection (LFI) Mitigation\nAnalysis Requirements:\n- Shield optical waveguides and photodiodes against high-power laser fault injection causing bit flips using optical limiters.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_photonic_interconnect_adversarial_fault_injection`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_photonic_interconnect_adversarial_fault_injection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_photonic_interconnect_adversarial_fault_injection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_quantum_key_distillation_privacy_expansion_engine",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "0bd58cef5a6d066d28165e31b94ad44f069e772c7083413f954ccb698b37cf6c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "QKD 사후 정보 정제 및 비밀성 강화 엔진 구축",
+      "en": "QKD Information Reconciliation & Privacy Expansion Engine"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: QKD 사후 정보 정제 및 비밀성 강화 엔진 구축\n상세 분석 지침:\n- 원시 양자 키(Raw Key)에서 양방향 에러 정정(Cascade/LDPC)과 범용 해시 함수 기반 비밀성 강화 절차를 거쳐 순수 비밀키를 추출합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_quantum_key_distillation_privacy_expansion_engine`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: QKD Information Reconciliation & Privacy Expansion Engine\nAnalysis Requirements:\n- Extract absolute secret keys from raw keys through bi-directional LDPC error reconciliation and universal hashing privacy expansion.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_quantum_key_distillation_privacy_expansion_engine`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_quantum_key_distillation_privacy_expansion_engine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_quantum_key_distillation_privacy_expansion_engine`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_wdm_inter_channel_phase_modulation_spoof_detection",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "f616574b82e034596c9eb898ebf44e73cb93c6bdc55e704a8f0ee9d934ab883f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "WDM 채널 간 위상 변조 위조 탐지 및 능동 보상",
+      "en": "WDM Inter-Channel Phase Modulation Spoof Detection & Active Balancing"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: WDM 채널 간 위상 변조 위조 탐지 및 능동 보상\n상세 분석 지침:\n- 인접 WDM 파장의 비선형 광학 효과(FWM/XPM)로 인해 변조되는 위상 왜곡을 능동 위상 변조기로 실시간 보상 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_wdm_inter_channel_phase_modulation_spoof_detection`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: WDM Inter-Channel Phase Modulation Spoof Detection & Active Balancing\nAnalysis Requirements:\n- Detect and actively neutralize phase distortions induced by non-linear four-wave mixing and cross-phase modulation across WDM channels.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_wdm_inter_channel_phase_modulation_spoof_detection`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_wdm_inter_channel_phase_modulation_spoof_detection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_wdm_inter_channel_phase_modulation_spoof_detection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_cpo_multi_chiplet_tensor_sync_protection",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "8787b73b934c9ac1338f1bc6f32c52825d356a84ce42dcaaba5988dec2bdb22f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CPO 기반 멀티 칩렛 AI 텐서 동기화 버스 보호 격리",
+      "en": "CPO Multi-Chiplet AI Tensor Sync Optical Bus Isolation Protection"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: CPO 기반 멀티 칩렛 AI 텐서 동기화 버스 보호 격리\n상세 분석 지침:\n- 초거대 AI 가속기 간 올-투-올(All-to-All) 텐서 교환 광 버스에 하드웨어 MACsec 유사 광학 암호화 프로토콜을 구현합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_cpo_multi_chiplet_tensor_sync_protection`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: CPO Multi-Chiplet AI Tensor Sync Optical Bus Isolation Protection\nAnalysis Requirements:\n- Implement hardware MACsec-equivalent optical frame cryptography on all-to-all tensor exchange optical buses across multi-chiplet clusters.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_cpo_multi_chiplet_tensor_sync_protection`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_cpo_multi_chiplet_tensor_sync_protection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_cpo_multi_chiplet_tensor_sync_protection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_zero_trust_photonic_transceiver_mutual_attestation",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "c0e9bf3567c26d03b6ce79d3106d4c4ec6b14ffdf4719ceac95e2e84e26a0586",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "제로 트러스트 기반 광 트랜시버 상호 원격 하드웨어 증명",
+      "en": "Zero-Trust Photonic Transceiver Mutual Remote Hardware Attestation"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 제로 트러스트 기반 광 트랜시버 상호 원격 하드웨어 증명\n상세 분석 지침:\n- 송수신 광 트랜시버 모듈 간 상호 암호학적 챌린지-응답 핸드셰이크를 거쳐 신뢰할 수 없는 모듈의 광 링크 활성화를 거부합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_zero_trust_photonic_transceiver_mutual_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Zero-Trust Photonic Transceiver Mutual Remote Hardware Attestation\nAnalysis Requirements:\n- Enforce mutual cryptographic challenge-response handshakes between transceiver modules, denying link activation to unverified hardware.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_zero_trust_photonic_transceiver_mutual_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_zero_trust_photonic_transceiver_mutual_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_zero_trust_photonic_transceiver_mutual_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_quantum_entropy_depletion_attack_containment",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "78b2f6764f17546c681cd38ee5ef9b51048bed5991be9924caae524e88cccf51",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 난수 엔트로피 고갈 공격 방어 및 백업 풀 전환",
+      "en": "Quantum Random Entropy Depletion Attack Defense & Fallback Pool Switch"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 양자 난수 엔트로피 고갈 공격 방어 및 백업 풀 전환\n상세 분석 지침:\n- 과도한 QKD 키 요청으로 QRNG(양자 난수 생성기) 버퍼를 고갈시키는 서비스 거부 공격을 토큰 버킷 속도 제한으로 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_quantum_entropy_depletion_attack_containment`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Quantum Random Entropy Depletion Attack Defense & Fallback Pool Switch\nAnalysis Requirements:\n- Defeat Denial-of-Service attacks exhausting QRNG buffers through excessive key demands using token-bucket rate limiting and fallbacks.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_quantum_entropy_depletion_attack_containment`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_quantum_entropy_depletion_attack_containment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_quantum_entropy_depletion_attack_containment`."
+      ]
+    }
+  },
+  {
+    "id": "t3_qkdmesh_optical_channel_blind_eavesdropping_polarization_tracking",
+    "tier": 3,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 200,
+    "ci": false,
+    "hash": "df876879abd8a19668b70c8f277efd7f30eb3d61c1857ca64e1fd2ccbb86fb67",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "블라인드 광 편광 추적 및 비선형 탭핑 즉각 감지",
+      "en": "Blind Optical Polarization Tracking & Non-Linear Tap Instant Detection"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 블라인드 광 편광 추적 및 비선형 탭핑 즉각 감지\n상세 분석 지침:\n- 광 신호의 스토크스(Stokes) 파라미터를 연속 모니터링하여 편광 각도의 미세한 비선형 회전으로 도청 장치 부착을 탐지합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t3_optical_channel_blind_eavesdropping_polarization_tracking`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Blind Optical Polarization Tracking & Non-Linear Tap Instant Detection\nAnalysis Requirements:\n- Continuously monitor optical Stokes parameters to detect eavesdropping hardware attachments through micro-rotations in polarization.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t3_optical_channel_blind_eavesdropping_polarization_tracking`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t3_optical_channel_blind_eavesdropping_polarization_tracking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t3_optical_channel_blind_eavesdropping_polarization_tracking`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_silicon_photonics_hardware_adversarial_drill",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "0183354fd338425e30c8e8ed215422a08cf59312c07fd94dd26ec2dfb557990c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "실리콘 포토닉스 하드웨어 침투 및 자율 공방 훈련",
+      "en": "Silicon Photonics Hardware Infiltration & Autonomous Red-Blue Drill"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 실리콘 포토닉스 하드웨어 침투 및 자율 공방 훈련\n상세 분석 지침:\n- CPO 광 버스 도청, 광 전력 분석, 레이저 결함 주입으로 구성된 복합 공격 시나리오에 맞서 자동화된 광 방어를 실증합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_silicon_photonics_hardware_adversarial_drill`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Silicon Photonics Hardware Infiltration & Autonomous Red-Blue Drill\nAnalysis Requirements:\n- Demonstrate automated optical defenses against multi-stage attacks combining CPO bus taps, power analysis, and laser fault injection.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_silicon_photonics_hardware_adversarial_drill`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_silicon_photonics_hardware_adversarial_drill` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_silicon_photonics_hardware_adversarial_drill`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_enterprise_quantum_mesh_infrastructure_deployment",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "a2ae2095df9be6e15f0a25e419227c4a3e1fef811b924627a2101c5a8464d0db",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 광 QKD 메시 인프라 및 키 수명주기 오케스트레이션",
+      "en": "Enterprise Optical QKD Mesh Infrastructure & Key Lifecycle Orchestration"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 엔터프라이즈 광 QKD 메시 인프라 및 키 수명주기 오케스트레이션\n상세 분석 지침:\n- 데이터센터 백본 전체에 걸친 분산 QKD 메시 라우팅 노드와 초고속 광 스위칭 패브릭의 키 분배 라이프사이클을 통제합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_enterprise_quantum_mesh_infrastructure_deployment`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Enterprise Optical QKD Mesh Infrastructure & Key Lifecycle Orchestration\nAnalysis Requirements:\n- Orchestrate distributed QKD mesh routing nodes and ultra-fast optical switching fabric key distribution lifecycles across data centers.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_enterprise_quantum_mesh_infrastructure_deployment`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_enterprise_quantum_mesh_infrastructure_deployment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_enterprise_quantum_mesh_infrastructure_deployment`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_photonic_sidechannel_and_quantum_interconnect_hardening",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "5f09157668b2761014e299533eb37aca0fabaf8a82c2cd55621269c15b25445d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 사이드채널 및 양자 인터커넥트 종합 하드닝 아키텍처",
+      "en": "Photonic Sidechannel & Quantum Interconnect Comprehensive Hardening"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 사이드채널 및 양자 인터커넥트 종합 하드닝 아키텍처\n상세 분석 지침:\n- DOPA 전력 감쇠, 의사 난수 비트 스크램블링, 실시간 QBER 감시, PQC 하이브리드 암호화를 일체화한 단일 방어 파이프라인을 구축합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_photonic_sidechannel_and_quantum_interconnect_hardening`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic Sidechannel & Quantum Interconnect Comprehensive Hardening\nAnalysis Requirements:\n- Construct a unified defense pipeline integrating DOPA attenuation, bit scrambling, real-time QBER monitoring, and PQC hybrid cryptography.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_photonic_sidechannel_and_quantum_interconnect_hardening`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_photonic_sidechannel_and_quantum_interconnect_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_photonic_sidechannel_and_quantum_interconnect_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_quantum_mesh_node_compromise_quarantine_protocol",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "0764cfc12c60cc63cd5a116429cc30981e4bada35743204be4633106567a09ec",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 메시 노드 침해 시 즉각 격리 및 키 재협상 프로토콜",
+      "en": "Quantum Mesh Node Compromise Rapid Quarantine & Rekeying Protocol"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 양자 메시 노드 침해 시 즉각 격리 및 키 재협상 프로토콜\n상세 분석 지침:\n- 특정 포토닉 라우터 노드의 물리 침해가 확인될 때 전체 메시에서 해당 노드를 즉시 배제하고 분할 키를 재협상합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_quantum_mesh_node_compromise_quarantine_protocol`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Quantum Mesh Node Compromise Rapid Quarantine & Rekeying Protocol\nAnalysis Requirements:\n- Instantly purge compromised photonic router nodes from the mesh and execute distributed rekeying upon physical breach confirmation.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_quantum_mesh_node_compromise_quarantine_protocol`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_quantum_mesh_node_compromise_quarantine_protocol` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_quantum_mesh_node_compromise_quarantine_protocol`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_photonic_pqc_attestation_zero_trust_defense",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "ea64466ee99444883699e49bdbaf4825f0bcbd2a17e02c833dfc39fc89bc6f5f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광-PQC 이중 원격 증명 기반 제로 트러스트 하드웨어 방어",
+      "en": "Photonic-PQC Dual Remote Attestation Zero-Trust Hardware Defense"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광-PQC 이중 원격 증명 기반 제로 트러스트 하드웨어 방어\n상세 분석 지침:\n- ML-DSA-87 서명과 물리적 복제 불가능 기능(PUF)을 결합하여 CPO 모듈의 공급망 변조 및 위조 칩셋 유입을 원천 차단합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_photonic_pqc_attestation_zero_trust_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Photonic-PQC Dual Remote Attestation Zero-Trust Hardware Defense\nAnalysis Requirements:\n- Eliminate supply-chain tampering and counterfeit chipsets using ML-DSA-87 digital signatures coupled with Physical Unclonable Functions.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_photonic_pqc_attestation_zero_trust_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_photonic_pqc_attestation_zero_trust_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_photonic_pqc_attestation_zero_trust_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_optical_ai_fabric_tensor_confidentiality_enforcement",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "9c52a1211724d23ff9621ec7398dedcc8795be33c400eb4126a3d974da4ca1ff",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광 AI 패브릭 텐서 기밀성 및 양자 메시 전계층 보호",
+      "en": "Optical AI Fabric Tensor Confidentiality & Full-Stack Quantum Mesh Protection"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 광 AI 패브릭 텐서 기밀성 및 양자 메시 전계층 보호\n상세 분석 지침:\n- 수천 개의 AI 가속기가 직결된 광 인터커넥트에서 텐서 가중치 및 활성화 데이터의 광학 계층 기밀성을 완벽하게 보장합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_optical_ai_fabric_tensor_confidentiality_enforcement`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Optical AI Fabric Tensor Confidentiality & Full-Stack Quantum Mesh Protection\nAnalysis Requirements:\n- Guarantee optical-layer confidentiality of tensor weights and activation matrices across ultra-dense AI accelerator optical fabrics.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_optical_ai_fabric_tensor_confidentiality_enforcement`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_optical_ai_fabric_tensor_confidentiality_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_optical_ai_fabric_tensor_confidentiality_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t4_qkdmesh_sovereign_ai_silicon_photonics_qkd_capstone",
+    "tier": 4,
+    "cat": "quantum",
+    "track": "qkdmesh",
+    "points": 400,
+    "ci": false,
+    "hash": "4b4c34183b6736352be1bf758fddff9d4101cbe048c3a7850bff8ab3dfdfd9bd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 AI 클러스터 실리콘 포토닉스 & QKD 전방위 보안 캡스톤",
+      "en": "Sovereign AI Cluster Silicon Photonics & QKD Full-Spectrum Defense Capstone"
+    },
+    "prompt": {
+      "ko": "실리콘 포토닉스 광 인터커넥트 및 QKD 양자 키 메시 방어 실무를 수행합니다.\n\n주제: 주권 AI 클러스터 실리콘 포토닉스 & QKD 전방위 보안 캡스톤\n상세 분석 지침:\n- 국가 주권 AI 슈퍼컴퓨터의 실리콘 포토닉스 CPO 버스, 지속 QKD 메시, WDM 채널 분리, 하드웨어 증명을 총망라하는 최종 캡스톤을 완수합니다.\n- CPO 광 버스 물리 계층 신호 무결성 및 QKD 양자 키 분배 텔레메트리를 정밀 감사하십시오.\n- 검증 식별자 QKDMESH_CHALLENGE_ID: `qkdmesh_t4_sovereign_ai_silicon_photonics_qkd_capstone`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of silicon photonics optical interconnect and QKD mesh defense.\n\nTopic: Sovereign AI Cluster Silicon Photonics & QKD Full-Spectrum Defense Capstone\nAnalysis Requirements:\n- Accomplish the crowning capstone harmonizing silicon photonics CPO buses, continuous QKD mesh, WDM separation, and hardware attestation.\n- Thoroughly audit CPO optical bus physical-layer signal integrity and QKD quantum key distribution telemetry.\n- Verification Identifier QKDMESH_CHALLENGE_ID: `qkdmesh_t4_sovereign_ai_silicon_photonics_qkd_capstone`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `qkdmesh_t4_sovereign_ai_silicon_photonics_qkd_capstone` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `qkdmesh_t4_sovereign_ai_silicon_photonics_qkd_capstone`."
       ]
     }
   }

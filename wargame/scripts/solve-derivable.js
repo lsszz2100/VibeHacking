@@ -3308,6 +3308,57 @@ for (const id of AGENTMEM_IDS) {
     }
   });
 }
+const QKDMESH_IDS = [
+  "t0_qkdmesh_silicon_photonics_cpo_interconnect_foundations",
+  "t0_qkdmesh_optical_waveguide_microbending_tap_threats",
+  "t0_qkdmesh_differential_optical_power_sidechannel_basics",
+  "t0_qkdmesh_qkd_bb84_protocol_and_no_cloning_theorem",
+  "t0_qkdmesh_quantum_bit_error_rate_threshold_telemetry",
+  "t0_qkdmesh_wdm_inter_channel_crosstalk_isolation_intro",
+  "t0_qkdmesh_photonic_transceiver_microcode_attestation_theory",
+  "t1_qkdmesh_optical_bus_pseudo_random_scrambler_impl",
+  "t1_qkdmesh_line_rate_dummy_pulse_padding_engine",
+  "t1_qkdmesh_qber_sliding_window_eavesdrop_alarm",
+  "t1_qkdmesh_waveguide_dielectric_trench_crosstalk_shield",
+  "t1_qkdmesh_qkd_session_key_continuous_rotation",
+  "t1_qkdmesh_photonic_transceiver_tamper_sensor_telemetry",
+  "t1_qkdmesh_optical_bist_diagnostic_interface_lockdown",
+  "t2_qkdmesh_optical_power_differential_sidechannel_filtering",
+  "t2_qkdmesh_waveguide_microbending_evasion_profiling",
+  "t2_qkdmesh_quantum_mesh_routing_byzantine_fault_tolerance",
+  "t2_qkdmesh_wdm_wavelength_hijacking_and_frequency_locking",
+  "t2_qkdmesh_photonic_transceiver_merkle_attestation_enforcement",
+  "t2_qkdmesh_photonics_pqc_hybrid_key_encapsulation_pipeline",
+  "t2_qkdmesh_optical_clock_recovery_jitter_sidechannel_mitigation",
+  "t3_qkdmesh_photonic_interconnect_adversarial_fault_injection",
+  "t3_qkdmesh_quantum_key_distillation_privacy_expansion_engine",
+  "t3_qkdmesh_wdm_inter_channel_phase_modulation_spoof_detection",
+  "t3_qkdmesh_cpo_multi_chiplet_tensor_sync_protection",
+  "t3_qkdmesh_zero_trust_photonic_transceiver_mutual_attestation",
+  "t3_qkdmesh_quantum_entropy_depletion_attack_containment",
+  "t3_qkdmesh_optical_channel_blind_eavesdropping_polarization_tracking",
+  "t4_qkdmesh_silicon_photonics_hardware_adversarial_drill",
+  "t4_qkdmesh_enterprise_quantum_mesh_infrastructure_deployment",
+  "t4_qkdmesh_photonic_sidechannel_and_quantum_interconnect_hardening",
+  "t4_qkdmesh_quantum_mesh_node_compromise_quarantine_protocol",
+  "t4_qkdmesh_photonic_pqc_attestation_zero_trust_defense",
+  "t4_qkdmesh_optical_ai_fabric_tensor_confidentiality_enforcement",
+  "t4_qkdmesh_sovereign_ai_silicon_photonics_qkd_capstone"
+];
+
+for (const id of QKDMESH_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/QKDMESH_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_qkdmesh_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

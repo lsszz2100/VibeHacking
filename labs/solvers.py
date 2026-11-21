@@ -2330,6 +2330,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ GraphRAG topological invariant secured -> FLAG{v222_s4_graphrag_topological_permission_shielded}"
             }
         ]
+    },
+    "73": {
+        "title": "73 SiliconPhotonicsQkdLab 실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 랩",
+        "steps": [
+            {
+                "step": 1,
+                "name": "광 버스 물리 계층 의사 난수 스크램블링 및 라인 레이트 패딩",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "차세대 CPO 광 버스에서 텐서 전송 시 발생하는 광 전력 차분 신호를 의사 난수 스크램블링과 더미 심볼 패딩으로 은폐하여 전력 사이드채널을 원천 차단합니다.",
+                "exploit_payload": '{"scrambling_policy": "optical_line_rate_pseudo_random_scramble", "optical_dummy_padding_active": true, "line_rate_jitter_enabled": true, "scramble_polynomials": ["poly_prbs31_cpo", "poly_fibonacci_optical"]}',
+                "defense": "광 버스 의사 난수 스크램블링, 고정 진폭 더미 심볼 패딩, 라인 레이트 지터 주입.",
+                "sample_output": "✓ Optical bus scrambling enforced -> FLAG{v223_s1_optical_bus_scrambling_line_padded}"
+            },
+            {
+                "step": 2,
+                "name": "QKD 지속 양자 키 분배 메시 로테이션 및 QBER 도청 감지",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "보조 양자 광 채널을 통해 BB84/E91 기반 지속적 양자 키 분배를 수행하고, 광 분기 탭 도청 시 발생하는 양자 비트 오차율(QBER)을 실시간 감지하여 키를 폐기합니다.",
+                "exploit_payload": '{"qkd_protocol": "bb84_decoy_state", "qber_threshold_pct": 4.2, "quantum_channel_active": true, "session_key_id": "qkd_key_epoch_2026_01", "qkd_audit_hmac": "<qkd_audit_hmac>"}',
+                "defense": "BB84/E91 양자 키 분배 메시, QBER 실시간 도청 임계치 감시, 세션 키 동적 무효화.",
+                "sample_output": "✓ Continuous QKD key rotation active -> FLAG{v223_s2_qkd_continuous_quantum_key_rotated}"
+            },
+            {
+                "step": 3,
+                "name": "광 도파관 유전체 실드 격리 및 WDM 채널 간섭 차단",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "인접 도파관 간의 광학적 신호 누출 및 파장분할다중(WDM) 채널 간 누화를 유전체 피복 차폐와 ITU Grid 100GHz 이상 채널 간격으로 완전 격리합니다.",
+                "exploit_payload": '{"waveguide_isolation_mode": "dielectric_cladding_shield", "wdm_channel_spacing_ghz": 200, "cross_talk_quarantine_enforced": true, "adjacent_wavelength_leak_blocked": true}',
+                "defense": "유전체 피복 도파관 격리, WDM 주파수 필터링, 교차 테넌트 광 신호 격리.",
+                "sample_output": "✓ Waveguide physical isolation enforced -> FLAG{v223_s3_wdm_waveguide_cross_talk_isolated}"
+            },
+            {
+                "step": 4,
+                "name": "광 트랜시버 마이크로코드 머클 루트 암호학적 원격 증명 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "CPO 광 트랜시버 펌웨어 마이크로코드의 SHA-256 머클 루트와 하드웨어 공급자 암호 서명을 검증하여 광 모듈 공급망 변조 및 불법 루팅을 원천 방어합니다.",
+                "exploit_payload": '{"transceiver_firmware_sha256": "<firmware_sha256>", "photonics_merkle_root": "<merkle_root>", "attestation_sig": "sig_cpo_transceiver_v223_verified_ok", "transceiver_audit_hmac": "<transceiver_audit_hmac>"}',
+                "defense": "광 트랜시버 펌웨어 서명 검증, 하드웨어 Root-of-Trust 머클 증명, 실시간 HMAC 감사.",
+                "sample_output": "✓ Optical transceiver Merkle attestation verified -> FLAG{v223_s4_optical_transceiver_merkle_attested}"
+            }
+        ]
     }
 }
 

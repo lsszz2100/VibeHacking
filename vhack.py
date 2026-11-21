@@ -727,6 +727,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 47, 54, 62, 63, 66, 67, 68, 71],
     },
+    "73": {
+        "name": "실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 실전 랩",
+        "dir":  "73_silicon_photonics_qkd_lab",
+        "desc": "SiliconPhotonicsQkdLab: 광 버스 물리 계층 의사 난수 스크램블링 및 라인 레이트 패딩 · QKD 지속 양자 키 분배 메시 로테이션 및 QBER 도청 감지 · 광 도파관 유전체 실드 격리 및 WDM 채널 간섭 차단 · 광 트랜시버 마이크로코드 머클 루트 암호학적 원격 증명",
+        "url":  "웹 콘솔 & 실리콘 포토닉스 QKD 게이트웨이: http://localhost:8073",
+        "difficulty": "★★★★★",
+        "related": [11, 48, 49, 55, 59, 60, 65, 71, 72],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1778,6 +1786,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8070, "Lab 70 (AutonomousKernelPatchLab Kernel eBPF LSM Hotpatch Lab)"),
         (8071, "Lab 71 (HardwareGpuSidechannelLab GPU Sidechannel Lab)"),
         (8072, "Lab 72 (AgentMemoryPoisonLab AI Agent Memory Defense Lab)"),
+        (8073, "Lab 73 (SiliconPhotonicsQkdLab Optical QKD Mesh Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2204,7 +2213,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py list               섹션 목록
           python3 vhack.py list --search web  "web" 포함 섹션 검색
           python3 vhack.py dashboard          시스템/랩/워게임 통합 관제 대시보드
-          python3 vhack.py benchmark --all    전체 72개 랩 성능 및 지연시간 벤치마크
+          python3 vhack.py benchmark --all    전체 73개 랩 성능 및 지연시간 벤치마크
           python3 vhack.py study 5            웹 해킹 섹션 파일 목록
           python3 vhack.py study 5 1          첫 번째 파일 읽기
           python3 vhack.py lab ls             실습 환경 목록
@@ -2213,7 +2222,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab stop --all     모든 랩 종료
           python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
           python3 vhack.py lab test 16        Lab 16 무결성 테스트
-          python3 vhack.py lab test --all     전체 72개 랩 테스트 일괄 실행
+          python3 vhack.py lab test --all     전체 73개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
@@ -2254,7 +2263,7 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
     p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
     p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~65 (생략 시 안내)")
-    p_test.add_argument("--all", action="store_true", help="전체 72개 랩 테스트 일괄 실행")
+    p_test.add_argument("--all", action="store_true", help="전체 73개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 실시간 로그 보기")
     p_logs.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
@@ -2317,13 +2326,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
     # dashboard (aliases: status, stats)
-    p_dash = sub.add_parser("dashboard", aliases=["status", "stats"], help="통합 관제 대시보드 (시스템 리소스, 72개 랩 상태, 워게임 진행도, 보안 지표)")
+    p_dash = sub.add_parser("dashboard", aliases=["status", "stats"], help="통합 관제 대시보드 (시스템 리소스, 73개 랩 상태, 워게임 진행도, 보안 지표)")
     p_dash.add_argument("--json", action="store_true", help="기계 판독형 JSON 포맷으로 출력")
 
     # benchmark
     p_bench = sub.add_parser("benchmark", help="실습 랩 기동 지연시간, 헬스체크 및 메모리 성능 벤치마크")
     p_bench.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="벤치마크 대상 랩 번호 (예: 01 16 61)")
-    p_bench.add_argument("--all", action="store_true", help="전체 72개 랩 일괄 벤치마크")
+    p_bench.add_argument("--all", action="store_true", help="전체 73개 랩 일괄 벤치마크")
     p_bench.add_argument("--dry-run", "--mock", action="store_true", help="Docker 데몬 없이 내부 검증 모드로 벤치마크 시뮬레이션")
     p_bench.add_argument("-n", "--iterations", type=int, default=1, help="랩당 반복 측정 횟수 (기본값: 1)")
     p_bench.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
@@ -2353,14 +2362,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON/CSV, MITRE ATT&CK & CVSS 3.1)")
     report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
 
-    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 72개 랩)")
+    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 73개 랩)")
     p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 62)")
     p_rep_gen.add_argument("--severity", nargs="*", metavar="SEV", help="위험도 등급 필터 (Critical High Medium Low)")
     p_rep_gen.add_argument("--live", action="store_true", help="현재 실행 중인 랩 컨테이너 실시간 공격 표면 감지")
     p_rep_gen.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="출력 형식 (기본값: md)")
     p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
 
-    report_sub.add_parser("summary", help="전체 72개 랩 취약점 통계 및 심각도 요약")
+    report_sub.add_parser("summary", help="전체 73개 랩 취약점 통계 및 심각도 요약")
     report_sub.add_parser("list-templates", help="지원되는 보고서 포맷 및 템플릿 목록")
 
     # setup-docker
@@ -2512,7 +2521,7 @@ def cmd_report(args: argparse.Namespace) -> None:
 
 
 def cmd_dashboard(args: argparse.Namespace) -> None:
-    """통합 관제 대시보드 (시스템 리소스, 72개 랩 상태, 84개 트랙 워게임 진행도, 보안 지표)"""
+    """통합 관제 대시보드 (시스템 리소스, 73개 랩 상태, 85개 트랙 워게임 진행도, 보안 지표)"""
     import platform
     import shutil
     import json
@@ -2621,7 +2630,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
             solved = prog_data.get("solved", [])
             wargame_stats["solved_count"] = len(solved)
             wargame_stats["score"] = prog_data.get("total_score", 0)
-            wargame_stats["progress_percent"] = round((len(solved) / 2730) * 100, 2)
+            wargame_stats["progress_percent"] = round((len(solved) / 2975) * 100, 2)
         except Exception:
             pass
 
@@ -2631,7 +2640,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
 
     data = {
         "timestamp": datetime.now().isoformat(),
-        "version": "2.15.0",
+        "version": "2.23.0",
         "system": {
             "os": f"{platform.system()} {platform.release()}",
             "arch": platform.machine(),
@@ -2651,8 +2660,8 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
         "wargame": wargame_stats,
         "knowledge_base": {
             "sections": total_sections,
-            "chapters": 490,
-            "simulators": 20,
+            "chapters": 492,
+            "simulators": 39,
         }
     }
 
@@ -2664,7 +2673,7 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
     print()
     print(bold(cyan("╭──────────────────────────────────────────────────────────────────────────────╮")))
     print(bold(cyan("│") + "                 🛡️  " + bold("VIBEHACKING UNIFIED TELEMETRY DASHBOARD") + "                " + cyan("│")))
-    print(bold(cyan("│") + "                     Release v2.6.0 · Defense-In-Depth                        " + cyan("│")))
+    print(bold(cyan("│") + "                     Release v2.23.0 · Defense-In-Depth                       " + cyan("│")))
     print(bold(cyan("╰──────────────────────────────────────────────────────────────────────────────╯")))
 
     # Host & Resources Box
@@ -2711,14 +2720,14 @@ def cmd_dashboard(args: argparse.Namespace) -> None:
     wg_pct = wargame_stats["progress_percent"]
     wg_filled = int((wg_pct / 100) * mem_bar_len)
     wg_bar = "█" * wg_filled + "░" * (mem_bar_len - wg_filled)
-    print(f"  • 전체 풀:     {bold('77')}개 트랙 / {bold('2,695')}개 문제 (Tier 0~4 전 계층)")
-    print(f"  • 요원 진행률: [{cyan(wg_bar)}] {bold(str(wg_pct))}% ({wargame_stats['solved_count']} / 2,695 완료)")
+    print(f"  • 전체 풀:     {bold('85')}개 트랙 / {bold('2,975')}개 문제 (Tier 0~4 전 계층)")
+    print(f"  • 요원 진행률: [{cyan(wg_bar)}] {bold(str(wg_pct))}% ({wargame_stats['solved_count']} / 2,975 완료)")
     print(f"  • 획득 점수:   {bold(yellow(str(wargame_stats['score'])))} pts")
 
     # Knowledge Base
     print(bold("\n📚 지식 저장소 및 보안 지표 (Knowledge Base & Compliance)"))
     print(f"  • 교재 섹션/챕터: {bold(str(total_sections))}개 섹션 / {bold('492')}개 심층 챕터 완비")
-    print(f"  • 인터랙티브 시뮬레이터: {bold('32')}대 웹 콘솔 시뮬레이터 탑재")
+    print(f"  • 인터랙티브 시뮬레이터: {bold('39')}대 웹 콘솔 시뮬레이터 탑재")
     print(f"  • 컴플라이언스 매핑: {green('KISA ISMS-P')} · {cyan('NIST CSF 2.0')} · {yellow('OWASP Top 10')} 100% 매핑")
     print()
 

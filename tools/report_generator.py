@@ -692,6 +692,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM07:2025",
         "owasp_name": "Sleeper Prompt Injection, Vector Store Semantic Embedding Hijacking & Graph Relationship Tampering",
     },
+    "73": {
+        "kisa_id": "2.10.8",
+        "kisa_name": "실리콘 포토닉스 광 버스 물리 계층 난수화 및 QKD 양자 키 메시 무결성 통제 (광 탭 도청 차단, 광 전력 사이드채널 방어, WDM 채널 간섭 격리)",
+        "nist_csf_id": "PR.DS-09",
+        "nist_csf_name": "Silicon Photonics Optical Interconnect Scrambling, Continuous QKD Mesh Rotation & Waveguide Dielectric Isolation",
+        "owasp_id": "LLM08:2025",
+        "owasp_name": "Silicon Photonics Optical Tap Eavesdropping, Optical Power Differential Sidechannel & WDM Inter-Waveguide Crosstalk",
+    },
 }
 
 @dataclass
@@ -2029,6 +2037,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Autonomous AI agent architecture ingests untrusted conversational data directly into long-term episodic memory and vector stores without prompt delimiter sanitization, allowing attackers to plant latent sleeper triggers and tamper with GraphRAG entity privilege edges.",
                 "affected_component": "AgentMemoryPoisonLab Cognitive Memory Engine & GraphRAG Gateway (Port 8072)",
                 "remediation": "Enforce strict prompt delimiter stripping and untrusted memory quarantine partitioning, mandate HMAC-SHA256 session provenance attestation, filter adversarial semantic cosine drift clusters, and cryptographically attest knowledge graph topological invariants."
+            }
+        ]
+    },
+    "73": {
+        "title": "73 SiliconPhotonicsQkdLab Silicon Photonics Optical Interconnect & Quantum Key Distribution Mesh Defense",
+        "category": "Silicon Photonics Security & Quantum Interconnect Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7301",
+                "name": "Optical Waveguide Tap Eavesdropping, Differential Optical Power Sidechannel & WDM Crosstalk",
+                "cvss_vector": "CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1200",
+                "mitre_technique": "Hardware Additions: Optical Bus Micro-Bending & Tap Eavesdropping",
+                "mitre_tactic": "Collection / Initial Access / Impact",
+                "impact": "Adversary tapping co-packaged optics (CPO) micro-waveguides or measuring differential optical power variations recovers unencrypted interconnect bus transfers and corrupts multi-chiplet tensor memory sync.",
+                "description": "Silicon photonics optical interconnect bus transmits unpadded plain optical pulses across CPO waveguides without physical-layer pseudo-random bit scrambling or continuous QKD key rotation, enabling physical micro-bending tap eavesdropping and optical power differential sidechannel leakage.",
+                "affected_component": "SiliconPhotonicsQkdLab Optical Interconnect Bus & QKD Gateway (Port 8073)",
+                "remediation": "Deploy physical-layer pseudo-random optical bus scrambling, enforce continuous QKD (BB84/B92) symmetric key rotation with QBER anomaly thresholds (<3.0%), apply dielectric shielding against optical crosstalk, and cryptographically verify transceiver microcode signatures against hardware Merkle roots."
             }
         ]
     }

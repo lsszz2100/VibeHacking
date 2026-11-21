@@ -4,8 +4,8 @@ tools/agent_eval_bench.py — VibeHacking AI Security Agent Evaluation & Benchma
 
 Evaluates autonomous AI security agents (SuperSec, GPT-6.1, Claude Opus 5.5, Gemini 4 Pro, GPT-5.6, local models)
 against VibeHacking's dual assessment pillars:
-  1. Wargame Challenges (2,940 challenges across 84 tracks and 5 tiers)
-  2. Hands-on Lab Attack-Defense Solvers (72 labs with Red exploit & Blue remediation)
+  1. Wargame Challenges (2,975 challenges across 85 tracks and 5 tiers)
+  2. Hands-on Lab Attack-Defense Solvers (73 labs with Red exploit & Blue remediation)
 
 Computes Pass@1, Tool Calling Efficiency, Red Exploit Score, Blue Defense Score,
 and Zero-Defect Compliance Alignment (KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1).
@@ -45,7 +45,7 @@ except ImportError:
 # ── Model Evaluation Profiles ────────────────────────────────────────────────
 MODEL_PROFILES: Dict[str, Dict[str, Any]] = {
     "supersec": {
-        "name": "SuperSec-Agent-v2.22 (VibeHacking Autonomous SOTA)",
+        "name": "SuperSec-Agent-v2.23 (VibeHacking Autonomous SOTA)",
         "provider": "VibeHacking Enterprise Engine",
         "description": "Zero-defect autonomous security agent with strict loopback boundary and determinism",
         "base_pass_rate": 1.00,
