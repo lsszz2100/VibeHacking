@@ -120,6 +120,12 @@ const ALLOWLIST = new Map([
   ['t2_volpsscan -> t3_pwnunlink', 'psscan detects unlinked processes from ActiveProcessLinks'],
   ['t2_volpsscan -> t0_ps', 'psscan identifies hidden processes bypassing ps listing'],
   ['t4_volcapstone -> t4_volrunasppl', 'Capstone investigates LSASS dumping against RunAsPPL protection'],
+  // KernelZero eBPF LSM Hotpatch domain terms
+  ['t0_kernelzero_kernel_zeroday_threat_model -> t4_uaf', 'Kernel zero-day threat model references Use-After-Free primitives'],
+  ['t1_kernelzero_bpf_map_hash_signature_lookup -> t3_ebpfmapspec', 'Kernel BPF map lookup challenge analyzes BPF map specifications'],
+  ['t2_kernelzero_ebpf_tail_call_chain_policy_engine -> t3_ebpftailcall', 'BPF tail call chaining challenge references eBPF tail calls'],
+  ['t2_kernelzero_ebpf_tail_call_chain_policy_engine -> t4_ztpe', 'BPF defense policy engine references zero trust policy enforcement'],
+  ['t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel -> t4_rop', 'Kernel memory safety sentinel mitigates ROP gadget chains'],
   // AI Agent & MCP Security domain terms
   ['t0_aiagent_rag_exfiltration -> t1_embedding', 'RAG search uses vector embeddings'],
   ['t0_aiagent_sandbox_boundary -> t4_gvisor', 'Agent execution sandbox references gVisor container runtime'],

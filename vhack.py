@@ -703,6 +703,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 18, 35, 41, 54, 62, 66, 67, 68],
     },
+    "70": {
+        "name": "커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 실전 랩",
+        "dir":  "70_autonomous_kernel_patch_lab",
+        "desc": "AutonomousKernelPatchLab: eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단 · BPF_MAP_TYPE_HASH 실시간 룩업 & RingBuffer 비동기 텔레메트리 격리 · Seccomp-BPF 동적 핫패칭을 통한 io_uring_enter 시스템 콜 격리 · 머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명",
+        "url":  "웹 콘솔 & 커널 eBPF LSM 핫패처: http://localhost:8070",
+        "difficulty": "★★★★★",
+        "related": [13, 14, 20, 26, 47, 51, 64, 68, 69],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1751,6 +1759,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8067, "Lab 67 (ConfidentialAiInferenceLab AMD SEV/TDX TEE Lab)"),
         (8068, "Lab 68 (AutonomousAgentSwarmLab Multi-Agent Swarm Byzantine Defense Lab)"),
         (8069, "Lab 69 (ModelWeightStegoLab AI Weight Steganography Lab)"),
+        (8070, "Lab 70 (AutonomousKernelPatchLab Kernel eBPF LSM Hotpatch Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -2177,7 +2186,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py list               섹션 목록
           python3 vhack.py list --search web  "web" 포함 섹션 검색
           python3 vhack.py dashboard          시스템/랩/워게임 통합 관제 대시보드
-          python3 vhack.py benchmark --all    전체 69개 랩 성능 및 지연시간 벤치마크
+          python3 vhack.py benchmark --all    전체 70개 랩 성능 및 지연시간 벤치마크
           python3 vhack.py study 5            웹 해킹 섹션 파일 목록
           python3 vhack.py study 5 1          첫 번째 파일 읽기
           python3 vhack.py lab ls             실습 환경 목록
@@ -2186,7 +2195,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab stop --all     모든 랩 종료
           python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
           python3 vhack.py lab test 16        Lab 16 무결성 테스트
-          python3 vhack.py lab test --all     전체 69개 랩 테스트 일괄 실행
+          python3 vhack.py lab test --all     전체 70개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
@@ -2227,7 +2236,7 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
     p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
     p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~65 (생략 시 안내)")
-    p_test.add_argument("--all", action="store_true", help="전체 69개 랩 테스트 일괄 실행")
+    p_test.add_argument("--all", action="store_true", help="전체 70개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 실시간 로그 보기")
     p_logs.add_argument("lab_id", metavar="랩번호", help="01~65")
     p_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
@@ -2290,13 +2299,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
     # dashboard (aliases: status, stats)
-    p_dash = sub.add_parser("dashboard", aliases=["status", "stats"], help="통합 관제 대시보드 (시스템 리소스, 69개 랩 상태, 워게임 진행도, 보안 지표)")
+    p_dash = sub.add_parser("dashboard", aliases=["status", "stats"], help="통합 관제 대시보드 (시스템 리소스, 70개 랩 상태, 워게임 진행도, 보안 지표)")
     p_dash.add_argument("--json", action="store_true", help="기계 판독형 JSON 포맷으로 출력")
 
     # benchmark
     p_bench = sub.add_parser("benchmark", help="실습 랩 기동 지연시간, 헬스체크 및 메모리 성능 벤치마크")
     p_bench.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="벤치마크 대상 랩 번호 (예: 01 16 61)")
-    p_bench.add_argument("--all", action="store_true", help="전체 69개 랩 일괄 벤치마크")
+    p_bench.add_argument("--all", action="store_true", help="전체 70개 랩 일괄 벤치마크")
     p_bench.add_argument("--dry-run", "--mock", action="store_true", help="Docker 데몬 없이 내부 검증 모드로 벤치마크 시뮬레이션")
     p_bench.add_argument("-n", "--iterations", type=int, default=1, help="랩당 반복 측정 횟수 (기본값: 1)")
     p_bench.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
@@ -2307,7 +2316,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_disc.add_argument("--en", action="store_true", help="영문 면책조항 출력 (English version)")
 
     # portal
-    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (69개 랩 제어, 진단, 웹 리더 연계)")
+    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (70개 랩 제어, 진단, 웹 리더 연계)")
     p_portal.add_argument("--host", default="127.0.0.1", help="바인딩 호스트 IP (기본값: 127.0.0.1 - 보안 권장)")
     p_portal.add_argument("--port", type=int, default=8800, help="웹 서버 포트 (기본값: 8800)")
     p_portal.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
@@ -2326,14 +2335,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report = sub.add_parser("report", help="보안 취약점 진단 보고서 생성기 (Markdown/HTML/JSON/CSV, MITRE ATT&CK & CVSS 3.1)")
     report_sub = p_report.add_subparsers(dest="report_cmd", metavar="<서브명령>")
 
-    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 69개 랩)")
+    p_rep_gen = report_sub.add_parser("generate", help="진단 보고서 생성 (기본: 전체 70개 랩)")
     p_rep_gen.add_argument("--lab-id", nargs="*", metavar="LAB_ID", help="진단 대상 랩 번호 (예: 01 42 62)")
     p_rep_gen.add_argument("--severity", nargs="*", metavar="SEV", help="위험도 등급 필터 (Critical High Medium Low)")
     p_rep_gen.add_argument("--live", action="store_true", help="현재 실행 중인 랩 컨테이너 실시간 공격 표면 감지")
     p_rep_gen.add_argument("--format", choices=["md", "html", "json", "csv"], default="md", help="출력 형식 (기본값: md)")
     p_rep_gen.add_argument("-o", "--output", metavar="FILE", help="저장할 파일 경로 (미지정시 reports/ 디렉토리 자동 저장)")
 
-    report_sub.add_parser("summary", help="전체 69개 랩 취약점 통계 및 심각도 요약")
+    report_sub.add_parser("summary", help="전체 70개 랩 취약점 통계 및 심각도 요약")
     report_sub.add_parser("list-templates", help="지원되는 보고서 포맷 및 템플릿 목록")
 
     # setup-docker
@@ -2346,7 +2355,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_drill = sub.add_parser("drill", help="10대 보안 기술팀 공방전 자동 훈련 엔진 (Red vs Blue 시뮬레이션 & Purple Team 점수 산출)")
     p_drill.add_argument("--team", type=str, help="특정 팀 선택 (red, blue, purple, white, yellow, green, orange, gold, re, antire)")
     p_drill.add_argument("--lab", type=str, help="특정 랩 ID 선택 (예: 57, 56, 01)")
-    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 69개 랩 종합 공방전 실행")
+    p_drill.add_argument("--all", action="store_true", help="전체 10대 보안팀 및 70개 랩 종합 공방전 실행")
     p_drill.add_argument("--json", action="store_true", help="JSON 포맷으로 출력")
     p_drill.add_argument("--report", action="store_true", help="결과 리포트 파일(reports/team_drill_latest.json) 자동 저장")
     p_drill.add_argument("--verbose", "-v", action="store_true", help="단계별 상세 페이로드 및 룰 출력")
@@ -2485,7 +2494,7 @@ def cmd_report(args: argparse.Namespace) -> None:
 
 
 def cmd_dashboard(args: argparse.Namespace) -> None:
-    """통합 관제 대시보드 (시스템 리소스, 69개 랩 상태, 77개 트랙 워게임 진행도, 보안 지표)"""
+    """통합 관제 대시보드 (시스템 리소스, 70개 랩 상태, 77개 트랙 워게임 진행도, 보안 지표)"""
     import platform
     import shutil
     import json

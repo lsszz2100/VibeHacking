@@ -1,6 +1,6 @@
 {
   "status": "SUCCESS",
-  "timestamp": "2026-11-21 16:32:39",
+  "timestamp": "2026-11-21 17:26:36",
   "teams_tested": [
     "red",
     "blue",
@@ -13,30 +13,30 @@
     "re",
     "antire"
   ],
-  "total_drills": 77,
-  "total_attacks_executed": 236,
-  "total_attacks_detected": 236,
-  "total_attacks_blocked": 236,
+  "total_drills": 80,
+  "total_attacks_executed": 248,
+  "total_attacks_detected": 248,
+  "total_attacks_blocked": 248,
   "overall_detection_rate": 100.0,
   "overall_mitigation_rate": 100.0,
   "overall_composite_score": 100.0,
   "team_breakdown": {
     "red": {
       "team_name": "레드팀",
-      "labs_tested": 8,
-      "attacks": 22,
-      "detected": 22,
-      "blocked": 22,
+      "labs_tested": 9,
+      "attacks": 26,
+      "detected": 26,
+      "blocked": 26,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
     },
     "blue": {
       "team_name": "블루팀",
-      "labs_tested": 8,
-      "attacks": 24,
-      "detected": 24,
-      "blocked": 24,
+      "labs_tested": 9,
+      "attacks": 28,
+      "detected": 28,
+      "blocked": 28,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -53,10 +53,10 @@
     },
     "white": {
       "team_name": "화이트팀",
-      "labs_tested": 12,
-      "attacks": 43,
-      "detected": 43,
-      "blocked": 43,
+      "labs_tested": 13,
+      "attacks": 47,
+      "detected": 47,
+      "blocked": 47,
       "detection_rate": 100.0,
       "mitigation_rate": 100.0,
       "score": 100.0
@@ -154,7 +154,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "05",
@@ -187,7 +187,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "20",
@@ -341,7 +341,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "38",
@@ -407,7 +407,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "52",
@@ -473,7 +473,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "54",
@@ -539,7 +539,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.04
+    },
+    {
+      "lab_id": "70",
+      "team_id": "red",
+      "team_name": "레드팀",
+      "lab_title": "70 AutonomousKernelPatchLab 커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 랩",
+      "cve": "VIBE-2026-7001",
+      "cvss": 9.3,
+      "mitre": "T1068",
+      "kisa": "2.10.5",
+      "nist": "PR.PS-02",
+      "owasp": "LLM05:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Autonomous Kernel eBPF LSM Hotpatch Engine & Seccomp-BPF Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단 및 시그니처 필터링",
+          "red_attack": "커널 바이너리 실행 진입점인 security_bprm_check LSM 훅을 설치하여 악성 0-Day 셸코드 및 SLUB 프리리스트 변조 실행을 실시간 격리 차단합니다.",
+          "blue_defense": "eBPF BPF_PROG_TYPE_LSM 런타임 훅, 악성 바이트코드 사전 차단, SLUB 메모리 무결성 감시.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "BPF_MAP_TYPE_HASH 실시간 룩업 및 RingBuffer 비동기 텔레메트리 격리",
+          "red_attack": "BPF 해시 맵에 등록된 위협 IP/시그니처를 마이크로초 이내에 룩업하고, 무복사 RingBuffer를 통해 보안 관제 데몬에 이상 침입 이벤트를 즉각 스트리밍합니다.",
+          "blue_defense": "BPF 고속 해시 맵 인스펙션, 커널 링버퍼 비동기 알림, 서브마이크로초 제로-카피 격리.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "Seccomp-BPF 동적 핫패칭 및 io_uring_enter 취약 시스템 콜 격리",
+          "red_attack": "서버 재부팅 없이 취약한 io_uring_enter 시스템 콜을 Seccomp-BPF 필터로 핫패칭하여 SECCOMP_RET_ERRNO로 즉시 격리 및 커널 패닉을 방지합니다.",
+          "blue_defense": "Seccomp-BPF 동적 필터 핫패칭, 취약 시스템 콜 격리, 커널 패닉 방지 안전망.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명 (Capstone)",
+          "red_attack": "인커널 eBPF 핫패치 바이트코드의 SHA-256 머클 루트 해시와 공급업체 Ed25519 디지털 서명을 검증하여 비인가 커널 코드 삽입을 원천 차단합니다.",
+          "blue_defense": "머클 트리 블록 불변성 검증, Ed25519 인커널 서명 체인, Rekor 투명성 원장 연동.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "07",
@@ -572,7 +638,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.01
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "13",
@@ -605,7 +671,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "23",
@@ -660,7 +726,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "26",
@@ -715,7 +781,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "40",
@@ -913,7 +979,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -979,7 +1045,73 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
+    },
+    {
+      "lab_id": "70",
+      "team_id": "blue",
+      "team_name": "블루팀",
+      "lab_title": "70 AutonomousKernelPatchLab 커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 랩",
+      "cve": "VIBE-2026-7001",
+      "cvss": 9.3,
+      "mitre": "T1068",
+      "kisa": "2.10.5",
+      "nist": "PR.PS-02",
+      "owasp": "LLM05:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Autonomous Kernel eBPF LSM Hotpatch Engine & Seccomp-BPF Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단 및 시그니처 필터링",
+          "red_attack": "커널 바이너리 실행 진입점인 security_bprm_check LSM 훅을 설치하여 악성 0-Day 셸코드 및 SLUB 프리리스트 변조 실행을 실시간 격리 차단합니다.",
+          "blue_defense": "eBPF BPF_PROG_TYPE_LSM 런타임 훅, 악성 바이트코드 사전 차단, SLUB 메모리 무결성 감시.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "BPF_MAP_TYPE_HASH 실시간 룩업 및 RingBuffer 비동기 텔레메트리 격리",
+          "red_attack": "BPF 해시 맵에 등록된 위협 IP/시그니처를 마이크로초 이내에 룩업하고, 무복사 RingBuffer를 통해 보안 관제 데몬에 이상 침입 이벤트를 즉각 스트리밍합니다.",
+          "blue_defense": "BPF 고속 해시 맵 인스펙션, 커널 링버퍼 비동기 알림, 서브마이크로초 제로-카피 격리.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "Seccomp-BPF 동적 핫패칭 및 io_uring_enter 취약 시스템 콜 격리",
+          "red_attack": "서버 재부팅 없이 취약한 io_uring_enter 시스템 콜을 Seccomp-BPF 필터로 핫패칭하여 SECCOMP_RET_ERRNO로 즉시 격리 및 커널 패닉을 방지합니다.",
+          "blue_defense": "Seccomp-BPF 동적 필터 핫패칭, 취약 시스템 콜 격리, 커널 패닉 방지 안전망.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명 (Capstone)",
+          "red_attack": "인커널 eBPF 핫패치 바이트코드의 SHA-256 머클 루트 해시와 공급업체 Ed25519 디지털 서명을 검증하여 비인가 커널 코드 삽입을 원천 차단합니다.",
+          "blue_defense": "머클 트리 블록 불변성 검증, Ed25519 인커널 서명 체인, Rekor 투명성 원장 연동.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.06
     },
     {
       "lab_id": "01",
@@ -1056,7 +1188,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "05",
@@ -1089,7 +1221,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "13",
@@ -1177,7 +1309,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "38",
@@ -1309,7 +1441,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "56",
@@ -1375,7 +1507,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.11
     },
     {
       "lab_id": "02",
@@ -1419,7 +1551,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "10",
@@ -1452,7 +1584,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "39",
@@ -1518,7 +1650,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "49",
@@ -1584,7 +1716,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "54",
@@ -1650,7 +1782,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "58",
@@ -1716,7 +1848,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "59",
@@ -1782,7 +1914,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.18
+      "elapsed_ms": 0.09
     },
     {
       "lab_id": "60",
@@ -1848,7 +1980,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "61",
@@ -1914,7 +2046,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.12
     },
     {
       "lab_id": "67",
@@ -1980,7 +2112,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.07
+      "elapsed_ms": 0.05
     },
     {
       "lab_id": "68",
@@ -2046,7 +2178,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "69",
@@ -2115,6 +2247,72 @@
       "elapsed_ms": 0.04
     },
     {
+      "lab_id": "70",
+      "team_id": "white",
+      "team_name": "화이트팀",
+      "lab_title": "70 AutonomousKernelPatchLab 커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 랩",
+      "cve": "VIBE-2026-7001",
+      "cvss": 9.3,
+      "mitre": "T1068",
+      "kisa": "2.10.5",
+      "nist": "PR.PS-02",
+      "owasp": "LLM05:2025",
+      "attacks_executed": 4,
+      "attacks_detected": 4,
+      "attacks_blocked": 4,
+      "detection_rate": 100.0,
+      "mitigation_rate": 100.0,
+      "composite_score": 100.0,
+      "detection_engine": "Autonomous Kernel eBPF LSM Hotpatch Engine & Seccomp-BPF Guard",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단 및 시그니처 필터링",
+          "red_attack": "커널 바이너리 실행 진입점인 security_bprm_check LSM 훅을 설치하여 악성 0-Day 셸코드 및 SLUB 프리리스트 변조 실행을 실시간 격리 차단합니다.",
+          "blue_defense": "eBPF BPF_PROG_TYPE_LSM 런타임 훅, 악성 바이트코드 사전 차단, SLUB 메모리 무결성 감시.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S1",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 16.7
+        },
+        {
+          "stage": 2,
+          "name": "BPF_MAP_TYPE_HASH 실시간 룩업 및 RingBuffer 비동기 텔레메트리 격리",
+          "red_attack": "BPF 해시 맵에 등록된 위협 IP/시그니처를 마이크로초 이내에 룩업하고, 무복사 RingBuffer를 통해 보안 관제 데몬에 이상 침입 이벤트를 즉각 스트리밍합니다.",
+          "blue_defense": "BPF 고속 해시 맵 인스펙션, 커널 링버퍼 비동기 알림, 서브마이크로초 제로-카피 격리.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S2",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 20.9
+        },
+        {
+          "stage": 3,
+          "name": "Seccomp-BPF 동적 핫패칭 및 io_uring_enter 취약 시스템 콜 격리",
+          "red_attack": "서버 재부팅 없이 취약한 io_uring_enter 시스템 콜을 Seccomp-BPF 필터로 핫패칭하여 SECCOMP_RET_ERRNO로 즉시 격리 및 커널 패닉을 방지합니다.",
+          "blue_defense": "Seccomp-BPF 동적 필터 핫패칭, 취약 시스템 콜 격리, 커널 패닉 방지 안전망.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S3",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 25.1
+        },
+        {
+          "stage": 4,
+          "name": "머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명 (Capstone)",
+          "red_attack": "인커널 eBPF 핫패치 바이트코드의 SHA-256 머클 루트 해시와 공급업체 Ed25519 디지털 서명을 검증하여 비인가 커널 코드 삽입을 원천 차단합니다.",
+          "blue_defense": "머클 트리 블록 불변성 검증, Ed25519 인커널 서명 체인, Rekor 투명성 원장 연동.",
+          "detection_rule": "KERNEL-EBPF-LSM-0DAY-HOTPATCH-7001-S4",
+          "status": "DEFENDED",
+          "detected": true,
+          "blocked": true,
+          "ttd_ms": 29.3
+        }
+      ],
+      "elapsed_ms": 0.07
+    },
+    {
       "lab_id": "01",
       "team_id": "yellow",
       "team_name": "옐로팀",
@@ -2156,7 +2354,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "18",
@@ -2189,7 +2387,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "22",
@@ -2244,7 +2442,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "24",
@@ -2299,7 +2497,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.21
     },
     {
       "lab_id": "31",
@@ -2354,7 +2552,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "41",
@@ -2420,7 +2618,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "53",
@@ -2486,7 +2684,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "69",
@@ -2585,7 +2783,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "10",
@@ -2618,7 +2816,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "28",
@@ -2673,7 +2871,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "32",
@@ -2728,7 +2926,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "35",
@@ -2783,7 +2981,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "46",
@@ -2849,7 +3047,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "55",
@@ -2915,7 +3113,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "58",
@@ -2981,7 +3179,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "59",
@@ -3047,7 +3245,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "60",
@@ -3113,7 +3311,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "61",
@@ -3179,7 +3377,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "01",
@@ -3223,7 +3421,7 @@
           "ttd_ms": 20.9
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "06",
@@ -3256,7 +3454,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "33",
@@ -3311,7 +3509,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "42",
@@ -3377,7 +3575,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.08
     },
     {
       "lab_id": "43",
@@ -3443,7 +3641,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "44",
@@ -3509,7 +3707,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.04
     },
     {
       "lab_id": "13",
@@ -3542,7 +3740,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "25",
@@ -3597,7 +3795,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "33",
@@ -3652,7 +3850,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "41",
@@ -3718,7 +3916,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "48",
@@ -3784,7 +3982,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "55",
@@ -3850,7 +4048,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "56",
@@ -3916,7 +4114,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.03
     },
     {
       "lab_id": "03",
@@ -3949,7 +4147,7 @@
           "ttd_ms": 16.7
         }
       ],
-      "elapsed_ms": 0.02
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "20",
@@ -4092,7 +4290,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.05
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "47",
@@ -4158,7 +4356,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.06
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -4224,7 +4422,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "36",
@@ -4279,7 +4477,7 @@
           "ttd_ms": 25.1
         }
       ],
-      "elapsed_ms": 0.03
+      "elapsed_ms": 0.01
     },
     {
       "lab_id": "51",
@@ -4345,7 +4543,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.04
+      "elapsed_ms": 0.02
     },
     {
       "lab_id": "57",
@@ -4411,7 +4609,7 @@
           "ttd_ms": 29.3
         }
       ],
-      "elapsed_ms": 0.08
+      "elapsed_ms": 0.01
     }
   ]
 }

@@ -710,6 +710,14 @@ const TRACKS = [
     "en": "Neural Weight Steganography, SafeTensors Hardening & Sigstore Cosign",
     "desc_ko": "Pickle RCE 역직렬화 차단·SafeTensors 헤더 무결성 검증·가중치 가수부 LSB 스테가노그래피 은닉 탐지 & 비트마스크 양자화 살균·카이제곱 적합도 검정 및 샤논 엔트로피 이상치 감사·Sigstore Cosign 머클 트리 원격 증명 및 모델 출처 불변성 검증.",
     "desc_en": "Pickle deserialization RCE mitigation, SafeTensors header integrity validation, weight mantissa LSB steganography detection and quantization sanitization, Chi-Square goodness-of-fit and Shannon entropy anomaly auditing, and Sigstore Cosign Merkle tree attestation."
+  },
+  {
+    "id": "kernelzero",
+    "icon": "🛡️",
+    "ko": "자율 커널 eBPF LSM 핫패칭 & 0-Day 런타임 방어",
+    "en": "Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense",
+    "desc_ko": "eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단·BPF_MAP_TYPE_HASH 실시간 룩업 & RingBuffer 비동기 텔레메트리 격리·Seccomp-BPF 동적 핫패칭을 통한 io_uring_enter 시스템 콜 격리·머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명.",
+    "desc_en": "eBPF LSM security_bprm_check hook execution blocking, BPF_MAP_TYPE_HASH realtime lookups and RingBuffer telemetry quarantine, dynamic Seccomp-BPF io_uring_enter isolation, and Merkle tree Ed25519 hotpatch attestation."
   }
 ];
 
@@ -79938,6 +79946,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_weightsec_capstone_weightsec_sovereign_ai_assurance`."
+      ]
+    }
+  },
+  // Track 82: kernelzero - Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense (35 challenges)
+  {
+    "id": "t0_kernelzero_kernel_zeroday_threat_model",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "e99cbb6c5160f217dfb91ce9eb1cf35db3d837ce078aa6f156b14316ac1c5454",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 AI 커널 익스플로잇 위협 모델 및 취약점 분류",
+      "en": "Kernel 0-Day Threat Model & Vulnerability Taxonomy"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 자율 AI 커널 익스플로잇 위협 모델 및 취약점 분류\n상세 분석 지침:\n- AI 자율 에이전트가 찾아낸 커널 0-Day 취약점(UAF, OOB, Race Condition)과 시스템 전체 장악 위협 모델을 분석합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_kernel_zeroday_threat_model`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Kernel 0-Day Threat Model & Vulnerability Taxonomy\nAnalysis Requirements:\n- Analyze autonomous AI-discovered kernel 0-day primitives (UAF, OOB, race conditions) and full-system compromise threat models.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_kernel_zeroday_threat_model`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_kernel_zeroday_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_kernel_zeroday_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_kernelzero_ebpf_lsm_architecture_fundamentals",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "678dc03fedba84f3414e40b6e8a93b0da5493e2329d92c65c95edb72802840ae",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM (BPF_PROG_TYPE_LSM) 아키텍처 및 런타임 훅 기초",
+      "en": "eBPF LSM Architecture & Runtime Hook Fundamentals"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: eBPF LSM (BPF_PROG_TYPE_LSM) 아키텍처 및 런타임 훅 기초\n상세 분석 지침:\n- 리눅스 보안 모듈(LSM) 프레임워크와 결합된 eBPF BPF_PROG_TYPE_LSM 프로그램의 검증기(Verifier) 및 훅 동작 원리를 학습합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_ebpf_lsm_architecture_fundamentals`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: eBPF LSM Architecture & Runtime Hook Fundamentals\nAnalysis Requirements:\n- Study the Linux Security Module (LSM) framework coupled with eBPF BPF_PROG_TYPE_LSM verifier guarantees and hook execution.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_ebpf_lsm_architecture_fundamentals`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_ebpf_lsm_architecture_fundamentals` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_ebpf_lsm_architecture_fundamentals`."
+      ]
+    }
+  },
+  {
+    "id": "t0_kernelzero_use_after_free_in_slub_allocator",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "0ea9d5133f82b0dc53275758a59f773ee7dd24838ef8e1c20c54316998a52cbb",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "리눅스 커널 SLUB 메모리 할당자 UAF(Use-After-Free) 원리",
+      "en": "Kernel SLUB Memory Allocator Use-After-Free Principles"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 리눅스 커널 SLUB 메모리 할당자 UAF(Use-After-Free) 원리\n상세 분석 지침:\n- kmem_cache 및 SLUB freelist 조작을 통한 커널 객체 재할당 및 임의 코드 실행 공격 메커니즘을 학습합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_use_after_free_in_slub_allocator`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Kernel SLUB Memory Allocator Use-After-Free Principles\nAnalysis Requirements:\n- Learn kernel object reallocation and arbitrary code execution pathways via kmem_cache and SLUB freelist corruption.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_use_after_free_in_slub_allocator`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_use_after_free_in_slub_allocator` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_use_after_free_in_slub_allocator`."
+      ]
+    }
+  },
+  {
+    "id": "t0_kernelzero_seccomp_bpf_syscall_filtering_theory",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "f8beb3a4585c321e020642e078dc8ba19b2a9e51ac863f548a9a728ea3de1d57",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Seccomp-BPF 시스템 콜 필터링 및 공격 표면 축소 이론",
+      "en": "Seccomp-BPF System Call Filtering & Surface Reduction Theory"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: Seccomp-BPF 시스템 콜 필터링 및 공격 표면 축소 이론\n상세 분석 지침:\n- 위험한 시스템 콜(io_uring, bpf, userfaultfd)을 프로세스 단위로 제한하여 커널 공격 표면을 격리하는 Seccomp 원리를 학습합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_seccomp_bpf_syscall_filtering_theory`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Seccomp-BPF System Call Filtering & Surface Reduction Theory\nAnalysis Requirements:\n- Study Seccomp-BPF architecture restricting dangerous syscalls (io_uring, bpf, userfaultfd) to isolate kernel attack surfaces.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_seccomp_bpf_syscall_filtering_theory`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_seccomp_bpf_syscall_filtering_theory` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_seccomp_bpf_syscall_filtering_theory`."
+      ]
+    }
+  },
+  {
+    "id": "t0_kernelzero_kernel_hotpatching_kprobe_vs_lsm",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "ce7118dde2bbfd1834ba98fcd3b1232132a2b5d1d59595e6410e85da3a0cca67",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "라이브 커널 핫패칭: Kprobe/Ftrace vs BPF LSM 비교 분석",
+      "en": "Live Kernel Hotpatching: Kprobe vs BPF LSM Comparison"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 라이브 커널 핫패칭: Kprobe/Ftrace vs BPF LSM 비교 분석\n상세 분석 지침:\n- 기존 ftrace/kprobe 기반 동적 패칭과 최신 eBPF LSM 기반 런타임 인라인 차단의 성능, 안정성 및 안전성을 비교합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_kernel_hotpatching_kprobe_vs_lsm`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Live Kernel Hotpatching: Kprobe vs BPF LSM Comparison\nAnalysis Requirements:\n- Compare performance, stability, and safety between legacy ftrace/kprobe patching and modern eBPF LSM inline blocking.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_kernel_hotpatching_kprobe_vs_lsm`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_kernel_hotpatching_kprobe_vs_lsm` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_kernel_hotpatching_kprobe_vs_lsm`."
+      ]
+    }
+  },
+  {
+    "id": "t0_kernelzero_merkle_patch_integrity_attestation",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "bc80634299724a972c1793f2ba8b45364979f31bdb3e7c926f75a8b3e5c26427",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "암호학적 머클 트리 기반 커널 패치 무결성 검증 원리",
+      "en": "Cryptographic Merkle Tree Kernel Patch Integrity Attestation"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 암호학적 머클 트리 기반 커널 패치 무결성 검증 원리\n상세 분석 지침:\n- 핫패치 바이트코드 블록을 머클 트리로 구조화하여 공급망 변조 및 비인가 코드 삽입을 수학적으로 방어하는 원리를 분석합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_merkle_patch_integrity_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Cryptographic Merkle Tree Kernel Patch Integrity Attestation\nAnalysis Requirements:\n- Analyze cryptographic Merkle trees structuring hotpatch bytecode blocks to prevent supply chain tampering and rogue injections.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_merkle_patch_integrity_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_merkle_patch_integrity_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_merkle_patch_integrity_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t0_kernelzero_runtime_ebpf_ringbuffer_telemetry",
+    "tier": 0,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 25,
+    "ci": false,
+    "hash": "9de4c2e03bc73e1981483bf6a3ef4def2c6d2a408e4b0185bcc17806762c04fc",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF RingBuffer 비동기 텔레메트리 및 이상 징후 스트리밍",
+      "en": "eBPF RingBuffer Asynchronous Telemetry & Anomaly Streaming"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: eBPF RingBuffer 비동기 텔레메트리 및 이상 징후 스트리밍\n상세 분석 지침:\n- perf_buffer 대비 오버헤드가 극히 적은 BPF RingBuffer를 통해 커널 공간의 위협 이벤트를 유저랜드로 무복사 스트리밍하는 기초를 정립합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t0_kernelzero_runtime_ebpf_ringbuffer_telemetry`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: eBPF RingBuffer Asynchronous Telemetry & Anomaly Streaming\nAnalysis Requirements:\n- Establish fundamentals of zero-copy threat telemetry streaming from kernel space to userland via high-performance BPF RingBuffer.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t0_kernelzero_runtime_ebpf_ringbuffer_telemetry`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_kernelzero_runtime_ebpf_ringbuffer_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_kernelzero_runtime_ebpf_ringbuffer_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_bpf_lsm_hook_security_bprm_check",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "365d271c381373a20048e75c373d6aebced6f61b293ea12f999a552e248bb772",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "security_bprm_check 훅 기반 바이너리 실행 사전 차단 감사",
+      "en": "security_bprm_check Hook Pre-Execution Binary Audit"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: security_bprm_check 훅 기반 바이너리 실행 사전 차단 감사\n상세 분석 지침:\n- 바이너리가 실행되기 직전 security_bprm_check LSM 훅을 호출하여 바이너리 해시 및 악성 ELF 헤더를 정밀 감사합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_bpf_lsm_hook_security_bprm_check`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: security_bprm_check Hook Pre-Execution Binary Audit\nAnalysis Requirements:\n- Audit binary hashes and malicious ELF headers right before execution by hooking the security_bprm_check LSM entry point.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_bpf_lsm_hook_security_bprm_check`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_bpf_lsm_hook_security_bprm_check` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_bpf_lsm_hook_security_bprm_check`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_kernel_oob_write_gadget_disassembly",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "8b4e4ed1ccc923c561178226e859371d5e29f33c3f571cc95ffae72b8c4bc06b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 임의 쓰기(OOB Write) 원시 가젯 역어셈블리 분석",
+      "en": "Kernel Out-of-Bounds Write Primitive Disassembly Analysis"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 커널 임의 쓰기(OOB Write) 원시 가젯 역어셈블리 분석\n상세 분석 지침:\n- 커널 모듈 디스어셈블리에서 경계 검사 누락으로 인한 힙 OOB 쓰기 가젯을 식별하고 타겟 구조체를 분석합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_kernel_oob_write_gadget_disassembly`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Kernel Out-of-Bounds Write Primitive Disassembly Analysis\nAnalysis Requirements:\n- Identify heap out-of-bounds write gadgets in disassembled kernel modules caused by missing boundary validation.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_kernel_oob_write_gadget_disassembly`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_kernel_oob_write_gadget_disassembly` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_kernel_oob_write_gadget_disassembly`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_bpf_map_hash_signature_lookup",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "1dc8e74595c284b28496fa2675ccc848b8b78cb022cff3259e88f4576bd8c30c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF_MAP_TYPE_HASH 기반 실시간 악성 페이로드 해시 룩업",
+      "en": "BPF_MAP_TYPE_HASH Real-Time Malicious Payload Hash Lookup"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: BPF_MAP_TYPE_HASH 기반 실시간 악성 페이로드 해시 룩업\n상세 분석 지침:\n- eBPF 맵(BPF_MAP_TYPE_HASH)에 등록된 65,536개 위협 시그니처 해시를 커널 공간에서 100ns 이내에 검색하는 기술을 검증합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_bpf_map_hash_signature_lookup`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: BPF_MAP_TYPE_HASH Real-Time Malicious Payload Hash Lookup\nAnalysis Requirements:\n- Validate in-kernel hash lookup of 65,536 threat signatures within 100ns using BPF_MAP_TYPE_HASH structures.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_bpf_map_hash_signature_lookup`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_bpf_map_hash_signature_lookup` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_bpf_map_hash_signature_lookup`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_io_uring_syscall_restriction_audit",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "d056ebb928cbc73fe253c71ad2c1cf658a0f78ebe387bbc1b448c072c900ce79",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "io_uring 취약 시스템 콜 경로 감시 및 동적 격리 감사",
+      "en": "io_uring Vulnerable Syscall Pathway Monitoring & Audit"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: io_uring 취약 시스템 콜 경로 감시 및 동적 격리 감사\n상세 분석 지침:\n- 자주 악용되는 io_uring_enter/register 시스템 콜의 인자 및 버퍼 디스크립터를 감시하여 익스플로잇 시도를 탐지합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_io_uring_syscall_restriction_audit`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: io_uring Vulnerable Syscall Pathway Monitoring & Audit\nAnalysis Requirements:\n- Monitor arguments and buffer descriptors in frequently exploited io_uring_enter/register syscalls to catch exploit attempts.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_io_uring_syscall_restriction_audit`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_io_uring_syscall_restriction_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_io_uring_syscall_restriction_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_kernel_cred_structure_overwrite_defense",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "30e0b677c44d6cd7b900f10382fc14fea92d9ce606af563b68028262dc394144",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "commit_creds / prepare_kernel_cred 권한 상승 방어 분석",
+      "en": "Kernel cred Structure Overwrite & Privilege Escalation Defense"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: commit_creds / prepare_kernel_cred 권한 상승 방어 분석\n상세 분석 지침:\n- 공격자가 task_struct의 cred 포인터를 덮어써 root(uid 0) 권한을 탈취하려는 시도를 eBPF LSM 자격 증명 훅으로 방어합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_kernel_cred_structure_overwrite_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Kernel cred Structure Overwrite & Privilege Escalation Defense\nAnalysis Requirements:\n- Defend against attacker attempts to overwrite task_struct cred pointers for root escalation using eBPF LSM credential hooks.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_kernel_cred_structure_overwrite_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_kernel_cred_structure_overwrite_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_kernel_cred_structure_overwrite_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_ed25519_kernel_patch_signature_verification",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "581c425bef74e03680630afb1a59fdf9bee0cee97cbc1c296ed6c81dfe09cf85",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Ed25519 서명 기반 인커널 핫패치 검증 파이프라인",
+      "en": "Ed25519 Signature In-Kernel Hotpatch Verification Pipeline"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: Ed25519 서명 기반 인커널 핫패치 검증 파이프라인\n상세 분석 지침:\n- 배포된 eBPF 바이트코드의 공급업체 Ed25519 디지털 서명을 검증하여 허가되지 않은 바이트코드의 커널 주입을 원천 차단합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_ed25519_kernel_patch_signature_verification`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Ed25519 Signature In-Kernel Hotpatch Verification Pipeline\nAnalysis Requirements:\n- Verify vendor Ed25519 digital signatures on distributed eBPF bytecodes to block unauthorized in-kernel injection.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_ed25519_kernel_patch_signature_verification`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_ed25519_kernel_patch_signature_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_ed25519_kernel_patch_signature_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t1_kernelzero_bpf_ringbuf_event_parsing_telemetry",
+    "tier": 1,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 50,
+    "ci": false,
+    "hash": "7533d5716aa87dba11565bd4f7533ebddafb17b037c19a73946abe1ba124b8d5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 링버퍼 이벤트 스트림 파싱 및 실시간 침입 경보",
+      "en": "eBPF Ring Buffer Event Stream Parsing & Real-Time Alerting"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: eBPF 링버퍼 이벤트 스트림 파싱 및 실시간 침입 경보\n상세 분석 지침:\n- 커널 링버퍼에서 출력되는 고속 보안 이벤트 스트림을 파싱하여 실시간으로 SIEM/SOAR 시스템에 경보를 전파합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t1_kernelzero_bpf_ringbuf_event_parsing_telemetry`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: eBPF Ring Buffer Event Stream Parsing & Real-Time Alerting\nAnalysis Requirements:\n- Parse high-speed security event streams emitted from kernel ring buffers to dispatch real-time alerts to SIEM/SOAR.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t1_kernelzero_bpf_ringbuf_event_parsing_telemetry`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_kernelzero_bpf_ringbuf_event_parsing_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_kernelzero_bpf_ringbuf_event_parsing_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_dynamic_ebpf_lsm_hotpatch_enforcer",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "0d7cfb12798b57effe6182c8983c9008cb727679d8dffe52dd36545c0221c4db",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF LSM 동적 핫패치 바이트코드 로더 및 검증기 통과",
+      "en": "Dynamic eBPF LSM Hotpatch Bytecode Loader & Verifier Pass"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: eBPF LSM 동적 핫패치 바이트코드 로더 및 검증기 통과\n상세 분석 지침:\n- 커널 재부팅 없이 BPF_PROG_TYPE_LSM 프로그램을 동적 로드하고 verifier의 엄격한 메모리 안전성 검사를 통과시킵니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_dynamic_ebpf_lsm_hotpatch_enforcer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Dynamic eBPF LSM Hotpatch Bytecode Loader & Verifier Pass\nAnalysis Requirements:\n- Dynamically load BPF_PROG_TYPE_LSM programs without kernel reboot, passing strict verifier memory safety audits.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_dynamic_ebpf_lsm_hotpatch_enforcer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_dynamic_ebpf_lsm_hotpatch_enforcer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_dynamic_ebpf_lsm_hotpatch_enforcer`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_slub_freelist_poisoning_runtime_guard",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "c8b718a913719c66bb7c391530417515c1f265e23341efd454d0d06e54e71010",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SLUB freelist 포이즈닝 런타임 eBPF 감시 엔진",
+      "en": "SLUB Freelist Poisoning Runtime eBPF Guard Engine"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: SLUB freelist 포이즈닝 런타임 eBPF 감시 엔진\n상세 분석 지침:\n- kfree 및 kmalloc 호출 시점의 프리리스트 포인터 무결성을 인스펙션하여 힙 오버플로우로 인한 리스트 오염을 감지합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_slub_freelist_poisoning_runtime_guard`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: SLUB Freelist Poisoning Runtime eBPF Guard Engine\nAnalysis Requirements:\n- Inspect freelist pointer integrity during kfree and kmalloc to detect heap corruption caused by buffer overflows.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_slub_freelist_poisoning_runtime_guard`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_slub_freelist_poisoning_runtime_guard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_slub_freelist_poisoning_runtime_guard`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_seccomp_bpf_dynamic_patch_injector",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "e3e45c2b962720863f21ff0e463d17852bacd48bc9d976a51d9f3043e2e8aba6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "런타임 Seccomp-BPF 취약 시스템 콜 동적 차단 인젝터",
+      "en": "Runtime Seccomp-BPF Vulnerable Syscall Dynamic Injector"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 런타임 Seccomp-BPF 취약 시스템 콜 동적 차단 인젝터\n상세 분석 지침:\n- 취약점이 발견된 특정 시스템 콜(예: io_uring_enter)에 대해 prctl(PR_SET_SECCOMP) 필터를 동적 주입하여 즉시 차단합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_seccomp_bpf_dynamic_patch_injector`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Runtime Seccomp-BPF Vulnerable Syscall Dynamic Injector\nAnalysis Requirements:\n- Dynamically inject prctl(PR_SET_SECCOMP) filters isolating identified vulnerable syscalls with zero downtime.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_seccomp_bpf_dynamic_patch_injector`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_seccomp_bpf_dynamic_patch_injector` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_seccomp_bpf_dynamic_patch_injector`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_kernel_patch_merkle_root_validator",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "a579c2222a074adc922a4fb2f0b4362b9a14289c3f4c5d6f69dfcd58b7ce5784",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "핫패치 블록 머클 트리 루트 해시 불변성 검증기",
+      "en": "Hotpatch Block Merkle Root Hash Immutability Validator"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 핫패치 블록 머클 트리 루트 해시 불변성 검증기\n상세 분석 지침:\n- 단편화되어 전송되는 패치 청크들의 SHA-256 머클 트리를 재구성하고 루트 해시의 디지털 서명을 대조 검증합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_kernel_patch_merkle_root_validator`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Hotpatch Block Merkle Root Hash Immutability Validator\nAnalysis Requirements:\n- Reconstruct SHA-256 Merkle trees across fragmented patch chunks and validate the root hash against signed attestations.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_kernel_patch_merkle_root_validator`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_kernel_patch_merkle_root_validator` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_kernel_patch_merkle_root_validator`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_sub_microsecond_kernel_payload_filter",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "2127d2dcde2862d26c44eb0eb8fce6a352ece6c60b293b58d9def82602619ec9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "서브마이크로초(<1µs) 커널 메모리 쓰기 페이로드 필터",
+      "en": "Sub-Microsecond Kernel Memory Write Payload Filter"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 서브마이크로초(<1µs) 커널 메모리 쓰기 페이로드 필터\n상세 분석 지침:\n- eBPF LSM 레벨에서 인라인으로 페이로드를 스캔하여 1마이크로초 미만의 지연시간으로 익스플로잇 페이로드를 격리합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_sub_microsecond_kernel_payload_filter`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Sub-Microsecond Kernel Memory Write Payload Filter\nAnalysis Requirements:\n- Scan payloads inline at the eBPF LSM layer to quarantine exploit payloads with sub-microsecond latency.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_sub_microsecond_kernel_payload_filter`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_sub_microsecond_kernel_payload_filter` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_sub_microsecond_kernel_payload_filter`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_ebpf_tail_call_chain_policy_engine",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "1ca3a47ff3526531f4dea7e10ef0ee9ad87f05f90a0bbfbd787579898d901418",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BPF 테일 콜(Tail Call) 연쇄 기반 계층형 방어 정책 엔진",
+      "en": "BPF Tail Call Chaining Hierarchical Defense Policy Engine"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: BPF 테일 콜(Tail Call) 연쇄 기반 계층형 방어 정책 엔진\n상세 분석 지침:\n- 스택 한계(512바이트)를 극복하기 위해 BPF 테일 콜 맵을 연쇄 호출하여 심층 패킷/메모리 필터링 정책을 실행합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_ebpf_tail_call_chain_policy_engine`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: BPF Tail Call Chaining Hierarchical Defense Policy Engine\nAnalysis Requirements:\n- Chain BPF tail call maps to overcome 512-byte stack limits and execute multi-layered memory inspection policies.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_ebpf_tail_call_chain_policy_engine`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_ebpf_tail_call_chain_policy_engine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_ebpf_tail_call_chain_policy_engine`."
+      ]
+    }
+  },
+  {
+    "id": "t2_kernelzero_zero_day_privilege_escalation_interceptor",
+    "tier": 2,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 100,
+    "ci": false,
+    "hash": "242b6b694b48d96e4276c5e6734b14bdbaa655682e79190bd59f856b3d9f8d66",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 권한 상승 0-Day 셸스왑 실시간 인터셉터",
+      "en": "Kernel Privilege Escalation 0-Day Shell-Swap Real-Time Interceptor"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 커널 권한 상승 0-Day 셸스왑 실시간 인터셉터\n상세 분석 지침:\n- 비인가 프로세스가 setuid(0) 또는 커널 권한 탈취 후 /bin/sh를 스폰하려는 시도를 security_task_fix_setuid 훅으로 차단합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t2_kernelzero_zero_day_privilege_escalation_interceptor`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Kernel Privilege Escalation 0-Day Shell-Swap Real-Time Interceptor\nAnalysis Requirements:\n- Intercept unauthorized processes spawning root shells via security_task_fix_setuid hooks upon privilege theft.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t2_kernelzero_zero_day_privilege_escalation_interceptor`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_kernelzero_zero_day_privilege_escalation_interceptor` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_kernelzero_zero_day_privilege_escalation_interceptor`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "fd2c6e6a4ba81460e397e9b82bef53cbdfa66ca7a673ae8dbdb79f4b2273da70",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 메모리 안전성 eBPF 센티널 및 임의 실행 차단",
+      "en": "In-Kernel eBPF Memory Safety Sentinel & Arbitrary Exec Blocker"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 커널 메모리 안전성 eBPF 센티널 및 임의 실행 차단\n상세 분석 지침:\n- 커널 내 실행 불가(NX) 페이지 변조 및 ROP 가젯 체인 실행을 하드웨어 CR0.WP 레지스터 감시와 BPF 훅으로 무력화합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: In-Kernel eBPF Memory Safety Sentinel & Arbitrary Exec Blocker\nAnalysis Requirements:\n- Neutralize non-executable page tampering and ROP gadget chains using hardware CR0.WP auditing and BPF hooks.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_autonomous_vulnerability_hotpatch_synthesizer",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "7219ef29f464c83585b37849b40425a9f291866db3408a968ae44d450ff08801",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AI 0-Day 익스플로잇 패턴 분석 기반 자율 BPF 핫패치 합성기",
+      "en": "Autonomous BPF Hotpatch Synthesizer for AI 0-Day Patterns"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: AI 0-Day 익스플로잇 패턴 분석 기반 자율 BPF 핫패치 합성기\n상세 분석 지침:\n- 침입 탐지 텔레메트리를 분석하여 익스플로잇 경로를 차단하는 eBPF C 소스코드를 실시간 자동 합성하고 컴파일합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_autonomous_vulnerability_hotpatch_synthesizer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Autonomous BPF Hotpatch Synthesizer for AI 0-Day Patterns\nAnalysis Requirements:\n- Synthesize and compile eBPF C programs in real-time based on intrusion telemetry to close 0-day exploitation pathways.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_autonomous_vulnerability_hotpatch_synthesizer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_autonomous_vulnerability_hotpatch_synthesizer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_autonomous_vulnerability_hotpatch_synthesizer`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_io_uring_register_zero_latency_quarantine",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "2c7e14676856bd0c0e3b0e3d502ddeb6f72ec6bf4bc962a3109b05e0100bfb4e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "io_uring 취약 레지스터 제로 레이턴시 격리 드라이버",
+      "en": "io_uring Vulnerable Register Zero-Latency Quarantine Driver"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: io_uring 취약 레지스터 제로 레이턴시 격리 드라이버\n상세 분석 지침:\n- io_uring의 고정 버퍼 등록(IORING_REGISTER_BUFFERS) 오버플로우 경로를 0ms 지연시간으로 동적 차단합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_io_uring_register_zero_latency_quarantine`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: io_uring Vulnerable Register Zero-Latency Quarantine Driver\nAnalysis Requirements:\n- Dynamically quarantine IORING_REGISTER_BUFFERS overflow pathways within io_uring with zero runtime latency.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_io_uring_register_zero_latency_quarantine`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_io_uring_register_zero_latency_quarantine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_io_uring_register_zero_latency_quarantine`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_merkle_tree_rekor_dual_kernel_attestation",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "6d9ceda71784f6c44c857f9b2c3ce2a3a1cc48ff73b571917e03e736a34b9c78",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "커널 핫패치 머클 트리-Rekor 투명성 원장 이중 증명",
+      "en": "Dual Kernel Hotpatch Attestation via Merkle Tree & Rekor"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 커널 핫패치 머클 트리-Rekor 투명성 원장 이중 증명\n상세 분석 지침:\n- 로컬 머클 루트 다이제스트와 Sigstore Rekor 분산 투명성 원장의 체크포인트를 교차 검증하여 패치 무결성을 이중 증명합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_merkle_tree_rekor_dual_kernel_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Dual Kernel Hotpatch Attestation via Merkle Tree & Rekor\nAnalysis Requirements:\n- Cross-verify local Merkle root digests against Sigstore Rekor transparency checkpoints for dual-layer assurance.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_merkle_tree_rekor_dual_kernel_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_merkle_tree_rekor_dual_kernel_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_merkle_tree_rekor_dual_kernel_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_cross_namespace_privesc_ebpf_barrier",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "0f26112a38b97d1024cf9df68c783149c518aaed612949113b20c99ee9c7ca04",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "컨테이너 네임스페이스 탈출 차단 커널 eBPF 배리어",
+      "en": "Container Namespace Escape Prevention Kernel eBPF Barrier"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 컨테이너 네임스페이스 탈출 차단 커널 eBPF 배리어\n상세 분석 지침:\n- 도커/K8s 컨테이너 내부 프로세스가 호스트 mnt/pid/net 네임스페이스로 탈출하려는 setns/unshare 시스템 콜을 격리합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_cross_namespace_privesc_ebpf_barrier`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Container Namespace Escape Prevention Kernel eBPF Barrier\nAnalysis Requirements:\n- Quarantine setns and unshare syscalls attempting host mnt/pid/net namespace breakout from containerized processes.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_cross_namespace_privesc_ebpf_barrier`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_cross_namespace_privesc_ebpf_barrier` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_cross_namespace_privesc_ebpf_barrier`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_zero_overhead_kernel_integrity_daemon",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "3304fc3f37ede21f3f3d00f45f2056002350c489b536431f1848306f054748c4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "오버헤드 0% 실시간 커널 텍스트/데이터 무결성 데몬",
+      "en": "Zero-Overhead Real-Time Kernel Text/Data Integrity Daemon"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 오버헤드 0% 실시간 커널 텍스트/데이터 무결성 데몬\n상세 분석 지침:\n- CPU 하드웨어 퍼포먼스 카운터(PMU)와 eBPF 샘플링을 결합하여 성능 저하 없이 커널 코드 세그먼트 변조를 상시 감시합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_zero_overhead_kernel_integrity_daemon`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Zero-Overhead Real-Time Kernel Text/Data Integrity Daemon\nAnalysis Requirements:\n- Monitor kernel code segment tampering continuously with zero performance hit by pairing hardware PMUs with eBPF sampling.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_zero_overhead_kernel_integrity_daemon`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_zero_overhead_kernel_integrity_daemon` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_zero_overhead_kernel_integrity_daemon`."
+      ]
+    }
+  },
+  {
+    "id": "t3_kernelzero_automated_kernel_patch_rollback_sentinel",
+    "tier": 3,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 150,
+    "ci": false,
+    "hash": "07738a8d407a079c7c2482fcbb66f169d01d600b4cc925f10a88d4442a0a90e5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "오작동 핫패치 자동 롤백 및 커널 패닉 방지 센티널",
+      "en": "Automated Hotpatch Rollback & Kernel Panic Prevention Sentinel"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 오작동 핫패치 자동 롤백 및 커널 패닉 방지 센티널\n상세 분석 지침:\n- 핫패치 적용 후 워치독(Watchdog) 타이머를 통해 커널 안정성을 측정하고 이상 발생 시 50ms 이내에 안전 롤백을 집행합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t3_kernelzero_automated_kernel_patch_rollback_sentinel`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Automated Hotpatch Rollback & Kernel Panic Prevention Sentinel\nAnalysis Requirements:\n- Measure kernel stability via watchdog timers after hotpatching, executing safe rollbacks within 50ms upon anomalies.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t3_kernelzero_automated_kernel_patch_rollback_sentinel`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_kernelzero_automated_kernel_patch_rollback_sentinel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_kernelzero_automated_kernel_patch_rollback_sentinel`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_full_spectrum_autonomous_kernel_defense_mesh",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "3b77d930fcf586301dd7af45100c899749132d068f6574766cc9f9ef9ddb453a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "전 스펙트럼 자율 커널 eBPF LSM 방어 메시",
+      "en": "Full-Spectrum Autonomous Kernel eBPF LSM Defense Mesh"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 전 스펙트럼 자율 커널 eBPF LSM 방어 메시\n상세 분석 지침:\n- LSM 훅, BPF 해시 맵 룩업, Seccomp 동적 필터, 머클 트리 출처 증명을 통합한 엔터프라이즈 커널 방어 메시를 완성합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_full_spectrum_autonomous_kernel_defense_mesh`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Full-Spectrum Autonomous Kernel eBPF LSM Defense Mesh\nAnalysis Requirements:\n- Construct an enterprise kernel defense mesh integrating LSM hooks, BPF hash maps, dynamic Seccomp, and Merkle proofs.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_full_spectrum_autonomous_kernel_defense_mesh`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_full_spectrum_autonomous_kernel_defense_mesh` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_full_spectrum_autonomous_kernel_defense_mesh`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_hardware_enclave_kernel_lsm_attestation",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "63b97360f36cd909cc06402455424db89da1ef787361c9c5eef37747a21b32ed",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 보안 엔클레이브(TPM/TEE) 기반 eBPF LSM 무결성 증명",
+      "en": "Hardware Enclave TPM/TEE eBPF LSM Attestation"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 하드웨어 보안 엔클레이브(TPM/TEE) 기반 eBPF LSM 무결성 증명\n상세 분석 지침:\n- TPM 2.0 PCR 레지스터 및 TEE 측정값을 활용하여 로드된 eBPF 바이트코드의 물리적 무결성을 원격 검증합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_hardware_enclave_kernel_lsm_attestation`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Hardware Enclave TPM/TEE eBPF LSM Attestation\nAnalysis Requirements:\n- Remotely verify physical integrity of loaded eBPF bytecode using TPM 2.0 PCR registers and TEE cryptographic measurements.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_hardware_enclave_kernel_lsm_attestation`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_hardware_enclave_kernel_lsm_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_hardware_enclave_kernel_lsm_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_zero_latency_0day_kernel_neutralizer",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "63c66cf7b0542250bc8a6fdc8381c4087436e69261e8a30daece24ce5505956d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "0 레이턴시 자율 0-Day 커널 무력화 파이프라인",
+      "en": "Zero-Latency Autonomous 0-Day Kernel Neutralizer"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 0 레이턴시 자율 0-Day 커널 무력화 파이프라인\n상세 분석 지침:\n- 커널 메모리 변조 공격 시도를 실행 사이클 내(0-cycle)에서 차단하는 고도화된 eBPF LSM 인라인 핫패칭을 실현합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_zero_latency_0day_kernel_neutralizer`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Zero-Latency Autonomous 0-Day Kernel Neutralizer\nAnalysis Requirements:\n- Achieve zero-latency 0-day mitigation by intercepting kernel memory tampering within the initial execution cycle.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_zero_latency_0day_kernel_neutralizer`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_zero_latency_0day_kernel_neutralizer` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_zero_latency_0day_kernel_neutralizer`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_immutable_ebpf_bytecode_cryptographic_ledger",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "960c6ab1c67f2ffad14bb0b8d3fdadc20a07e3668ae3ba072fad7325be9cec7c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "변경 불가능한 eBPF 바이트코드 암호학적 원장",
+      "en": "Immutable eBPF Bytecode Cryptographic Ledger"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 변경 불가능한 eBPF 바이트코드 암호학적 원장\n상세 분석 지침:\n- 모든 커널 핫패치의 생성, 서명, 로드, 언로드 라이프사이클을 변경 불가능한 암호학적 원장에 영구 기록합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_immutable_ebpf_bytecode_cryptographic_ledger`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Immutable eBPF Bytecode Cryptographic Ledger\nAnalysis Requirements:\n- Permanently log generation, signing, loading, and uninstallation lifecycles of all kernel hotpatches into an immutable ledger.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_immutable_ebpf_bytecode_cryptographic_ledger`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_immutable_ebpf_bytecode_cryptographic_ledger` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_immutable_ebpf_bytecode_cryptographic_ledger`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_autonomous_ai_kernel_security_orchestrator",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "6e3033d966e1e56d15adce6fbf0e3e5c89375160a4da6221b645a97519686c2d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "프론티어 AI 기반 자율 커널 보안 오케스트레이터",
+      "en": "Frontier AI Autonomous Kernel Security Orchestrator"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 프론티어 AI 기반 자율 커널 보안 오케스트레이터\n상세 분석 지침:\n- SuperSec-Agent-v2.20 기반 오케스트레이터가 커널 익스플로잇 시도를 자동 분석하고 방어 정책을 자율 갱신합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_autonomous_ai_kernel_security_orchestrator`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Frontier AI Autonomous Kernel Security Orchestrator\nAnalysis Requirements:\n- Deploy SuperSec-Agent-v2.20 orchestrator autonomously analyzing kernel exploit attempts and updating defense policies.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_autonomous_ai_kernel_security_orchestrator`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_autonomous_ai_kernel_security_orchestrator` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_autonomous_ai_kernel_security_orchestrator`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_capstone_autonomous_kernel_patch_defense",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "2418c059af8e5f9eaa72500633f35e3f0ed38e402f832897d1067a521ce45b46",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 커널 핫패칭 및 0-Day 런타임 방어 실전 캡스톤",
+      "en": "Capstone Autonomous Kernel Patching & 0-Day Runtime Defense"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 자율 커널 핫패칭 및 0-Day 런타임 방어 실전 캡스톤\n상세 분석 지침:\n- Lab 70의 4개 단계를 모두 완파하고 AI 자율 익스플로잇 vs 커널 eBPF LSM 방어 공방전의 승리를 입증합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_capstone_autonomous_kernel_patch_defense`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Capstone Autonomous Kernel Patching & 0-Day Runtime Defense\nAnalysis Requirements:\n- Conquer all four stages of Lab 70, proving victory in the autonomous AI 0-day exploitation vs eBPF LSM defense drill.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_capstone_autonomous_kernel_patch_defense`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_capstone_autonomous_kernel_patch_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_capstone_autonomous_kernel_patch_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance",
+    "tier": 4,
+    "cat": "kernel",
+    "track": "kernelzero",
+    "points": 200,
+    "ci": false,
+    "hash": "74e28d57f7035c3aef7199460a3b4fb596ebde13638c635680ccf8868b74c084",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 커널 제로데이 무결성 보증 캡스톤",
+      "en": "Capstone KernelZero Sovereign Kernel Assurance"
+    },
+    "prompt": {
+      "ko": "커널 eBPF LSM 동적 핫패칭 및 0-Day 런타임 방어 실무를 수행합니다.\n\n주제: 주권 커널 제로데이 무결성 보증 캡스톤\n상세 분석 지침:\n- Track 82의 35개 전 과정을 마스터하고 국가 및 엔터프라이즈 핵심 인프라의 주권 커널 무결성을 완벽히 보증합니다.\n- 커널 0-Day 익스플로잇 벡터 및 eBPF LSM 런타임 방어 무결성을 정밀 감사하십시오.\n- 검증 식별자 KERNELZERO_CHALLENGE_ID: `t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance`\n- 보안 정책 및 무결성 검증을 충족하여 정상 플래그를 획득하십시오.",
+      "en": "Conduct technical hands-on verification of autonomous kernel eBPF LSM hotpatching and 0-day runtime defense.\n\nTopic: Capstone KernelZero Sovereign Kernel Assurance\nAnalysis Requirements:\n- Master all 35 challenges in Track 82, achieving absolute sovereign kernel integrity assurance for critical infrastructure.\n- Thoroughly audit kernel 0-day exploit vectors and eBPF LSM runtime defense integrity.\n- Verification Identifier KERNELZERO_CHALLENGE_ID: `t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance`\n- Satisfy the security parameters and retrieve the authorized flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance`."
       ]
     }
   }

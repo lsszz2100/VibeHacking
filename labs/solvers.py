@@ -2207,6 +2207,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Sigstore Cosign Rekor transparency verified & model provenance established -> FLAG{v219_s4_sigstore_model_provenance_merkle_verified}"
             }
         ]
+    },
+    "70": {
+        "title": "70 AutonomousKernelPatchLab 커널 eBPF LSM 동적 핫패칭 & 0-Day 런타임 방어 랩",
+        "steps": [
+            {
+                "step": 1,
+                "name": "eBPF LSM security_bprm_check 훅 기반 바이너리 실행 사전 차단 및 시그니처 필터링",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "커널 바이너리 실행 진입점인 security_bprm_check LSM 훅을 설치하여 악성 0-Day 셸코드 및 SLUB 프리리스트 변조 실행을 실시간 격리 차단합니다.",
+                "exploit_payload": '{"hook_type": "security_bprm_check", "target_syscall": "execve", "signature_block_enabled": true, "blocked_signatures": ["\\\\x48\\\\x31\\\\xc0\\\\x50\\\\x48\\\\xbb\\\\x2f\\\\x62\\\\x69\\\\x6e", "uaf_slub_freelist_overwrite"]}',
+                "defense": "eBPF BPF_PROG_TYPE_LSM 런타임 훅, 악성 바이트코드 사전 차단, SLUB 메모리 무결성 감시.",
+                "sample_output": "✓ eBPF LSM security_bprm_check hook successfully intercepted 0-day binary execution -> FLAG{v220_s1_bpf_lsm_security_bprm_check_intercepted}"
+            },
+            {
+                "step": 2,
+                "name": "BPF_MAP_TYPE_HASH 실시간 룩업 및 RingBuffer 비동기 텔레메트리 격리",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "BPF 해시 맵에 등록된 위협 IP/시그니처를 마이크로초 이내에 룩업하고, 무복사 RingBuffer를 통해 보안 관제 데몬에 이상 침입 이벤트를 즉각 스트리밍합니다.",
+                "exploit_payload": '{"map_type": "BPF_MAP_TYPE_HASH", "max_entries": 65536, "ring_buffer_telemetry": true, "sub_microsecond_intercept": true}',
+                "defense": "BPF 고속 해시 맵 인스펙션, 커널 링버퍼 비동기 알림, 서브마이크로초 제로-카피 격리.",
+                "sample_output": "✓ BPF Hash Map lookup and RingBuffer alert quarantined 0-day payload in <1µs -> FLAG{v220_s2_ebpf_map_runtime_ringbuf_quarantined}"
+            },
+            {
+                "step": 3,
+                "name": "Seccomp-BPF 동적 핫패칭 및 io_uring_enter 취약 시스템 콜 격리",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "서버 재부팅 없이 취약한 io_uring_enter 시스템 콜을 Seccomp-BPF 필터로 핫패칭하여 SECCOMP_RET_ERRNO로 즉시 격리 및 커널 패닉을 방지합니다.",
+                "exploit_payload": '{"vulnerable_syscall": "io_uring_enter", "seccomp_filter_policy": "SECCOMP_RET_ERRNO", "dynamic_hotpatch_applied": true, "kernel_panic_prevention": true}',
+                "defense": "Seccomp-BPF 동적 필터 핫패칭, 취약 시스템 콜 격리, 커널 패닉 방지 안전망.",
+                "sample_output": "✓ Seccomp-BPF dynamically isolated io_uring_enter syscall -> FLAG{v220_s3_seccomp_bpf_io_uring_hotpatch_neutralized}"
+            },
+            {
+                "step": 4,
+                "name": "머클 트리 기반 핫패치 무결성 검증 및 Ed25519 디지털 서명 출처 증명 (Capstone)",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "인커널 eBPF 핫패치 바이트코드의 SHA-256 머클 루트 해시와 공급업체 Ed25519 디지털 서명을 검증하여 비인가 커널 코드 삽입을 원천 차단합니다.",
+                "exploit_payload": '{"patch_sha256": "<patch_sha256>", "merkle_root_hash": "<merkle_root>", "ed25519_kernel_sig": "sig_ed25519_kernel_v220_verified_ok", "patch_audit_hmac": "<patch_hmac>"}',
+                "defense": "머클 트리 블록 불변성 검증, Ed25519 인커널 서명 체인, Rekor 투명성 원장 연동.",
+                "sample_output": "✓ Kernel hotpatch Merkle root attestation verified & protection established -> FLAG{v220_s4_kernel_patch_merkle_provenance_attested}"
+            }
+        ]
     }
 }
 

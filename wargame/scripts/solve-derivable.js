@@ -3155,6 +3155,57 @@ for (const id of WEIGHTSEC_IDS) {
     }
   });
 }
+const KERNELZERO_IDS = [
+  "t0_kernelzero_kernel_zeroday_threat_model",
+  "t0_kernelzero_ebpf_lsm_architecture_fundamentals",
+  "t0_kernelzero_use_after_free_in_slub_allocator",
+  "t0_kernelzero_seccomp_bpf_syscall_filtering_theory",
+  "t0_kernelzero_kernel_hotpatching_kprobe_vs_lsm",
+  "t0_kernelzero_merkle_patch_integrity_attestation",
+  "t0_kernelzero_runtime_ebpf_ringbuffer_telemetry",
+  "t1_kernelzero_bpf_lsm_hook_security_bprm_check",
+  "t1_kernelzero_kernel_oob_write_gadget_disassembly",
+  "t1_kernelzero_bpf_map_hash_signature_lookup",
+  "t1_kernelzero_io_uring_syscall_restriction_audit",
+  "t1_kernelzero_kernel_cred_structure_overwrite_defense",
+  "t1_kernelzero_ed25519_kernel_patch_signature_verification",
+  "t1_kernelzero_bpf_ringbuf_event_parsing_telemetry",
+  "t2_kernelzero_dynamic_ebpf_lsm_hotpatch_enforcer",
+  "t2_kernelzero_slub_freelist_poisoning_runtime_guard",
+  "t2_kernelzero_seccomp_bpf_dynamic_patch_injector",
+  "t2_kernelzero_kernel_patch_merkle_root_validator",
+  "t2_kernelzero_sub_microsecond_kernel_payload_filter",
+  "t2_kernelzero_ebpf_tail_call_chain_policy_engine",
+  "t2_kernelzero_zero_day_privilege_escalation_interceptor",
+  "t3_kernelzero_in_kernel_ebpf_memory_safety_sentinel",
+  "t3_kernelzero_autonomous_vulnerability_hotpatch_synthesizer",
+  "t3_kernelzero_io_uring_register_zero_latency_quarantine",
+  "t3_kernelzero_merkle_tree_rekor_dual_kernel_attestation",
+  "t3_kernelzero_cross_namespace_privesc_ebpf_barrier",
+  "t3_kernelzero_zero_overhead_kernel_integrity_daemon",
+  "t3_kernelzero_automated_kernel_patch_rollback_sentinel",
+  "t4_kernelzero_full_spectrum_autonomous_kernel_defense_mesh",
+  "t4_kernelzero_hardware_enclave_kernel_lsm_attestation",
+  "t4_kernelzero_zero_latency_0day_kernel_neutralizer",
+  "t4_kernelzero_immutable_ebpf_bytecode_cryptographic_ledger",
+  "t4_kernelzero_autonomous_ai_kernel_security_orchestrator",
+  "t4_kernelzero_capstone_autonomous_kernel_patch_defense",
+  "t4_kernelzero_capstone_kernelzero_sovereign_kernel_assurance"
+];
+
+for (const id of KERNELZERO_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/KERNELZERO_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_kernelzero_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

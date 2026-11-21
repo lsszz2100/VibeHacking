@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Hacking // Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense (Simulator #36)</title>
+  <style>
+    :root {
+      --bg: #03080e;
+      --bg2: #071524;
+      --card-bg: #0a1f33;
+      --green: #27ff8b;
+      --green-dim: #1aa85c;
+      --green-deep: #0a4427;
+      --amber: #ffcf4d;
+      --red: #ff4d5e;
+      --blue: #5cc8ff;
+      --purple: #b07cff;
+      --txt: #cce9ff;
+      --muted: #4e7a9e;
+      --line: #0d3857;
+      --mono: 'Fira Code', 'JetBrains Mono', Consolas, 'D2Coding', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      background: var(--green-deep);
+      color: var(--green);
+      border: 1px solid var(--green-dim);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(39, 255, 139, 0.1);
+      border: 1px solid var(--green);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--green);
+    }
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; filter: drop-shadow(0 0 4px var(--green)); }
+      100% { opacity: 0.4; }
+    }
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 340px 1fr 360px;
+      gap: 16px;
+      padding: 16px;
+    }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-hdr {
+      background: rgba(13, 56, 87, 0.4);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      font-weight: bold;
+      color: var(--blue);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    .panel-body { padding: 12px; flex: 1; overflow-y: auto; }
+    .btn {
+      background: var(--green-deep);
+      color: var(--green);
+      border: 1px solid var(--green-dim);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .btn:hover { background: var(--green-dim); color: #fff; box-shadow: 0 0 8px rgba(39,255,139,0.4); }
+    .btn-danger { background: rgba(255, 77, 94, 0.2); color: var(--red); border-color: var(--red); }
+    .btn-danger:hover { background: var(--red); color: #fff; box-shadow: 0 0 8px rgba(255,77,94,0.4); }
+    .btn-blue { background: rgba(92, 200, 255, 0.2); color: var(--blue); border-color: var(--blue); }
+    .btn-blue:hover { background: var(--blue); color: #000; box-shadow: 0 0 8px rgba(92,200,255,0.4); }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .form-control {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 6px 8px;
+      color: var(--txt);
+      font-family: inherit;
+      font-size: 12px;
+    }
+    .form-control:focus { outline: none; border-color: var(--green); }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--line);
+      font-size: 11px;
+    }
+    .telemetry-val { font-weight: bold; }
+    .telemetry-val.safe { color: var(--green); }
+    .telemetry-val.warn { color: var(--amber); }
+    .telemetry-val.alert { color: var(--red); }
+
+    .console-log {
+      background: #010408;
+      border: 1px solid #082136;
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 11px;
+      height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-line { margin-bottom: 4px; }
+    .log-time { color: var(--muted); }
+    .log-info { color: var(--blue); }
+    .log-warn { color: var(--amber); }
+    .log-alert { color: var(--red); font-weight: bold; }
+    .log-success { color: var(--green); font-weight: bold; }
+
+    .kernel-diagram {
+      border: 1px solid var(--line);
+      background: rgba(7, 21, 36, 0.6);
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .layer-box {
+      border: 1px solid var(--muted);
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: rgba(10, 31, 51, 0.7);
+      transition: all 0.3s;
+    }
+    .layer-box.active {
+      border-color: var(--green);
+      box-shadow: 0 0 8px rgba(39, 255, 139, 0.3);
+    }
+    .layer-box.quarantine {
+      border-color: var(--red);
+      background: rgba(255, 77, 94, 0.1);
+    }
+    .layer-title { font-weight: bold; font-size: 11px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="badge">SIM-36</span>
+      <strong>VibeHacking // KernelZero eBPF LSM Hotpatch Inspector</strong>
+    </div>
+    <div class="status-pill">
+      <div class="pulse"></div>
+      <span id="lsm-status">BPF_LSM ACTIVE (0-CYCLE MITIGATION)</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: Exploit Vector & Controls -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span>0-DAY ATTACK & HOTPATCH CONTROL</span>
+        <span>PORT 8070</span>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label>Target Kernel Subsystem</label>
+          <select id="attack-vector" class="form-control">
+            <option value="io_uring">io_uring_enter Arbitrary Kernel Write (0-Day)</option>
+            <option value="slub_uaf">SLUB kmem_cache Use-After-Free (UAF)</option>
+            <option value="cred_swap">task_struct cred Pointer Hijack (Root Escalation)</option>
+            <option value="oob_write">Kernel Heap OOB Write Primitive</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>eBPF LSM Defense Hook</label>
+          <select id="defense-hook" class="form-control">
+            <option value="security_bprm_check">security_bprm_check (Pre-Exec Binary Filter)</option>
+            <option value="bpf_map_filter">BPF_MAP_TYPE_HASH Fast Signature Lookup (<100ns)</option>
+            <option value="dynamic_seccomp">Dynamic Seccomp-BPF (SECCOMP_RET_ERRNO)</option>
+            <option value="merkle_attestation">Merkle Root & Ed25519 Provenance Attestation</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Payload Hex / Signature Pattern</label>
+          <input type="text" id="payload-pattern" class="form-control" value="\x48\x31\xc0\x50\x48\xbb\x2f\x62\x69\x6e" />
+        </div>
+
+        <button class="btn btn-danger" onclick="injectExploit()">💥 Inject Kernel 0-Day Exploit</button>
+        <button class="btn" onclick="applyHotpatch()">🛡️ Apply eBPF LSM Hotpatch</button>
+        <button class="btn btn-blue" onclick="verifyMerkleRoot()">📜 Verify Merkle Tree Attestation</button>
+        <button class="btn" style="background:#13354d; color:var(--txt); border-color:#2a5879;" onclick="resetKernel()">🔄 Reset Kernel State</button>
+      </div>
+    </div>
+
+    <!-- Center: Architecture & Telemetry -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span>IN-KERNEL EXECUTION PIPELINE & STATE</span>
+        <span id="latency-indicator">LATENCY: 0.62 µs</span>
+      </div>
+      <div class="panel-body">
+        <div class="kernel-diagram">
+          <div class="layer-box" id="box-userland">
+            <div class="layer-title">
+              <span>1. Userland Application (PID 4042)</span>
+              <span id="badge-userland" style="color:var(--muted)">UNPRIVILEGED</span>
+            </div>
+            <div style="font-size:11px; color:var(--muted)">Syscall Invocation: <code id="lbl-syscall">io_uring_enter(fd=3, to_submit=1, flags=0)</code></div>
+          </div>
+
+          <div class="layer-box active" id="box-lsm">
+            <div class="layer-title">
+              <span>2. eBPF LSM In-Kernel Security Hook</span>
+              <span id="badge-lsm" style="color:var(--green)">ARMED (<1µs)</span>
+            </div>
+            <div style="font-size:11px; color:var(--muted)">Hook: <code id="lbl-hook">BPF_PROG_TYPE_LSM::security_bprm_check</code></div>
+          </div>
+
+          <div class="layer-box" id="box-ringbuf">
+            <div class="layer-title">
+              <span>3. BPF RingBuffer Realtime Telemetry</span>
+              <span id="badge-ringbuf" style="color:var(--blue)">ZERO-COPY STREAMING</span>
+            </div>
+            <div style="font-size:11px; color:var(--muted)">Event Queue: <code id="lbl-ringbuf">0 events queued (Loss: 0%)</code></div>
+          </div>
+
+          <div class="layer-box" id="box-kernel">
+            <div class="layer-title">
+              <span>4. Linux Core Kernel (SLUB & Memory Allocator)</span>
+              <span id="badge-kernel" style="color:var(--green)">INTEGRITY OK</span>
+            </div>
+            <div style="font-size:11px; color:var(--muted)">CR0.WP: Active | Freelist Check: Intact | SMEP/SMAP: Enforced</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <div style="font-weight:bold; font-size:11px; color:var(--blue); margin-bottom:6px;">KERNEL RUNTIME TELEMETRY</div>
+          <div class="telemetry-row">
+            <span>Interception Latency</span>
+            <span class="telemetry-val safe" id="val-latency">0.62 µs</span>
+          </div>
+          <div class="telemetry-row">
+            <span>BPF Hash Map Capacity</span>
+            <span class="telemetry-val safe" id="val-map">65,536 / 65,536 Loaded</span>
+          </div>
+          <div class="telemetry-row">
+            <span>Seccomp Syscall Filter Policy</span>
+            <span class="telemetry-val safe" id="val-seccomp">SECCOMP_RET_ERRNO (-EPERM)</span>
+          </div>
+          <div class="telemetry-row">
+            <span>Hotpatch Merkle Root SHA-256</span>
+            <span class="telemetry-val safe" id="val-merkle">e2b7...910a (Ed25519 Verified)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Real-time Security Log -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span>EBPF RINGBUFFER EVENT LOG</span>
+        <span onclick="clearLog()" style="cursor:pointer; color:var(--muted)">CLEAR</span>
+      </div>
+      <div class="panel-body" style="display:flex; flex-direction:column;">
+        <div class="console-log" id="console-log">
+[SYSTEM] eBPF LSM Autonomous Hotpatch Engine initialized (v2.20.0).
+[SYSTEM] BPF_PROG_TYPE_LSM security_bprm_check hook registered.
+[SYSTEM] BPF_MAP_TYPE_HASH 65536 threat signatures mapped.
+[SYSTEM] Kernel 0-day autonomous defense mesh: READY.
+        </div>
+        <div style="margin-top:12px; font-size:11px; color:var(--muted)">
+          Simulated Flag Preview:
+          <div id="flag-display" style="color:var(--green); font-weight:bold; word-break:break-all; margin-top:4px;">FLAG{v220_s1_bpf_lsm_security_bprm_check_intercepted}</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function log(msg, type='info') {
+      const el = document.getElementById('console-log');
+      const time = new Date().toISOString().substring(11, 19);
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      let cls = 'log-info';
+      if (type === 'warn') cls = 'log-warn';
+      if (type === 'alert') cls = 'log-alert';
+      if (type === 'success') cls = 'log-success';
+      line.innerHTML = `<span class="log-time">[${time}]</span> <span class="${cls}">${msg}</span>`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('console-log').innerHTML = '';
+    }
+
+    function injectExploit() {
+      const vec = document.getElementById('attack-vector').value;
+      const pat = document.getElementById('payload-pattern').value;
+      
+      log(`[ATTACK] Exploit payload injected via ${vec}! Pattern: ${pat}`, 'alert');
+      document.getElementById('box-userland').classList.add('quarantine');
+      document.getElementById('badge-userland').innerText = 'EXPLOIT TRIGGERED';
+      document.getElementById('badge-userland').style.color = 'var(--red)';
+
+      setTimeout(() => {
+        log(`[LSM-INSPECT] security_bprm_check intercepted syscall in 0.58 µs.`, 'warn');
+        log(`[ACTION] eBPF LSM returned -EPERM (1). Malicious execution halted before kernel mutation.`, 'success');
+        document.getElementById('box-lsm').classList.add('active');
+        document.getElementById('badge-lsm').innerText = '0-DAY MITIGATED (0ms)';
+        document.getElementById('badge-lsm').style.color = 'var(--green)';
+        document.getElementById('flag-display').innerText = 'FLAG{v220_s1_bpf_lsm_security_bprm_check_intercepted}';
+      }, 300);
+    }
+
+    function applyHotpatch() {
+      log(`[HOTPATCH] Compiling dynamic eBPF bytecode for io_uring isolation...`, 'info');
+      setTimeout(() => {
+        log(`[HOTPATCH] In-kernel verifier passed (0 instructions rejected).`, 'info');
+        log(`[HOTPATCH] Seccomp-BPF dynamic hotpatch deployed! Syscall io_uring_enter quarantined.`, 'success');
+        document.getElementById('val-seccomp').innerText = 'SECCOMP_RET_ERRNO (Quarantined)';
+        document.getElementById('val-seccomp').className = 'telemetry-val alert';
+        document.getElementById('flag-display').innerText = 'FLAG{v220_s3_seccomp_bpf_io_uring_hotpatch_neutralized}';
+      }, 250);
+    }
+
+    function verifyMerkleRoot() {
+      log(`[MERKLE] Verifying cryptographic patch tree against Ed25519 signature...`, 'info');
+      setTimeout(() => {
+        log(`[MERKLE] Merkle Root Hash: e2b7194f...910ac6 matched transparency ledger.`, 'info');
+        log(`[ATTESTATION] Ed25519 signature verified. Patch provenance certified by Vendor Root CA.`, 'success');
+        document.getElementById('flag-display').innerText = 'FLAG{v220_s4_kernel_patch_merkle_provenance_attested}';
+      }, 200);
+    }
+
+    function resetKernel() {
+      document.getElementById('box-userland').className = 'layer-box';
+      document.getElementById('badge-userland').innerText = 'UNPRIVILEGED';
+      document.getElementById('badge-userland').style.color = 'var(--muted)';
+      document.getElementById('val-seccomp').innerText = 'SECCOMP_RET_ERRNO (-EPERM)';
+      document.getElementById('val-seccomp').className = 'telemetry-val safe';
+      log(`[KERNEL] Kernel state and eBPF maps reset to baseline.`, 'info');
+    }
+  </script>
+</body>
+</html>

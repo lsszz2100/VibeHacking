@@ -8,12 +8,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "=================================================================="
-echo " VibeHacking v2.19.0 Offline Deployment Verification & Smoke Test"
+echo " VibeHacking v2.20.0 Offline Deployment Verification & Smoke Test"
 echo "=================================================================="
 echo "[+] Target Root: ${ROOT_DIR}"
 
 # 1. Check SHA256SUMS if release archive exists
-if [ -f "${ROOT_DIR}/release/v2.19.0/SHA256SUMS" ]; then
+if [ -f "${ROOT_DIR}/release/v2.20.0/SHA256SUMS" ]; then
+    echo "[1/7] Verifying release package SHA256 checksums (release/v2.20.0)..."
+    (cd "${ROOT_DIR}/release/v2.20.0" && sha256sum -c SHA256SUMS)
+    echo "  ✓ Checksum verified."
+elif [ -f "${ROOT_DIR}/release/v2.19.0/SHA256SUMS" ]; then
     echo "[1/7] Verifying release package SHA256 checksums (release/v2.19.0)..."
     (cd "${ROOT_DIR}/release/v2.19.0" && sha256sum -c SHA256SUMS)
     echo "  ✓ Checksum verified."
@@ -107,5 +111,5 @@ echo "  ✓ CLI smoke test passed."
 
 echo ""
 echo "=================================================================="
-echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.19.0 is 100% Offline Ready!"
+echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.20.0 is 100% Offline Ready!"
 echo "=================================================================="

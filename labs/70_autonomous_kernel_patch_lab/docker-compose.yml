@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  autonomous_kernel_patch_lab:
+    build: .
+    container_name: vibe-lab-70
+    ports:
+      - "127.0.0.1:8070:8070"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_ID=70
+      - LAB_NAME=autonomous_kernel_patch_lab
+    restart: unless-stopped
+    networks:
+      - lab_net
+
+networks:
+  lab_net:
+    driver: bridge

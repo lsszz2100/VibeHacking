@@ -668,6 +668,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM04:2025",
         "owasp_name": "Model Denial of Service & Neural Weight Manipulation / Supply Chain Poisoning",
     },
+    "70": {
+        "kisa_id": "2.10.5",
+        "kisa_name": "시스템 및 서비스 운영 보안 및 커널 런타임 능동 보호 (eBPF LSM 동적 핫패칭 및 0-Day 방어)",
+        "nist_csf_id": "PR.PS-02",
+        "nist_csf_name": "In-Kernel eBPF LSM Security Policy Enactment, Zero-Day Syscall Quarantine & Merkle Patch Attestation",
+        "owasp_id": "LLM05:2025",
+        "owasp_name": "Autonomous Agent Kernel Privilege Escalation & Unverified Dynamic Binary Code Injection",
+    },
 }
 
 @dataclass
@@ -1951,6 +1959,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "AI model loading pipeline parses untrusted PyTorch pickle serialized weights without bytecode sanitization, fails to audit least significant bit (LSB) anomalies in tensor mantissa distributions against Gaussian baselines, and omits cryptographic Merkle signature verification against Sigstore Rekor transparency logs.",
                 "affected_component": "ModelWeightStegoLab Registry & Weight Ingestion Engine (Port 8069)",
                 "remediation": "Mandate SafeTensors zero-deserialization binary format, apply mantissa LSB bitmasking and dynamic quantization clipping, enforce Chi-Square goodness-of-fit (p >= 0.05) and Shannon bit entropy (H <= 7.92) telemetry gating, and verify Sigstore Cosign Merkle signatures prior to tensor allocation."
+            }
+        ]
+    },
+    "70": {
+        "title": "70 AutonomousKernelPatchLab Autonomous Kernel eBPF LSM Hotpatching & 0-Day Runtime Defense",
+        "category": "Kernel Security & Autonomous eBPF Defense",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7001",
+                "name": "Kernel 0-Day SLUB UAF Exploitation, Unrestricted io_uring Syscall & Unverified Kernel Patch Tampering",
+                "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1068",
+                "mitre_technique": "Exploitation for Privilege Escalation: Kernel 0-Day Vulnerability",
+                "mitre_tactic": "Privilege Escalation / Defense Evasion / Persistence",
+                "impact": "Local or containerized attacker executes kernel 0-day exploit via vulnerable io_uring or SLUB allocator UAF to achieve NT/Root privileges and escape kernel security boundaries.",
+                "description": "Linux kernel fails to isolate vulnerable system call surfaces (io_uring_enter) prior to vendor patching, lacks sub-microsecond eBPF LSM telemetry for malicious execution primitives in security_bprm_check, and executes unverified hotpatch bytecodes without Merkle root provenance attestation.",
+                "affected_component": "AutonomousKernelPatchLab Hotpatch Engine & Kernel LSM Gateway (Port 8070)",
+                "remediation": "Deploy BPF_PROG_TYPE_LSM hooks with security_bprm_check binary filtering, enact dynamic Seccomp-BPF filters isolating vulnerable io_uring system calls with zero latency, leverage BPF_MAP_TYPE_HASH and RingBuffer for <1µs telemetry, and mandate Ed25519-signed Merkle tree cryptographic verification for all hotpatches."
             }
         ]
     }
