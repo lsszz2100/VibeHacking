@@ -1,9 +1,9 @@
-# Product Hunt Launch Package: VibeHacking v2.25.0
+# Product Hunt Launch Package: VibeHacking v2.26.0
 
 ## 1. Product Metadata
 
 - **Product Name**: VibeHacking
-- **Tagline**: Open-source cybersecurity bible & 3,045-challenge browser wargame + AI Security Agent Bench
+- **Tagline**: Open-source cybersecurity bible & 3,080-challenge browser wargame + AI Security Agent Bench
 - **Target URL**: [https://lsszz2100.github.io/VibeHacking/](https://lsszz2100.github.io/VibeHacking/)
 - **Repository URL**: [https://github.com/lsszz2100/VibeHacking](https://github.com/lsszz2100/VibeHacking)
 - **License**: MIT License (100% Free & Open Source)
@@ -19,10 +19,10 @@ VibeHacking is an all-in-one open-source offensive & defensive cybersecurity mas
 ### Key Pillars:
 1. **75 In-Depth Textbook Sections**:
    Comprehensive coverage spanning binary exploitation, reverse engineering, kernel exploitation, EDR telemetry bypass, cloud/Kubernetes security, quantum-resistant cryptography (PQC), confidential computing (TEE), and autonomous AI agent red teaming (492 complete chapters across KO, EN, JA, ZH).
-2. **75 Reproducible Docker Labs**:
-   Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 72: AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense Lab** (`127.0.0.1:8072`), **Lab 73: Silicon Photonics Optical Interconnect & QKD Quantum Mesh Defense Lab** (`127.0.0.1:8073`), **Lab 74: Quantum Neural Network Inversion & Adversarial QPU Defense Lab** (`127.0.0.1:8074`), and **Lab 75: Photonic IC Optical Speckle PUF & MRR Dynamic Phase Scrambler Defense Lab** (`127.0.0.1:8075`).
-3. **In-Browser Terminal Wargame (87 Tracks, 3,045 Challenges)**:
-   A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 41 interactive visual architecture simulators.
+2. **76 Reproducible Docker Labs**:
+   Self-contained, production-grade vulnerable lab environments with automated regression tests, exploit solvers, and defensive remediations—including **Lab 72: AI Agent Long-Term Context Memory & Knowledge Graph Poisoning Defense Lab** (`127.0.0.1:8072`), **Lab 73: Silicon Photonics Optical Interconnect & QKD Quantum Mesh Defense Lab** (`127.0.0.1:8073`), **Lab 74: Quantum Neural Network Inversion & Adversarial QPU Defense Lab** (`127.0.0.1:8074`), **Lab 75: Photonic IC Optical Speckle PUF & MRR Dynamic Phase Scrambler Defense Lab** (`127.0.0.1:8075`), and **Lab 76: Neuromorphic Spiking Neural Network (SNN) Hardware Security & Memristor Glitch Defense Lab** (`127.0.0.1:8076`).
+3. **In-Browser Terminal Wargame (88 Tracks, 3,080 Challenges)**:
+   A lightweight, zero-installation terminal simulation environment with authentic UNIX tooling (`connect`, `cat`, `submit`, privilege escalation) and 42 interactive visual architecture simulators.
 4. **AI Security Agent Benchmark Leaderboard**:
    An automated evaluation engine measuring autonomous AI cybersecurity agents on Pass@1 exploit generation, tool safety, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0 standards.
 
@@ -36,9 +36,9 @@ Hey Product Hunt community! 👋
 We built VibeHacking to solve a major pain point in cybersecurity training: the high friction of massive virtual machines, broken dependencies, paywalled platforms, and disconnected theoretical guides.
 
 With VibeHacking, anyone can open a web browser and immediately interact with:
-• 3,045 progressive hacking challenges across 87 specialized tracks
-• 41 interactive simulators (Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Poisoning Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Autonomous Multi-Agent Swarm, Confidential AI Inference, SafeTensors Neural Weight Steganography, ZTNA API, BGP Hijacking, PQC Lattice, EDR Shield, AI Agent MCP Sandbox, Autonomous Cyber Defense, and Supply Chain Isolation)
-• 75 ready-to-deploy Docker labs with automated verification and exploit solvers
+• 3,080 progressive hacking challenges across 88 specialized tracks
+• 42 interactive simulators (Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Poisoning Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Autonomous Multi-Agent Swarm, Confidential AI Inference, SafeTensors Neural Weight Steganography, ZTNA API, BGP Hijacking, PQC Lattice, EDR Shield, AI Agent MCP Sandbox, Autonomous Cyber Defense, and Supply Chain Isolation)
+• 76 ready-to-deploy Docker labs with automated verification and exploit solvers
 • Our newly unveiled AI Agent Benchmark Leaderboard evaluating LLM security capabilities
 
 Everything is 100% free, MIT-licensed, and runs entirely in your browser or locally on your machine with no tracking.

@@ -751,6 +751,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 48, 59, 60, 65, 71, 73, 74, 75],
     },
+    "76": {
+        "name": "뇌 모사 뉴로모픽 프로세서 & SNN 하드웨어 보안 실전 랩",
+        "dir":  "76_neuromorphic_snn_hardware_lab",
+        "desc": "NeuromorphicSnnHardwareLab: 뇌 모사 뉴로모픽 프로세서 비동기 AER 스파이크 타이밍 지문 및 LIF 막전위 임계치 검증 · 멤리스터 크로스바 전압 글리치 실시간 탐지 & 위상 지터 방어 · STDP 시냅스 가중치 변조 차단 & 하드웨어 RoT 바인딩 · NIST FIPS 204 ML-DSA-87 서명 기반 뉴로모픽 원격 증명",
+        "url":  "웹 콘솔 & 뉴로모픽 SNN 하드웨어 제어기: http://localhost:8076",
+        "difficulty": "★★★★★",
+        "related": [6, 11, 48, 59, 71, 73, 74, 75],
+    },
 }
 
 LABS_METADATA = LABS

@@ -2455,6 +2455,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ ML-DSA-87 chiplet attestation passed -> FLAG{v225_s4_mldsa87_chiplet_remote_attestation_passed}"
             }
         ]
+    },
+    "76": {
+        "title": "Lab 76: NeuromorphicSnnHardwareLab - 뇌 모사 뉴로모픽 프로세서 & SNN 하드웨어 보안 실전 랩",
+        "description": "뇌 모사 뉴로모픽 프로세서 비동기 AER 스파이크 타이밍 지문 및 LIF 막전위 임계치 검증, 멤리스터 크로스바 전압 글리치 실시간 탐지 & 위상 지터 방어, STDP 시냅스 가중치 변조 차단 & 하드웨어 RoT 바인딩, NIST FIPS 204 ML-DSA-87 서명 기반 뉴로모픽 원격 증명",
+        "steps": [
+            {
+                "step": 1,
+                "name": "비동기 AER 스파이크 타이밍 지문 추출 및 LIF 뉴런 발화 임계값 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "비동기 Address-Event Representation (AER) 버스의 스파이크 도달 간격(12.5ns)과 LIF 막전위 임계값(-48.5mV)을 측정하여 하드웨어 물리 지문을 도출합니다.",
+                "exploit_payload": "{\"neuromorphic_chip_id\": \"nchip_loihi_2026_soc_a01\", \"spike_inter_arrival_time_ns\": 12.5, \"lif_membrane_threshold_mv\": -48.5, \"aer_bus_bandwidth_gbps\": 24.0}",
+                "defense": "AER 스파이크 타이밍 엔트로피 감사, 물리적 발화 전위 경계 검증, 뉴로모픽 칩 고유 지문 바인딩.",
+                "sample_output": "✓ Neuromorphic SNN AER spike timing fingerprint verified -> FLAG{v226_s1_snn_aer_spike_timing_fingerprint_ok}"
+            },
+            {
+                "step": 2,
+                "name": "멤리스터 크로스바 전압 글리치 및 레이저 고장 주입(LFI) 실시간 탐지 & 위상 지터 방어",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "멤리스터 크로스바 전도도 드리프트를 0.05% 이하로 통제하고 전압 글리치 임계값 검출 및 HMAC 세션 증명으로 레이저 고장 주입을 차단합니다.",
+                "exploit_payload": "{\"crossbar_glitch_detector_active\": true, \"memristor_conductance_drift_pct\": 0.015, \"voltage_glitch_threshold_mv\": 18.5, \"snn_session_id\": \"snn_sess_epoch_2026_01\", \"snn_session_hmac\": \"<snn_hmac>\"}",
+                "defense": "크로스바 전압 글리치 감지기 활성화, 전도도 드리프트 물리적 제한, 세션 HMAC 검증.",
+                "sample_output": "✓ Memristor crossbar array voltage glitch shielded -> FLAG{v226_s2_memristor_voltage_glitch_shield_active}"
+            },
+            {
+                "step": 3,
+                "name": "STDP 시냅틱 가중치 위변조 차단 & 하드웨어 RoT 바인딩",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "스파이크 타이밍 의존 가소성(STDP) 가중치 오염을 감시하고 변조 탐지 시 15ns 이내에 시냅스 회로를 제로화하여 가중치 탈취 및 모델 트로이목마를 방어합니다.",
+                "exploit_payload": "{\"stdp_weight_poisoning_monitor\": true, \"synapse_conductance_variance\": 0.008, \"hardware_rot_binding_active\": true, \"synaptic_circuit_zeroization_latency_ns\": 12.0}",
+                "defense": "STDP 가소성 무결성 감시, 시냅스 전도도 분산 제한, 하드웨어 RoT 기반 초고속 안티 탬퍼 제로화.",
+                "sample_output": "✓ STDP synaptic weight integrity verified -> FLAG{v226_s3_stdp_synapse_tamper_rot_secured}"
+            },
+            {
+                "step": 4,
+                "name": "NIST FIPS 204 ML-DSA-87 서명 기반 뉴로모픽 펌웨어 & 멤리스터 어레이 원격 증명",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "뉴로모픽 펌웨어 SHA-256 해시와 멤리스터 크로스바 어레이 머클 트리를 결합하여 NIST FIPS 204 표준 ML-DSA-87 서명으로 풀스택 원격 증명을 수행합니다.",
+                "exploit_payload": "{\"neuromorphic_fw_sha256\": \"<firmware_sha>\", \"memristor_crossbar_merkle_root\": \"<merkle_root>\", \"ml_dsa_attestation_sig\": \"sig_neuromorphic_snn_v226_verified_ok\", \"hardware_snn_audit_hmac\": \"<audit_hmac>\"}",
+                "defense": "ML-DSA-87 포스트 양자 전자서명, 멤리스터 어레이 머클 트리 무결성, 하드웨어 SNN 감사 HMAC.",
+                "sample_output": "✓ Full-stack neuromorphic SNN hardware RoT verified -> FLAG{v226_s4_neuromorphic_snn_mldsa87_attestation_verified}"
+            }
+        ]
     }
 }
 

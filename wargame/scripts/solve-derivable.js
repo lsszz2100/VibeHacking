@@ -3461,6 +3461,57 @@ for (const id of PHOTONICPUF_IDS) {
     }
   });
 }
+const NEUROMORPHICSNN_IDS = [
+  "t0_neuromorphicsnn_asynchronous_aer_event_bus_foundations",
+  "t0_neuromorphicsnn_lif_leaky_integrate_and_fire_membrane_dynamics",
+  "t0_neuromorphicsnn_memristor_crossbar_analog_computing_surfaces",
+  "t0_neuromorphicsnn_neuromorphic_spike_timing_coding_threat_model",
+  "t0_neuromorphicsnn_laser_fault_injection_lfi_neuromorphic_vulnerabilities",
+  "t0_neuromorphicsnn_stdp_spike_timing_dependent_plasticity_poisoning_intro",
+  "t0_neuromorphicsnn_neuromorphic_hardware_root_of_trust_binding_overview",
+  "t1_neuromorphicsnn_aer_spike_timing_jitter_fingerprint_extraction",
+  "t1_neuromorphicsnn_lif_neuron_membrane_threshold_calibration_routine",
+  "t1_neuromorphicsnn_memristor_conductance_drift_tolerance_monitoring",
+  "t1_neuromorphicsnn_crossbar_voltage_glitch_transient_detector_circuit",
+  "t1_neuromorphicsnn_synaptic_conductance_variance_stability_assessment",
+  "t1_neuromorphicsnn_neuromorphic_firmware_sha256_hash_register_locking",
+  "t1_neuromorphicsnn_sub_20ns_synaptic_circuit_zeroization_timing_test",
+  "t2_neuromorphicsnn_stdp_synaptic_plasticity_adversarial_drift_shield",
+  "t2_neuromorphicsnn_crossbar_voltage_clamping_phase_jitter_suppression",
+  "t2_neuromorphicsnn_neuromorphic_session_token_cryptographic_signing",
+  "t2_neuromorphicsnn_asynchronous_aer_packet_mac_integrity_enforcement",
+  "t2_neuromorphicsnn_memristor_array_conductance_matrix_merkle_construction",
+  "t2_neuromorphicsnn_neural_power_differential_sidechannel_jitter_masking",
+  "t2_neuromorphicsnn_heterogeneous_neuromorphic_soc_mutual_attestation",
+  "t3_neuromorphicsnn_adversarial_spike_train_injection_defense_filter",
+  "t3_neuromorphicsnn_memristor_laser_fault_injection_countermeasure_matrix",
+  "t3_neuromorphicsnn_stdp_weight_poisoning_trojan_backdoor_detection",
+  "t3_neuromorphicsnn_ml_dsa_87_neuromorphic_firmware_post_quantum_attestation",
+  "t3_neuromorphicsnn_neuromorphic_supply_chain_trojan_silicon_quarantine",
+  "t3_neuromorphicsnn_hardware_rot_enforced_memristor_conductance_restoration",
+  "t3_neuromorphicsnn_asynchronous_snn_sidechannel_emulation_sandbox",
+  "t4_neuromorphicsnn_neuromorphic_processor_laser_glitch_penetration_drill",
+  "t4_neuromorphicsnn_enterprise_neuromorphic_chip_production_attestation",
+  "t4_neuromorphicsnn_memristor_crossbar_deep_physical_sidechannel_shielding",
+  "t4_neuromorphicsnn_zero_trust_neuromorphic_aer_event_mesh_federation",
+  "t4_neuromorphicsnn_quantum_resistant_neuromorphic_firmware_lifecycle",
+  "t4_neuromorphicsnn_autonomous_neuromorphic_defense_agent_self_healing",
+  "t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone"
+];
+
+for (const id of NEUROMORPHICSNN_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/NEUROMORPHICSNN_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_neuromorphicsnn_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */

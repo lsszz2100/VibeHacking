@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  neuromorphic_snn_hardware_lab:
+    build: .
+    container_name: neuromorphic_snn_hardware_lab
+    ports:
+      - "127.0.0.1:8076:8076"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8076
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

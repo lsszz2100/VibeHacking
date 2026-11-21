@@ -147,6 +147,8 @@ start_lab() {
         "72_agent_memory_poison_lab"
         "73_silicon_photonics_qkd_lab"
         "74_quantum_neural_hybrid_lab"
+        "75_photonic_ic_puf_lab"
+        "76_neuromorphic_snn_hardware_lab"
     )
 
     local lab_names=(
@@ -225,6 +227,8 @@ start_lab() {
         "AI 에이전트 장기 메모리 오염 & 지식 그래프 방어 랩"
         "실리콘 포토닉스 광 인터커넥트 & QKD 양자 키 메시 방어 랩"
         "양자 신경망 적대적 섭동 & QPU 메모리 격리 방어 랩"
+        "광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩"
+        "뇌 모사 뉴로모픽 프로세서 & SNN 하드웨어 보안 실전 랩"
     )
 
     local lab_ports=(
@@ -303,10 +307,12 @@ start_lab() {
         "웹 콘솔 & 에이전트 인지 메모리 방화벽: http://localhost:8072"
         "웹 콘솔 & 실리콘 포토닉스 QKD 게이트웨이: http://localhost:8073"
         "웹 콘솔 & 양자 신경망 QPU 게이트웨이: http://localhost:8074"
+        "웹 콘솔 & 광학 PUF 하드웨어 게이트웨이: http://localhost:8075"
+        "웹 콘솔 & 뉴로모픽 SNN 하드웨어 제어기: http://localhost:8076"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 75 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~75 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 76 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~76 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -415,7 +421,9 @@ usage() {
     echo "  66    AI 에이전트 샌드박스 탈출 & 공급망 랩 (PyPI 오염, Ray RCE, Landlock/eBPF 격리, G3 승인)"
     echo "  67    기밀 AI 추론 & TEE 증명 랩 (AMD SEV-SNP/TDX, AES-256-XTS 가중치, 캐시 타이밍 방어)"
     echo "  68    자율 멀티에이전트 스웜 보안 랩 (사칭 워커 차단, PBFT 비잔틴 합의 방어, Tetragon eBPF)"
-    echo "  (01~68 번호 지정 가능, 또는 'vhack lab start <번호>' 권장)"
+    echo "  75    광 집적회로(Photonic IC) 물리적 복제 방지(PUF) 실전 랩 (스페클 지문, MRR CRP 스크램블링, ML-DSA-87)"
+    echo "  76    뇌 모사 뉴로모픽 프로세서 & SNN 하드웨어 실전 랩 (AER 스파이크 지문, 멤리스터 글리치, STDP RoT)"
+    echo "  (01~76 번호 지정 가능, 또는 'vhack lab start <번호>' 권장)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
@@ -428,6 +436,8 @@ usage() {
     echo "  $0 66        # AI 에이전트 샌드박스 탈출 랩 시작"
     echo "  $0 67        # 기밀 AI 추론 & TEE 증명 랩 시작"
     echo "  $0 68        # 자율 멀티에이전트 스웜 보안 랩 시작"
+    echo "  $0 75        # 광 집적회로 PUF 보안 랩 시작"
+    echo "  $0 76        # 뉴로모픽 SNN 하드웨어 보안 랩 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""
@@ -449,10 +459,10 @@ case "$ARG" in
     *)
         if [[ "$ARG" =~ ^[0-9]+$ ]]; then
             lab_int=$((10#$ARG))
-            if [[ $lab_int -ge 1 && $lab_int -le 68 ]]; then
+            if [[ $lab_int -ge 1 && $lab_int -le 76 ]]; then
                 start_lab "$lab_int"
             else
-                error "잘못된 랩 번호: $ARG (1~68 사이)"
+                error "잘못된 랩 번호: $ARG (1~76 사이)"
             fi
         else
             error "알 수 없는 인자: $ARG\n$(usage)"

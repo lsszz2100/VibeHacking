@@ -716,6 +716,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM10:2025",
         "owasp_name": "Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tapping & Photonic Hardware Trojan Injection",
     },
+    "76": {
+        "kisa_id": "2.10.11",
+        "kisa_name": "뉴로모픽 하드웨어 프로세서 및 SNN 비동기 이벤트 통신 무결성 통제 (AER 프로토콜 암호화, 멤리스터 크로스바 전압 글리치 방어, STDP 가중치 변조 차단, ML-DSA-87 원격 증명)",
+        "nist_csf_id": "PR.DS-12",
+        "nist_csf_name": "Neuromorphic SNN Asynchronous Event Representation (AER) Integrity, Memristor Crossbar Glitch Hardening & Post-Quantum Hardware Attestation",
+        "owasp_id": "LLM10:2025",
+        "owasp_name": "Neuromorphic Hardware Glitch Fault Injection, Asynchronous AER Spike Hijacking & Synaptic Weight Drift Poisoning",
+    },
 }
 
 @dataclass
@@ -2107,6 +2115,24 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Silicon photonics chiplet architecture lacks dynamic optical phase scrambling and physical-layer tamper erasure, allowing adversaries to execute CMA-ES machine learning modeling attacks against Challenge-Response Pairs (CRPs) and tap inter-chiplet optical buses without triggering hardware Root-of-Trust invalidation.",
                 "affected_component": "PhotonicIcPufSecurityLab Optical PUF Gateway & Micro-Ring Resonators (Port 8075)",
                 "remediation": "Deploy gigahertz-rate optical phase scrambling against CRP modeling attacks, enforce active optical power monitoring with sub-50ns destructive optical erasure, bind hardware RoT to silicon die min-entropy speckle distributions, and verify inter-chiplet NIST FIPS 204 ML-DSA-87 remote attestation signatures against hardware Merkle roots."
+            }
+        ]
+    },
+    "76": {
+        "title": "76 NeuromorphicSnnHardwareLab Neuromorphic Spiking Neural Network (SNN) Hardware Security & Memristor Glitch Defense Lab",
+        "category": "Neuromorphic Hardware Security & SNN Memristor Hardening",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7601",
+                "name": "Neuromorphic Hardware Voltage Glitch Fault Injection, Asynchronous AER Spike Hijacking & STDP Weight Drift Poisoning",
+                "cvss_vector": "CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1200",
+                "mitre_technique": "Hardware Additions: Memristor Crossbar Glitch & AER Spike Bus Hijacking",
+                "mitre_tactic": "Initial Access / Impact / Defense Evasion",
+                "impact": "Adversary exploiting unshielded neuromorphic processor induces memristor crossbar conductance drift via voltage glitches, injects rogue spikes onto asynchronous AER event buses, and poisons STDP synaptic plasticity weights to compromise neuromorphic model reasoning integrity.",
+                "description": "Neuromorphic processor architecture lacks crossbar voltage glitch detectors and real-time STDP weight variance monitors, allowing adversaries to execute laser fault injection (LFI) and physical voltage glitching to manipulate LIF neuron firing thresholds and corrupt memristor array states without triggering cryptographic hardware zeroization.",
+                "affected_component": "NeuromorphicSnnHardwareLab Memristor Crossbar & AER Event Bus Controller (Port 8076)",
+                "remediation": "Deploy crossbar voltage glitch detection circuits with calibrated thresholds (<30.0mV), enforce physical memristor conductance drift bounds (<5%), integrate sub-20ns destructive synaptic circuit zeroization upon tamper detection, and verify full-stack neuromorphic firmware and crossbar Merkle trees via NIST FIPS 204 ML-DSA-87 post-quantum remote attestation signatures."
             }
         ]
     }

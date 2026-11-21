@@ -758,6 +758,14 @@ const TRACKS = [
     "en": "Photonic IC PUF & Silicon Security",
     "desc_ko": "실리콘 포토닉스 다이 광학 스페클 PUF 키 유도, 마이크로 링 공진기 CRP 모델링 능동 스크램블링 차단, 칩let 분리 감지 비가역적 광학 소광 및 ML-DSA-87 상호 원격 증명.",
     "desc_en": "Silicon photonics die optical speckle PUF key derivation, micro-ring resonator CRP modeling active scrambling defense, chiplet detachment destructive optical erasure, and ML-DSA-87 mutual attestation."
+  },
+  {
+    "id": "neuromorphicsnn",
+    "icon": "🧠",
+    "ko": "뉴로모픽 SNN & 멤리스터 하드웨어 보안",
+    "en": "Neuromorphic SNN & Memristor Security",
+    "desc_ko": "뇌 모사 뉴로모픽 프로세서 비동기 AER 스파이크 타이밍 지문 및 LIF 막전위 임계치 검증, 멤리스터 크로스바 전압 글리치 실시간 탐지 & 위상 지터 방어, STDP 시냅스 가중치 변조 차단 & 하드웨어 RoT 바인딩, NIST FIPS 204 ML-DSA-87 서명 기반 뉴로모픽 원격 증명.",
+    "desc_en": "Neuromorphic processor asynchronous AER spike timing fingerprint verification, memristor crossbar voltage glitch detection, STDP synaptic weight drift defense, and NIST FIPS 204 ML-DSA-87 hardware remote attestation."
   }
 ];
 
@@ -85452,6 +85460,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_photonicpuf_sovereign_photonic_ic_hardware_security_capstone`."
+      ]
+    }
+  },
+  // Track 88: neuromorphicsnn - Neuromorphic Spiking Neural Network & Memristor Hardware Security (35 challenges)
+  {
+    "id": "t0_neuromorphicsnn_asynchronous_aer_event_bus_foundations",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "d6e1dc0d92267f036c279abb06419516128608a03e5df6173153d4976323de1f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비동기 AER 이벤트 버스 통신 프로토콜 기초",
+      "en": "Asynchronous AER Event Bus Communication Protocol Foundations"
+    },
+    "prompt": {
+      "ko": "뉴로모픽 프로세서의 비동기 Address-Event Representation (AER) 버스 통신 원리와 스파이크 패킷 전송 구조를 분석합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_asynchronous_aer_event_bus_foundations``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze asynchronous Address-Event Representation (AER) bus communication mechanics and spike packet delivery structures in neuromorphic processors.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_asynchronous_aer_event_bus_foundations``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_asynchronous_aer_event_bus_foundations` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_asynchronous_aer_event_bus_foundations`."
+      ]
+    }
+  },
+  {
+    "id": "t0_neuromorphicsnn_lif_leaky_integrate_and_fire_membrane_dynamics",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "9f30ee3a8c7a4bc9656816a4b6489f35bd50064329d0383e930a7c879a2e27b5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "LIF 뉴런 막전위 누적 및 발화 동역학 분석",
+      "en": "Leaky Integrate-and-Fire (LIF) Neuron Membrane Potential Dynamics"
+    },
+    "prompt": {
+      "ko": "누설 적분 발화(LIF) 모델의 세포막 전위 누적, 감쇠, 그리고 발화 임계값(-48.5mV) 도달 시의 스파이크 생성 원리를 학습합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_lif_leaky_integrate_and_fire_membrane_dynamics``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Study leaky integrate-and-fire (LIF) membrane potential accumulation, decay, and spike generation upon reaching firing thresholds (-48.5mV).\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_lif_leaky_integrate_and_fire_membrane_dynamics``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_lif_leaky_integrate_and_fire_membrane_dynamics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_lif_leaky_integrate_and_fire_membrane_dynamics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_neuromorphicsnn_memristor_crossbar_analog_computing_surfaces",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "35994f526c66ada4aeefc3ec4fe58fd3a46e4608237d9eb09c5fd3dcf382a144",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멤리스터 크로스바 아날로그 연산 하드웨어 공격 표면",
+      "en": "Memristor Crossbar Analog Computing Hardware Attack Surfaces"
+    },
+    "prompt": {
+      "ko": "행/열 전압 인가를 통해 벡터-행렬 곱셈(VMM)을 수행하는 멤리스터 크로스바 어레이의 전압 왜곡 및 결함 주입 공격 표면을 식별합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_memristor_crossbar_analog_computing_surfaces``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Identify voltage perturbation and fault injection surfaces across memristor crossbars performing analog vector-matrix multiplication.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_memristor_crossbar_analog_computing_surfaces``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_memristor_crossbar_analog_computing_surfaces` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_memristor_crossbar_analog_computing_surfaces`."
+      ]
+    }
+  },
+  {
+    "id": "t0_neuromorphicsnn_neuromorphic_spike_timing_coding_threat_model",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "20f956e1d735dd7a4cf9ad3d710ef43e6dcd021a4f3dacd69b11505b755b8048",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "뉴로모픽 스파이크 타이밍 코딩 위협 모델 분석",
+      "en": "Neuromorphic Spike Timing Coding Threat Model Analysis"
+    },
+    "prompt": {
+      "ko": "시간적 스파이크 간격(Inter-Spike Interval)에 정보를 은닉하거나 왜곡하는 적대적 타이밍 지터 공격 위협을 평가합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_neuromorphic_spike_timing_coding_threat_model``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Evaluate adversarial timing jitter threats corrupting or covertly exploiting temporal inter-spike intervals in neuromorphic computing.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_neuromorphic_spike_timing_coding_threat_model``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_neuromorphic_spike_timing_coding_threat_model` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_neuromorphic_spike_timing_coding_threat_model`."
+      ]
+    }
+  },
+  {
+    "id": "t0_neuromorphicsnn_laser_fault_injection_lfi_neuromorphic_vulnerabilities",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "68e9c90b5dfe18afadf2a492e37aa34e08160868a6877ca0ef2e7744b016674a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "레이저 고장 주입(LFI) 뉴로모픽 반도체 취약점 개요",
+      "en": "Laser Fault Injection (LFI) Neuromorphic Semiconductor Vulnerabilities"
+    },
+    "prompt": {
+      "ko": "뉴로모픽 실리콘 다이에 적외선 레이저 펄스를 조사하여 특정 뉴런의 발화를 강제하거나 차단하는 물리적 침해 기법을 분석합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_laser_fault_injection_lfi_neuromorphic_vulnerabilities``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Examine physical tampering mechanisms applying infrared laser pulses onto neuromorphic dies to manipulate neuron firing states.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_laser_fault_injection_lfi_neuromorphic_vulnerabilities``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_laser_fault_injection_lfi_neuromorphic_vulnerabilities` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_laser_fault_injection_lfi_neuromorphic_vulnerabilities`."
+      ]
+    }
+  },
+  {
+    "id": "t0_neuromorphicsnn_stdp_spike_timing_dependent_plasticity_poisoning_intro",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "1714b99bb7f7be10e630f644df77306cf2e34cd3923afa875dcdec5576d0c31f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "STDP 시냅스 가소성 학습 규칙 오염 공격 개요",
+      "en": "Spike-Timing-Dependent Plasticity (STDP) Learning Rule Poisoning Overview"
+    },
+    "prompt": {
+      "ko": "스파이크 도달 시차에 따라 시냅스 전도도를 자율 갱신하는 STDP 메커니즘을 조작하여 모델 백도어를 심는 위협을 검토합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_stdp_spike_timing_dependent_plasticity_poisoning_intro``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Review threats implanting backdoors by exploiting STDP mechanisms that autonomously adapt synaptic conductance based on spike timing.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_stdp_spike_timing_dependent_plasticity_poisoning_intro``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_stdp_spike_timing_dependent_plasticity_poisoning_intro` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_stdp_spike_timing_dependent_plasticity_poisoning_intro`."
+      ]
+    }
+  },
+  {
+    "id": "t0_neuromorphicsnn_neuromorphic_hardware_root_of_trust_binding_overview",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 25,
+    "ci": false,
+    "hash": "e4b29653ec311a235cb96ac955dab1d5f2155b6ee03db989432f37c12b2c8b9a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 신뢰점(RoT) 기반 뉴로모픽 프로세서 보호 개요",
+      "en": "Hardware Root-of-Trust (RoT) Neuromorphic Processor Protection Overview"
+    },
+    "prompt": {
+      "ko": "뉴로모픽 코어와 온칩 불변 하드웨어 RoT를 암호학적으로 결합하여 불법 펌웨어 및 파라미터 변조를 차단하는 구조를 분석합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_neuromorphic_hardware_root_of_trust_binding_overview``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze architectures cryptographically binding neuromorphic computing cores to immutable hardware RoT to prevent tampering.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t0_neuromorphicsnn_neuromorphic_hardware_root_of_trust_binding_overview``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_neuromorphicsnn_neuromorphic_hardware_root_of_trust_binding_overview` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_neuromorphicsnn_neuromorphic_hardware_root_of_trust_binding_overview`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_aer_spike_timing_jitter_fingerprint_extraction",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "97c7c83709bedf6b726d551a497f1a52c9d28ef92ca03369674c59871264b47c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "AER 스파이크 타이밍 지터 기반 물리 지문 추출",
+      "en": "AER Spike Timing Jitter Physical Fingerprint Extraction"
+    },
+    "prompt": {
+      "ko": "AER 버스의 스파이크 도달 간격(12.5ns 기준) 미세 지터와 분산 통계를 측정하여 칩 고유의 물리 지문을 도출합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_aer_spike_timing_jitter_fingerprint_extraction``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Measure fine jitter and variance statistics across AER spike intervals (12.5ns baseline) to derive unique hardware chip fingerprints.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_aer_spike_timing_jitter_fingerprint_extraction``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_aer_spike_timing_jitter_fingerprint_extraction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_aer_spike_timing_jitter_fingerprint_extraction`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_lif_neuron_membrane_threshold_calibration_routine",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "eeb94204531a8059407dfd21412f94b9223c6019a09be011f0020795f830a453",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "LIF 뉴런 막전위 발화 임계값(-48.5mV) 정밀 교정 루틴",
+      "en": "LIF Neuron Membrane Potential Firing Threshold (-48.5mV) Calibration"
+    },
+    "prompt": {
+      "ko": "온도 변화와 공급 전압 변동에도 LIF 뉴런의 발화 임계값(-48.5mV)을 오차 ±0.5mV 이내로 안정화하는 캘리브레이션을 구현합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_lif_neuron_membrane_threshold_calibration_routine``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Implement calibration routines stabilizing LIF neuron firing thresholds at -48.5mV (within ±0.5mV tolerance) across thermal variations.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_lif_neuron_membrane_threshold_calibration_routine``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_lif_neuron_membrane_threshold_calibration_routine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_lif_neuron_membrane_threshold_calibration_routine`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_memristor_conductance_drift_tolerance_monitoring",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "13e921eef7f08381270b55c90bfc89f73c6e3624878390b50bd24831cb0dbdc7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멤리스터 크로스바 전도도 드리프트(<0.05%) 허용치 모니터링",
+      "en": "Memristor Crossbar Conductance Drift (<0.05%) Tolerance Monitoring"
+    },
+    "prompt": {
+      "ko": "멤리스터 소자의 자연적 전도도 드리프트가 안전 임계치(0.05%)를 초과할 경우 실시간 경보를 발령하는 감시 루틴을 구축합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_memristor_conductance_drift_tolerance_monitoring``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Build a monitoring routine raising real-time alerts when memristor conductance drift exceeds physical safety bounds of 0.05%.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_memristor_conductance_drift_tolerance_monitoring``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_memristor_conductance_drift_tolerance_monitoring` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_memristor_conductance_drift_tolerance_monitoring`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_crossbar_voltage_glitch_transient_detector_circuit",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "aee37bbf7e9c189c72809749246aeac383c3d343d31fe5cddc623adb08535496",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "크로스바 전압 글리치 과도전압 실시간 감지 회로 구현",
+      "en": "Crossbar Voltage Glitch Transient Detector Circuit Implementation"
+    },
+    "prompt": {
+      "ko": "크로스바 공급 전압 라인에 유입되는 18.5mV 이상의 급격한 과도 글리치 펄스를 나노초 단위로 검출하는 회로를 설계합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_crossbar_voltage_glitch_transient_detector_circuit``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Design circuits detecting transient voltage glitch pulses exceeding 18.5mV on crossbar power rails at nanosecond resolution.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_crossbar_voltage_glitch_transient_detector_circuit``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_crossbar_voltage_glitch_transient_detector_circuit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_crossbar_voltage_glitch_transient_detector_circuit`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_synaptic_conductance_variance_stability_assessment",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "63d01d73bb7d14723b1dffe6a5f67b843f897431b45cab1dc6241cfdac378f4f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "시냅스 전도도 분산 지표 안정성 정량 평가 모듈",
+      "en": "Synaptic Conductance Variance Stability Quantitative Assessment Module"
+    },
+    "prompt": {
+      "ko": "8x8 시냅스 어레이의 전도도 분산이 임계값(0.02) 이하로 유지되는지 통계적으로 검증하여 악의적 가중치 조작을 탐지합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_synaptic_conductance_variance_stability_assessment``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Statistically verify that synaptic conductance variance across 8x8 arrays remains below 0.02 to detect adversarial weight tampering.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_synaptic_conductance_variance_stability_assessment``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_synaptic_conductance_variance_stability_assessment` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_synaptic_conductance_variance_stability_assessment`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_neuromorphic_firmware_sha256_hash_register_locking",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "97c00d899ef5795b2d258ab740a4799e34aece05365e46b053af0ffa343c69af",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "뉴로모픽 제어 펌웨어 SHA-256 해시 레지스터 락킹",
+      "en": "Neuromorphic Control Firmware SHA-256 Hash Register Locking"
+    },
+    "prompt": {
+      "ko": "뉴로모픽 프로세서 제어 마이크로코드의 SHA-256 해시를 하드웨어 원-타임 프로그램(OTP) eFuse에 영구 기록합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_neuromorphic_firmware_sha256_hash_register_locking``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Permanently burn SHA-256 hashes of neuromorphic control microcode into hardware OTP eFuse registers to prevent firmware injection.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_neuromorphic_firmware_sha256_hash_register_locking``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_neuromorphic_firmware_sha256_hash_register_locking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_neuromorphic_firmware_sha256_hash_register_locking`."
+      ]
+    }
+  },
+  {
+    "id": "t1_neuromorphicsnn_sub_20ns_synaptic_circuit_zeroization_timing_test",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 50,
+    "ci": false,
+    "hash": "5b065664b3a5d150547aa748e21ab54a24e77cf162101d3be8230e01b2af4016",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "20ns 이하 시냅스 회로 안티 탬퍼 제로화 타이밍 테스트",
+      "en": "Sub-20ns Synaptic Circuit Anti-Tamper Zeroization Timing Benchmark"
+    },
+    "prompt": {
+      "ko": "물리적 침해 트리거 수신 즉시 12.0ns 이내에 시냅스 크로스바 전하를 완전 방전하여 메모리를 제로화하는 회로를 검증합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_sub_20ns_synaptic_circuit_zeroization_timing_test``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Validate anti-tamper circuits discharging memristor crossbars within 12.0ns upon tamper signals to securely erase parameters.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t1_neuromorphicsnn_sub_20ns_synaptic_circuit_zeroization_timing_test``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_neuromorphicsnn_sub_20ns_synaptic_circuit_zeroization_timing_test` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_neuromorphicsnn_sub_20ns_synaptic_circuit_zeroization_timing_test`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_stdp_synaptic_plasticity_adversarial_drift_shield",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "c2f61c60e1db51996daa69b53178ccecc62e00a0083eaeed7d5498deee75952a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "STDP 시냅스 가소성 적대적 드리프트 방어기 구축",
+      "en": "STDP Synaptic Plasticity Adversarial Drift Shield Architecture"
+    },
+    "prompt": {
+      "ko": "시간차 조작을 통한 적대적 가중치 드리프트 공격을 감지하고 STDP 학습률을 동적으로 제한하는 가드레일을 구현합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_stdp_synaptic_plasticity_adversarial_drift_shield``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Implement guardrails detecting adversarial weight drift attacks via timing manipulation and dynamically clamping STDP learning rates.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_stdp_synaptic_plasticity_adversarial_drift_shield``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_stdp_synaptic_plasticity_adversarial_drift_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_stdp_synaptic_plasticity_adversarial_drift_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_crossbar_voltage_clamping_phase_jitter_suppression",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "1676f4709807eff1c9db69cb9cfe150637fee7d13b6bc6b76ee27c5b674ae811",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "크로스바 전압 클램핑 및 위상 지터 능동 억제 엔진",
+      "en": "Crossbar Voltage Clamping & Phase Jitter Active Suppression Engine"
+    },
+    "prompt": {
+      "ko": "전압 글리치 유입 시 크로스바 라인을 즉각 클램핑하고 스파이크 타이밍 위상에 방어적 지터를 주입해 결함 주입을 무력화합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_crossbar_voltage_clamping_phase_jitter_suppression``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Instantly clamp crossbar lines during voltage glitches and inject defensive phase jitter to neutralize fault injection attempts.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_crossbar_voltage_clamping_phase_jitter_suppression``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_crossbar_voltage_clamping_phase_jitter_suppression` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_crossbar_voltage_clamping_phase_jitter_suppression`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_neuromorphic_session_token_cryptographic_signing",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "765a73b77ee56afb871354cab02601a28b8e0d3e8680383f0f46fff77119256b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "뉴로모픽 세션 토큰 HMAC 암호학적 서명 파이프라인",
+      "en": "Neuromorphic Session Token HMAC Cryptographic Signing Pipeline"
+    },
+    "prompt": {
+      "ko": "뉴로모픽 방어 세션 식별자와 하드웨어 마스터 시크릿을 결합하여 HMAC-SHA256 기반 무결성 증명 토큰을 발급합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_neuromorphic_session_token_cryptographic_signing``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Issue HMAC-SHA256 integrity tokens cryptographically combining neuromorphic defense session identifiers with hardware master keys.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_neuromorphic_session_token_cryptographic_signing``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_neuromorphic_session_token_cryptographic_signing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_neuromorphic_session_token_cryptographic_signing`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_asynchronous_aer_packet_mac_integrity_enforcement",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "48a6f549ff99aad0b4faf53f839ed2f6ff6b6a3517cc546c6917e63b4957048a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비동기 AER 이벤트 패킷 MAC 무결성 검증 모듈",
+      "en": "Asynchronous AER Event Packet MAC Integrity Verification Module"
+    },
+    "prompt": {
+      "ko": "AER 버스 상에서 라우팅되는 이벤트 패킷 헤더에 경량 16비트 MAC을 첨부하여 위조 스파이크 패킷 삽입을 차단합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_asynchronous_aer_packet_mac_integrity_enforcement``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Attach lightweight 16-bit MACs to AER event packet headers to block adversary forged spike packet insertion across event buses.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_asynchronous_aer_packet_mac_integrity_enforcement``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_asynchronous_aer_packet_mac_integrity_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_asynchronous_aer_packet_mac_integrity_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_memristor_array_conductance_matrix_merkle_construction",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "b47352009fe83aa871a0279c59f2e801e42547721af1ad91be6ea8eb899d558a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멤리스터 어레이 전도도 매트릭스 머클 트리 구성",
+      "en": "Memristor Array Conductance Matrix Merkle Tree Construction"
+    },
+    "prompt": {
+      "ko": "크로스바 어레이의 64개 멤리스터 전도도 값을 블록별로 해싱하여 머클 트리를 구성하고 루트 해시 무결성을 증명합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_memristor_array_conductance_matrix_merkle_construction``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Construct Merkle trees hashing conductance values across 64 crossbar memristors and prove cryptographic root hash integrity.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_memristor_array_conductance_matrix_merkle_construction``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_memristor_array_conductance_matrix_merkle_construction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_memristor_array_conductance_matrix_merkle_construction`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_neural_power_differential_sidechannel_jitter_masking",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "7fbd3fedacf129f57ffa5f85a365e3b1f45277b35977eb9a79f21dcd689618fd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "신경망 전력 차분 사이드채널 스파이크 지터 마스킹",
+      "en": "Neural Power Differential Sidechannel Spike Jitter Masking"
+    },
+    "prompt": {
+      "ko": "스파이크 발화 시 소비되는 전력 파형에 의사 난수 지터를 주입하여 차분 전력 분석(DPA) 모델 가중치 복원 공격을 차단합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_neural_power_differential_sidechannel_jitter_masking``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Inject pseudo-random jitter into spike firing power traces to thwart differential power analysis (DPA) model parameter reconstruction attacks.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_neural_power_differential_sidechannel_jitter_masking``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_neural_power_differential_sidechannel_jitter_masking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_neural_power_differential_sidechannel_jitter_masking`."
+      ]
+    }
+  },
+  {
+    "id": "t2_neuromorphicsnn_heterogeneous_neuromorphic_soc_mutual_attestation",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 100,
+    "ci": false,
+    "hash": "d914276ed10cbe5a839e9cdccfb7c64c9e717e0b068ed41c2e4ff1394f0ea467",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이종 뉴로모픽 SoC 컴포넌트 간 상호 원격 증명 핸드셰이크",
+      "en": "Heterogeneous Neuromorphic SoC Mutual Remote Attestation Handshake"
+    },
+    "prompt": {
+      "ko": "뉴로모픽 가속기 코어와 호스트 RISC-V 보안 관리자 간 상호 암호학적 원격 증명을 통해 위조 코어 삽입을 봉쇄합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_heterogeneous_neuromorphic_soc_mutual_attestation``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce bidirectional cryptographic remote attestation between neuromorphic cores and host RISC-V controllers to prevent rogue dies.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t2_neuromorphicsnn_heterogeneous_neuromorphic_soc_mutual_attestation``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_neuromorphicsnn_heterogeneous_neuromorphic_soc_mutual_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_neuromorphicsnn_heterogeneous_neuromorphic_soc_mutual_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_adversarial_spike_train_injection_defense_filter",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "5551d39e86d1d5c3602b957dbf38b3e281694503f4d7ea5af9024695c5c28879",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "적대적 스파이크 트레인 주입 실시간 방어 필터",
+      "en": "Adversarial Spike Train Injection Real-Time Defense Filter"
+    },
+    "prompt": {
+      "ko": "뉴런 발화 빈도 및 버스트 간격의 이상 통계를 실시간 분석하여 적대적으로 조작된 스파이크 폭탄 공격을 격리 차단합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_adversarial_spike_train_injection_defense_filter``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze anomaly statistics of neuron firing frequencies to quarantine adversarially crafted spike train saturation attacks in real time.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_adversarial_spike_train_injection_defense_filter``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_adversarial_spike_train_injection_defense_filter` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_adversarial_spike_train_injection_defense_filter`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_memristor_laser_fault_injection_countermeasure_matrix",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "bf0e1444232423cc803471e0e5dd05a76f8adc9069831b7ea476f4dd01aa374e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멤리스터 LFI 레이저 고장 주입 능동 대응 매트릭스",
+      "en": "Memristor LFI Laser Fault Injection Active Countermeasure Matrix"
+    },
+    "prompt": {
+      "ko": "다이 상단 광센서 어레이와 결합하여 레이저 펄스 입사 시 15ns 이내에 크로스바 역극성 전압을 인가하는 대응 매트릭스를 구현합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_memristor_laser_fault_injection_countermeasure_matrix``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy on-die optical sensors triggering reverse polarity electrical voltage within 15ns of laser pulse incidence to prevent memristor state flips.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_memristor_laser_fault_injection_countermeasure_matrix``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_memristor_laser_fault_injection_countermeasure_matrix` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_memristor_laser_fault_injection_countermeasure_matrix`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_stdp_weight_poisoning_trojan_backdoor_detection",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "61c7100cc55ea2e7a6709855cc3a3a6b1360409b6d4fdec82432c45f491b8c16",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "STDP 가중치 변조 트로이목마 백도어 정밀 적출",
+      "en": "STDP Weight Poisoning Trojan Backdoor Precision Detection"
+    },
+    "prompt": {
+      "ko": "정상 입력 분포에서는 활성화되지 않고 특정 희귀 스파이크 패턴에서만 트리거되는 은닉 하드웨어 백도어를 통계적으로 적출합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_stdp_weight_poisoning_trojan_backdoor_detection``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Statistically extract dormant hardware backdoors that remain inactive under normal inputs and only trigger on rare spike patterns.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_stdp_weight_poisoning_trojan_backdoor_detection``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_stdp_weight_poisoning_trojan_backdoor_detection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_stdp_weight_poisoning_trojan_backdoor_detection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_ml_dsa_87_neuromorphic_firmware_post_quantum_attestation",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "0fc0ead5de5bd156d2732eb7454b8727a6a18d1244b6852a580e9da4f8b64e9c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NIST ML-DSA-87 뉴로모픽 펌웨어 포스트 양자 원격 증명",
+      "en": "NIST ML-DSA-87 Neuromorphic Firmware Post-Quantum Remote Attestation"
+    },
+    "prompt": {
+      "ko": "NIST FIPS 204 표준 격자 기반 ML-DSA-87 전자서명을 생성 및 검증하여 뉴로모픽 펌웨어와 파라미터 무결성을 양자 내성으로 증명합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_ml_dsa_87_neuromorphic_firmware_post_quantum_attestation``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Generate and verify lattice-based NIST FIPS 204 ML-DSA-87 digital signatures to ensure quantum-safe firmware provenance.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_ml_dsa_87_neuromorphic_firmware_post_quantum_attestation``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_ml_dsa_87_neuromorphic_firmware_post_quantum_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_ml_dsa_87_neuromorphic_firmware_post_quantum_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_neuromorphic_supply_chain_trojan_silicon_quarantine",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "00dd2c43ddd56523f02ce1375c4b9d08cb9d7f53b139336bb1232b3ddeb14678",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "뉴로모픽 공급망 실리콘 트로이목마 격리 및 무효화",
+      "en": "Neuromorphic Supply Chain Trojan Silicon Quarantine & Revocation"
+    },
+    "prompt": {
+      "ko": "반도체 제조 외주 과정에서 삽입된 기생 시냅스 트로이 게이트를 탐지하고 해당 크로스바 라인을 영구 비활성화 격리합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_neuromorphic_supply_chain_trojan_silicon_quarantine``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Detect parasitic synaptic trojan gates inserted during outsourced fabrication and permanently quarantine affected crossbar rows.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_neuromorphic_supply_chain_trojan_silicon_quarantine``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_neuromorphic_supply_chain_trojan_silicon_quarantine` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_neuromorphic_supply_chain_trojan_silicon_quarantine`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_hardware_rot_enforced_memristor_conductance_restoration",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "a3feb2680f04f6180fd612fd500b150a3fbf210cfb8c903031e2167e1a7571fa",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 RoT 강제 멤리스터 전도도 무결성 복구",
+      "en": "Hardware RoT-Enforced Memristor Conductance Integrity Restoration"
+    },
+    "prompt": {
+      "ko": "전도도 이상 변조 감지 시 하드웨어 RoT에 보관된 골든 이미지 스냅샷을 기반으로 크로스바 가중치를 즉시 안전 상태로 롤백합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_hardware_rot_enforced_memristor_conductance_restoration``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Instantly roll back corrupted memristor weights to verified golden snapshots stored in hardware RoT upon anomaly detection.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_hardware_rot_enforced_memristor_conductance_restoration``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_hardware_rot_enforced_memristor_conductance_restoration` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_hardware_rot_enforced_memristor_conductance_restoration`."
+      ]
+    }
+  },
+  {
+    "id": "t3_neuromorphicsnn_asynchronous_snn_sidechannel_emulation_sandbox",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 200,
+    "ci": false,
+    "hash": "bb92de1c04597d380c9f11e12b2a84688e21fe791cf8a2dbd788b55b2f52b72f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비동기 SNN 사이드채널 에뮬레이션 샌드박스 검증",
+      "en": "Asynchronous SNN Sidechannel Emulation Sandbox Verification"
+    },
+    "prompt": {
+      "ko": "전자기 방출(EM) 및 전력 소비 텔레메트리를 가상 에뮬레이트하여 제로데이 부채널 취약점을 사전에 차단하는 샌드박스를 구축합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_asynchronous_snn_sidechannel_emulation_sandbox``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Establish an emulation sandbox simulating electromagnetic and power telemetry to proactively mitigate zero-day sidechannel leaks.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t3_neuromorphicsnn_asynchronous_snn_sidechannel_emulation_sandbox``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_neuromorphicsnn_asynchronous_snn_sidechannel_emulation_sandbox` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_neuromorphicsnn_asynchronous_snn_sidechannel_emulation_sandbox`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_neuromorphic_processor_laser_glitch_penetration_drill",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "6ddd40d02e9a28eacd102e0057f772fd388c964b1c8a8458108b52ea2a2b0918",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "뉴로모픽 프로세서 레이저 글리치 침투 모의 검증",
+      "en": "Neuromorphic Processor Laser Glitch Penetration Adversarial Drill"
+    },
+    "prompt": {
+      "ko": "실제 전압 글리치 및 LFI 결함 주입을 결합한 복합 침투 시나리오를 재현하고 나노초 방어 클램프 회로의 유효성을 실증합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_neuromorphic_processor_laser_glitch_penetration_drill``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute multi-vector fault injection drills combining voltage glitches and LFI to demonstrate nanosecond clamp defense.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_neuromorphic_processor_laser_glitch_penetration_drill``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_neuromorphic_processor_laser_glitch_penetration_drill` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_neuromorphic_processor_laser_glitch_penetration_drill`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_enterprise_neuromorphic_chip_production_attestation",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "aba4646024bfc72d0290455d4a37e0cd8b558ba9986c0731b62acd48f9b1203b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 뉴로모픽 칩 양산 펌웨어 머클 원격 증명",
+      "en": "Enterprise Neuromorphic Chip Production Firmware Merkle Attestation"
+    },
+    "prompt": {
+      "ko": "대규모 분산 뉴로모픽 가속기 클러스터의 전체 펌웨어 및 크로스바 구성을 결합한 글로벌 머클 증명 파이프라인을 구축합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_enterprise_neuromorphic_chip_production_attestation``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy an enterprise Merkle attestation pipeline verifying firmware and crossbar configurations across neuromorphic clusters.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_enterprise_neuromorphic_chip_production_attestation``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_enterprise_neuromorphic_chip_production_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_enterprise_neuromorphic_chip_production_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_memristor_crossbar_deep_physical_sidechannel_shielding",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "7c1c73ded50992d17da413b7c3e18516bb5dd88f515c5795800d9e28176e86b0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멤리스터 크로스바 심층 물리 사이드채널 완전 밀폐",
+      "en": "Memristor Crossbar Deep Physical Sidechannel Comprehensive Shielding"
+    },
+    "prompt": {
+      "ko": "다층 금속 차폐막 및 실시간 차분 노이즈 발생기를 온칩 통합하여 전자기 방출 누출을 -90dB 이하로 완전 차단합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_memristor_crossbar_deep_physical_sidechannel_shielding``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Integrate multi-layer metal shields and differential noise generators on-chip to attenuate electromagnetic leakage below -90dB.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_memristor_crossbar_deep_physical_sidechannel_shielding``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_memristor_crossbar_deep_physical_sidechannel_shielding` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_memristor_crossbar_deep_physical_sidechannel_shielding`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_zero_trust_neuromorphic_aer_event_mesh_federation",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "fa054537e544a3c0fddd46c2ec0c9b287ba28bcdcd7d4e686b5c7cf4c8db0ba9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "제로 트러스트 뉴로모픽 AER 이벤트 메시 연합 아키텍처",
+      "en": "Zero Trust Neuromorphic AER Event Mesh Federation Architecture"
+    },
+    "prompt": {
+      "ko": "분산 뉴로모픽 칩 간에 교환되는 수십억 개의 AER 이벤트에 대해 엔드-투-엔드 상호 인증과 마이크로 세그멘테이션을 강제합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_zero_trust_neuromorphic_aer_event_mesh_federation``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce end-to-end mutual authentication and micro-segmentation across billions of AER events exchanged between distributed chips.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_zero_trust_neuromorphic_aer_event_mesh_federation``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_zero_trust_neuromorphic_aer_event_mesh_federation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_zero_trust_neuromorphic_aer_event_mesh_federation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_quantum_resistant_neuromorphic_firmware_lifecycle",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "b24210430d908e4dfd047b6399bee4d7e7c9e0b322d21bea37545e228cab1cb5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 내성 뉴로모픽 펌웨어 라이프사이클 거버넌스",
+      "en": "Quantum-Resistant Neuromorphic Firmware Lifecycle Governance"
+    },
+    "prompt": {
+      "ko": "포스트 양자 서명(ML-DSA-87)과 SLSA 레벨 3 출처 증명을 통합하여 뉴로모픽 펌웨어의 배포, 롤백, 파기를 완벽히 통제합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_quantum_resistant_neuromorphic_firmware_lifecycle``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Integrate ML-DSA-87 signatures with SLSA Level 3 provenance to govern neuromorphic firmware deployment, rollback, and revocation.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_quantum_resistant_neuromorphic_firmware_lifecycle``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_quantum_resistant_neuromorphic_firmware_lifecycle` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_quantum_resistant_neuromorphic_firmware_lifecycle`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_autonomous_neuromorphic_defense_agent_self_healing",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "595b351bc619843cf9e7d582d5223ab0906fa9b4cf18910e9d21a4129a309d7a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 뉴로모픽 방어 에이전트 자가 복구 하드웨어 회로",
+      "en": "Autonomous Neuromorphic Defense Agent Self-Healing Hardware Circuitry"
+    },
+    "prompt": {
+      "ko": "크로스바 결함 및 침해 탐지 시 실시간으로 비인가 경로를 우회하고 여분의 멤리스터 셀로 자가 복구하는 하드웨어를 구현합니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_autonomous_neuromorphic_defense_agent_self_healing``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Implement self-healing circuitry rerouting damaged paths and remapping parameters onto spare memristor cells upon breach detection.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_autonomous_neuromorphic_defense_agent_self_healing``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_autonomous_neuromorphic_defense_agent_self_healing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_autonomous_neuromorphic_defense_agent_self_healing`."
+      ]
+    }
+  },
+  {
+    "id": "t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "neuromorphicsnn",
+    "points": 300,
+    "ci": false,
+    "hash": "ae7b44571fb2f941cd5f22f0cb9a9a4d07308db7fa2591f54dad863c0b3df109",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 뇌 모사 뉴로모픽 하드웨어 보안 종합 실전 캡스톤",
+      "en": "Sovereign Brain-Inspired Neuromorphic Hardware Security Capstone"
+    },
+    "prompt": {
+      "ko": "AER 이벤트 지문, 전압 글리치 클램프, STDP 백도어 방어, 하드웨어 RoT 제로화, ML-DSA-87 증명을 총동원한 실전 종합 캡스톤입니다.\n\n[챌린지 식별자]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone``\n\n[문제 안내]\n해당 뉴로모픽 프로세서 하드웨어 보안 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute the full-scale neuromorphic hardware security capstone uniting AER fingerprints, voltage clamps, STDP defense, and ML-DSA-87.\n\n[Challenge Identifier]\n`NEUROMORPHICSNN_CHALLENGE_ID: `t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone``\n\n[Task]\nAnalyze the neuromorphic processor hardware security specification and submit the derived flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone`."
       ]
     }
   }

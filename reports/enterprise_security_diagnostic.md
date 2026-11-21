@@ -1,35 +1,35 @@
 # 🛡️ VibeHacking Enterprise Security Diagnostic & Threat Assessment Report
-> **Generated at**: `2026-11-21 22:34:56` &nbsp;|&nbsp; **Target Scope**: `75 Labs` &nbsp;|&nbsp; **Standard**: `CVSS 3.1, MITRE ATT&CK, KISA ISMS-P, NIST CSF 2.0 & OWASP Top 10`
+> **Generated at**: `2026-11-22 00:59:12` &nbsp;|&nbsp; **Target Scope**: `76 Labs` &nbsp;|&nbsp; **Standard**: `CVSS 3.1, MITRE ATT&CK, KISA ISMS-P, NIST CSF 2.0 & OWASP Top 10`
 
 ---
 
 ## 1. Executive Summary (경영진 요약)
 
-본 진단 보고서는 VibeHacking 플랫폼 내 총 **75개 실습 랩** 전반에 걸쳐 식별된 **75개 핵심 취약점**에 대한 보안 태세를 종합 진단한 결과입니다.
+본 진단 보고서는 VibeHacking 플랫폼 내 총 **76개 실습 랩** 전반에 걸쳐 식별된 **76개 핵심 취약점**에 대한 보안 태세를 종합 진단한 결과입니다.
 - **평균 CVSS 3.1 Base Score**: **`8.7 / 10.0`**
-- **취약점 심각도 분포**: 🚨 Critical: `39` &nbsp;|&nbsp; ⚠️ High: `30` &nbsp;|&nbsp; 🟡 Medium: `6` &nbsp;|&nbsp; 🟢 Low: `0`
+- **취약점 심각도 분포**: 🚨 Critical: `39` &nbsp;|&nbsp; ⚠️ High: `31` &nbsp;|&nbsp; 🟡 Medium: `6` &nbsp;|&nbsp; 🟢 Low: `0`
 
 ### 📊 취약점 심각도 매트릭스 (Severity Matrix)
 | 심각도 (Severity) | 식별 건수 | 비율 | 대응 우선순위 |
 |---|---|---|---|
-| 🚨 **Critical** (9.0~10.0) | 39 | 52.0% | **P0 (즉시 긴급 패치 필요)** |
-| ⚠️ **High** (7.0~8.9) | 30 | 40.0% | **P1 (차기 스프린트 내 교정)** |
-| 🟡 **Medium** (4.0~6.9) | 6 | 8.0% | **P2 (정기 패치 주기 반영)** |
+| 🚨 **Critical** (9.0~10.0) | 39 | 51.3% | **P0 (즉시 긴급 패치 필요)** |
+| ⚠️ **High** (7.0~8.9) | 31 | 40.8% | **P1 (차기 스프린트 내 교정)** |
+| 🟡 **Medium** (4.0~6.9) | 6 | 7.9% | **P2 (정기 패치 주기 반영)** |
 | 🟢 **Low** (0.1~3.9) | 0 | 0.0% | **P3 (모니터링 및 하드닝 권고)** |
 
 ### 🎯 MITRE ATT&CK 전술 분포 (Tactics Distribution)
 | MITRE 전술 (Tactic) | 매핑된 취약점 수 | 비중 |
 |---|---|---|
-| `Credential Access` | 11 | 14.7% |
-| `Execution` | 10 | 13.3% |
-| `Defense Evasion` | 10 | 13.3% |
-| `Privilege Escalation` | 9 | 12.0% |
-| `Initial Access` | 7 | 9.3% |
-| `Lateral Movement` | 2 | 2.7% |
-| `Command and Control` | 2 | 2.7% |
-| `Credential Access / Collection` | 2 | 2.7% |
-| `Privilege Escalation / Defense Evasion` | 2 | 2.7% |
-| `Initial Access / Privilege Escalation` | 2 | 2.7% |
+| `Credential Access` | 11 | 14.5% |
+| `Execution` | 10 | 13.2% |
+| `Defense Evasion` | 10 | 13.2% |
+| `Privilege Escalation` | 9 | 11.8% |
+| `Initial Access` | 7 | 9.2% |
+| `Lateral Movement` | 2 | 2.6% |
+| `Command and Control` | 2 | 2.6% |
+| `Credential Access / Collection` | 2 | 2.6% |
+| `Privilege Escalation / Defense Evasion` | 2 | 2.6% |
+| `Initial Access / Privilege Escalation` | 2 | 2.6% |
 | `Resource Development` | 1 | 1.3% |
 | `Impact` | 1 | 1.3% |
 | `Persistence` | 1 | 1.3% |
@@ -48,6 +48,7 @@
 | `Collection / Initial Access / Impact` | 1 | 1.3% |
 | `Defense Evasion / Impact / Initial Access` | 1 | 1.3% |
 | `Initial Access / Collection / Defense Evasion` | 1 | 1.3% |
+| `Initial Access / Impact / Defense Evasion` | 1 | 1.3% |
 
 ### 📋 컴플라이언스 표준 매핑 현황 (Compliance Frameworks)
 
@@ -129,6 +130,7 @@
 | `2.10.8 실리콘 포토닉스 광 버스 물리 계층 난수화 및 QKD 양자 키 메시 무결성 통제 (광 탭 도청 차단, 광 전력 사이드채널 방어, WDM 채널 간섭 격리)` | 1건 |
 | `2.10.9 양자 신경망 적대적 섭동 필터링 및 QPU 메모리 잔류 상태 무결성 통제 (양자 피셔 정보 발산 감시, Pauli Twirling 제로화, 하이브리드 PQC 엔클레이브 격리)` | 1건 |
 | `2.10.10 반도체 실리콘 포토닉스 물리적 복제 방지(PUF) 및 칩let 하드웨어 무결성 통제 (광학 스페클 위상 지문 추출, CRP 모델링 능동 스크램블링, 광학 소광 RoT 바인딩, ML-DSA-87 상호 원격 증명)` | 1건 |
+| `2.10.11 뉴로모픽 하드웨어 프로세서 및 SNN 비동기 이벤트 통신 무결성 통제 (AER 프로토콜 암호화, 멤리스터 크로스바 전압 글리치 방어, STDP 가중치 변조 차단, ML-DSA-87 원격 증명)` | 1건 |
 
 #### 🏛️ NIST CSF 2.0 프레임워크 카테고리
 | NIST CSF 2.0 카테고리 | 해당 취약점 수 |
@@ -206,6 +208,7 @@
 | `PR.DS-09 Silicon Photonics Optical Interconnect Scrambling, Continuous QKD Mesh Rotation & Waveguide Dielectric Isolation` | 1건 |
 | `PR.DS-10 Quantum-assisted Adversarial Perturbation Filtering, QPU Memory Residual Zeroization & Hybrid Classical-Quantum PQC Enclave Shield` | 1건 |
 | `PR.DS-11 Silicon Photonic IC Physical Unclonable Function (PUF), Micro-Ring CRP Modeling Resistance & Inter-Chiplet Destructive Optical Erasure RoT` | 1건 |
+| `PR.DS-12 Neuromorphic SNN Asynchronous Event Representation (AER) Integrity, Memristor Crossbar Glitch Hardening & Post-Quantum Hardware Attestation` | 1건 |
 
 #### 🌐 OWASP Top 10 (2021) 취약점 분류
 | OWASP 분류 | 해당 취약점 수 |
@@ -248,6 +251,7 @@
 | `LLM08:2025 Silicon Photonics Optical Tap Eavesdropping, Optical Power Differential Sidechannel & WDM Inter-Waveguide Crosstalk` | 1건 |
 | `LLM09:2025 Quantum Adversarial Perturbations, Cross-Tenant QPU Coherence Bleed & Variational Quantum Circuit Inversion` | 1건 |
 | `LLM10:2025 Optical PUF CRP Modeling Eavesdropping, Inter-Chiplet Waveguide Tapping & Photonic Hardware Trojan Injection` | 1건 |
+| `LLM10:2025 Neuromorphic Hardware Glitch Fault Injection, Asynchronous AER Spike Hijacking & Synaptic Weight Drift Poisoning` | 1건 |
 
 ---
 
@@ -1899,6 +1903,28 @@ Enforce Quantum Fisher Information metric divergence thresholds, deploy active r
 **🛡️ 권고 교정 방안 (Remediation)**:
 ```text
 Deploy gigahertz-rate optical phase scrambling against CRP modeling attacks, enforce active optical power monitoring with sub-50ns destructive optical erasure, bind hardware RoT to silicon die min-entropy speckle distributions, and verify inter-chiplet NIST FIPS 204 ML-DSA-87 remote attestation signatures against hardware Merkle roots.
+```
+
+---
+
+### 76. [VIBE-2026-7601] Neuromorphic Hardware Voltage Glitch Fault Injection, Asynchronous AER Spike Hijacking & STDP Weight Drift Poisoning
+- **대상 랩 / 환경**: `76 NeuromorphicSnnHardwareLab Neuromorphic Spiking Neural Network (SNN) Hardware Security & Memristor Glitch Defense Lab` (`Lab 76`)
+- **보안 분류**: `Neuromorphic Hardware Security & SNN Memristor Hardening`
+- **심각도**: **⚠️ HIGH** (CVSS 3.1 Base Score: **`7.1`**)
+- **CVSS 3.1 Vector**: `CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H`
+- **MITRE ATT&CK 매핑**: `T1200` — **Hardware Additions: Memristor Crossbar Glitch & AER Spike Bus Hijacking** (전술: `Initial Access / Impact / Defense Evasion`)
+- **컴플라이언스 매핑**: 🇰🇷 KISA ISMS-P: `2.10.11 뉴로모픽 하드웨어 프로세서 및 SNN 비동기 이벤트 통신 무결성 통제 (AER 프로토콜 암호화, 멤리스터 크로스바 전압 글리치 방어, STDP 가중치 변조 차단, ML-DSA-87 원격 증명)` | 🏛️ NIST CSF 2.0: `PR.DS-12` | 🌐 OWASP Top 10: `LLM10:2025`
+- **영향을 받는 컴포넌트**: `NeuromorphicSnnHardwareLab Memristor Crossbar & AER Event Bus Controller (Port 8076)`
+
+**🔍 상세 취약점 분석 (Description)**:
+> Neuromorphic processor architecture lacks crossbar voltage glitch detectors and real-time STDP weight variance monitors, allowing adversaries to execute laser fault injection (LFI) and physical voltage glitching to manipulate LIF neuron firing thresholds and corrupt memristor array states without triggering cryptographic hardware zeroization.
+
+**💥 잠재적 보안 영향도 (Impact)**:
+> Adversary exploiting unshielded neuromorphic processor induces memristor crossbar conductance drift via voltage glitches, injects rogue spikes onto asynchronous AER event buses, and poisons STDP synaptic plasticity weights to compromise neuromorphic model reasoning integrity.
+
+**🛡️ 권고 교정 방안 (Remediation)**:
+```text
+Deploy crossbar voltage glitch detection circuits with calibrated thresholds (<30.0mV), enforce physical memristor conductance drift bounds (<5%), integrate sub-20ns destructive synaptic circuit zeroization upon tamper detection, and verify full-stack neuromorphic firmware and crossbar Merkle trees via NIST FIPS 204 ML-DSA-87 post-quantum remote attestation signatures.
 ```
 
 ---

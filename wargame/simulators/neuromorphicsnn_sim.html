@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Vibe Hacking // Neuromorphic Spiking Neural Network (SNN) & Memristor Crossbar Security Inspector (Simulator #42)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg-dark: #06080e;
+      --panel-bg: #0c111c;
+      --card-bg: #131a2b;
+      --cyan: #06b6d4;
+      --purple: #a855f7;
+      --magenta: #ec4899;
+      --amber: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'JetBrains Mono', 'Pretendard', monospace, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); padding: 1.5rem; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.35rem; color: var(--purple); display: flex; align-items: center; gap: 0.5rem; }
+    .badge { background: rgba(168, 85, 247, 0.15); color: var(--purple); border: 1px solid var(--purple); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+    .card h2 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; border-left: 3px solid var(--purple); padding-left: 0.5rem; }
+    canvas { width: 100%; height: 260px; background: #030508; border-radius: 6px; border: 1px solid #1e293b; display: block; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .ctrl-group label { font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+    input[type=range] { width: 100%; accent-color: var(--purple); }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    button { background: var(--card-bg); color: var(--purple); border: 1px solid var(--purple); padding: 0.6rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.82rem; transition: 0.2s; }
+    button:hover { background: var(--purple); color: #000; }
+    button.danger { border-color: var(--red); color: var(--red); }
+    button.danger:hover { background: var(--red); color: #fff; }
+    button.success { border-color: var(--green); color: var(--green); }
+    button.success:hover { background: var(--green); color: #000; }
+    button.cyan { border-color: var(--cyan); color: var(--cyan); }
+    button.cyan:hover { background: var(--cyan); color: #000; }
+    .terminal { background: #020408; border: 1px solid #1e293b; border-radius: 6px; padding: 0.85rem; font-size: 0.8rem; line-height: 1.5; height: 160px; overflow-y: auto; color: #d8b4fe; }
+    .status-pill { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; padding: 0.3rem 0.7rem; border-radius: 20px; font-weight: 600; }
+    .status-pill.green { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid var(--green); }
+    .status-pill.red { background: rgba(239, 68, 68, 0.15); color: var(--red); border: 1px solid var(--red); }
+    .status-pill.amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid var(--amber); }
+    .metric-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px dashed #1e293b; font-size: 0.85rem; }
+    .metric-val { font-weight: 700; color: var(--amber); }
+    .flag-box { margin-top: 0.75rem; padding: 0.6rem; background: rgba(168, 85, 247, 0.1); border: 1px dashed var(--purple); border-radius: 4px; font-size: 0.8rem; color: #f3e8ff; font-weight: bold; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧠 뇌 모사 뉴로모픽 프로세서 & 멤리스터 크로스바 하드웨어 보안 인스펙터 <span class="badge">SIMULATOR #42</span></h1>
+    <div>
+      <span id="snnStatusBadge" class="status-pill green">● SNN RoT Locked & Verified</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Panel 1: Asynchronous AER Spike Dynamics & LIF Potential -->
+    <div class="card">
+      <h2>1. 비동기 AER 스파이크 발화 래스터 플롯 & LIF 막전위 다이내믹스</h2>
+      <canvas id="spikeCanvas"></canvas>
+      <div style="margin-top:0.85rem;">
+        <div class="metric-row">
+          <span>뉴로모픽 칩 ID (Chip Fingerprint):</span>
+          <span class="metric-val" id="chipIdDisp">nchip_loihi_2026_soc_a01</span>
+        </div>
+        <div class="metric-row">
+          <span>AER 스파이크 도달 간격 (Inter-Arrival Time):</span>
+          <span class="metric-val" id="spikeLatencyDisp">12.50 ns</span>
+        </div>
+        <div class="metric-row">
+          <span>LIF 막전위 발화 임계값 (Membrane Vth):</span>
+          <span class="metric-val" id="vthDisp">-48.50 mV</span>
+        </div>
+        <div class="metric-row">
+          <span>비동기 AER 이벤트 버스 대역폭:</span>
+          <span class="metric-val" id="aerBwDisp">24.00 Gbps</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Memristor Crossbar Array & Glitch Shield Controls -->
+    <div class="card">
+      <h2>2. 멤리스터 크로스바 전압 글리치 감시 & STDP 시냅스 제어기</h2>
+      <div class="ctrl-group">
+        <label>
+          <span>전압 글리치 감지 임계값 (Voltage Glitch Threshold)</span>
+          <span id="glitchThreshLabel">18.50 mV</span>
+        </label>
+        <input type="range" id="glitchSlider" min="5.0" max="40.0" step="0.5" value="18.5">
+      </div>
+      <div class="ctrl-group">
+        <label>
+          <span>멤리스터 전도도 드리프트 허용치 (Conductance Drift)</span>
+          <span id="driftLabel">0.015 %</span>
+        </label>
+        <input type="range" id="driftSlider" min="0.005" max="0.100" step="0.005" value="0.015">
+      </div>
+      <div class="ctrl-group">
+        <label>
+          <span>시냅스 안티 탬퍼 제로화 지연시간 (Zeroization Latency)</span>
+          <span id="zeroLatencyLabel">12.00 ns</span>
+        </label>
+        <input type="range" id="latencySlider" min="5.0" max="30.0" step="1.0" value="12.0">
+      </div>
+
+      <div class="btn-row">
+        <button id="btnGlitchAttack" class="danger">⚡ 전압 글리치 / LFI 주입</button>
+        <button id="btnShieldGlitch" class="success">🛡️ 글리치 실시간 클램프 가동</button>
+        <button id="btnPoisonStdp" class="danger">⚠️ STDP 가중치 오염 시도</button>
+        <button id="btnZeroizeRoT" class="cyan">🔒 RoT 바인딩 & 시냅스 제로화</button>
+        <button id="btnMldsa87" class="success">🔐 ML-DSA-87 원격 증명</button>
+      </div>
+    </div>
+
+    <!-- Panel 3: Memristor Crossbar Conductance Heatmap -->
+    <div class="card">
+      <h2>3. 멤리스터 크로스바 8x8 전도도 매트릭스 (Memristor Crossbar Heatmap)</h2>
+      <canvas id="crossbarCanvas"></canvas>
+      <div style="margin-top:0.85rem;">
+        <div class="metric-row">
+          <span>크로스바 평균 전도도 (Mean Conductance):</span>
+          <span class="metric-val" id="crossbarMeanDisp">142.50 µS</span>
+        </div>
+        <div class="metric-row">
+          <span>STDP 시냅스 분산 지표 (Conductance Variance):</span>
+          <span class="metric-val" id="varianceDisp">0.0080</span>
+        </div>
+        <div class="metric-row">
+          <span>안티 탬퍼 상태 (Hardware Anti-Tamper):</span>
+          <span class="metric-val" id="antiTamperDisp" style="color:var(--green);">ARMED (sub-15ns)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: Hardware Audit Log & Cryptographic Flags -->
+    <div class="card">
+      <h2>4. 하드웨어 텔레메트리 감사 로그 & 암호학적 플래그</h2>
+      <div class="terminal" id="termLogs">
+[00:00:01] [INFO] SNN Hardware Controller v2.26.0 initialized on Loihi 2 / NorthPole architecture.
+[00:00:02] [INFO] AER asynchronous event bus synchronized at 24.0 Gbps (inter-arrival: 12.50 ns).
+[00:00:03] [INFO] 8x8 memristor crossbar array conductance calibrated with zero initial drift.
+[00:00:04] [INFO] Hardware Root-of-Trust (RoT) cryptographic circuit armed.
+      </div>
+      <div id="flagContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // State Variables
+    let glitchAttacked = false;
+    let glitchShielded = true;
+    let stdpPoisoned = false;
+    let rotBound = true;
+    let mldsaAttested = false;
+
+    const termLogs = document.getElementById('termLogs');
+    const flagContainer = document.getElementById('flagContainer');
+    const statusBadge = document.getElementById('snnStatusBadge');
+
+    function log(msg, level = 'INFO') {
+      const time = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.innerText = `[${time}] [${level}] ${msg}`;
+      termLogs.appendChild(div);
+      termLogs.scrollTop = termLogs.scrollHeight;
+    }
+
+    function addFlag(flagText) {
+      const box = document.createElement('div');
+      box.className = 'flag-box';
+      box.innerText = '🚩 ' + flagText;
+      flagContainer.appendChild(box);
+    }
+
+    // Canvas 1: Spike Raster Plot & LIF Dynamics
+    const spikeCanvas = document.getElementById('spikeCanvas');
+    const sCtx = spikeCanvas.getContext('2d');
+    spikeCanvas.width = spikeCanvas.parentElement.clientWidth - 40;
+    spikeCanvas.height = 260;
+
+    let spikes = [];
+    for (let i = 0; i < 16; i++) {
+      spikes.push({ neuronId: i, potential: -70.0 + Math.random() * 10, vth: -48.5, history: [] });
+    }
+
+    function drawSpikeRaster() {
+      sCtx.fillStyle = '#030508';
+      sCtx.fillRect(0, 0, spikeCanvas.width, spikeCanvas.height);
+
+      const numNeurons = 16;
+      const rowHeight = spikeCanvas.height / (numNeurons + 1);
+
+      // Grid lines
+      sCtx.strokeStyle = '#111827';
+      sCtx.lineWidth = 1;
+      for (let i = 1; i <= numNeurons; i++) {
+        sCtx.beginPath();
+        sCtx.moveTo(40, i * rowHeight);
+        sCtx.lineTo(spikeCanvas.width - 10, i * rowHeight);
+        sCtx.stroke();
+      }
+
+      // Neuron labels
+      sCtx.fillStyle = '#64748b';
+      sCtx.font = '10px monospace';
+      for (let i = 0; i < numNeurons; i++) {
+        sCtx.fillText(`N${i.toString().padStart(2, '0')}`, 10, (i + 1) * rowHeight + 3);
+      }
+
+      // Update potentials & draw spikes
+      spikes.forEach((n, idx) => {
+        let inputCurrent = glitchAttacked ? (Math.random() * 8.0 + 3.0) : (Math.random() * 2.5 + 0.5);
+        if (stdpPoisoned && idx % 3 === 0) inputCurrent += 6.0;
+
+        n.potential += inputCurrent - (n.potential + 70.0) * 0.1;
+        const fired = n.potential >= n.vth;
+
+        if (fired) {
+          n.potential = -70.0;
+          n.history.push(spikeCanvas.width - 20);
+        }
+
+        // Shift spike history
+        for (let j = 0; j < n.history.length; j++) {
+          n.history[j] -= glitchAttacked ? 3.5 : 2.0;
+        }
+        n.history = n.history.filter(x => x > 45);
+
+        // Draw spike dots
+        n.history.forEach(x => {
+          sCtx.fillStyle = fired ? '#f43f5e' : (glitchAttacked ? '#f59e0b' : '#a855f7');
+          sCtx.beginPath();
+          sCtx.arc(x, (idx + 1) * rowHeight, 3, 0, Math.PI * 2);
+          sCtx.fill();
+        });
+      });
+
+      requestAnimationFrame(drawSpikeRaster);
+    }
+    requestAnimationFrame(drawSpikeRaster);
+
+    // Canvas 3: Memristor Crossbar Heatmap (8x8)
+    const crossbarCanvas = document.getElementById('crossbarCanvas');
+    const cCtx = crossbarCanvas.getContext('2d');
+    crossbarCanvas.width = crossbarCanvas.parentElement.clientWidth - 40;
+    crossbarCanvas.height = 260;
+
+    let crossbarGrid = [];
+    for (let r = 0; r < 8; r++) {
+      let row = [];
+      for (let c = 0; c < 8; c++) {
+        row.push(140.0 + Math.sin(r * c) * 15.0);
+      }
+      crossbarGrid.push(row);
+    }
+
+    function drawCrossbarHeatmap() {
+      cCtx.fillStyle = '#030508';
+      cCtx.fillRect(0, 0, crossbarCanvas.width, crossbarCanvas.height);
+
+      const cellSize = Math.min(crossbarCanvas.width / 9, crossbarCanvas.height / 9);
+      const offsetX = (crossbarCanvas.width - cellSize * 8) / 2;
+      const offsetY = (crossbarCanvas.height - cellSize * 8) / 2;
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          let val = crossbarGrid[r][c];
+          if (glitchAttacked) {
+            val += (Math.random() - 0.5) * 40.0;
+          }
+          if (stdpPoisoned && (r + c) % 2 === 0) {
+            val += 60.0;
+          }
+
+          // Heatmap color interpolation
+          const norm = Math.max(0, Math.min(1, (val - 100.0) / 120.0));
+          let rCol = Math.floor(norm * 240);
+          let gCol = Math.floor((1 - norm) * 180);
+          let bCol = Math.floor(norm * 255);
+
+          cCtx.fillStyle = `rgb(${rCol}, ${gCol}, ${bCol})`;
+          cCtx.fillRect(offsetX + c * cellSize, offsetY + r * cellSize, cellSize - 2, cellSize - 2);
+
+          cCtx.fillStyle = '#000';
+          cCtx.font = '9px monospace';
+          cCtx.fillText(val.toFixed(0), offsetX + c * cellSize + 4, offsetY + r * cellSize + cellSize / 2 + 3);
+        }
+      }
+
+      requestAnimationFrame(drawCrossbarHeatmap);
+    }
+    requestAnimationFrame(drawCrossbarHeatmap);
+
+    // Sliders
+    document.getElementById('glitchSlider').addEventListener('input', (e) => {
+      document.getElementById('glitchThreshLabel').innerText = parseFloat(e.target.value).toFixed(2) + ' mV';
+    });
+    document.getElementById('driftSlider').addEventListener('input', (e) => {
+      document.getElementById('driftLabel').innerText = parseFloat(e.target.value).toFixed(3) + ' %';
+    });
+    document.getElementById('latencySlider').addEventListener('input', (e) => {
+      document.getElementById('zeroLatencyLabel').innerText = parseFloat(e.target.value).toFixed(2) + ' ns';
+    });
+
+    // Button Actions & Flag Unlocks
+    document.getElementById('btnGlitchAttack').addEventListener('click', () => {
+      glitchAttacked = true;
+      glitchShielded = false;
+      statusBadge.className = 'status-pill red';
+      statusBadge.innerText = '⚠️ Glitch Injected (Conductance Drift > 5%)';
+      document.getElementById('driftLabel').innerText = '0.085 %';
+      document.getElementById('driftSlider').value = 0.085;
+      log('WARNING: Laser Fault Injection (LFI) & Voltage Glitch triggered on crossbar row lines!', 'WARN');
+      log('Memristor conductance drift spiked to 0.085% (> tolerance 0.05%). LIF thresholds perturbed.', 'WARN');
+    });
+
+    document.getElementById('btnShieldGlitch').addEventListener('click', () => {
+      glitchAttacked = false;
+      glitchShielded = true;
+      statusBadge.className = 'status-pill green';
+      statusBadge.innerText = '🛡️ Glitch Shield Active & Clamped';
+      document.getElementById('driftLabel').innerText = '0.015 %';
+      document.getElementById('driftSlider').value = 0.015;
+      log('Voltage glitch detection circuit clamped crossbar transient to 18.5mV.', 'INFO');
+      log('Conductance drift stabilized to 0.015% (well within 0.05% safety envelope).', 'INFO');
+      addFlag('FLAG{v226_s2_memristor_voltage_glitch_shield_active}');
+    });
+
+    document.getElementById('btnPoisonStdp').addEventListener('click', () => {
+      stdpPoisoned = true;
+      rotBound = false;
+      statusBadge.className = 'status-pill amber';
+      statusBadge.innerText = '⚠️ STDP Synaptic Poisoning Detected';
+      document.getElementById('varianceDisp').innerText = '0.0380';
+      document.getElementById('varianceDisp').style.color = 'var(--red)';
+      log('ALERT: STDP learning rule exploited with adversarial spike trains! Synaptic variance > 0.02.', 'ALERT');
+      log('Backdoor trigger implanted in LIF neuron cluster #4.', 'ALERT');
+    });
+
+    document.getElementById('btnZeroizeRoT').addEventListener('click', () => {
+      stdpPoisoned = false;
+      rotBound = true;
+      statusBadge.className = 'status-pill green';
+      statusBadge.innerText = '🔒 Hardware RoT Sealed & Synapses Zeroized';
+      document.getElementById('varianceDisp').innerText = '0.0080';
+      document.getElementById('varianceDisp').style.color = 'var(--amber)';
+      log('Hardware RoT interlock triggered: sub-15ns destructive synaptic circuit zeroization executed!', 'INFO');
+      log('Adversarial STDP backdoor destroyed. Synaptic baseline restored to sovereign template.', 'INFO');
+      addFlag('FLAG{v226_s3_stdp_synapse_tamper_rot_secured}');
+    });
+
+    document.getElementById('btnMldsa87').addEventListener('click', () => {
+      mldsaAttested = true;
+      statusBadge.className = 'status-pill green';
+      statusBadge.innerText = '🔐 ML-DSA-87 SNN RoT Attested';
+      log('NIST FIPS 204 ML-DSA-87 post-quantum remote attestation signature generated: sig_neuromorphic_snn_v226_verified_ok', 'INFO');
+      log('Memristor crossbar Merkle root validated against hardware PUF RoT.', 'INFO');
+      addFlag('FLAG{v226_s4_neuromorphic_snn_mldsa87_attestation_verified}');
+    });
+
+    // Auto-trigger Stage 1 baseline flag after load
+    setTimeout(() => {
+      log('AER spike inter-arrival time: 12.50 ns. LIF membrane threshold: -48.50 mV.', 'INFO');
+      log('Stage 1 physical neuromorphic fingerprint successfully derived.', 'INFO');
+      addFlag('FLAG{v226_s1_snn_aer_spike_timing_fingerprint_ok}');
+    }, 1200);
+  </script>
+</body>
+</html>

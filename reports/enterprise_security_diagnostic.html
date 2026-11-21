@@ -68,9 +68,9 @@
         <header>
             <h1>🛡️ VibeHacking Enterprise Security Diagnostic Report</h1>
             <div class="header-meta">
-                <span><b>Generated:</b> 2026-11-21 22:34:56</span>
-                <span><b>Assessment Scope:</b> 75 Labs</span>
-                <span><b>Total Vulnerabilities:</b> 75 Findings</span>
+                <span><b>Generated:</b> 2026-11-22 00:59:14</span>
+                <span><b>Assessment Scope:</b> 76 Labs</span>
+                <span><b>Total Vulnerabilities:</b> 76 Findings</span>
                 <span><b>Standard:</b> CVSS 3.1, MITRE ATT&amp;CK, KISA ISMS-P, NIST CSF 2.0 &amp; OWASP Top 10</span>
             </div>
         </header>
@@ -80,7 +80,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Assessed Labs</div>
-                    <div class="stat-value">75</div>
+                    <div class="stat-value">76</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Average CVSS</div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">High Findings</div>
-                    <div class="stat-value" style="color: var(--high-color)">30</div>
+                    <div class="stat-value" style="color: var(--high-color)">31</div>
                 </div>
             </div>
         </section>
@@ -102,21 +102,21 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">KISA ISMS-P Controls</div>
-                    <div class="stat-value" style="color: #34d399">75</div>
+                    <div class="stat-value" style="color: #34d399">76</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">NIST CSF 2.0 Categories</div>
-                    <div class="stat-value" style="color: var(--accent-blue)">73</div>
+                    <div class="stat-value" style="color: var(--accent-blue)">74</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">OWASP Top 10 Categories</div>
-                    <div class="stat-value" style="color: var(--med-color)">38</div>
+                    <div class="stat-value" style="color: var(--med-color)">39</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2 class="section-title">3. Detailed Findings (75 Findings)</h2>
+            <h2 class="section-title">3. Detailed Findings (76 Findings)</h2>
             
             <div class="finding-card critical">
                 <div class="finding-header">
@@ -2215,6 +2215,34 @@
                 <div class="remediation-box">
                     <b>🛡️ 대응 권고사항 (Remediation):</b>
                     <pre>Deploy gigahertz-rate optical phase scrambling against CRP modeling attacks, enforce active optical power monitoring with sub-50ns destructive optical erasure, bind hardware RoT to silicon die min-entropy speckle distributions, and verify inter-chiplet NIST FIPS 204 ML-DSA-87 remote attestation signatures against hardware Merkle roots.</pre>
+                </div>
+            </div>
+            
+            <div class="finding-card high">
+                <div class="finding-header">
+                    <div class="finding-title-group">
+                        <span class="finding-num">#76</span>
+                        <span class="badge high">HIGH 7.1</span>
+                        
+                        <h3 class="finding-title">Neuromorphic Hardware Voltage Glitch Fault Injection, Asynchronous AER Spike Hijacking &amp; STDP Weight Drift Poisoning</h3>
+                    </div>
+                    <span class="vuln-id">VIBE-2026-7601</span>
+                </div>
+                <div class="finding-meta">
+                    <span class="meta-item"><b>Target:</b> 76 NeuromorphicSnnHardwareLab Neuromorphic Spiking Neural Network (SNN) Hardware Security &amp; Memristor Glitch Defense Lab</span>
+                    <span class="meta-item"><b>Category:</b> Neuromorphic Hardware Security &amp; SNN Memristor Hardening</span>
+                    <span class="meta-item"><b>MITRE:</b> <span class="tag">T1200</span> Hardware Additions: Memristor Crossbar Glitch &amp; AER Spike Bus Hijacking (Initial Access / Impact / Defense Evasion)</span>
+                    <span class="meta-item"><b>Compliance:</b> <span class="tag comp-kisa">ISMS-P 2.10.11</span> <span class="tag comp-nist">NIST PR.DS-12</span> <span class="tag comp-owasp">LLM10:2025</span></span>
+                </div>
+                <div class="vector-box"><code>CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H</code></div>
+                <div class="finding-body">
+                    <p><b>🔍 취약점 분석:</b> Neuromorphic processor architecture lacks crossbar voltage glitch detectors and real-time STDP weight variance monitors, allowing adversaries to execute laser fault injection (LFI) and physical voltage glitching to manipulate LIF neuron firing thresholds and corrupt memristor array states without triggering cryptographic hardware zeroization.</p>
+                    <p><b>💥 영향도:</b> Adversary exploiting unshielded neuromorphic processor induces memristor crossbar conductance drift via voltage glitches, injects rogue spikes onto asynchronous AER event buses, and poisons STDP synaptic plasticity weights to compromise neuromorphic model reasoning integrity.</p>
+                    <p><b>🎯 영향 컴포넌트:</b> <code>NeuromorphicSnnHardwareLab Memristor Crossbar &amp; AER Event Bus Controller (Port 8076)</code></p>
+                </div>
+                <div class="remediation-box">
+                    <b>🛡️ 대응 권고사항 (Remediation):</b>
+                    <pre>Deploy crossbar voltage glitch detection circuits with calibrated thresholds (&lt;30.0mV), enforce physical memristor conductance drift bounds (&lt;5%), integrate sub-20ns destructive synaptic circuit zeroization upon tamper detection, and verify full-stack neuromorphic firmware and crossbar Merkle trees via NIST FIPS 204 ML-DSA-87 post-quantum remote attestation signatures.</pre>
                 </div>
             </div>
             
