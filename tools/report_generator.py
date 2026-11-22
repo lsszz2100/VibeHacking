@@ -724,6 +724,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM10:2025",
         "owasp_name": "Neuromorphic Hardware Glitch Fault Injection, Asynchronous AER Spike Hijacking & Synaptic Weight Drift Poisoning",
     },
+    "77": {
+        "kisa_id": "2.10.12",
+        "kisa_name": "저궤도 군집 위성 광통신(ISL) 도플러 변이 보정 및 우주 양자키 분배(QKD) 무결성 통제 (위성 TLE 궤도 상태 EKF 감사, TT&C 업링크 FIPS 204 ML-DSA-87 명령 인가, 지상국-위성 간 CV-QKD 데코이 상태 보안)",
+        "nist_csf_id": "PR.DS-13",
+        "nist_csf_name": "Low Earth Orbit (LEO) Satellite Laser ISL Doppler Compensation, Ephemeris EKF Drift Guard & Continuous-Variable Space QKD Decoy Attestation",
+        "owasp_id": "LLM10:2025",
+        "owasp_name": "Satellite Laser Link Eavesdropping, Orbital Ephemeris Telemetry Spoofing & TT&C Uplink Injection",
+    },
 }
 
 @dataclass
@@ -2133,6 +2141,23 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "description": "Neuromorphic processor architecture lacks crossbar voltage glitch detectors and real-time STDP weight variance monitors, allowing adversaries to execute laser fault injection (LFI) and physical voltage glitching to manipulate LIF neuron firing thresholds and corrupt memristor array states without triggering cryptographic hardware zeroization.",
                 "affected_component": "NeuromorphicSnnHardwareLab Memristor Crossbar & AER Event Bus Controller (Port 8076)",
                 "remediation": "Deploy crossbar voltage glitch detection circuits with calibrated thresholds (<30.0mV), enforce physical memristor conductance drift bounds (<5%), integrate sub-20ns destructive synaptic circuit zeroization upon tamper detection, and verify full-stack neuromorphic firmware and crossbar Merkle trees via NIST FIPS 204 ML-DSA-87 post-quantum remote attestation signatures."
+            }
+        ]
+    },
+    "77": {
+        "title": "77 SatComLaserQkdLab LEO Satellite Laser Optical Communication & Space Quantum Key Distribution Defense Lab",
+        "category": "Space & Quantum Cryptography",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7701",
+                "name": "Satellite Laser ISL Eavesdropping, Orbital Ephemeris Telemetry Spoofing & TT&C Uplink Command Injection",
+                "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1499",
+                "mitre_technique": "Endpoint Denial of Service: SatCom Ephemeris Drift & Laser ISL Jamming",
+                "mitre_tactic": "Initial Access / Impact / Defense Evasion",
+                "impact": "Adversary exploiting unshielded satellite laser terminals intercepts optical ISL telemetry via Doppler drift desynchronization, manipulates orbital ephemeris TLE state vectors to cause constellation routing failures, and injects unauthorized TT&C telemetry commands to seize satellite attitude control.",
+                "affected_component": "SatComLaserQkdLab Optical Terminal Controller & TT&C Uplink Gateway (Port 8077)",
+                "remediation": "Deploy fine beam tracking divergence clamping, enforce Extended Kalman Filter (EKF) orbital drift surveillance, mandate NIST FIPS 204 ML-DSA-87 signatures on all TT&C uplinks, and establish Continuous-Variable QKD (CV-QKD) with decoy-state phase randomization."
             }
         ]
     }

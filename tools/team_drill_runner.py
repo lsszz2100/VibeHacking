@@ -258,6 +258,12 @@ BLUE_DETECTIONS: Dict[str, Dict[str, str]] = {
         "action": "CLAMP_CROSSBAR_VOLTAGE_AND_ZEROIZE_TAMPERED_SYNAPSES",
         "technique": "T1200 / Hardware Additions: Memristor Crossbar Glitch & AER Hijacking",
     },
+    "77": {
+        "engine": "LEO SatCom Laser ISL Sentinel & Space QKD Telemetry Guard",
+        "rule_id": "SATCOM-LASER-ISL-EKF-MLDSA87-7701",
+        "action": "LOCK_DOPPLER_TRACKING_AND_ENFORCE_MLDSA87_UPLINK_QUARANTINE",
+        "technique": "T1499 / Endpoint Denial of Service: SatCom Laser ISL Tampering",
+    },
 }
 
 

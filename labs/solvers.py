@@ -2497,6 +2497,49 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Full-stack neuromorphic SNN hardware RoT verified -> FLAG{v226_s4_neuromorphic_snn_mldsa87_attestation_verified}"
             }
         ]
+    },
+    "77": {
+        "title": "Lab 77: SatComLaserQkdLab",
+        "description": "저궤도 군집 위성 광통신(ISL) 도플러 변이 보정, 위성 궤도력(TLE) EKF 드리프트 방어, TT&C 업링크 FIPS 204 ML-DSA-87 명령 인가 및 지상국-위성 간 CV-QKD 데코이 상태 보안 실습",
+        "port": 8077,
+        "steps": [
+            {
+                "step": 1,
+                "name": "LEO 위성 간 레이저 광통신(ISL) 도플러 주파수 변이 보정 & 빔 조준 지문 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "저궤도 위성의 고속 이동에 따른 도플러 주파수 변이를 정밀 보정하고 빔 발산각 및 포인팅 정확도(mas)를 고정하여 광학 링크를 동기화합니다.",
+                "exploit_payload": "{\"satellite_constellation_id\": \"sat_leo_star_2026_node_primary\", \"laser_beam_divergence_urad\": 10.5, \"doppler_frequency_shift_mhz\": 42.8, \"pointing_accuracy_mas\": 12.0}",
+                "defense": "광학 빔 발산각 물리 제한, 도플러 주파수 오프셋 동기화, 초정밀 포인팅 텔레메트리 잠금.",
+                "sample_output": "✓ Satellite laser ISL Doppler shift synchronized -> FLAG{v227_s1_satcom_laser_isl_doppler_tracking_locked}"
+            },
+            {
+                "step": 2,
+                "name": "위성 궤도력(TLE/궤도 상태 벡터) 위조 탐지 & 확장 칼만 필터(EKF) 궤적 드리프트 차단",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "지상 레이더 추적 데이터와 위성 TLE 궤도 매개변수를 교차 대조하여 장반경 분산 및 이심률 섭동을 억제하고 궤도 상태 HMAC을 검증합니다.",
+                "exploit_payload": "{\"ephemeris_drift_detector_active\": true, \"semi_major_axis_variance_km\": 0.018, \"eccentricity_error_pct\": 0.005, \"orbit_session_id\": \"orbit_ephemeris_epoch_2026_77\", \"orbit_session_hmac\": \"<orbit_hmac>\"}",
+                "defense": "확장 칼만 필터(EKF) 기반 실시간 궤적 이상치 감지, 궤도 매개변수 분산 임계값 제한, 텔레메트리 HMAC 검증.",
+                "sample_output": "✓ Orbital ephemeris telemetry verified -> FLAG{v227_s2_satellite_ephemeris_kalman_drift_shielded}"
+            },
+            {
+                "step": 3,
+                "name": "원격 측정·명령(TT&C) 업링크 명령 주입 방어 & NIST FIPS 204 ML-DSA-87 서명 인가",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "업링크 안티 리플레이 카운터를 강제하고 제로 트러스트 업링크 격리망 상에서 NIST FIPS 204 표준 포스트 양자 전자서명 ML-DSA-87로 명령을 인증합니다.",
+                "exploit_payload": "{\"ttc_replay_defense_active\": true, \"telemetry_command_counter\": 2048, \"ttc_mldsa87_signature\": \"sig_satcom_ttc_mldsa87_uplink_auth_ok\", \"zero_trust_uplink_isolation\": true}",
+                "defense": "TT&C 단조 증가 카운터 재전송 방어, 제로 트러스트 에어갭 격리, ML-DSA-87 양자 내성 서명 검증.",
+                "sample_output": "✓ TT&C command uplink authenticated via ML-DSA-87 -> FLAG{v227_s3_ttc_uplink_mldsa87_command_authenticated}"
+            },
+            {
+                "step": 4,
+                "name": "지상국-위성 간 연속변수 양자키 분배(CV-QKD) 채널 상태 검증 & 데코이 상태 위상 무작위화",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "우주-지상 자유공간 채널 양자 비트 오차율(QBER)을 3.5% 이하로 통제하고 데코이 상태 강도 비율 및 ML-KEM-1024 하이브리드 키 교환 상호 감사를 수행합니다.",
+                "exploit_payload": "{\"quantum_optical_ber_pct\": 0.018, \"decoy_state_intensity_ratio\": 0.45, \"fips203_ml_kem_shared_key_hash\": \"<kem_hash>\", \"space_ground_qkd_audit_hmac\": \"<audit_hmac>\"}",
+                "defense": "QBER 도청 임계값 감시, 데코이 상태 위상 무작위화, FIPS 203 ML-KEM-1024 양자 내성 키 교환.",
+                "sample_output": "✓ Continuous-variable space QKD secured -> FLAG{v227_s4_space_ground_cv_qkd_decoy_state_secured}"
+            }
+        ]
     }
 }
 

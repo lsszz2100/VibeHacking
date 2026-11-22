@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  satcom_laser_qkd_lab:
+    build: .
+    container_name: satcom_laser_qkd_lab
+    ports:
+      - "127.0.0.1:8077:8077"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8077
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

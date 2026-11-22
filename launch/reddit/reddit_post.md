@@ -1,4 +1,4 @@
-# Reddit Launch Post Package: VibeHacking v2.26.0
+# Reddit Launch Post Package: VibeHacking v2.27.0
 
 This package provides tailored, high-converting posts for cybersecurity, developer, and machine learning communities on Reddit.
 
@@ -7,7 +7,7 @@ This package provides tailored, high-converting posts for cybersecurity, develop
 ## 1. r/netsec (Technical Architecture & Whitepaper Focus)
 
 - **Post URL**: [https://www.reddit.com/r/netsec/submit](https://www.reddit.com/r/netsec/submit)
-- **Title**: `VibeHacking: Open-source cybersecurity bible (75 sections, 76 labs) & browser-based terminal wargame with 3,080 challenges`
+- **Title**: `VibeHacking: Open-source cybersecurity bible (75 sections, 77 labs) & browser-based terminal wargame with 3,115 challenges`
 - **Link Target**: `https://github.com/lsszz2100/VibeHacking`
 
 ### Body Text:
@@ -16,9 +16,10 @@ VibeHacking is an open-source offensive & defensive cybersecurity resource hub, 
 
 ### Architectural Highlights:
 * **75 Comprehensive Sections**: Covers binary reversing, exploit synthesis, Linux kernel internals, EDR telemetry bypass, Active Directory lateral movement, cloud/Kubernetes security, post-quantum cryptography (ML-KEM / ML-DSA), and autonomous agent swarm security.
-* **76 Docker Hands-on Labs**: Self-contained reproducible vulnerable targets (`127.0.0.1` binding) with automated regression tests and deterministic solvers, including Lab 72 (AI Agent Context Memory & Knowledge Graph Poisoning Defense), Lab 73 (Silicon Photonics Optical Interconnect & QKD Mesh Defense), Lab 74 (Quantum Neural Network Inversion & Adversarial QPU Defense), Lab 75 (Photonic IC Optical Speckle PUF & MRR Dynamic Phase Scrambler Defense), and Lab 76 (Neuromorphic SNN Hardware Security & Memristor Glitch Defense).
-* **In-Browser Terminal Wargame**: 88 specialized tracks with 3,080 progressive challenges and 42 interactive architecture simulators (Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Firewall, GPU Sidechannel & VRAM Isolation, Multi-Agent Swarm Sentry, Neural Weight Steganography, TEE Confidential AI, AI MCP Sandbox, ZTNA API Gateway, BGP, OAuth2, DBShield, TLS, Cache, K8s, CanBus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, AutonomousCyberDefense).
-* **AI Security Agent Benchmark**: Automated evaluation framework benchmarking autonomous security models on Pass@1 accuracy, exploit synthesis, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0.
+* **77 Docker Hands-on Labs**: Self-contained reproducible vulnerable targets (`127.0.0.1` binding) with automated regression tests and deterministic solvers, including Lab 73 (Silicon Photonics Optical Interconnect & QKD Mesh Defense), Lab 74 (Quantum Neural Network Inversion & Adversarial QPU Defense), Lab 75 (Photonic IC Optical Speckle PUF & MRR Dynamic Phase Scrambler Defense), Lab 76 (Neuromorphic SNN Hardware Security & Memristor Glitch Defense), and Lab 77 (Satellite Optical Laser Interconnect & Space QKD Defense).
+* **In-Browser Terminal Wargame**: 89 specialized tracks with 3,115 progressive challenges and 43 interactive architecture simulators (LEO Satellite Laser ISL & Space QKD, Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Firewall, GPU Sidechannel & VRAM Isolation, Multi-Agent Swarm Sentry, Neural Weight Steganography, TEE Confidential AI, AI MCP Sandbox, ZTNA API Gateway, BGP, OAuth2, DBShield, TLS, Cache, K8s, CanBus, EDRShield, PQCMigrate, eBPFShield, AntiReversingShield, HypervisorEscapeLab, AutonomousCyberDefense).
+* **AI Security Agent Benchmark (Agent-Eval 2.0)**: Automated evaluation framework benchmarking autonomous security models on Pass@1 accuracy, exploit synthesis, and zero-defect remediation across OWASP Top 10, KISA ISMS-P, and NIST CSF 2.0.
+* **B2B Enterprise & Curriculum Publishing**: Air-gapped offline package (`tools/verify_offline_deployment.sh`), automated curriculum e-Book compiler (`vhack book`), and compliance reporting suite.
 
 ### Links:
 * **Live Web Portal**: https://lsszz2100.github.io/VibeHacking/
@@ -31,21 +32,21 @@ VibeHacking is an open-source offensive & defensive cybersecurity resource hub, 
 ## 2. r/cybersecurity (Learning Platform & Hands-on Training Focus)
 
 - **Post URL**: [https://www.reddit.com/r/cybersecurity/submit](https://www.reddit.com/r/cybersecurity/submit)
-- **Title**: `A free, open-source 75-chapter cybersecurity curriculum & interactive browser terminal wargame (3,080 challenges)`
+- **Title**: `A free, open-source 75-chapter cybersecurity curriculum & interactive browser terminal wargame (3,115 challenges)`
 - **Link Target**: `https://lsszz2100.github.io/VibeHacking/`
 
 ### Body Text:
 ```markdown
 Hey r/cybersecurity,
 
-We wanted to share an open-source cybersecurity education and training resource we've built: **VibeHacking v2.26.0**.
+We wanted to share an open-source cybersecurity education and training resource we've built: **VibeHacking v2.27.0**.
 
 Everything is completely free, open-source under MIT, and accessible directly in modern browsers without needing to configure heavy hypervisors or download 40GB VM images:
 
 1. **Complete Curriculum (75 Sections, 492 Chapters)**: Covers security fundamentals, network protocol analysis, binary analysis, web application exploitation, Active Directory, cloud security, and AI agent red teaming.
-2. **76 Reproducible Docker Labs**: Practical vulnerable targets with automated unit tests and patch verifications.
-3. **Interactive Browser Terminal Wargame**: 88 tracks and 3,080 progressive challenges simulating authentic Linux shell commands (`connect`, `cat`, `submit`, privilege escalation).
-4. **42 Interactive Architecture Simulators**: Real-time visualizers for Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Autonomous Agent Swarm Security, Neural Weight Steganography, Confidential AI Inference TEE, AI MCP Agent Sandbox, Zero Trust API, OAuth2 flows, TLS handshakes, BGP hijacking, PQC lattice KEM, EDR detection bypass, and Autonomous Cyber Defense.
+2. **77 Reproducible Docker Labs**: Practical vulnerable targets with automated unit tests and patch verifications.
+3. **Interactive Browser Terminal Wargame**: 89 tracks and 3,115 progressive challenges simulating authentic Linux shell commands (`connect`, `cat`, `submit`, privilege escalation).
+4. **43 Interactive Architecture Simulators**: Real-time visualizers for LEO Satellite Laser ISL & Space QKD, Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Autonomous Agent Swarm Security, Neural Weight Steganography, Confidential AI Inference TEE, AI MCP Agent Sandbox, Zero Trust API, OAuth2 flows, TLS handshakes, BGP hijacking, PQC lattice KEM, EDR detection bypass, and Autonomous Cyber Defense.
 5. **AI Security Agent Benchmark**: Evaluates AI cybersecurity models on Pass@1 exploit generation and compliance alignment with an interactive web leaderboard.
 
 * **Live Site & Wargame**: https://lsszz2100.github.io/VibeHacking/
@@ -59,7 +60,7 @@ Feedback, bug reports, and track suggestions are warmly welcome!
 ## 3. r/SideProject (Indie Hacking & Architecture Showcase)
 
 - **Post URL**: [https://www.reddit.com/r/SideProject/submit](https://www.reddit.com/r/SideProject/submit)
-- **Title**: `I built an open-source terminal wargame with 3,080 challenges and a 75-chapter cybersecurity guide`
+- **Title**: `I built an open-source terminal wargame with 3,115 challenges and a 75-chapter cybersecurity guide`
 - **Link Target**: `https://lsszz2100.github.io/VibeHacking/`
 
 ### Body Text:
@@ -69,10 +70,10 @@ Hey r/SideProject,
 I spent months building **VibeHacking**, an open-source cybersecurity learning portal with a fully functional browser-based terminal wargame.
 
 What you can do:
-- Solve 3,080 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
+- Solve 3,115 progressive hacking & security challenges directly in an interactive browser terminal (no local software setup needed).
 - Study 75 full chapters (492 in-depth guides) ranging from reverse engineering to AI security.
-- Explore 42 interactive security architecture simulators (Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Multi-Agent Swarm Defense, Confidential AI Inference, AI MCP Agent Sandbox, Zero Trust API Gateway, OAuth 2.0, TLS, K8s, EDR, PQC, eBPF, AntiReversingShield, HypervisorEscapeLab, TEE, AutonomousCyberDefense).
-- Run 76 Docker hands-on labs locally.
+- Explore 43 interactive security architecture simulators (LEO Satellite Laser ISL & Space QKD, Neuromorphic SNN & Memristor Glitch Shield, Photonic IC Optical Speckle PUF, Quantum Neural Network QFI Inversion, Silicon Photonics QKD Mesh, AI Agent Memory Firewall, Hardware GPU Sidechannel & VRAM Isolation, KernelZero eBPF LSM Hotpatch, Multi-Agent Swarm Defense, Confidential AI Inference, AI MCP Agent Sandbox, Zero Trust API Gateway, OAuth 2.0, TLS, K8s, EDR, PQC, eBPF, AntiReversingShield, HypervisorEscapeLab, TEE, AutonomousCyberDefense).
+- Run 77 Docker hands-on labs locally.
 - Benchmark AI security models using the built-in evaluation harness and portal leaderboard.
 
 * **Check it out live**: https://lsszz2100.github.io/VibeHacking/
@@ -94,7 +95,7 @@ Would love to get your thoughts and feedback!
 Evaluating LLMs on autonomous offensive capabilities and deterministic defensive patch generation is critical for agent safety.
 
 We developed an open-source benchmark harness and web visualizer integrated into **VibeHacking**:
-- **Dataset**: 76 hands-on vulnerable environments and 3,080 tiered challenges across 88 tracks.
+- **Dataset**: 77 hands-on vulnerable environments and 3,115 tiered challenges across 89 tracks.
 - **Metrics**: Pass@1 exploit accuracy, remediation safety, and zero-defect compliance against NIST CSF 2.0 and KISA ISMS-P.
 - **Web Portal Leaderboard**: Real-time visualization of model performance, radar metrics, and comparative evaluation reports.
 

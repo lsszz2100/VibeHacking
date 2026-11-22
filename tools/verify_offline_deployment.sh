@@ -8,12 +8,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "=================================================================="
-echo " VibeHacking v2.26.0 Offline Deployment Verification & Smoke Test"
+echo " VibeHacking v2.27.0 Offline Deployment Verification & Smoke Test"
 echo "=================================================================="
 echo "[+] Target Root: ${ROOT_DIR}"
 
 # 1. Check SHA256SUMS if release archive exists
-if [ -f "${ROOT_DIR}/release/v2.26.0/SHA256SUMS" ]; then
+if [ -f "${ROOT_DIR}/release/v2.27.0/SHA256SUMS" ]; then
+    echo "[1/7] Verifying release package SHA256 checksums (release/v2.27.0)..."
+    (cd "${ROOT_DIR}/release/v2.27.0" && sha256sum -c SHA256SUMS)
+    echo "  ✓ Checksum verified."
+elif [ -f "${ROOT_DIR}/release/v2.26.0/SHA256SUMS" ]; then
     echo "[1/7] Verifying release package SHA256 checksums (release/v2.26.0)..."
     (cd "${ROOT_DIR}/release/v2.26.0" && sha256sum -c SHA256SUMS)
     echo "  ✓ Checksum verified."
@@ -107,6 +111,7 @@ python3 -m py_compile \
     "${ROOT_DIR}/portal/server.py" \
     "${ROOT_DIR}/ctf/server.py" \
     "${ROOT_DIR}/labs/solvers.py" \
+    "${ROOT_DIR}/tools/book_builder.py" \
     "${ROOT_DIR}/tools/bundle_offline.py"
 echo "  ✓ All core Python scripts compiled cleanly."
 
@@ -135,5 +140,5 @@ echo "  ✓ CLI smoke test passed."
 
 echo ""
 echo "=================================================================="
-echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.26.0 is 100% Offline Ready!"
+echo " 🎉 ALL CHECKS PASSED: VibeHacking v2.27.0 is 100% Offline Ready!"
 echo "=================================================================="

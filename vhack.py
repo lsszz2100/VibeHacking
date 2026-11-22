@@ -759,6 +759,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [6, 11, 48, 59, 71, 73, 74, 75],
     },
+    "77": {
+        "name": "저궤도 군집 위성 광통신 & 우주 양자키 분배(QKD) 보안 실전 랩",
+        "dir":  "77_satcom_laser_qkd_lab",
+        "desc": "SatComLaserQkdLab: LEO 위성 간 레이저 광통신(ISL) 도플러 주파수 변이 보정 & 빔 조준 지문 검증 · 위성 궤도력(TLE) 위조 탐지 & EKF 궤적 드리프트 차단 · 원격 측정·명령(TT&C) 업링크 명령 주입 방어 & NIST FIPS 204 ML-DSA-87 서명 인가 · 지상국-위성 간 CV-QKD 데코이 상태 보안",
+        "url":  "웹 콘솔 & 저궤도 위성 광통신 관제기: http://localhost:8077",
+        "difficulty": "★★★★★",
+        "related": [11, 48, 49, 55, 60, 65, 73, 74, 75, 76],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2427,10 +2435,36 @@ def build_parser() -> argparse.ArgumentParser:
     p_agent_bench.add_argument("--json", action="store_true", help="결과를 JSON 포맷으로 표준 출력")
     p_agent_bench.add_argument("--quiet", action="store_true", help="진행 상태 출력 생략")
 
+    # book
+    p_book = sub.add_parser("book", help="75개 섹션 / 492개 챕터 통합 e-Book / PDF 출판 컴파일러")
+    p_book.add_argument("--sample", action="store_true", help="기초 3개 섹션 샘플 에디션 빌드")
+    p_book.add_argument("--full", action="store_true", help="전체 75개 섹션 마스터 e-Book 빌드")
+    p_book.add_argument("--sections", type=str, help="특정 섹션 번호 쉼표 구분 (예: 1,2,5)")
+
     # update
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
     return p
+
+
+def cmd_book(args: argparse.Namespace) -> None:
+    from tools import book_builder
+    sample = args.sample or (not args.full and not getattr(args, "sections", None))
+    specific = None
+    if getattr(args, "sections", None):
+        specific = [int(s.strip()) for s in args.sections.split(",") if s.strip().isdigit()]
+
+    print(bold(cyan(f"[*] VibeHacking e-Book / PDF Publication Compiler ({book_builder.VERSION})...")))
+    md_path, html_path, sec_count, ch_count = book_builder.build_book(sample_mode=sample, specific_sections=specific)
+    size_md_mb = md_path.stat().st_size / (1024 * 1024)
+    size_html_mb = html_path.stat().st_size / (1024 * 1024)
+    mode_label = "SAMPLE" if sample else "FULL MASTER"
+    print(bold(green(f"[✓] {mode_label} Build Complete!")))
+    print(f"    - Included Sections: {sec_count} sections")
+    print(f"    - Included Chapters: {ch_count} chapters")
+    print(f"    - Master Markdown:   {cyan(str(md_path))} ({size_md_mb:.2f} MB)")
+    print(f"    - Standalone HTML:   {cyan(str(html_path))} ({size_html_mb:.2f} MB)")
+    print(dim("    [+] PDF 인쇄: 크롬에서 HTML을 열고 Ctrl+P -> 'PDF로 저장' 선택"))
 
 
 def cmd_bench_agent(args: argparse.Namespace) -> None:
@@ -3012,6 +3046,7 @@ def main() -> None:
         "eval":         cmd_bench_agent,
         "disclaimer":   cmd_disclaimer,
         "legal":        cmd_disclaimer,
+        "book":         cmd_book,
         "logs":         lambda a: _lab_logs(a.lab_id, getattr(a, "follow", False), getattr(a, "tail", 50)),
         "solve":        lambda a: _lab_solve(a.lab_id, getattr(a, "step", 1)),
         "update":       cmd_update,

@@ -36,8 +36,8 @@ def check_labs():
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
     print(f"[2/5] Checking {len(lab_dirs)} Hands-on Labs...")
-    if len(lab_dirs) < 76:
-        return False, f"Expected at least 76 labs, found {len(lab_dirs)}"
+    if len(lab_dirs) < 77:
+        return False, f"Expected at least 77 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,13 +62,13 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count < 3080:
-        return False, f"Expected at least 3,080 challenges in challenges.js, found {id_count}"
+    if id_count < 3115:
+        return False, f"Expected at least 3,115 challenges in challenges.js, found {id_count}"
     
     track_matches = re.findall(r'^\s*"id":\s*"[a-z0-9]+",\s*"icon":', content, re.MULTILINE)
-    track_count = len(track_matches) or 88
-    if track_count < 88:
-        return False, f"Expected at least 88 tracks in challenges.js, found {track_count}"
+    track_count = len(track_matches) or 89
+    if track_count < 89:
+        return False, f"Expected at least 89 tracks in challenges.js, found {track_count}"
     print(f"  ✓ Wargame database verified: {id_count} challenges across {track_count} tracks.")
     return True, f"{id_count} challenges verified"
 
@@ -98,7 +98,7 @@ def create_bundle_archive(out_path):
     print(f"[5/5] Creating Offline Distribution Archive: {out_file}...")
     exclude_prefixes = [
         ".git", "__pycache__", ".pytest_cache", ".gemini", "node_modules",
-        "release", "venv", ".venv", ".mcp.json", ".tar.gz"
+        "release", "venv", ".venv", ".mcp.json", ".tar.gz", "build"
     ]
     
     def filter_func(tarinfo):
@@ -135,7 +135,7 @@ def main():
     args = parser.parse_args()
 
     print("==================================================")
-    print(" VibeHacking v2.26.0 Offline Release & Audit Pipeline")
+    print(" VibeHacking v2.27.0 Offline Release & Audit Pipeline")
     print("==================================================")
     
     checks = [check_textbook(), check_labs(), check_wargame(), check_offline_assets()]

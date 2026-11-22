@@ -767,6 +767,15 @@ const TRACKS = [
     "desc_ko": "뇌 모사 뉴로모픽 프로세서 비동기 AER 스파이크 타이밍 지문 및 LIF 막전위 임계치 검증, 멤리스터 크로스바 전압 글리치 실시간 탐지 & 위상 지터 방어, STDP 시냅스 가중치 변조 차단 & 하드웨어 RoT 바인딩, NIST FIPS 204 ML-DSA-87 서명 기반 뉴로모픽 원격 증명.",
     "desc_en": "Neuromorphic processor asynchronous AER spike timing fingerprint verification, memristor crossbar voltage glitch detection, STDP synaptic weight drift defense, and NIST FIPS 204 ML-DSA-87 hardware remote attestation."
   }
+,
+  {
+    "id": "satcomqkd",
+    "icon": "🛰️",
+    "ko": "저궤도 위성 광통신 & 우주 양자키 분배",
+    "en": "LEO SatCom Laser ISL & Space QKD",
+    "desc_ko": "저궤도 군집 위성 간 레이저 광통신(ISL) 도플러 변이 보정, 위성 궤도력(TLE) EKF 드리프트 방어, TT&C 업링크 FIPS 204 ML-DSA-87 명령 인가 및 지상국-위성 간 CV-QKD 데코이 상태 보안.",
+    "desc_en": "LEO satellite constellation laser ISL Doppler shift synchronization, orbital ephemeris EKF drift defense, TT&C uplink ML-DSA-87 command attestation, and space-ground CV-QKD decoy-state security."
+  }
 ];
 
 const CHALLENGES = [
@@ -86371,6 +86380,918 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_neuromorphicsnn_sovereign_brain_inspired_neuromorphic_hardware_capstone`."
+      ]
+    }
+  }
+,
+  // Track 89: satcomqkd - LEO SatCom Laser ISL & Space QKD (35 challenges)
+  {
+    "id": "t0_satcomqkd_free_space_optical_link_budget_analysis",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "3e9c996bbe1155cce960083e0d29ff89255e9661e5fb0fa745106dec8acabcbf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자유공간 광통신(FSO) 위성 링크 버짓 및 경로 손실 분석",
+      "en": "Free Space Optical (FSO) Satellite Link Budget & Path Loss Analysis"
+    },
+    "prompt": {
+      "ko": "저궤도(LEO) 군집 위성 간 자유공간 광통신(FSO) 링크 버짓, 대기 투과율, 기하학적 발산 손실을 계산하고 기준 링크 마진을 검증합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_free_space_optical_link_budget_analysis``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze Free Space Optical (FSO) inter-satellite link budgets, atmospheric transmittance, and geometric path loss for LEO constellations.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_free_space_optical_link_budget_analysis``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_free_space_optical_link_budget_analysis` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_free_space_optical_link_budget_analysis`."
+      ]
+    }
+  },
+  {
+    "id": "t0_satcomqkd_orbital_mechanics_and_tle_ephemeris_basics",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "5a0925be4159e24e6cbd37507bbb0516a112380961c7c900f8c20b95c206bca6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 궤도역학 및 Two-Line Element (TLE) 궤도력 기초",
+      "en": "Orbital Mechanics & Two-Line Element (TLE) Ephemeris Basics"
+    },
+    "prompt": {
+      "ko": "NORAD TLE 2행 궤도 요소(경사각, 승교점 적경, 이심률, 평균 근점 이각) 파싱 구조와 SGP4 궤도 전파 모델을 분석합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_orbital_mechanics_and_tle_ephemeris_basics``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Examine NORAD Two-Line Element (TLE) orbital parameter formats and SGP4 orbit propagation fundamentals.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_orbital_mechanics_and_tle_ephemeris_basics``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_orbital_mechanics_and_tle_ephemeris_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_orbital_mechanics_and_tle_ephemeris_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_satcomqkd_laser_isl_inter_satellite_pointing_tracking",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "4eb7741581f72f8c9018a84ee65360f099e0312701785259522e4d1ff45cf77e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 간 레이저 광통신(ISL) 조준·포인팅·추적(PAT) 기초",
+      "en": "Inter-Satellite Link (ISL) Pointing, Acquisition, and Tracking (PAT) Basics"
+    },
+    "prompt": {
+      "ko": "마이크로라디안(urad) 단위의 초정밀 레이저 빔 조준 메커니즘과 고속 조향 미러(FSM) 제어 루프를 분석합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_laser_isl_inter_satellite_pointing_tracking``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Investigate micro-radian level laser beam pointing, acquisition, and tracking (PAT) with fast steering mirror (FSM) control loops.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_laser_isl_inter_satellite_pointing_tracking``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_laser_isl_inter_satellite_pointing_tracking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_laser_isl_inter_satellite_pointing_tracking`."
+      ]
+    }
+  },
+  {
+    "id": "t0_satcomqkd_space_qkd_bb84_and_cv_qkd_protocols",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "8f3c30baaef3275f2e0eccedb9bd45f4f289c9f61d54dec50ac24fbaacdfb034",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "우주 양자키 분배(Space QKD) BB84 및 CV-QKD 프로토콜 원리",
+      "en": "Space Quantum Key Distribution (QKD) BB84 & CV-QKD Principles"
+    },
+    "prompt": {
+      "ko": "위성-지상국 간 단일 광자 편광 기반 DV-QKD 및 연속변수(CV-QKD) 가우시안 변조 상태 전송 원리를 분석합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_space_qkd_bb84_and_cv_qkd_protocols``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze space-to-ground discrete-variable (DV-QKD) polarization states and continuous-variable (CV-QKD) Gaussian modulated states.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_space_qkd_bb84_and_cv_qkd_protocols``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_space_qkd_bb84_and_cv_qkd_protocols` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_space_qkd_bb84_and_cv_qkd_protocols`."
+      ]
+    }
+  },
+  {
+    "id": "t0_satcomqkd_satellite_ttc_telemetry_uplink_architecture",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "823d1e1bc009217cdef39cf5564d2c5f7b267b3dfe352faea0aeaab440cde10a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 원격측정·추적·명령(TT&C) 업링크 보안 아키텍처 개요",
+      "en": "Satellite Telemetry, Tracking, and Command (TT&C) Uplink Security Overview"
+    },
+    "prompt": {
+      "ko": "위성 비행 컴퓨터(OBC)와 지상국 간 TT&C 업링크 프레임 구조, 명령 암호화, 시퀀스 카운터 보호 체계를 분석합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_satellite_ttc_telemetry_uplink_architecture``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Review satellite TT&C uplink framing, telemetry encryption, and sequence counter replay protections between ground stations and OBCs.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_satellite_ttc_telemetry_uplink_architecture``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_satellite_ttc_telemetry_uplink_architecture` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_satellite_ttc_telemetry_uplink_architecture`."
+      ]
+    }
+  },
+  {
+    "id": "t0_satcomqkd_leo_doppler_carrier_frequency_basics",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "76e696c7ebdf396612860637b6b11b0412e33f72e4b3e17647e4bfbe602219cc",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "저궤도 위성 광통신 반송파 주파수 및 상대속도 도플러 기초",
+      "en": "LEO Satellite Optical Carrier Frequency & Relative Velocity Doppler Basics"
+    },
+    "prompt": {
+      "ko": "저궤도 궤도면 간 상대 이동 속도에 따른 광학 파장 편차 및 헤테로다인/호모다인 주파수 수신 원리를 분석합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_leo_doppler_carrier_frequency_basics``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Understand optical wavelength variations and heterodyne/homodyne frequency receiver mechanics under LEO orbital velocities.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_leo_doppler_carrier_frequency_basics``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_leo_doppler_carrier_frequency_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_leo_doppler_carrier_frequency_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_satcomqkd_quantum_decoy_state_security_introduction",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 25,
+    "ci": false,
+    "hash": "622ea5e66c140216ace14e92a79b5ec05f67ef7dcd72951b24fecd85af155e4a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "우주 자유공간 양자 통신 데코이 상태 보안 메커니즘 개론",
+      "en": "Space Free-Space Quantum Communication Decoy State Security Introduction"
+    },
+    "prompt": {
+      "ko": "포아송 분포 레이저 펄스의 다중 광자 성분을 감시하기 위한 신호광과 미약 데코이 펄스 통계 분석 원리를 파악합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_quantum_decoy_state_security_introduction``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Survey multi-photon emission monitoring in Poisson-distributed laser pulses using signal and weak decoy state statistics.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t0_satcomqkd_quantum_decoy_state_security_introduction``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_satcomqkd_quantum_decoy_state_security_introduction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_satcomqkd_quantum_decoy_state_security_introduction`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_leo_doppler_frequency_shift_compensation",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "41ba52150d95cbd08d108f244b0a1dd43f3d9aa0c49d83cfc6558a9ce89b7339",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "저궤도 상대속도에 따른 광학 도플러 주파수 변이 보정",
+      "en": "LEO Relative Velocity Optical Doppler Frequency Shift Compensation"
+    },
+    "prompt": {
+      "ko": "7.5km/s 궤도 속도로 이동하는 LEO 위성 간의 광학 반송파 주파수 편차(±150MHz)를 실시간 위상 잠금 루프(PLL)로 보정합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_leo_doppler_frequency_shift_compensation``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Compensate for dynamic optical carrier Doppler shifts (up to ±150 MHz) between high-speed LEO nodes using optical phase-locked loops (OPLL).\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_leo_doppler_frequency_shift_compensation``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_leo_doppler_frequency_shift_compensation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_leo_doppler_frequency_shift_compensation`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_beam_divergence_and_pointing_jitter_telemetry",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "f69e11def6f1c2d517f8d64b7a03cd022fd72640ca14377bb3fa3afdc0a23c98",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "빔 발산각 및 위성 플랫폼 포인팅 지터 텔레메트리 감사",
+      "en": "Beam Divergence & Satellite Platform Pointing Jitter Telemetry Audit"
+    },
+    "prompt": {
+      "ko": "반작용 휠(Reaction Wheel) 진동에 의한 각초(mas) 단위 미세 지터를 보정하고 빔 발산각(urad) 임계값을 강제합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_beam_divergence_and_pointing_jitter_telemetry``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Measure and mitigate milliarcsecond (mas) pointing jitter induced by satellite reaction wheels and clamp beam divergence thresholds.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_beam_divergence_and_pointing_jitter_telemetry``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_beam_divergence_and_pointing_jitter_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_beam_divergence_and_pointing_jitter_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_spacecraft_ephemeris_spoofing_detection",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "40f1ecfa46de08326061515fe6f1f931d9a33d446af451d89c3eaf8f5efc48e1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 궤도 상태 벡터 위조 및 TLE 스푸핑 실시간 탐지",
+      "en": "Spacecraft Orbital State Vector Spoofing & TLE Tampering Detection"
+    },
+    "prompt": {
+      "ko": "위조된 TLE 데이터 주입으로 인한 위성 레이저 조준 이탈 공격을 지상 레이다 다각 측량 데이터와 대조하여 적발합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_spacecraft_ephemeris_spoofing_detection``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Detect spoofed TLE orbital injection attacks causing inter-satellite laser link misalignment by cross-verifying ground radar multilateration.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_spacecraft_ephemeris_spoofing_detection``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_spacecraft_ephemeris_spoofing_detection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_spacecraft_ephemeris_spoofing_detection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_extended_kalman_filter_orbit_drift_clamp",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "4cded9a60b9dcc0f3cb62276ac84cebc3878b7c1ce059fa9526314246b547568",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "확장 칼만 필터(EKF) 기반 궤도 드리프트 억제 및 공분산 모니터링",
+      "en": "Extended Kalman Filter (EKF) Orbit Drift Suppression & Covariance Monitoring"
+    },
+    "prompt": {
+      "ko": "궤도 상태 EKF 추정기의 공분산 잔차를 모니터링하여 인위적인 궤도 섭동 공격을 차단하고 궤도 이탈을 방지합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_extended_kalman_filter_orbit_drift_clamp``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Monitor Extended Kalman Filter (EKF) covariance residuals to suppress artificial orbital state drift perturbations.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_extended_kalman_filter_orbit_drift_clamp``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_extended_kalman_filter_orbit_drift_clamp` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_extended_kalman_filter_orbit_drift_clamp`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_ttc_telecommand_frame_replay_defense",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "36dff1547d986c39a24ff918e2ae97a82de86db18410b3e9e79ab9f0144f513d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "TT&C 원격 명령 프레임 재생 공격 방어 및 단조 카운터 검증",
+      "en": "TT&C Telecommand Frame Replay Defense & Monotonic Counter Verification"
+    },
+    "prompt": {
+      "ko": "과거 캡처된 위성 기동 명령의 재전송 공격을 막기 위해 64비트 단조 증가 안티 리플레이 카운터와 타임스탬프를 검증합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_ttc_telecommand_frame_replay_defense``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce 64-bit strictly monotonic anti-replay counters and synchronous timestamps to thwart replayed telecommand attacks.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_ttc_telecommand_frame_replay_defense``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_ttc_telecommand_frame_replay_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_ttc_telecommand_frame_replay_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_zero_trust_uplink_airgap_command_sanitization",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "2dec2e3be0073aaffcf14dec7947ba6e31549ae8b7c954946bd7dbf88af30b13",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "제로 트러스트 업링크 명령 정규화 및 에어갭 비인가 페이로드 차단",
+      "en": "Zero-Trust Uplink Command Sanitization & Airgapped Payload Quarantine"
+    },
+    "prompt": {
+      "ko": "지상국에서 송신되는 TT&C 페이로드의 ASN.1/CCSDS 패킷을 엄격 검증하여 비인가 메모리 쓰기(PEEK/POKE) 명령을 격리합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_zero_trust_uplink_airgap_command_sanitization``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Parse and sanitize CCSDS telecommand frames against strict ASN.1 schemas to reject unauthorized direct memory manipulation commands.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_zero_trust_uplink_airgap_command_sanitization``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_zero_trust_uplink_airgap_command_sanitization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_zero_trust_uplink_airgap_command_sanitization`."
+      ]
+    }
+  },
+  {
+    "id": "t1_satcomqkd_continuous_variable_qkd_shot_noise_units",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 50,
+    "ci": false,
+    "hash": "442c4d396c23efd7a00b646eebb2e98d3929680b8a31b66abe0bb36d06d97869",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "연속변수 CV-QKD 샷 노이즈 단위(SNU) 정규화 및 밸런스드 호모다인",
+      "en": "Continuous-Variable QKD Shot Noise Unit (SNU) Normalization & Balanced Homodyne"
+    },
+    "prompt": {
+      "ko": "위성-지상국 수신단에서 국부 발진기(LO)와 신호광의 간섭을 밸런스드 호모다인 검출기로 측정하고 SNU 단위로 정규화합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_continuous_variable_qkd_shot_noise_units``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Calibrate balanced homodyne detectors and normalize quadrature measurements in shot noise units (SNU) for space CV-QKD.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t1_satcomqkd_continuous_variable_qkd_shot_noise_units``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_satcomqkd_continuous_variable_qkd_shot_noise_units` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_satcomqkd_continuous_variable_qkd_shot_noise_units`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_optical_isl_homodyne_detection_filtering",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "c358007fbdae2197f474fe142897193019d17d9636d2c6e631c38276824bbaec",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광학 ISL 호모다인 검출 대역 외 광 잡음 광학 필터링",
+      "en": "Optical ISL Homodyne Detection Out-of-Band Noise Optical Filtering"
+    },
+    "prompt": {
+      "ko": "태양 직사광 및 행성 반사광에 의한 광학 수신기 포화 방지를 위해 100pm 초협대역 에탈론(Fabry-Perot) 필터를 배치합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_optical_isl_homodyne_detection_filtering``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy 100 pm ultra-narrowband Fabry-Perot etalon filters to protect coherent homodyne receivers from direct solar saturation.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_optical_isl_homodyne_detection_filtering``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_optical_isl_homodyne_detection_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_optical_isl_homodyne_detection_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_satellite_tle_drift_covariance_anomaly_score",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "5b9d8c7cded73487302c91542262a60c623ac4c1b2086671a45abb20ae4a430e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 TLE 궤도 드리프트 공분산 이상치 점수 산출 및 경보",
+      "en": "Satellite TLE Drift Covariance Anomaly Scoring & Threshold Alerting"
+    },
+    "prompt": {
+      "ko": "마할라노비스 거리(Mahalanobis Distance)를 활용하여 TLE 6대 궤도 요소의 비정상 변화율을 수치화하고 공격을 즉시 감지합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_satellite_tle_drift_covariance_anomaly_score``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Compute Mahalanobis distance scores over orbital element covariances to trigger automated counter-thrust maneuvers against spoofing.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_satellite_tle_drift_covariance_anomaly_score``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_satellite_tle_drift_covariance_anomaly_score` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_satellite_tle_drift_covariance_anomaly_score`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_fips204_mldsa87_ttc_uplink_verification",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "3ae9addcf7cfc9d488857fdd027b7b615b5900623b25da9880aaf0216e25a205",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NIST FIPS 204 ML-DSA-87 서명 기반 TT&C 업링크 인가",
+      "en": "NIST FIPS 204 ML-DSA-87 Signature Verification for TT&C Uplink"
+    },
+    "prompt": {
+      "ko": "우주 지상국에서 위성으로 전송되는 모든 중요 기동 명령에 NIST 표준 FIPS 204 ML-DSA-87 격자 전자서명을 강제 검증합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_fips204_mldsa87_ttc_uplink_verification``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify NIST FIPS 204 ML-DSA-87 post-quantum digital signatures on all mission-critical satellite attitude adjustments.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_fips204_mldsa87_ttc_uplink_verification``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_fips204_mldsa87_ttc_uplink_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_fips204_mldsa87_ttc_uplink_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_space_ground_quantum_bit_error_rate_threshold",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "53b5403bb9420eb9ad03446a2fce8e6eca956863dc9637aa69c88781f892476a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "우주-지상 양자 비트 오차율(QBER) 실시간 감시 및 키 폐기",
+      "en": "Space-to-Ground Quantum Bit Error Rate (QBER) Monitoring & Key Termination"
+    },
+    "prompt": {
+      "ko": "QBER이 이론적 안전 한계(11.0% for BB84, 3.5% for CV-QKD)를 초과할 경우 즉시 도청 시도로 간주하고 생성 키를 폐기합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_space_ground_quantum_bit_error_rate_threshold``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Monitor real-time QBER thresholds (discarding sessions exceeding 3.5% in CV-QKD) to prevent compromised quantum key deployment.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_space_ground_quantum_bit_error_rate_threshold``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_space_ground_quantum_bit_error_rate_threshold` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_space_ground_quantum_bit_error_rate_threshold`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_photon_number_resolving_detector_calibration",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "0e38790a49223aad7761b7b721782ffab710ddaa35a6a0cfcd1c93e4ce484afd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "광자수 분해 검출기(PNR) 초전도 나노와이어 SNSPD 보정",
+      "en": "Photon Number Resolving (PNR) Superconducting Nanowire SPD Calibration"
+    },
+    "prompt": {
+      "ko": "우주 페이로드 내 초전도 나노와이어 단일광자 검출기(SNSPD) 암전류(Dark Count Rate)를 10Hz 이하로 유지하고 효율을 검증합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_photon_number_resolving_detector_calibration``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Calibrate superconducting nanowire single-photon detectors (SNSPD) onboard satellites maintaining dark count rates below 10 Hz.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_photon_number_resolving_detector_calibration``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_photon_number_resolving_detector_calibration` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_photon_number_resolving_detector_calibration`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_satellite_star_tracker_attitude_glitch_guard",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "20db9e749fe085cde4cf136ff492ebb1187caf32c08d4e2c8c9e26b568098492",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 스타 트래커 자세 제어 광학 글리치 공격 방어",
+      "en": "Satellite Star Tracker Attitude Optical Glitch Attack Defense"
+    },
+    "prompt": {
+      "ko": "레이저 지향성 글리치를 통해 스타 트래커 시야각(FOV)에 가짜 항성 성도를 투영하려는 적대적 기도를 멀티 센서 융합으로 방어합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_satellite_star_tracker_attitude_glitch_guard``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Fuse MEMS gyro and Sun sensor telemetry to invalidate laser spoofed star constellation patterns injected into star tracker FOVs.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_satellite_star_tracker_attitude_glitch_guard``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_satellite_star_tracker_attitude_glitch_guard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_satellite_star_tracker_attitude_glitch_guard`."
+      ]
+    }
+  },
+  {
+    "id": "t2_satcomqkd_post_quantum_hybrid_kem_uplink_session_lock",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 100,
+    "ci": false,
+    "hash": "3cc494392012ec2e30e3c49ca24c72d14b9df911d752f1c3619589a8129b9a0a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하이브리드 KEM (X25519 + ML-KEM-1024) 우주 업링크 세션 잠금",
+      "en": "Hybrid KEM (X25519 + ML-KEM-1024) Space Uplink Session Locking"
+    },
+    "prompt": {
+      "ko": "SNDL(Store Now Decrypt Later) 도청 위협에 맞서 X25519와 FIPS 203 ML-KEM-1024를 결합한 하이브리드 KEM으로 TT&C 채널을 암호화합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_post_quantum_hybrid_kem_uplink_session_lock``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Establish forward-secret space uplink channels combining ECDH X25519 and NIST FIPS 203 ML-KEM-1024 dual encapsulation.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t2_satcomqkd_post_quantum_hybrid_kem_uplink_session_lock``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_satcomqkd_post_quantum_hybrid_kem_uplink_session_lock` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_satcomqkd_post_quantum_hybrid_kem_uplink_session_lock`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_inter_satellite_laser_mesh_routing_integrity",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "37f16d340b7644791eecdc3131f9a8d7e32fda1189122461336966007e8cef8d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 간 레이저 메시 네트워크 동적 라우팅 프로토콜 무결성",
+      "en": "Inter-Satellite Laser Mesh Dynamic Routing Protocol Integrity"
+    },
+    "prompt": {
+      "ko": "군집 위성 레이저 메시 망에서 BGP/OSPF 변형 궤도 라우팅 프로토콜의 라우트 하이재킹 및 블랙홀 공격을 암호학적으로 차단합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_inter_satellite_laser_mesh_routing_integrity``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Authenticate dynamic laser inter-satellite mesh routing advertisements to prevent orbital topological packet diversion.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_inter_satellite_laser_mesh_routing_integrity``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_inter_satellite_laser_mesh_routing_integrity` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_inter_satellite_laser_mesh_routing_integrity`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_satellite_onboard_cryogenic_spad_hardening",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "67e9b609b781dcdfdc345936b2501d59b536fd3031fa78670d7aa170bc0027bd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 탑재형 극저온 SPAD 검출기 안티 블라인딩 하드닝",
+      "en": "Satellite Onboard Cryogenic SPAD Detector Anti-Blinding Hardening"
+    },
+    "prompt": {
+      "ko": "강력한 연속 레이저 광선을 조사하여 아발란체 광소자(SPAD)를 포화·무력화시키는 광학 블라인딩 공격을 소자 인가전압 능동 제어로 방어합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_satellite_onboard_cryogenic_spad_hardening``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Counter continuous optical blinding attacks by dynamically modulating avalanche photosensor operating voltages and active quenching.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_satellite_onboard_cryogenic_spad_hardening``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_satellite_onboard_cryogenic_spad_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_satellite_onboard_cryogenic_spad_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_space_quantum_memory_teleportation_relay",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "8b5b660e82939fc1ca894401544fd3599c837a91e0d6d8b87e46d542e8974962",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "우주 양자 메모리 원격 전송(Teleportation) 릴레이 무결성",
+      "en": "Space Quantum Memory Entanglement Teleportation Relay Integrity"
+    },
+    "prompt": {
+      "ko": "희토류 이온 도핑 결정 기반 우주 탑재 양자 메모리의 스핀 결맞음 시간(Coherence Time) 보존 및 벨 상태 측정 무결성을 검증합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_space_quantum_memory_teleportation_relay``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify Bell State Measurement fidelity and quantum memory coherence preservation in rare-earth ion doped spaceborne repeaters.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_space_quantum_memory_teleportation_relay``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_space_quantum_memory_teleportation_relay` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_space_quantum_memory_teleportation_relay`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_satellite_ephemeris_bypassing_gnss_spoof_shield",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "5e681d669864e2c79404aaef7f0a9b3fb18c3476e540287785f61eb169fc11ba",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "온보드 위성항법 스푸핑 방어 및 펄사 X선 항법(XNAV) 자율 교차 검증",
+      "en": "Onboard SatNav Anti-Spoofing & X-ray Pulsar Navigation (XNAV) Cross-Check"
+    },
+    "prompt": {
+      "ko": "우주 궤도 내 위성항법 수신 신호 스푸핑 공격을 무력화하기 위해 밀리초 펄사 X선 관측 데이터(XNAV)로 위성 독자 자율 궤도를 산출합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_satellite_ephemeris_bypassing_gnss_spoof_shield``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Mitigate space-segment SatNav spoofing by autonomously cross-checking orbital ephemeris against millisecond pulsar X-ray timing (XNAV).\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_satellite_ephemeris_bypassing_gnss_spoof_shield``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_satellite_ephemeris_bypassing_gnss_spoof_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_satellite_ephemeris_bypassing_gnss_spoof_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_spaceborne_quantum_entanglement_e91_distribution",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "5609b5bbcc372962a1e8b31cfe4610637828bf843e88f7597395d3ed18356d40",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "우주 탑재 벨 상태 얽힘 광자원(E91) 벨 부등식 위반 검증",
+      "en": "Spaceborne Entangled Photon Source (E91) Bell Inequality Violation Test"
+    },
+    "prompt": {
+      "ko": "자발적 매개 하향 변환(SPDC) 광자원의 CHSH 벨 부등식 값(S > 2.0)을 우주-지상 이중 링크에서 실시간 측정하여 무조건적 안전성을 입증합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_spaceborne_quantum_entanglement_e91_distribution``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Measure CHSH Bell parameter violations (S > 2.0) across space-ground downlink nodes to guarantee device-independent E91 security.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_spaceborne_quantum_entanglement_e91_distribution``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_spaceborne_quantum_entanglement_e91_distribution` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_spaceborne_quantum_entanglement_e91_distribution`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_high_altitude_platform_haps_quantum_relay",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "cac657bbdb785713088d32adcf835b0f4e5e98df2521ae5889eca787b6b924b1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "성층권 고고도 무인기(HAPS) 양자 릴레이 및 자유공간 인터페이스",
+      "en": "Stratospheric HAPS Quantum Optical Relay & Free-Space Airgap Interface"
+    },
+    "prompt": {
+      "ko": "위성과 지상국 사이 20km 상공 HAPS 플랫폼을 신뢰 릴레이로 활용하여 구름/기상 페이딩을 우회하는 적응형 양자 라우팅을 구축합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_high_altitude_platform_haps_quantum_relay``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Route quantum cryptographic channels through stratospheric High Altitude Pseudo-Satellites (HAPS) to bypass low-altitude cloud cover.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_high_altitude_platform_haps_quantum_relay``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_high_altitude_platform_haps_quantum_relay` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_high_altitude_platform_haps_quantum_relay`."
+      ]
+    }
+  },
+  {
+    "id": "t3_satcomqkd_autonomous_constellation_resilience_rebalancing",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 200,
+    "ci": false,
+    "hash": "4d6c7d203b364227926a6c388d056745b92dc0917f30f6bf2014f53a7c376abf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "침해 위성 격리 및 군집 자율 레이저 토폴로지 재구성 (Self-Healing)",
+      "en": "Compromised Satellite Isolation & Autonomous Constellation Laser Mesh Rebalancing"
+    },
+    "prompt": {
+      "ko": "레이저 통신망에서 악성 위성 노드가 탈취되었을 때 비잔틴 합의 알고리즘으로 해당 위성을 메시에서 격리하고 ISL 링크를 자가 치유합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_autonomous_constellation_resilience_rebalancing``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute Byzantine fault-tolerant topological healing to sever laser ISL links to compromised nodes and reroute quantum cryptographic traffic.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t3_satcomqkd_autonomous_constellation_resilience_rebalancing``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_satcomqkd_autonomous_constellation_resilience_rebalancing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_satcomqkd_autonomous_constellation_resilience_rebalancing`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_space_debris_conjunction_assessment_spoofing",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "4a2b7652832ab7a86fef664fc32a38535c0295065ce9591141cfc0c9758426cf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "우주 쓰레기 접근 알림(CDM) 위조를 통한 위성 연료 소진 공격 방어",
+      "en": "Space Debris Conjunction Data Message (CDM) Spoofing Defense"
+    },
+    "prompt": {
+      "ko": "가짜 충돌 경고(CDM)를 전송하여 위성의 회피 분사를 유도하고 연료를 조기 고갈시키는 공격을 다자 레이다 검증으로 무력화합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_space_debris_conjunction_assessment_spoofing``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Cross-verify Space Situational Awareness (SSA) orbital conjunction warnings against multi-radar catalogs to prevent fuel depletion spoofing.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_space_debris_conjunction_assessment_spoofing``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_space_debris_conjunction_assessment_spoofing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_space_debris_conjunction_assessment_spoofing`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_mega_constellation_adversarial_laser_dazzling",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "f07e32d65b499abcb780fbb3cb44ce6481e8b3737f29b74c765f07c4df42f798",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메가 콘스텔레이션 지향성 레이저 대즐링/블라인딩 복합 공격 방어",
+      "en": "Mega-Constellation Directed Laser Dazzling/Blinding Coordinated Defense"
+    },
+    "prompt": {
+      "ko": "다중 지상 지향성 레이저 무기(HEL)에 의한 동시 광학 센서 포화 공격에 대응하여 능동 전자 셔터 및 광학 리미터로 수신기를 방어합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_mega_constellation_adversarial_laser_dazzling``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy sub-nanosecond optical power limiters and fast electro-optic shutters to shield spaceborne receivers from ground laser dazzling.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_mega_constellation_adversarial_laser_dazzling``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_mega_constellation_adversarial_laser_dazzling` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_mega_constellation_adversarial_laser_dazzling`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_relativistic_space_time_frame_clock_desync",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "320b61bcb14c1552ec4aa9e09c1ab3499ec64cbb42aba41d2cfcbfcbd77665a9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "특수/일반 상대성 이론 시공간 광학 시계 탈동기화 공격 방어",
+      "en": "Relativistic Space-Time Frame Optical Clock Desynchronization Defense"
+    },
+    "prompt": {
+      "ko": "궤도 고도차 및 고속 상대속도에 따른 중력 적색편이 및 특수 상대성 시간 지연을 나노초 정밀도로 보정하여 광학 간섭을 유지합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_relativistic_space_time_frame_clock_desync``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Compensate for relativistic gravitational redshift and kinematic time dilation to preserve inter-satellite optical carrier coherence.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_relativistic_space_time_frame_clock_desync``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_relativistic_space_time_frame_clock_desync` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_relativistic_space_time_frame_clock_desync`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_fips203_mlkem1024_space_mesh_quantum_routing",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "67f2122ebd005a0e5ed448c6441cc130316a3c0c02b3f48a539c6076dc5acf3c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NIST FIPS 203 ML-KEM-1024 우주 메시 양자 라우팅 불변 원장",
+      "en": "NIST FIPS 203 ML-KEM-1024 Space Mesh Quantum Routing Immutable Ledger"
+    },
+    "prompt": {
+      "ko": "전 위성 군집 간 양자 키 풀(Key Pool) 할당 내역을 포스트 퀀텀 디지털 서명 머클 트리로 불변 원장에 기록하여 키 도난을 원천 차단합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_fips203_mlkem1024_space_mesh_quantum_routing``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Anchor satellite constellation quantum key pool allocations onto an immutable Merkle tree ledger secured with ML-KEM-1024 and ML-DSA-87.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_fips203_mlkem1024_space_mesh_quantum_routing``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_fips203_mlkem1024_space_mesh_quantum_routing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_fips203_mlkem1024_space_mesh_quantum_routing`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_zero_trust_space_to_ground_quantum_gateway",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "58ad42035e46b5b70985e94da2ba31a5a04118c51e49390e1b3522b816d58984",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "지상-위성 간 제로 트러스트 통합 양자 통신 보안 게이트웨이",
+      "en": "Zero-Trust Space-to-Ground Unified Quantum Security Gateway Architecture"
+    },
+    "prompt": {
+      "ko": "광학 지상국(OGS), 클라우드 데이터센터, 궤도 위성 간 엔드투엔드 mTLS, SPIFFE 신원 증명, PQC 터널링을 단일 게이트웨이로 통합합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_zero_trust_space_to_ground_quantum_gateway``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Unify Optical Ground Stations (OGS), hyperscale data centers, and orbital spacecraft with mutual SPIFFE attestation and hybrid PQC tunnels.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_zero_trust_space_to_ground_quantum_gateway``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_zero_trust_space_to_ground_quantum_gateway` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_zero_trust_space_to_ground_quantum_gateway`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_quantum_satellite_anti_tamper_memory_zeroization",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "7151df0ca72a55b19e3688f593fac0876702fb27f7a6f0895943751006bff2e6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위성 물리적 침투 및 궤도 나포 시도 시 양자 암호 메모리 긴급 소거",
+      "en": "Quantum Satellite Anti-Tamper Physical Capture Emergency Zeroization"
+    },
+    "prompt": {
+      "ko": "적대적 랑데부·도킹 나포 시도가 감지되면 10ns 이내에 QKD 키 캐시, ML-DSA 개인키, TEE 엔클레이브를 물리적 소거(Zeroize)합니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_quantum_satellite_anti_tamper_memory_zeroization``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute sub-10ns destructive memory zeroization across QKD key caches, ML-DSA private keys, and TEE enclaves upon hostile orbital docking detection.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_quantum_satellite_anti_tamper_memory_zeroization``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_quantum_satellite_anti_tamper_memory_zeroization` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_quantum_satellite_anti_tamper_memory_zeroization`."
+      ]
+    }
+  },
+  {
+    "id": "t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "satcomqkd",
+    "points": 300,
+    "ci": false,
+    "hash": "3ef93ca2b1e7ab218ed7cd4850d8efe29cf125a99d6f0c1a30e0f2580ce142a8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 우주 저궤도 위성 광통신 & 양자키 분배 사이버 방어 종합 캡스톤",
+      "en": "Sovereign Space LEO SatCom Optical & QKD Cyber Defense Capstone"
+    },
+    "prompt": {
+      "ko": "도플러 보정, EKF 궤도력 방어, ML-DSA-87 TT&C 인가, CV-QKD 데코이 상태 보안, 자율 메시 치유를 총동원한 실전 주권 우주 캡스톤입니다.\n\n[챌린지 식별자]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone``\n\n[문제 안내]\n해당 저궤도 위성 광통신 하드웨어 및 우주 양자키 분배 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute the complete sovereign space cybersecurity capstone uniting Doppler synchronization, EKF defense, ML-DSA-87, and CV-QKD.\n\n[Challenge Identifier]\n`SATCOMQKD_CHALLENGE_ID: `t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone``\n\n[Task]\nAnalyze the LEO satellite laser optical communication and space QKD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone`."
       ]
     }
   }

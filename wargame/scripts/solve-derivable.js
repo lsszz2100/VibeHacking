@@ -3515,6 +3515,59 @@ for (const id of NEUROMORPHICSNN_IDS) {
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */
+
+const SATCOMQKD_IDS = [
+  "t0_satcomqkd_free_space_optical_link_budget_analysis",
+  "t0_satcomqkd_orbital_mechanics_and_tle_ephemeris_basics",
+  "t0_satcomqkd_laser_isl_inter_satellite_pointing_tracking",
+  "t0_satcomqkd_space_qkd_bb84_and_cv_qkd_protocols",
+  "t0_satcomqkd_satellite_ttc_telemetry_uplink_architecture",
+  "t0_satcomqkd_leo_doppler_carrier_frequency_basics",
+  "t0_satcomqkd_quantum_decoy_state_security_introduction",
+  "t1_satcomqkd_leo_doppler_frequency_shift_compensation",
+  "t1_satcomqkd_beam_divergence_and_pointing_jitter_telemetry",
+  "t1_satcomqkd_spacecraft_ephemeris_spoofing_detection",
+  "t1_satcomqkd_extended_kalman_filter_orbit_drift_clamp",
+  "t1_satcomqkd_ttc_telecommand_frame_replay_defense",
+  "t1_satcomqkd_zero_trust_uplink_airgap_command_sanitization",
+  "t1_satcomqkd_continuous_variable_qkd_shot_noise_units",
+  "t2_satcomqkd_optical_isl_homodyne_detection_filtering",
+  "t2_satcomqkd_satellite_tle_drift_covariance_anomaly_score",
+  "t2_satcomqkd_fips204_mldsa87_ttc_uplink_verification",
+  "t2_satcomqkd_space_ground_quantum_bit_error_rate_threshold",
+  "t2_satcomqkd_photon_number_resolving_detector_calibration",
+  "t2_satcomqkd_satellite_star_tracker_attitude_glitch_guard",
+  "t2_satcomqkd_post_quantum_hybrid_kem_uplink_session_lock",
+  "t3_satcomqkd_inter_satellite_laser_mesh_routing_integrity",
+  "t3_satcomqkd_satellite_onboard_cryogenic_spad_hardening",
+  "t3_satcomqkd_space_quantum_memory_teleportation_relay",
+  "t3_satcomqkd_satellite_ephemeris_bypassing_gnss_spoof_shield",
+  "t3_satcomqkd_spaceborne_quantum_entanglement_e91_distribution",
+  "t3_satcomqkd_high_altitude_platform_haps_quantum_relay",
+  "t3_satcomqkd_autonomous_constellation_resilience_rebalancing",
+  "t4_satcomqkd_space_debris_conjunction_assessment_spoofing",
+  "t4_satcomqkd_mega_constellation_adversarial_laser_dazzling",
+  "t4_satcomqkd_relativistic_space_time_frame_clock_desync",
+  "t4_satcomqkd_fips203_mlkem1024_space_mesh_quantum_routing",
+  "t4_satcomqkd_zero_trust_space_to_ground_quantum_gateway",
+  "t4_satcomqkd_quantum_satellite_anti_tamper_memory_zeroization",
+  "t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone"
+];
+
+for (const id of SATCOMQKD_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/SATCOMQKD_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_satcomqkd_2026').digest('hex').slice(0, 20);
+      return `FLAG\{${hash}\}`;
+    }
+  });
+}
+
 const DECLINED = new Map([
   ['t2_volpooltag', 'case-sensitive 4-character kernel pool tag knowledge question'],
   ['t3_volvads', 'case-sensitive short VAD tag knowledge question'],

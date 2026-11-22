@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Vibe Hacking // LEO SatCom Optical Laser ISL & Space Quantum Key Distribution Inspector (Simulator #43)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --panel-bg: #0b1120;
+      --card-bg: #111c33;
+      --cyan: #38bdf8;
+      --indigo: #6366f1;
+      --purple: #a855f7;
+      --amber: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'JetBrains Mono', 'Pretendard', monospace, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); padding: 1.5rem; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.35rem; color: var(--cyan); display: flex; align-items: center; gap: 0.5rem; }
+    .badge { background: rgba(56, 189, 248, 0.15); color: var(--cyan); border: 1px solid var(--cyan); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+    .card h2 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; border-left: 3px solid var(--cyan); padding-left: 0.5rem; }
+    canvas { width: 100%; height: 260px; background: #020617; border-radius: 6px; border: 1px solid #1e293b; display: block; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .ctrl-group label { font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+    input[type=range] { width: 100%; accent-color: var(--cyan); }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    button { background: var(--card-bg); color: var(--cyan); border: 1px solid var(--cyan); padding: 0.6rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.82rem; transition: 0.2s; }
+    button:hover { background: var(--cyan); color: #000; }
+    button.danger { border-color: var(--red); color: var(--red); }
+    button.danger:hover { background: var(--red); color: #fff; }
+    button.success { border-color: var(--green); color: var(--green); }
+    button.success:hover { background: var(--green); color: #000; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+    .metric-box { background: var(--card-bg); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); }
+    .metric-val { font-size: 1.15rem; font-weight: bold; color: var(--cyan); margin-top: 0.25rem; }
+    .log-box { background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; font-size: 0.8rem; height: 160px; overflow-y: auto; color: var(--text-muted); line-height: 1.45; }
+    .log-line.ok { color: var(--green); }
+    .log-line.warn { color: var(--amber); }
+    .log-line.err { color: var(--red); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛰️ LEO SatCom Optical Laser ISL & Space QKD Inspector <span class="badge">Simulator #43</span></h1>
+    <div style="font-size:0.85rem; color:var(--text-muted);">VibeHacking v2.27.0 // Space Cybersecurity Architecture</div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>📡 Orbital Constellation Laser ISL & CV-QKD Telemetry</h2>
+      <canvas id="satCanvas"></canvas>
+      <div class="metrics">
+        <div class="metric-box">
+          <div style="font-size:0.75rem; color:var(--text-muted);">LASER DOPPLER SHIFT</div>
+          <div class="metric-val" id="valDoppler">+42.8 MHz (LOCKED)</div>
+        </div>
+        <div class="metric-box">
+          <div style="font-size:0.75rem; color:var(--text-muted);">OPTICAL QBER (BER)</div>
+          <div class="metric-val" id="valQber">1.82% [SECURE]</div>
+        </div>
+        <div class="metric-box">
+          <div style="font-size:0.75rem; color:var(--text-muted);">EKF ORBIT DRIFT</div>
+          <div class="metric-val" id="valEkf">0.018 km (STABLE)</div>
+        </div>
+        <div class="metric-box">
+          <div style="font-size:0.75rem; color:var(--text-muted);">TT&C ML-DSA-87</div>
+          <div class="metric-val" id="valMldsa">VERIFIED (HITL)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ Spacecraft Optical & Ephemeris Defense Controls</h2>
+      <div class="ctrl-group">
+        <label><span>Laser ISL Doppler Shift (MHz)</span><span id="lblDoppler">42.8</span></label>
+        <input type="range" id="rngDoppler" min="-150" max="150" value="42" step="1">
+      </div>
+      <div class="ctrl-group">
+        <label><span>Fine Pointing Divergence (urad)</span><span id="lblDiv">10.5</span></label>
+        <input type="range" id="rngDiv" min="5" max="35" value="10.5" step="0.5">
+      </div>
+      <div class="ctrl-group">
+        <label><span>Decoy State Intensity Ratio</span><span id="lblDecoy">0.45</span></label>
+        <input type="range" id="rngDecoy" min="0.1" max="1.0" value="0.45" step="0.05">
+      </div>
+
+      <div class="btn-row">
+        <button id="btnEkf" class="success" onclick="toggleEkf()">🛡️ EKF Orbit Drift Guard [ACTIVE]</button>
+        <button id="btnUplink" onclick="verifyUplink()">🔐 Verify ML-DSA-87 TT&C Uplink</button>
+        <button id="btnAttack" class="danger" onclick="triggerSpoofing()">⚠️ Simulate TLE Spoofing Attack</button>
+        <button id="btnZeroize" class="danger" onclick="emergencyZeroize()">⚡ Anti-Tamper Memory Zeroize</button>
+      </div>
+
+      <h2 style="margin-top:1.25rem; font-size:0.95rem;">📜 Real-Time Flight Computer & Ground Station Log</h2>
+      <div class="log-box" id="logBox">
+        <div class="log-line ok">[00:00:01] LEO Star Constellation Node Primary ISL laser acquisition locked.</div>
+        <div class="log-line ok">[00:00:02] Continuous-Variable QKD balanced homodyne SNU calibrated (QBER=1.82%).</div>
+        <div class="log-line ok">[00:00:03] Extended Kalman Filter tracking ephemeris covariance residual: 0.018 km.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ekfActive = true;
+    let t = 0;
+    const canvas = document.getElementById('satCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.clientWidth * window.devicePixelRatio;
+    canvas.height = canvas.clientHeight * window.devicePixelRatio;
+
+    function log(msg, type='ok') {
+      const box = document.getElementById('logBox');
+      const div = document.createElement('div');
+      div.className = 'log-line ' + type;
+      const ts = new Date().toISOString().substring(11, 19);
+      div.textContent = `[${ts}] ${msg}`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function toggleEkf() {
+      ekfActive = !ekfActive;
+      const btn = document.getElementById('btnEkf');
+      if (ekfActive) {
+        btn.className = 'success';
+        btn.textContent = '🛡️ EKF Orbit Drift Guard [ACTIVE]';
+        document.getElementById('valEkf').textContent = '0.018 km (STABLE)';
+        document.getElementById('valEkf').style.color = 'var(--cyan)';
+        log("EKF orbit drift guard re-engaged. Covariance clamped.", 'ok');
+      } else {
+        btn.className = 'danger';
+        btn.textContent = '⚠️ EKF Orbit Drift Guard [BYPASSED]';
+        document.getElementById('valEkf').textContent = '2.450 km [DRIFTING]';
+        document.getElementById('valEkf').style.color = 'var(--red)';
+        log("WARNING: EKF orbit drift guard bypassed! Constellation misalignment risk.", 'warn');
+      }
+    }
+
+    function verifyUplink() {
+      log("NIST FIPS 204 ML-DSA-87 signature verified on TT&C frame #2048.", 'ok');
+      log("Zero-trust uplink airgap verified. Monotonic counter incremented.", 'ok');
+    }
+
+    function triggerSpoofing() {
+      if (ekfActive) {
+        log("ALERT: Spoofed TLE orbital element perturbation intercepted by EKF!", 'warn');
+        log("Mahalanobis residual score: 4.85 -> Counter-thrust maneuver executed.", 'ok');
+      } else {
+        log("BREACH: Spoofed TLE accepted! Laser ISL tracking de-locked (QBER > 18%)", 'err');
+        document.getElementById('valQber').textContent = '19.4% [ABORT]';
+        document.getElementById('valQber').style.color = 'var(--red)';
+      }
+    }
+
+    function emergencyZeroize() {
+      log("EMERGENCY ZEROIZE TRIGGERED! 10ns memory zeroization complete.", 'err');
+      log("QKD key pool, ML-DSA secrets, and TEE enclaves destroyed.", 'warn');
+    }
+
+    function draw() {
+      t += 0.02;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.width, h = canvas.height;
+
+      // Draw Earth curve
+      ctx.fillStyle = '#081830';
+      ctx.beginPath();
+      ctx.arc(w / 2, h + 300, 420, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#1e3a5f';
+      ctx.stroke();
+
+      // Sat 1
+      const s1x = w * 0.25 + Math.sin(t) * 15;
+      const s1y = h * 0.35 + Math.cos(t) * 8;
+      // Sat 2
+      const s2x = w * 0.75 - Math.sin(t) * 15;
+      const s2y = h * 0.30 - Math.cos(t) * 8;
+
+      // Laser ISL Beam
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(s1x, s1y);
+      ctx.lineTo(s2x, s2y);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Pulse
+      const px = s1x + (s2x - s1x) * ((t * 1.5) % 1);
+      const py = s1y + (s2y - s1y) * ((t * 1.5) % 1);
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw Satellites
+      function drawSat(x, y, name) {
+        ctx.fillStyle = '#6366f1';
+        ctx.fillRect(x - 10, y - 8, 20, 16);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(x - 26, y - 5, 14, 10);
+        ctx.fillRect(x + 12, y - 5, 14, 10);
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '11px monospace';
+        ctx.fillText(name, x - 22, y - 14);
+      }
+      drawSat(s1x, s1y, "SAT-LEO-01");
+      drawSat(s2x, s2y, "SAT-LEO-02");
+
+      // Ground Station
+      const gx = w * 0.5;
+      const gy = h * 0.88;
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(gx, gy, 8, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '11px monospace';
+      ctx.fillText("OGS-GROUND-01", gx - 35, gy + 16);
+
+      // Downlink quantum beam
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(s1x, s1y);
+      ctx.lineTo(gx, gy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+</body>
+</html>
