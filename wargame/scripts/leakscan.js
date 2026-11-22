@@ -667,6 +667,17 @@ const ALLOWLIST = new Map([
   ['t1_weightsec_quantization_clipping_weight_sanitization -> t1_quantization', 'Quantization clipping sanitization cites quantization'],
   ['t2_weightsec_model_provenance_immutable_attestation -> t3_scintoto', 'Model provenance attestation references in-toto software supply chain attestation'],
   ['t3_weightsec_covert_weight_channel_differential_analyzer -> t1_quantization', 'Differential analysis references quantization mitigation'],
+
+  // Track 90 fedsec domain terms
+  ['t0_fedsec_byzantine_fault_tolerance_and_sybil_threats -> t4_sybil', 'Byzantine fault tolerance evaluates Sybil worker collusion threat models'],
+  ['t0_fedsec_cosine_similarity_directional_alignment_concepts -> t0_alignment', 'Cosine similarity evaluates directional gradient alignment'],
+  ['t0_fedsec_differential_privacy_dpsgd_fundamentals -> t3_epsilon', 'Differential privacy evaluates epsilon budget parameters'],
+  ['t0_fedsec_membership_inference_attack_vector_mechanics -> t2_membership', 'Evaluates membership inference attacks against training data'],
+  ['t1_fedsec_privacy_budget_epsilon_accounting_and_clamping -> t3_epsilon', 'Moments accountant tracks epsilon privacy loss'],
+  ['t2_fedsec_federated_unlearning_and_backdoor_erasure -> t4_unlearning', 'Machine unlearning evaluates retroactive gradient erasure'],
+  ['t3_fedsec_multi_party_shamir_secret_sharing_reconstruction -> t3_ghinterpolation', 'Shamir secret sharing utilizes polynomial interpolation'],
+  ['t3_fedsec_model_inversion_defense_with_differential_privacy -> t3_inversion', 'Differential privacy mitigates gradient model inversion'],
+  ['t4_fedsec_sybil_swarm_collusion_poisoning_defense -> t4_sybil', 'Swarm defense neutralizes colluding Sybil worker clusters'],
 ]);
 
 function loadChallenges() {

@@ -3568,6 +3568,59 @@ for (const id of SATCOMQKD_IDS) {
   });
 }
 
+
+const FEDSEC_IDS = [
+  "t0_fedsec_federated_learning_distributed_ai_architecture",
+  "t0_fedsec_byzantine_fault_tolerance_and_sybil_threats",
+  "t0_fedsec_gradient_explosion_and_norm_clipping_basics",
+  "t0_fedsec_cosine_similarity_directional_alignment_concepts",
+  "t0_fedsec_differential_privacy_dpsgd_fundamentals",
+  "t0_fedsec_membership_inference_attack_vector_mechanics",
+  "t0_fedsec_secure_multi_party_computation_mpc_introduction",
+  "t1_fedsec_client_gradient_l2_norm_clipping_enforcement",
+  "t1_fedsec_cosine_similarity_anomaly_score_filtering",
+  "t1_fedsec_trimmed_mean_coordinate_wise_aggregation",
+  "t1_fedsec_multi_krum_byzantine_resilient_candidate_selection",
+  "t1_fedsec_renyi_differential_privacy_gaussian_noise_injection",
+  "t1_fedsec_privacy_budget_epsilon_accounting_and_clamping",
+  "t1_fedsec_pairwise_zero_sum_secret_masking",
+  "t2_fedsec_byzantine_gradient_scaling_attack_detection",
+  "t2_fedsec_bulyan_aggregation_for_byzantine_resilience",
+  "t2_fedsec_adaptive_clipping_bound_estimation",
+  "t2_fedsec_fips204_mldsa87_client_signature_validation",
+  "t2_fedsec_federated_unlearning_and_backdoor_erasure",
+  "t2_fedsec_local_differential_privacy_laplace_perturbation",
+  "t2_fedsec_secure_aggregation_quorum_consensus_verification",
+  "t3_fedsec_adversarial_backdoor_trigger_injection_in_federated_ai",
+  "t3_fedsec_multi_party_shamir_secret_sharing_reconstruction",
+  "t3_fedsec_hardware_tee_intel_tdx_enclave_worker_attestation",
+  "t3_fedsec_model_inversion_defense_with_differential_privacy",
+  "t3_fedsec_cross_silo_federated_learning_spiffe_mesh_auth",
+  "t3_fedsec_byzantine_robust_median_aggregation_defense",
+  "t3_fedsec_autonomous_federated_drift_anomaly_isolation",
+  "t4_fedsec_sybil_swarm_collusion_poisoning_defense",
+  "t4_fedsec_deep_leakage_from_gradients_dlg_reconstruction_shield",
+  "t4_fedsec_zero_knowledge_proof_zkp_client_update_verification",
+  "t4_fedsec_quantum_resistant_hybrid_kem_fl_secure_channel",
+  "t4_fedsec_byzantine_resilient_fedprox_straggler_mitigation",
+  "t4_fedsec_hardware_tpm_quote_live_fl_pcr_verification",
+  "t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone"
+];
+
+for (const id of FEDSEC_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/FEDSEC_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_fedsec_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
+
 const DECLINED = new Map([
   ['t2_volpooltag', 'case-sensitive 4-character kernel pool tag knowledge question'],
   ['t3_volvads', 'case-sensitive short VAD tag knowledge question'],

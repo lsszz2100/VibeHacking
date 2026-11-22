@@ -767,6 +767,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 48, 49, 55, 60, 65, 73, 74, 75, 76],
     },
+    "78": {
+        "name": "연합 학습 모델 중독 공격 & 차분 프라이버시(DP-SGD) 방어 실전 랩",
+        "dir":  "78_federated_ai_poison_defense_lab",
+        "desc": "FedAiPoisonDefenseLab: 연합 학습 비잔틴 클라이언트 가중치 폭탄 투하 차단 · L2-Norm 클리핑 및 코사인 유사도 이상치 검출 · Multi-Krum/Trimmed-Mean 비잔틴 견고 집계 · 차분 프라이버시(DP-SGD) 가우시안 노이즈 주입 및 엡실론 예산 통제 · 비밀 분할 안전 집계 및 NIST FIPS 204 ML-DSA-87 하드웨어 원격 증명",
+        "url":  "웹 콘솔 & 연합 학습 비잔틴 방어 관제기: http://localhost:8078",
+        "difficulty": "★★★★★",
+        "related": [11, 48, 56, 68, 69, 72, 74, 76, 77],
+    },
 }
 
 LABS_METADATA = LABS
@@ -2348,7 +2356,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # play
     p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (81개 트랙, 2,835문제 CLI 모드)")
-    p_play.add_argument("--list", action="store_true", help="77개 트랙 로드맵 및 진행도 요약 출력")
+    p_play.add_argument("--list", action="store_true", help="90개 트랙 로드맵 및 진행도 요약 출력")
     p_play.add_argument("--search", metavar="KEYWORD", help="키워드로 챌린지 검색")
     p_play.add_argument("--chal", metavar="CHAL_ID", help="특정 챌린지 상세 지문 및 힌트 조회")
     p_play.add_argument("--submit", nargs=2, metavar=("CHAL_ID", "FLAG"), help="터미널에서 직접 플래그 제출")

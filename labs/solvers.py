@@ -2540,6 +2540,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Continuous-variable space QKD secured -> FLAG{v227_s4_space_ground_cv_qkd_decoy_state_secured}"
             }
         ]
+    },
+    "78": {
+        "title": "FedAiPoisonDefenseLab (연합 학습 모델 중독 공격 및 차분 프라이버시 방어 랩)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "비잔틴 클라이언트 가중치 그래디언트 폭탄 투하 차단 & L2-Norm 클리핑 및 코사인 유사도 이상치 검출",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "비잔틴 클러스터 노드의 가중치 폭발을 억제하기 위해 L2-Norm 클리핑을 활성화하고 전역 모델 대비 방향 코사인 유사도를 교차 검증합니다.",
+                "exploit_payload": "{\"client_node_id\": \"fed_worker_fl_2026_node_alpha\", \"gradient_l2_norm\": 0.45, \"cosine_similarity_to_global\": 0.94, \"gradient_explosion_clipping_active\": true}",
+                "defense": "그래디언트 L2-norm 클리핑(norm <= 1.0), 코사인 유사도 이상치 필터링(cos >= 0.85).",
+                "sample_output": "✓ Byzantine gradient explosion sanitized -> FLAG{v228_s1_fedai_byzantine_norm_clipping_secured}"
+            },
+            {
+                "step": 2,
+                "name": "Multi-Krum 및 트림드 평균(Trimmed-Mean) 비잔틴 견고 집계 & 악의적 참여자 n-2f 노드 가중치 격리",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "단순 FedAvg의 취약점을 보완하여 f개 비잔틴 공격 노드를 배제하는 Multi-Krum 견고 집계 프로토콜을 수행하고 라운드 토큰 HMAC을 검증합니다.",
+                "exploit_payload": "{\"aggregation_protocol\": \"multi_krum\", \"byzantine_participants_f\": 3, \"multi_krum_selected_count\": 8, \"federated_round_id\": \"fl_epoch_round_2026_78_beta\", \"round_token_hmac\": \"<round_hmac>\"}",
+                "defense": "Multi-Krum/Trimmed-Mean 비잔틴 내결함 집계, 비잔틴 허용 한도 n-2f 격리, 라운드 세션 무결성 검증.",
+                "sample_output": "✓ Byzantine malicious node gradients pruned via Multi-Krum -> FLAG{v228_s2_multikrum_byzantine_aggregation_resilient}"
+            },
+            {
+                "step": 3,
+                "name": "멤버십 추론 공격(MIA) 방어 & RDP 가우시안 노이즈 주입 및 차분 프라이버시 예산 Epsilon (ε <= 3.0) 통제",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "개인정보 역추적 및 멤버십 추론 공격을 원천 차단하기 위해 르니 차분 프라이버시(RDP) 기반 가우시안 노이즈를 그래디언트에 주입하고 누적 엡실론을 3.0 이하로 제어합니다.",
+                "exploit_payload": "{\"dp_sgd_gaussian_noise_sigma\": 1.45, \"privacy_budget_epsilon\": 2.4, \"delta_bound\": 1e-06, \"membership_inference_defense_active\": true}",
+                "defense": "DP-SGD 가우시안 보정 노이즈 주입(sigma >= 1.2), 프라이버시 누적 예산(epsilon <= 3.0, delta <= 1e-5) 엄격 제한.",
+                "sample_output": "✓ Rényi Differential Privacy (RDP) Gaussian noise injected -> FLAG{v228_s3_differential_privacy_dpsgd_epsilon_shielded}"
+            },
+            {
+                "step": 4,
+                "name": "비밀 분할(Secret Sharing) 안전 집계 마스킹 & NIST FIPS 204 ML-DSA-87 연합 참여 노드 하드웨어 원격 증명",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "서버에 평문 그래디언트가 노출되지 않도록 영합(Zero-Sum) 비밀 분할 마스킹을 적용하고 양자 내성 FIPS 204 ML-DSA-87 하드웨어 TEE 엔클레이브 원격 증명을 완료합니다.",
+                "exploit_payload": "{\"secret_sharing_mask_verified\": true, \"fips204_mldsa87_node_attestation\": \"sig_fedai_mldsa87_hardware_enclave_attested\", \"secure_mpc_quorum_count\": 9, \"mpc_session_token_hash\": \"<mpc_hash>\", \"federated_audit_hmac\": \"<audit_hmac>\"}",
+                "defense": "다자간 안전 집계(Secure MPC) 마스킹, FIPS 204 ML-DSA-87 노드 인증서 고정, 분산 상호 감사 HMAC.",
+                "sample_output": "✓ Secure multi-party aggregation completed -> FLAG{v228_s4_secure_mpc_federated_mldsa87_attested}"
+            }
+        ]
     }
 }
 

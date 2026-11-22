@@ -732,6 +732,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM10:2025",
         "owasp_name": "Satellite Laser Link Eavesdropping, Orbital Ephemeris Telemetry Spoofing & TT&C Uplink Injection",
     },
+    "78": {
+        "kisa_id": "2.10.13",
+        "kisa_name": "연합 학습(Federated Learning) 비잔틴 모델 중독 공격 차단 및 차분 프라이버시(DP-SGD) 통제 (L2-Norm 그래디언트 클리핑, Multi-Krum/Trimmed-Mean 견고 집계, 가우시안 노이즈 주입 및 엡실론 예산 통제, NIST FIPS 204 ML-DSA-87 하드웨어 원격 증명)",
+        "nist_csf_id": "PR.DS-14",
+        "nist_csf_name": "Federated Learning Byzantine Model Poisoning Mitigation, Differential Privacy DP-SGD Epsilon Clamping & Secure Multi-Party Aggregation Hardware Attestation",
+        "owasp_id": "LLM04:2025",
+        "owasp_name": "Federated Learning Gradient Poisoning, Membership Inference Privacy Leakage & Byzantine Worker Sybil Manipulation",
+    },
 }
 
 @dataclass
@@ -2158,6 +2166,23 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "impact": "Adversary exploiting unshielded satellite laser terminals intercepts optical ISL telemetry via Doppler drift desynchronization, manipulates orbital ephemeris TLE state vectors to cause constellation routing failures, and injects unauthorized TT&C telemetry commands to seize satellite attitude control.",
                 "affected_component": "SatComLaserQkdLab Optical Terminal Controller & TT&C Uplink Gateway (Port 8077)",
                 "remediation": "Deploy fine beam tracking divergence clamping, enforce Extended Kalman Filter (EKF) orbital drift surveillance, mandate NIST FIPS 204 ML-DSA-87 signatures on all TT&C uplinks, and establish Continuous-Variable QKD (CV-QKD) with decoy-state phase randomization."
+            }
+        ]
+    },
+    "78": {
+        "title": "78 FedAiPoisonDefenseLab Federated Learning Byzantine Model Poisoning & Differential Privacy DP-SGD Defense Lab",
+        "category": "AI Security & Federated Learning",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7801",
+                "name": "Federated Learning Byzantine Gradient Poisoning, Membership Inference Privacy Leakage & Sybil Worker Hijacking",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1499",
+                "mitre_technique": "Adversarial Machine Learning: Model Inversion & Byzantine Parameter Manipulation",
+                "mitre_tactic": "Initial Access / Impact / Defense Evasion",
+                "impact": "Malicious federated learning participants upload crafted gradient explosion vectors to poison global model convergence, execute membership inference attacks against sensitive local training partitions, and bypass standard FedAvg aggregation mechanisms.",
+                "affected_component": "FedAiPoisonDefenseLab Aggregation Engine & Secure MPC Node Attestation Gateway (Port 8078)",
+                "remediation": "Deploy L2-norm gradient clipping and cosine similarity directional pruning, enforce Byzantine-tolerant Multi-Krum and Trimmed-Mean aggregation, inject calibrated Rényi Differential Privacy (RDP) Gaussian noise (epsilon <= 3.0), and mandate NIST FIPS 204 ML-DSA-87 enclave attestation."
             }
         ]
     }

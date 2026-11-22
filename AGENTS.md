@@ -49,7 +49,8 @@
     39. `69_LLM_Security/08_ai_agent_sandbox_escape_and_landlock_defense_deepdive.md` (AI 에이전트 탈출 공격·Landlock LSM 비특권 샌드박스 & eBPF 듀얼 런타임 방어 심층 분석: 간접 프롬프트 주입 IPI, 도구 탈취 Confused Deputy, Linux 5.13+ Landlock LSM 무특권 자가 격리, Cilium Tetragon eBPF sys_enter_execve 0ms Sigkill 차단)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화 (26개 섹션 목차 테이블 코드 누출 전면 정제 완료)
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 77개 골든 실전 랩 완비** (`labs/01` ~ `labs/77`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 78개 골든 실전 랩 완비** (`labs/01` ~ `labs/78`)
+  - **Lab 78 (FedAiPoisonDefenseLab)**: 연합 학습 모델 중독 공격 & 차분 프라이버시(DP-SGD) 방어 랩 (포트: `8078`, `127.0.0.1` 루프백 격리, Stage 1: 비잔틴 클라이언트 가중치 폭탄 투하 차단 & L2-Norm 클리핑 및 코사인 유사도 이상치 검출, Stage 2: Multi-Krum/Trimmed-Mean 견고 집계 & 악의적 참여자 n-2f 노드 가중치 격리, Stage 3: 멤버십 추론 공격(MIA) 방어 & RDP 가우시안 노이즈 주입 및 차분 프라이버시 예산 Epsilon ($\epsilon \le 3.0$) 통제, Stage 4: 비밀 분할 안전 집계 마스킹 & NIST FIPS 204 ML-DSA-87 연합 참여 노드 하드웨어 원격 증명 4단계 구축)
   - **Lab 77 (SatComLaserQkdLab)**: 저궤도 위성 광통신 & 우주 QKD 양자 인터커넥트 방어 랩 (포트: `8077`, `127.0.0.1` 루프백 격리, Stage 1: FSO 동적 광학 도플러 주파수 변이 및 마이크로라디안 빔 발산각 보정, Stage 2: TLE 위성 궤도 벡터 위조 및 EKF 칼만 필터 드리프트 억제, Stage 3: FIPS 204 ML-DSA-87 TT&C 원격명령 서명 인가 및 지상국 QBER 임계값 감시, Stage 4: LEO 위성 간 양자 메모리 벨 상태 측정 BSM 및 CHSH 벨 부등식 위반 검증 4단계 구축)
   - **Lab 76 (NeuromorphicSnnHardwareLab)**: 뇌 모사 뉴로모픽 SNN 하드웨어 & 멤리스터 글리치 방어 랩 (포트: `8076`, 비동기 AER 버스 무결성, 전압 글리치 제어, STDP 가중치 변조 차단, RoT 바인딩 FIPS 204 ML-DSA-87 원격 증명)
   - **Lab 75 (PhotonicIcPufLab)**: 광 집적회로 PUF & 실리콘 포토닉스 안티 클로닝 랩 (포트: `8075`)
@@ -112,13 +113,13 @@
   - **Lab 66 (AiSandboxEscapeSupplyChainLab)**: AI 에이전트 샌드박스 탈출 & 공급망 패키지 격리 방어 실전 랩 (포트: `8066`, `127.0.0.1` 루프백 격리, Stage 1: 악성 PyPI Typosquatting 공급망 패키지 주입 vs SHA-256 해시 락파일 & 무결성 오딧, Stage 2: sys.modules 오염 및 런타임 몽키패치 탈취 vs 런타임 무결성 가드 & 불변 모듈 봉쇄, Stage 3: Python ctype/ptrace 기반 샌드박스 탈출 메모리 오염 vs 엄격 Seccomp-BPF & Landlock LSM 프로세스 격리, Stage 4: 사이드채널 기반 외부 C2 데이터 유출 vs 제로 트러스트 egress 방화벽 & 감사 로깅 4단계 구축)
   - **Lab 67 (ConfidentialAiInferenceLab)**: 기밀 AI 추론 & 하드웨어 TEE 원격 증명/가중치 보호/캐시 부채널 방어 실전 랩 (포트: `8067`, `127.0.0.1` 루프백 격리, Stage 1: 비보호 호스트 메모리 내 평문 신경망 가중치 탈취 vs AES-256-GCM TEE 봉인 및 메모리 암호화, Stage 2: 가짜 원격 증명 보고서 위조 vs 하드웨어 기반 Quote/PCR 서명 및 EPID/ECDSA 암호 검증, Stage 3: Flush+Reload 캐시 타이밍 부채널 추론 토큰 스누핑 vs 불리언 마스킹 활성화 텐서 & 캐시 노이즈 지터링, Stage 4: 악성 가중치 변조 공급망 주입 vs hmac.compare_digest 상수 시간 해시 검증 & 불변 락 4단계 구축)
   - **Lab 68 (AutonomousAgentSwarmLab)**: 자율 멀티에이전트 스웜 침투 협업 & 비잔틴 분산 방어 실전 랩 (포트: `8068`, `127.0.0.1` 루프백 격리, Stage 1: 사칭 워커 에이전트 무단 RPC 등록 시도 vs X.509 mTLS 및 SPIFFE ID 신원 고정 검증, Stage 2: 스웜 비잔틴 고장 가중치 투표 오염 vs PBFT 3단계 합의 쿼럼 및 이상치 격리, Stage 3: 프롬프트 주입을 통한 공유 컨텍스트 윈도우 메모리 탈취 vs Linux Landlock LSM 무특권 네임스페이스 격리 및 불변 읽기전용 락, Stage 4: 워커 간 로컬 IPC 연쇄 횡적 이동 전파 vs Cilium Tetragon eBPF sys_enter_connect 실시간 감지 및 0ms SIGKILL 즉시 사살 4단계 구축)
-- **브라우저 & 터미널 워게임**: **총 89개 트랙 / 3,115문제 돌파** (`wargame/index.html`, HUD `0/3115`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 89개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
+- **브라우저 & 터미널 워게임**: **총 90개 트랙 / 3,150문제 돌파** (`wargame/index.html`, HUD `0/3150`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 90개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`, `0o600` 권한 보호) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
   - **Web Audio API 8-bit 치프튠 사운드 FX 엔진**: 브라우저 사운드 합성 탑재
-  - **워게임 43대 인터랙티브 보안 플레이그라운드**: 저궤도 위성 광통신 & 우주 QKD 시뮬레이터(Simulator #43, `satcom_qkd_sim.html`), 뇌 모사 뉴로모픽 SNN/멤리스터 글리치 시뮬레이터(Simulator #42), 광 집적회로 PUF 인스펙터(#41), 양자 신경망 하이브리드 분석기(#40), 실리콘 광자 QKD 인스펙터(#39), AI 에이전트 장기 메모리 오염 탐지기(#38), GPU 부채널 워크로드 분석기(#37), 자율 커널 라이브 패치 시뮬레이터(#36), AI 모델 가중치 검증기 & SafeTensors 하드닝 인스펙터(Simulator #35) 외 43종 단독 실행형 플레이그라운드 완비
-  - **66~89번째 트랙 완비**:
+  - **워게임 44대 인터랙티브 보안 플레이그라운드**: 연합 학습 모델 중독 & DP-SGD 시뮬레이터(Simulator #44, `fed_learning_sim.html`), 저궤도 위성 광통신 & 우주 QKD 시뮬레이터(Simulator #43, `satcom_qkd_sim.html`), 뇌 모사 뉴로모픽 SNN/멤리스터 글리치 시뮬레이터(Simulator #42), 광 집적회로 PUF 인스펙터(#41), 양자 신경망 하이브리드 분석기(#40), 실리콘 광자 QKD 인스펙터(#39), AI 에이전트 장기 메모리 오염 탐지기(#38), GPU 부채널 워크로드 분석기(#37), 자율 커널 라이브 패치 시뮬레이터(#36), AI 모델 가중치 검증기 & SafeTensors 하드닝 인스펙터(Simulator #35) 외 44종 단독 실행형 플레이그라운드 완비
+  - **66~90번째 트랙 완비**:
     - `weightsec` ⚖️ AI 신경망 가중치 스테가노그래피 & SafeTensors 공급망 방어 (35개 문제: Tier 0~4)
     - `adgraph` 🩸 AD BloodHound & 공격 그래프 (35개 문제: Tier 0~4)
     - `agentsandbox` 🤖 AI 에이전트 탈출 & Landlock 샌드박스 (35개 문제: Tier 0~4)
@@ -144,17 +145,18 @@
     - `photonicpuf` 🔬 광 집적회로 PUF & 실리콘 포토닉스 안티 클로닝 (35개 문제: Tier 0~4)
     - `neuromorphicsnn` 🧠 뇌 모사 뉴로모픽 SNN & 멤리스터 글리치 방어 (35개 문제: Tier 0~4)
     - `satcomqkd` 🛰️ 저궤도 위성 광통신 & 우주 QKD 양자 인터커넥트 방어 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (3,115제, 89트랙, 5티어), `audit.js --strict` (445/445행 [A]~[J] 0결함), `leakscan.js` (3,115문제 0유출), `solve-derivable.js` (2,082제 도출 통과)
+    - `fedsec` 🤖 연합 학습 모델 중독 & 프라이버시 방어 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js` (3,150제, 90트랙, 5티어), `audit.js --strict` (450/450행 [A]~[J] 0결함), `leakscan.js` (3,150문제 0유출), `solve-derivable.js` (2,152제 도출 통과)
 - **e-Book / PDF 출판 컴파일러 (`vhack book`, `tools/book_builder.py`)**: 75개 전 섹션 / 492개 챕터 마크다운 및 독립 실행형 HTML 단행본 자동 빌드 엔진 완비 (`build/books/`)
 - **B2B 엔터프라이즈 상용 솔루션 및 마케팅 자산 (`COMMERCIAL.md`, `launch/`)**: Community vs Enterprise 라이선스 체계, 오프라인 에어갭 번들, 기업용 CTF 관제, 준수 자동화 엔진 구축
 - **AI 보안 에이전트 벤치마크 엔진 (`tools/agent_eval_bench.py`, `vhack bench-agent`, `vhack eval`)**:
   - autonomous AI 보안 에이전트(SuperSec, Claude, GPT, Gemini, 로컬 LLM)의 실전 보안 역량을 정량 평가하는 평가 하네스 완비
   - **2대 핵심 평가 축**:
     1. **워게임 챌린지 풀이 (Pass@1)**: 3,115개 문제 대상 단일 턴 도출 정확도 및 도구 호출 횟수(Turn Efficiency) 측정
-    2. **77개 실습 랩 공방전 평가**: 레드팀 PoC 익스플로잇 합성 및 블루팀 근본 패치/조치 역량 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 제로 결함 인덱스 산출
+    2. **78개 실습 랩 공방전 평가**: 레드팀 PoC 익스플로잇 합성 및 블루팀 근본 패치/조치 역량 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1 제로 결함 인덱스 산출
   - **다중 모델 비교 리더보드**: `--compare` 옵션을 통한 모델별 순위표 자동 생성 (`reports/agent_eval_latest.json`, `reports/agent_eval_benchmark.md`)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(77개 랩 시작/중지/재시작), 17대 카테고리 필터링 탭 바(`zerotrust`, `confidential`, `ai` 등 연동) 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 엔터프라이즈 KISA/NIST 원클릭 진단보고서 다중 포맷 다운로드 API, 자원 모니터링 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(78개 랩 시작/중지/재시작), 17대 카테고리 필터링 탭 바(`zerotrust`, `confidential`, `ai` 등 연동) 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 엔터프라이즈 KISA/NIST 원클릭 진단보고서 다중 포맷 다운로드 API, 자원 모니터링 (`vhack portal [--port 8800]`)
 - **보안 진단 보고서 생성기 (Report CLI)**:
   - `tools/report_generator.py`, `vhack report`: 76개 실습 랩 대상 MITRE ATT&CK 기법, CVSS 3.1 점수 계산기 및 KISA ISMS-P, NIST CSF 2.0, OWASP Top 10 다계층 컴플라이언스 매핑 탑재. 취약점 진단 보고서 자동 생성(Markdown, HTML, JSON, UTF-8 BOM CSV 포맷 지원, `--severity` 필터링 및 `--live` 활성 컨테이너 동적 감지)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:

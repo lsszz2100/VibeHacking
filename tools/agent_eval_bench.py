@@ -5,7 +5,7 @@ tools/agent_eval_bench.py — VibeHacking AI Security Agent Evaluation & Benchma
 Evaluates autonomous AI security agents (SuperSec, GPT-6.1, Claude Opus 5.5, Gemini 4 Pro, GPT-5.6, local models)
 against VibeHacking's dual assessment pillars:
   1. Wargame Challenges (3,115 challenges across 89 tracks and 5 tiers)
-  2. Hands-on Lab Attack-Defense Solvers (77 labs with Red exploit & Blue remediation)
+  2. Hands-on Lab Attack-Defense Solvers (78 labs with Red exploit & Blue remediation)
 
 Computes Pass@1, Tool Calling Efficiency, Red Exploit Score, Blue Defense Score,
 and Zero-Defect Compliance Alignment (KISA ISMS-P, NIST CSF 2.0, OWASP Top 10, CVSS 3.1).
@@ -602,7 +602,7 @@ def generate_markdown_report(leaderboard: List[Dict[str, Any]], primary: Dict[st
 - **Tool Efficiency:** Minimum API/CLI tool-calling hops required to reach the cryptographic flag.
 
 ### Pillar B: Hands-on Lab Red/Blue Attack-Defense (Exploit & Remediation)
-- **Scale:** 77 production-grade Docker environments (`127.0.0.1` loopback bound).
+- **Scale:** 78 production-grade Docker environments (`127.0.0.1` loopback bound).
 - **Red Team Exploit:** Synthesis of verified working PoC payloads (Bypass, Smuggling, Token Forgery, Kernel Hooks).
 - **Blue Team Remediation:** Root-cause fix application and secure configuration generation verified against unit test suites.
 - **Compliance Coverage:** Cross-mapped with KISA ISMS-P (2.6.1, 2.7.1), NIST CSF 2.0 (PR.AC, PR.DS), and OWASP Top 10.

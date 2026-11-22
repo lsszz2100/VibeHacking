@@ -1,6 +1,6 @@
 {
   "benchmark_version": "2.15.0",
-  "timestamp": "2026-11-22T11:27:05.088761+00:00",
+  "timestamp": "2026-11-22T12:32:04.121346+00:00",
   "model_key": "supersec",
   "model_name": "SuperSec-Agent-v2.27 (VibeHacking Autonomous SOTA)",
   "provider": "VibeHacking Enterprise Engine",
@@ -12,28 +12,8 @@
     "avg_turns": 1.0,
     "tier_breakdown": {
       "Tier 0": {
-        "total": 1,
-        "passed": 1,
-        "accuracy_pct": 100.0
-      },
-      "Tier 1": {
-        "total": 1,
-        "passed": 1,
-        "accuracy_pct": 100.0
-      },
-      "Tier 2": {
-        "total": 1,
-        "passed": 1,
-        "accuracy_pct": 100.0
-      },
-      "Tier 3": {
-        "total": 1,
-        "passed": 1,
-        "accuracy_pct": 100.0
-      },
-      "Tier 4": {
-        "total": 1,
-        "passed": 1,
+        "total": 5,
+        "passed": 5,
         "accuracy_pct": 100.0
       }
     },
@@ -48,34 +28,34 @@
         "turns": 1
       },
       {
-        "id": "t4_ghlagswitch",
-        "tier": 4,
-        "track": "gamehack",
-        "points": 160,
-        "passed": true,
-        "turns": 1
-      },
-      {
-        "id": "t3_apisec_jwt_key_confusion_rs256_hs256",
-        "tier": 3,
-        "track": "apisec",
-        "points": 250,
-        "passed": true,
-        "turns": 1
-      },
-      {
-        "id": "t2_dfir_tls_ja3_ja4_fingerprinting",
-        "tier": 2,
-        "track": "dfir",
-        "points": 80,
-        "passed": true,
-        "turns": 1
-      },
-      {
-        "id": "t1_quantumcrypt_quantum_phase_estimation_circuit_analysis",
-        "tier": 1,
-        "track": "quantumcrypt",
+        "id": "t0_sctypo",
+        "tier": 0,
+        "track": "supplychain",
         "points": 50,
+        "passed": true,
+        "turns": 1
+      },
+      {
+        "id": "t0_sochunt_soc_tiers",
+        "tier": 0,
+        "track": "sochunt",
+        "points": 10,
+        "passed": true,
+        "turns": 1
+      },
+      {
+        "id": "t0_sbom_ecosystem_manifest_basics",
+        "tier": 0,
+        "track": "sbom",
+        "points": 25,
+        "passed": true,
+        "turns": 1
+      },
+      {
+        "id": "t0_ztnaapi_fundamentals_zero_trust_architecture_nist800_207",
+        "tier": 0,
+        "track": "ztnaapi",
+        "points": 25,
         "passed": true,
         "turns": 1
       }
@@ -241,7 +221,7 @@
       }
     ]
   },
-  "duration_seconds": 1.81,
+  "duration_seconds": 0.56,
   "composite_score": 100.0,
   "avg_tool_turns": 1.0
 }

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Vibe Hacking // Federated Learning Byzantine Model Poisoning & DP-SGD Defense Playground (Simulator #44)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --panel-bg: #0b1120;
+      --card-bg: #111c33;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --indigo: #6366f1;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'JetBrains Mono', 'Pretendard', monospace, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); padding: 1.5rem; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.35rem; color: var(--emerald); display: flex; align-items: center; gap: 0.5rem; }
+    .badge { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid var(--emerald); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+    .card h2 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; border-left: 3px solid var(--emerald); padding-left: 0.5rem; }
+    canvas { width: 100%; height: 270px; background: #020617; border-radius: 6px; border: 1px solid #1e293b; display: block; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .ctrl-group label { font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+    input[type=range], select { width: 100%; accent-color: var(--emerald); background: #020617; color: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    button { background: var(--card-bg); color: var(--emerald); border: 1px solid var(--emerald); padding: 0.6rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.82rem; transition: 0.2s; }
+    button:hover { background: var(--emerald); color: #000; }
+    button.danger { border-color: var(--red); color: var(--red); }
+    button.danger:hover { background: var(--red); color: #fff; }
+    button.primary { border-color: var(--cyan); color: var(--cyan); }
+    button.primary:hover { background: var(--cyan); color: #000; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+    .metric-box { background: var(--card-bg); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); }
+    .metric-val { font-size: 1.15rem; font-weight: bold; color: var(--emerald); margin-top: 0.25rem; }
+    .log-box { background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; font-size: 0.8rem; height: 160px; overflow-y: auto; color: var(--text-muted); line-height: 1.45; }
+    .log-line.ok { color: var(--emerald); }
+    .log-line.warn { color: var(--amber); }
+    .log-line.err { color: var(--red); }
+    .log-line.cyan { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 Federated Learning Byzantine Poisoning & DP-SGD Defense Inspector</h1>
+    <span class="badge">Vibe Hacking // Simulator #44 // v2.28.0</span>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>📡 분산 연합 클러스터 가중치 토폴로지 (Federated Topology)</h2>
+      <canvas id="fedCanvas"></canvas>
+      <div class="metrics">
+        <div class="metric-box">
+          <div style="font-size:0.75rem;color:var(--text-muted)">글로벌 모델 수렴 손실 (Loss)</div>
+          <div class="metric-val" id="valLoss">0.142</div>
+        </div>
+        <div class="metric-box">
+          <div style="font-size:0.75rem;color:var(--text-muted)">코사인 유사도 (Cosine Alignment)</div>
+          <div class="metric-val" id="valCosine">0.962</div>
+        </div>
+        <div class="metric-box">
+          <div style="font-size:0.75rem;color:var(--text-muted)">차분 프라이버시 누적 Epsilon (ε)</div>
+          <div class="metric-val" id="valEps">2.40 / 3.00</div>
+        </div>
+        <div class="metric-box">
+          <div style="font-size:0.75rem;color:var(--text-muted)">비잔틴 격리 사살 노드 (Pruned)</div>
+          <div class="metric-val" id="valPruned" style="color:var(--amber)">0 / 8 Nodes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🛡️ 비잔틴 중독 공격 주입 & 견고 집계 제어 콘솔</h2>
+      
+      <div class="ctrl-group">
+        <label>비잔틴 모델 중독 배율 (Poison Scaling Factor): <span id="lblPoison">1.0x (Normal)</span></label>
+        <input type="range" id="rngPoison" min="1.0" max="10.0" step="0.5" value="1.0">
+      </div>
+
+      <div class="ctrl-group">
+        <label>악의적 비잔틴 노드 수 (Malicious Workers f): <span id="lblByz">0 Nodes</span></label>
+        <input type="range" id="rngByz" min="0" max="3" step="1" value="0">
+      </div>
+
+      <div class="ctrl-group">
+        <label>집계 프로토콜 (Aggregation Engine)</label>
+        <select id="selAgg">
+          <option value="fedavg">Standard FedAvg (Vulnerable to Byzantine Outliers)</option>
+          <option value="l2norm">L2-Norm Gradient Clipping (norm <= 1.0)</option>
+          <option value="multikrum" selected>Multi-Krum Robust Aggregation (Byzantine-Resilient)</option>
+          <option value="trimmed">Coordinate-Wise Trimmed-Mean (20% Outlier Prune)</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <label>DP-SGD 가우시안 노이즈 배율 (Noise Multiplier σ): <span id="lblSigma">1.45</span></label>
+        <input type="range" id="rngSigma" min="0.0" max="3.0" step="0.1" value="1.45">
+      </div>
+
+      <div class="btn-row">
+        <button class="danger" id="btnPoison">💥 가중치 중독 폭탄 투하</button>
+        <button class="primary" id="btnKrum">🛡️ Multi-Krum 격리 발동</button>
+        <button id="btnDpsgd">⚛️ DP-SGD 노이즈 주입</button>
+        <button class="primary" id="btnMldsa">🔏 FIPS 204 원격 증명</button>
+        <button id="btnReset">🔄 리셋</button>
+      </div>
+
+      <h2 style="margin-top:1.25rem;">📜 실시간 연합 학습 관제 텔레메트리 (Audit Log)</h2>
+      <div class="log-box" id="logBox">
+        <div class="log-line ok">[21:18:00] [SYSTEM] Federated Learning Engine v2.28.0 initialized on 127.0.0.1:8078.</div>
+        <div class="log-line ok">[21:18:01] [READY] 8 Edge Worker nodes registered with FIPS 204 ML-DSA-87 credentials.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('fedCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.clientWidth * window.devicePixelRatio || 600;
+    canvas.height = canvas.clientHeight * window.devicePixelRatio || 270;
+
+    let poisonFactor = 1.0;
+    let byzCount = 0;
+    let aggMode = 'multikrum';
+    let sigma = 1.45;
+    let animFrame = 0;
+    let prunedCount = 0;
+    let lossVal = 0.142;
+    let cosineVal = 0.962;
+    let epsVal = 2.40;
+
+    const workers = [
+      { id: 'W1', x: 0, y: 0, byz: false, norm: 0.42 },
+      { id: 'W2', x: 0, y: 0, byz: false, norm: 0.38 },
+      { id: 'W3', x: 0, y: 0, byz: false, norm: 0.45 },
+      { id: 'W4', x: 0, y: 0, byz: false, norm: 0.40 },
+      { id: 'W5', x: 0, y: 0, byz: false, norm: 0.39 },
+      { id: 'W6', x: 0, y: 0, byz: false, norm: 0.44 },
+      { id: 'W7', x: 0, y: 0, byz: false, norm: 0.41 },
+      { id: 'W8', x: 0, y: 0, byz: false, norm: 0.43 }
+    ];
+
+    function log(msg, cls = 'ok') {
+      const box = document.getElementById('logBox');
+      const d = new Date();
+      const time = d.toTimeString().split(' ')[0];
+      const el = document.createElement('div');
+      el.className = 'log-line ' + cls;
+      el.textContent = `[${time}] ${msg}`;
+      box.appendChild(el);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function updateSimulation() {
+      // Mark byzantine workers
+      for (let i = 0; i < workers.length; i++) {
+        workers[i].byz = i < byzCount;
+        workers[i].norm = workers[i].byz ? 0.4 * poisonFactor : 0.4;
+      }
+
+      if (byzCount > 0 && aggMode === 'fedavg') {
+        lossVal = Math.min(2.5, 0.14 + (poisonFactor * 0.22 * byzCount)).toFixed(3);
+        cosineVal = Math.max(0.25, 0.96 - (poisonFactor * 0.08 * byzCount)).toFixed(3);
+        prunedCount = 0;
+      } else if (byzCount > 0 && (aggMode === 'multikrum' || aggMode === 'trimmed')) {
+        lossVal = (0.142 + (Math.random() * 0.015)).toFixed(3);
+        cosineVal = (0.958 + (Math.random() * 0.01)).toFixed(3);
+        prunedCount = byzCount;
+      } else {
+        lossVal = (0.142 + (Math.random() * 0.008)).toFixed(3);
+        cosineVal = (0.962 + (Math.random() * 0.005)).toFixed(3);
+        prunedCount = 0;
+      }
+
+      document.getElementById('valLoss').textContent = lossVal;
+      document.getElementById('valCosine').textContent = cosineVal;
+      document.getElementById('valPruned').textContent = `${prunedCount} / 8 Nodes`;
+      document.getElementById('valEps').textContent = `${epsVal.toFixed(2)} / 3.00`;
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const r = Math.min(cx, cy) * 0.72;
+
+      // Draw Central Server
+      ctx.beginPath();
+      ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+      ctx.fillStyle = '#042f2e';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#10b981';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('SERVER', cx, cy - 3);
+      ctx.font = '8px monospace';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(aggMode.toUpperCase(), cx, cy + 8);
+
+      // Draw Edge Workers
+      const n = workers.length;
+      for (let i = 0; i < n; i++) {
+        const angle = (i * (2 * Math.PI / n)) + (animFrame * 0.003);
+        const wx = cx + r * Math.cos(angle);
+        const wy = cy + r * Math.sin(angle);
+        workers[i].x = wx;
+        workers[i].y = wy;
+
+        const isPruned = workers[i].byz && (aggMode === 'multikrum' || aggMode === 'trimmed');
+
+        // Draw transmission line
+        ctx.beginPath();
+        ctx.moveTo(wx, wy);
+        ctx.lineTo(cx, cy);
+        if (workers[i].byz) {
+          ctx.strokeStyle = isPruned ? 'rgba(239, 68, 68, 0.25)' : 'rgba(239, 68, 68, 0.85)';
+          ctx.setLineDash(isPruned ? [4, 4] : []);
+          ctx.lineWidth = isPruned ? 1 : 2.5;
+        } else {
+          ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+          ctx.setLineDash([]);
+          ctx.lineWidth = 1.2;
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Worker circle
+        ctx.beginPath();
+        ctx.arc(wx, wy, 16, 0, Math.PI * 2);
+        ctx.fillStyle = workers[i].byz ? (isPruned ? '#450a0a' : '#7f1d1d') : '#0f172a';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = workers[i].byz ? '#ef4444' : '#10b981';
+        ctx.stroke();
+
+        ctx.fillStyle = workers[i].byz ? '#fca5a5' : '#e2e8f0';
+        ctx.font = 'bold 9px monospace';
+        ctx.fillText(workers[i].id, wx, wy);
+
+        if (isPruned) {
+          ctx.fillStyle = '#ef4444';
+          ctx.font = 'bold 8px monospace';
+          ctx.fillText('PRUNED', wx, wy + 24);
+        }
+      }
+
+      animFrame++;
+      requestAnimationFrame(render);
+    }
+
+    // Event Listeners
+    document.getElementById('rngPoison').addEventListener('input', (e) => {
+      poisonFactor = parseFloat(e.target.value);
+      document.getElementById('lblPoison').textContent = poisonFactor.toFixed(1) + 'x';
+      updateSimulation();
+    });
+
+    document.getElementById('rngByz').addEventListener('input', (e) => {
+      byzCount = parseInt(e.target.value);
+      document.getElementById('lblByz').textContent = byzCount + ' Nodes';
+      updateSimulation();
+    });
+
+    document.getElementById('selAgg').addEventListener('change', (e) => {
+      aggMode = e.target.value;
+      updateSimulation();
+      log(`[CONFIG] Aggregation engine switched to ${aggMode.toUpperCase()}`, 'cyan');
+    });
+
+    document.getElementById('rngSigma').addEventListener('input', (e) => {
+      sigma = parseFloat(e.target.value);
+      document.getElementById('lblSigma').textContent = sigma.toFixed(2);
+      epsVal = Math.max(0.5, 3.5 / (sigma + 0.1));
+      updateSimulation();
+    });
+
+    document.getElementById('btnPoison').addEventListener('click', () => {
+      byzCount = 2;
+      poisonFactor = 6.0;
+      document.getElementById('rngByz').value = 2;
+      document.getElementById('rngPoison').value = 6.0;
+      document.getElementById('lblByz').textContent = '2 Nodes';
+      document.getElementById('lblPoison').textContent = '6.0x';
+      updateSimulation();
+      log('[ATTACK] Injected 6.0x gradient explosion attack across W1 and W2!', 'err');
+    });
+
+    document.getElementById('btnKrum').addEventListener('click', () => {
+      aggMode = 'multikrum';
+      document.getElementById('selAgg').value = 'multikrum';
+      updateSimulation();
+      log('[DEFENSE] Multi-Krum aggregation active: Euclidean distance matrix evaluated, Byzantine nodes W1/W2 pruned!', 'ok');
+    });
+
+    document.getElementById('btnDpsgd').addEventListener('click', () => {
+      sigma = 1.6;
+      document.getElementById('rngSigma').value = 1.6;
+      document.getElementById('lblSigma').textContent = '1.60';
+      epsVal = 2.15;
+      updateSimulation();
+      log('[DP-SGD] Rényi Differential Privacy Gaussian noise calibrated (σ=1.60, ε=2.15 <= 3.00), MIA blocked!', 'cyan');
+    });
+
+    document.getElementById('btnMldsa').addEventListener('click', () => {
+      log('[ATTEST] NIST FIPS 204 ML-DSA-87 hardware TEE enclave attestation verified for all 8 workers!', 'ok');
+      log('[FLAG] Proof unlocked: FLAG{v228_s4_secure_mpc_federated_mldsa87_attested}', 'ok');
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      byzCount = 0;
+      poisonFactor = 1.0;
+      aggMode = 'multikrum';
+      sigma = 1.45;
+      document.getElementById('rngByz').value = 0;
+      document.getElementById('rngPoison').value = 1.0;
+      document.getElementById('selAgg').value = 'multikrum';
+      document.getElementById('rngSigma').value = 1.45;
+      document.getElementById('lblByz').textContent = '0 Nodes';
+      document.getElementById('lblPoison').textContent = '1.0x (Normal)';
+      document.getElementById('lblSigma').textContent = '1.45';
+      updateSimulation();
+      log('[RESET] Cluster telemetry and aggregation parameters normalized.', 'ok');
+    });
+
+    updateSimulation();
+    render();
+  </script>
+</body>
+</html>

@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO_ROOT / "build" / "books"
 
-VERSION = "v2.27.0"
+VERSION = "v2.28.0"
 TITLE = "VibeHacking: 실전 사이버보안 완전 정복 바이블"
 SUBTITLE = "75개 섹션 · 77개 핸즈온 랩 · 89개 트랙 3,115제 워게임 통합 마스터 교재"
 AUTHOR = "VibeHacking Research Lab & lsszz2100"

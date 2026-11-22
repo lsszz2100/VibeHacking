@@ -775,6 +775,14 @@ const TRACKS = [
     "en": "LEO SatCom Laser ISL & Space QKD",
     "desc_ko": "저궤도 군집 위성 간 레이저 광통신(ISL) 도플러 변이 보정, 위성 궤도력(TLE) EKF 드리프트 방어, TT&C 업링크 FIPS 204 ML-DSA-87 명령 인가 및 지상국-위성 간 CV-QKD 데코이 상태 보안.",
     "desc_en": "LEO satellite constellation laser ISL Doppler shift synchronization, orbital ephemeris EKF drift defense, TT&C uplink ML-DSA-87 command attestation, and space-ground CV-QKD decoy-state security."
+  },
+  {
+    "id": "fedsec",
+    "icon": "🤖",
+    "ko": "연합 학습 모델 중독 & 프라이버시 방어",
+    "en": "Federated AI Poisoning & Privacy Defense",
+    "desc_ko": "연합 학습(Federated Learning) 비잔틴 클라이언트 가중치 폭탄 투하 차단, L2-Norm 클리핑 및 코사인 유사도 이상치 검출, Multi-Krum/Trimmed-Mean 견고 집계, 차분 프라이버시(DP-SGD) 가우시안 노이즈 주입 및 엡실론 예산 통제, 비밀 분할 안전 집계 및 NIST FIPS 204 ML-DSA-87 하드웨어 원격 증명.",
+    "desc_en": "Federated Learning Byzantine model poisoning mitigation, gradient L2-norm clipping, cosine similarity alignment, Multi-Krum and Trimmed-Mean robust aggregation, DP-SGD Gaussian noise differential privacy budget clamping, and NIST FIPS 204 ML-DSA-87 hardware attestation."
   }
 ];
 
@@ -87292,6 +87300,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_satcomqkd_sovereign_space_satcom_qkd_cyber_defense_capstone`."
+      ]
+    }
+  }
+,
+  {
+    "id": "t0_fedsec_federated_learning_distributed_ai_architecture",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 15,
+    "ci": false,
+    "hash": "85be21862c170d6ed0f25fdcd44732afaf58be75c9ba3a30b6b0d406d69f302f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "연합 학습 분산 AI 아키텍처 및 FedAvg 원리",
+      "en": "Federated Learning Distributed AI Architecture and FedAvg Fundamentals"
+    },
+    "prompt": {
+      "ko": "중앙 서버와 분산 에지 워커 간 원시 데이터 비공개 상태에서 가중치 그래디언트만 교환하는 연합 학습(Federated Learning)의 기본 FedAvg 아키텍처와 라운드 수렴 메커니즘을 분석합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_federated_learning_distributed_ai_architecture``\n\n[문제 안내]\n해당 연합 학습 분산 아키텍처 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze the core FedAvg architecture and round convergence mechanics of Federated Learning where clients exchange weight gradients without exposing raw local data.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_federated_learning_distributed_ai_architecture``\n\n[Task]\nAnalyze the federated distributed architecture specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_federated_learning_distributed_ai_architecture` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_federated_learning_distributed_ai_architecture`."
+      ]
+    }
+  },
+  {
+    "id": "t0_fedsec_byzantine_fault_tolerance_and_sybil_threats",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 20,
+    "ci": false,
+    "hash": "881f8600c4ba737b1f189240fc8199455a63ab26ccbe885e8952b7f16a995ea9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비잔틴 결함 내성 및 시빌 공격 위협 개요",
+      "en": "Byzantine Fault Tolerance and Sybil Attack Threat Landscape"
+    },
+    "prompt": {
+      "ko": "악의적 또는 결함이 있는 워커가 임의의 가중치 잡음을 제출하거나 공모하여 글로벌 모델 수렴을 파괴하는 비잔틴 결함(Byzantine Fault) 및 시빌(Sybil) 공격 위협 모델을 식별합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_byzantine_fault_tolerance_and_sybil_threats``\n\n[문제 안내]\n해당 비잔틴 결함 내성 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Identify Byzantine fault and Sybil attack threat models where malicious or compromised workers submit fabricated gradients or collude to prevent global convergence.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_byzantine_fault_tolerance_and_sybil_threats``\n\n[Task]\nAnalyze the Byzantine fault tolerance specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_byzantine_fault_tolerance_and_sybil_threats` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_byzantine_fault_tolerance_and_sybil_threats`."
+      ]
+    }
+  },
+  {
+    "id": "t0_fedsec_gradient_explosion_and_norm_clipping_basics",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 20,
+    "ci": false,
+    "hash": "8bfcff6a5592f72dc3f6883157a995bfc5cb1b40073ea39a3cd6f324f2be2074",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "그래디언트 폭발 및 L2-Norm 클리핑 기초",
+      "en": "Gradient Explosion and L2-Norm Clipping Fundamentals"
+    },
+    "prompt": {
+      "ko": "단일 악성 클라이언트가 비정상적으로 거대한 그래디언트 벡터를 전송하여 글로벌 모델 가중치를 급격하게 오염시키는 그래디언트 폭발 공격과 L2-Norm 클리핑 방어 원리를 학습합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_gradient_explosion_and_norm_clipping_basics``\n\n[문제 안내]\n해당 그래디언트 L2 클리핑 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Understand gradient explosion attacks where an adversary sends disproportionately large gradient vectors to corrupt global weights, and study L2-norm clipping defense basics.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_gradient_explosion_and_norm_clipping_basics``\n\n[Task]\nAnalyze the gradient L2 clipping specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_gradient_explosion_and_norm_clipping_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_gradient_explosion_and_norm_clipping_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_fedsec_cosine_similarity_directional_alignment_concepts",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 25,
+    "ci": false,
+    "hash": "9663d882466205284ab53d765f4dab5811f37c9fa306d8833fda358330446cc7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "코사인 유사도 방향 정렬 원리",
+      "en": "Cosine Similarity Directional Alignment Concepts"
+    },
+    "prompt": {
+      "ko": "클라이언트 그래디언트의 크기뿐만 아니라 업데이트 방향이 이전 라운드 전역 모델 진행 방향과 반대로 역주행하는 이상치를 식별하기 위한 코사인 유사도 벡터 정렬 원리를 파악합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_cosine_similarity_directional_alignment_concepts``\n\n[문제 안내]\n해당 코사인 유사도 정렬 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Explore cosine similarity directional alignment to detect anomalous gradient updates whose trajectories reverse or diverge from the historic global model momentum.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_cosine_similarity_directional_alignment_concepts``\n\n[Task]\nAnalyze the cosine similarity alignment specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_cosine_similarity_directional_alignment_concepts` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_cosine_similarity_directional_alignment_concepts`."
+      ]
+    }
+  },
+  {
+    "id": "t0_fedsec_differential_privacy_dpsgd_fundamentals",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 25,
+    "ci": false,
+    "hash": "87926d6fcf606ed0be0db404d211e10a1cad73409c4ad448733d3c938d6caaf5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "차분 프라이버시 DP-SGD 기초 이론",
+      "en": "Differential Privacy DP-SGD Mathematical Foundations"
+    },
+    "prompt": {
+      "ko": "공유된 그래디언트 정보로부터 개별 참여자의 사설 데이터가 복원되지 않도록 수학적으로 보증하는 차분 프라이버시(DP-SGD)의 엡실론(Epsilon) 및 델타(Delta) 매개변수를 분석합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_differential_privacy_dpsgd_fundamentals``\n\n[문제 안내]\n해당 차분 프라이버시 DP-SGD 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze the mathematical foundations of Differential Privacy (DP-SGD) with epsilon and delta parameters to prevent reconstruction of private training records.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_differential_privacy_dpsgd_fundamentals``\n\n[Task]\nAnalyze the DP-SGD specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_differential_privacy_dpsgd_fundamentals` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_differential_privacy_dpsgd_fundamentals`."
+      ]
+    }
+  },
+  {
+    "id": "t0_fedsec_membership_inference_attack_vector_mechanics",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 25,
+    "ci": false,
+    "hash": "8e4637fbf46f9c0c1076833def5f0db188c88e88bba7182fd242558f43d419de",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "멤버십 추론 공격 메커니즘 분석",
+      "en": "Membership Inference Attack Vector Mechanics"
+    },
+    "prompt": {
+      "ko": "학습된 모델의 손실 함수 및 신뢰도 점수 이상치를 분석하여 특정 개인 데이터 레코드가 학습 데이터셋에 포함되었는지 여부를 역추적하는 멤버십 추론 공격(MIA) 원리를 진단합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_membership_inference_attack_vector_mechanics``\n\n[문제 안내]\n해당 멤버십 추론 공격 메커니즘 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Examine Membership Inference Attacks (MIA) where an attacker infers whether a specific target record was part of the training set by evaluating model confidence distributions.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_membership_inference_attack_vector_mechanics``\n\n[Task]\nAnalyze the MIA attack mechanism specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_membership_inference_attack_vector_mechanics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_membership_inference_attack_vector_mechanics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_fedsec_secure_multi_party_computation_mpc_introduction",
+    "tier": 0,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 25,
+    "ci": false,
+    "hash": "0c6ccdd90de5cf08abcfde927f382cfd8daf17f170844b46b4033c41eb9ceac0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다자간 안전 계산 SMPC 기초",
+      "en": "Secure Multi-Party Computation SMPC Introduction"
+    },
+    "prompt": {
+      "ko": "집계 서버조차 개별 참여자의 그래디언트 원본을 직접 열람할 수 없도록 마스킹하는 다자간 안전 계산(Secure MPC) 및 암호학적 영합 비밀 분할(Secret Sharing) 개념을 정립합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_secure_multi_party_computation_mpc_introduction``\n\n[문제 안내]\n해당 다자간 안전 계산 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Establish fundamentals of Secure Multi-Party Computation (SMPC) and cryptographic zero-sum secret sharing where the aggregator inspects only composite sums, never individual gradients.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t0_fedsec_secure_multi_party_computation_mpc_introduction``\n\n[Task]\nAnalyze the secure multi-party computation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_fedsec_secure_multi_party_computation_mpc_introduction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_fedsec_secure_multi_party_computation_mpc_introduction`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_client_gradient_l2_norm_clipping_enforcement",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 50,
+    "ci": false,
+    "hash": "e173150e82d5109cc23ef3078269a4c3d3ce2ef859239e1e2bcff4280eaf52bc",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "클라이언트 그래디언트 L2-Norm 클리핑 구현",
+      "en": "Client Gradient L2-Norm Clipping Enforcement"
+    },
+    "prompt": {
+      "ko": "각 클라이언트가 업로드하는 그래디언트 벡터의 L2-Norm을 임계값 C=1.0으로 강제 클리핑하여 단일 노드의 극단적 가중치 편향 공격을 수학적으로 무력화합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_client_gradient_l2_norm_clipping_enforcement``\n\n[문제 안내]\n해당 L2-Norm 클리핑 구현 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce strict L2-norm clipping on client gradient updates with clipping bound C=1.0 to neutralize single-node weight explosion attempts.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_client_gradient_l2_norm_clipping_enforcement``\n\n[Task]\nAnalyze the L2-norm clipping enforcement specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_client_gradient_l2_norm_clipping_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_client_gradient_l2_norm_clipping_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_cosine_similarity_anomaly_score_filtering",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 55,
+    "ci": false,
+    "hash": "06aa1f6c518bd2e993da3857abb9c6906e8c309bf6f14a13e334afb0b779fe85",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "코사인 유사도 이상치 점수 필터링",
+      "en": "Cosine Similarity Anomaly Score Filtering"
+    },
+    "prompt": {
+      "ko": "글로벌 모델 업데이트 벡터와 각 클라이언트 업데이트 간의 코사인 유사도를 계산하여 유사도 임계치 0.85 미만인 악의적 역방향 그래디언트를 사전 차단합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_cosine_similarity_anomaly_score_filtering``\n\n[문제 안내]\n해당 코사인 유사도 이상치 필터링 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Compute directional cosine similarity between client updates and historical global vectors, filtering out anomalous updates falling below threshold 0.85.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_cosine_similarity_anomaly_score_filtering``\n\n[Task]\nAnalyze the cosine anomaly score filtering specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_cosine_similarity_anomaly_score_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_cosine_similarity_anomaly_score_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_trimmed_mean_coordinate_wise_aggregation",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 60,
+    "ci": false,
+    "hash": "ede96ebd114daa7db9c4c994380ccedc2b0ee3a29853fd95eb4d00a6bf7499c0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "좌표별 트림드 평균 집계 방어",
+      "en": "Coordinate-wise Trimmed-Mean Aggregation Defense"
+    },
+    "prompt": {
+      "ko": "모든 클라이언트의 각 파라미터 좌표별 값 중 상하위 β 비율(예: 10%)의 극단값을 제거한 후 산술 평균을 계산하는 트림드 평균 집계 방어 알고리즘을 구축합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_trimmed_mean_coordinate_wise_aggregation``\n\n[문제 안내]\n해당 트림드 평균 집계 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Build a coordinate-wise Trimmed-Mean aggregation defense that discards the lowest and highest beta percentiles of parameter updates before computing the mean.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_trimmed_mean_coordinate_wise_aggregation``\n\n[Task]\nAnalyze the trimmed-mean aggregation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_trimmed_mean_coordinate_wise_aggregation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_trimmed_mean_coordinate_wise_aggregation`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_multi_krum_byzantine_resilient_candidate_selection",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 65,
+    "ci": false,
+    "hash": "c9745cc5b096687dcdda4cc234d6490dd70c0450062ae37a29317d1d7332fd7a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Multi-Krum 비잔틴 견고 후보 선출",
+      "en": "Multi-Krum Byzantine-Resilient Candidate Selection"
+    },
+    "prompt": {
+      "ko": "전체 n개 클라이언트 중 f개 비잔틴 노드를 견디기 위해 다른 노드들과의 유클리드 거리 합이 가장 작은 m개 우수 클라이언트를 선출하여 평균하는 Multi-Krum을 실행합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_multi_krum_byzantine_resilient_candidate_selection``\n\n[문제 안내]\n해당 Multi-Krum 집계 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute Multi-Krum selection to aggregate m candidate updates possessing the lowest Euclidean distance scores relative to their peers under f Byzantine faults.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_multi_krum_byzantine_resilient_candidate_selection``\n\n[Task]\nAnalyze the Multi-Krum candidate selection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_multi_krum_byzantine_resilient_candidate_selection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_multi_krum_byzantine_resilient_candidate_selection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_renyi_differential_privacy_gaussian_noise_injection",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 70,
+    "ci": false,
+    "hash": "e8c4783984ae5515f05b60967c694e18667ec375b0352fa3f124c9b602323c2a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "르니 차분 프라이버시 가우시안 노이즈 주입",
+      "en": "Rényi Differential Privacy Gaussian Noise Injection"
+    },
+    "prompt": {
+      "ko": "클리핑된 그래디언트에 보정된 분산 σ=1.45의 가우시안 잡음을 주입하여 엄격한 르니 차분 프라이버시(RDP) 수학적 개인정보 보호 보장을 실증합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_renyi_differential_privacy_gaussian_noise_injection``\n\n[문제 안내]\n해당 RDP 가우시안 노이즈 주입 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Inject calibrated Gaussian noise with standard deviation sigma=1.45 into clipped gradients to mathematically guarantee Rényi Differential Privacy (RDP).\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_renyi_differential_privacy_gaussian_noise_injection``\n\n[Task]\nAnalyze the RDP noise injection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_renyi_differential_privacy_gaussian_noise_injection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_renyi_differential_privacy_gaussian_noise_injection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_privacy_budget_epsilon_accounting_and_clamping",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 70,
+    "ci": false,
+    "hash": "f0b81b2a0e47bc2563420cde0f057ebcac1ac5a866ac01d95049229571f97fa0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "프라이버시 예산 엡실론 회계 및 클램핑",
+      "en": "Privacy Budget Epsilon Accounting and Clamping"
+    },
+    "prompt": {
+      "ko": "연합 학습 라운드가 진행됨에 따라 누적되는 프라이버시 손실 엡실론(ε)을 모먼트 어카운턴트(Moments Accountant)로 추적하여 상한선 ε<=3.0 도달 시 조기 종료합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_privacy_budget_epsilon_accounting_and_clamping``\n\n[문제 안내]\n해당 엡실론 프라이버시 회계 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Track cumulative privacy loss epsilon using the Moments Accountant, enforcing early stopping or rate-limiting when total epsilon approaches bound 3.0.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_privacy_budget_epsilon_accounting_and_clamping``\n\n[Task]\nAnalyze the epsilon privacy accounting specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_privacy_budget_epsilon_accounting_and_clamping` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_privacy_budget_epsilon_accounting_and_clamping`."
+      ]
+    }
+  },
+  {
+    "id": "t1_fedsec_pairwise_zero_sum_secret_masking",
+    "tier": 1,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 75,
+    "ci": false,
+    "hash": "e4dc84d70d84e48c27ee13e0d9d55b7961026c3b3b7d53cc443f577535018719",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "클라이언트 간 영합 비밀 마스킹",
+      "en": "Pairwise Zero-Sum Secret Masking"
+    },
+    "prompt": {
+      "ko": "참여 노드 쌍(u, v) 간에 공유된 난수 시드를 기반으로 합산 시 서로 상쇄되는 영합(Zero-Sum) 마스크 벡터를 생성하여 서버의 개별 가중치 열람을 원천 봉쇄합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_pairwise_zero_sum_secret_masking``\n\n[문제 안내]\n해당 영합 마스킹 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Generate pairwise pseudo-random zero-sum masks that cancel out upon global summation, completely preventing the server from inspecting individual updates.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t1_fedsec_pairwise_zero_sum_secret_masking``\n\n[Task]\nAnalyze the zero-sum secret masking specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_fedsec_pairwise_zero_sum_secret_masking` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_fedsec_pairwise_zero_sum_secret_masking`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_byzantine_gradient_scaling_attack_detection",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 100,
+    "ci": false,
+    "hash": "efe90f2a4e879a59e9dcc4208c8125fa2f3358c2d880abad47287d1bdefca159",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비잔틴 그래디언트 스케일링 공격 탐지",
+      "en": "Byzantine Gradient Scaling Attack Detection"
+    },
+    "prompt": {
+      "ko": "비잔틴 공격자가 가중치 업데이트 크기를 미세하게 부풀리거나 축소하여 모델 학습 속도를 지연시키는 스케일링 조작을 분산 및 엔트로피 통계로 탐지합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_byzantine_gradient_scaling_attack_detection``\n\n[문제 안내]\n해당 그래디언트 스케일링 탐지 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Detect stealthy Byzantine gradient scaling attacks where compromised workers amplify or dampen gradient magnitude to derail convergence using variance heuristics.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_byzantine_gradient_scaling_attack_detection``\n\n[Task]\nAnalyze the gradient scaling attack detection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_byzantine_gradient_scaling_attack_detection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_byzantine_gradient_scaling_attack_detection`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_bulyan_aggregation_for_byzantine_resilience",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 105,
+    "ci": false,
+    "hash": "0d7c83f491c6709aef6502b1ba7769e76f653668631c921a8632ba562770c469",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Bulyan 비잔틴 결함 내성 집계",
+      "en": "Bulyan Byzantine-Resilient Aggregation"
+    },
+    "prompt": {
+      "ko": "Krum 알고리즘과 트림드 평균을 결합하여 고차원 비잔틴 공모 공격(f < n/4)에서도 엄격한 통계적 견고성을 보장하는 Bulyan 집계 방어 파이프라인을 구축합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_bulyan_aggregation_for_byzantine_resilience``\n\n[문제 안내]\n해당 Bulyan 집계 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy the Bulyan aggregation framework combining Krum and coordinate-wise trimmed-mean to guarantee robustness against colluding Byzantine adversaries.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_bulyan_aggregation_for_byzantine_resilience``\n\n[Task]\nAnalyze the Bulyan aggregation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_bulyan_aggregation_for_byzantine_resilience` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_bulyan_aggregation_for_byzantine_resilience`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_adaptive_clipping_bound_estimation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 110,
+    "ci": false,
+    "hash": "678c2ca40425fe29d0c9cd37d4c36da798e5c1f49c53341e2b4eeb80a466699b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "적응형 클리핑 임계값 추정",
+      "en": "Adaptive Gradient Clipping Bound Estimation"
+    },
+    "prompt": {
+      "ko": "고정된 L2-Norm 클리핑 대신 매 라운드 참여 클라이언트의 그래디언트 분위수(Quantile)를 비공개 방식으로 추정하여 유효 정보 손실 없이 클리핑 경계를 동적 튜닝합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_adaptive_clipping_bound_estimation``\n\n[문제 안내]\n해당 적응형 클리핑 추정 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Dynamically estimate the L2-norm clipping bound using differentially private quantile estimation to minimize useful gradient truncation while suppressing outliers.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_adaptive_clipping_bound_estimation``\n\n[Task]\nAnalyze the adaptive clipping estimation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_adaptive_clipping_bound_estimation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_adaptive_clipping_bound_estimation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_fips204_mldsa87_client_signature_validation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 115,
+    "ci": false,
+    "hash": "c3eeca20e9a91be4bf34a5d9c2937d25948ebc32c277e8f40c6b3f8c56fcc2a2",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "FIPS 204 ML-DSA-87 클라이언트 서명 검증",
+      "en": "NIST FIPS 204 ML-DSA-87 Client Signature Validation"
+    },
+    "prompt": {
+      "ko": "연합 학습 노드가 제출하는 마스킹된 그래디언트 페이로드에 대해 양자 내성 FIPS 204 ML-DSA-87 전자서명을 강제 검증하여 미승인 섀도우 노드의 주입을 차단합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_fips204_mldsa87_client_signature_validation``\n\n[문제 안내]\n해당 ML-DSA-87 서명 검증 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Validate NIST FIPS 204 ML-DSA-87 post-quantum digital signatures on masked client payloads to reject unauthorized shadow worker contributions.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_fips204_mldsa87_client_signature_validation``\n\n[Task]\nAnalyze the ML-DSA-87 signature validation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_fips204_mldsa87_client_signature_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_fips204_mldsa87_client_signature_validation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_federated_unlearning_and_backdoor_erasure",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 120,
+    "ci": false,
+    "hash": "e95c51fbc9180bac93304ccdf5e195ab98cda532d1acac8e81d24489da3c2fb2",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "연합 언러닝 및 백도어 가중치 소거",
+      "en": "Federated Unlearning and Backdoor Weight Erasure"
+    },
+    "prompt": {
+      "ko": "특정 참여 노드가 사후 악성 노드로 판명되었을 때, 전체 재학습 없이 해당 노드의 기여분을 역그래디언트 프로젝션으로 신속하게 소거하는 연합 언러닝을 실증합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_federated_unlearning_and_backdoor_erasure``\n\n[문제 안내]\n해당 연합 언러닝 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute federated machine unlearning via reverse gradient projection to expunge contributions of retroactive malicious participants without full model retraining.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_federated_unlearning_and_backdoor_erasure``\n\n[Task]\nAnalyze the federated unlearning specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_federated_unlearning_and_backdoor_erasure` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_federated_unlearning_and_backdoor_erasure`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_local_differential_privacy_laplace_perturbation",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 120,
+    "ci": false,
+    "hash": "08d83d6161c5c4371004a318d345e410db9439290c9c2bfb39c5b05caf51a77b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "로컬 차분 프라이버시 라플라스 섭동",
+      "en": "Local Differential Privacy Laplace Perturbation"
+    },
+    "prompt": {
+      "ko": "중앙 집계 서버조차 신뢰하지 않는 완전 비신뢰 모델에서 각 클라이언트가 로컬 라플라스 메커니즘을 적용하여 데이터를 섭동하는 로컬 차분 프라이버시(LDP)를 구축합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_local_differential_privacy_laplace_perturbation``\n\n[문제 안내]\n해당 로컬 차분 프라이버시 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Implement Local Differential Privacy (LDP) where each client perturbs local vectors using Laplace mechanisms prior to transmission under zero-trust aggregator assumptions.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_local_differential_privacy_laplace_perturbation``\n\n[Task]\nAnalyze the local differential privacy specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_local_differential_privacy_laplace_perturbation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_local_differential_privacy_laplace_perturbation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_fedsec_secure_aggregation_quorum_consensus_verification",
+    "tier": 2,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 125,
+    "ci": false,
+    "hash": "36f4da378f68241c5591981d0db0a3bfc6037236a6aecec6678a5bcbfb10813e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "안전 집계 쿼럼 합의 검증",
+      "en": "Secure Aggregation Quorum Consensus Verification"
+    },
+    "prompt": {
+      "ko": "비잔틴 이탈 노드로 인한 마스크 불균형을 해결하기 위해 최소 쿼럼(Quorum >= 7) 이상의 생존 노드가 암호학적 합의 서명에 도달해야만 집계를 인가합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_secure_aggregation_quorum_consensus_verification``\n\n[문제 안내]\n해당 쿼럼 합의 검증 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify cryptographic quorum consensus where aggregation proceeds only when active worker surviving nodes exceed quorum threshold (>= 7) to reconcile dropouts.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t2_fedsec_secure_aggregation_quorum_consensus_verification``\n\n[Task]\nAnalyze the quorum consensus verification specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_fedsec_secure_aggregation_quorum_consensus_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_fedsec_secure_aggregation_quorum_consensus_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_adversarial_backdoor_trigger_injection_in_federated_ai",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 150,
+    "ci": false,
+    "hash": "f6841dda09d3b8d90dff699f20f775e1fe2d99f8421cf3e6910702e3076ad640",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "연합 AI 적대적 백도어 트리거 주입 탐지",
+      "en": "Adversarial Backdoor Trigger Injection in Federated AI"
+    },
+    "prompt": {
+      "ko": "정상 훈련 데이터와 구분되지 않는 특정 픽셀 패턴 트리거가 입력될 때만 오분류를 유도하는 연합 AI 타깃 백도어 주입 공격을 가중치 활성화 클러스터링으로 감지합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_adversarial_backdoor_trigger_injection_in_federated_ai``\n\n[문제 안내]\n해당 백도어 트리거 탐지 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Detect targeted federated backdoor triggers activating misclassifications only on tailored pixel patterns by inspecting latent activation clustering anomalies.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_adversarial_backdoor_trigger_injection_in_federated_ai``\n\n[Task]\nAnalyze the backdoor trigger injection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_adversarial_backdoor_trigger_injection_in_federated_ai` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_adversarial_backdoor_trigger_injection_in_federated_ai`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_multi_party_shamir_secret_sharing_reconstruction",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 160,
+    "ci": false,
+    "hash": "3115b36c87fef46dfe351e54111e41065b42adb295e5225a1ea3e2c69bfb9cd5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "샤미르 비밀 분할 다자간 가중치 재구성",
+      "en": "Multi-Party Shamir Secret Sharing Reconstruction"
+    },
+    "prompt": {
+      "ko": "참여 클라이언트의 오프라인 이탈 시 마스킹 키를 복원하기 위해 (k, n) 샤미르 비밀 분할(Shamir's Secret Sharing) 다항식 보간법 기반 키 복구 프로토콜을 수행합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_multi_party_shamir_secret_sharing_reconstruction``\n\n[문제 안내]\n해당 샤미르 비밀 분할 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute (k, n) Shamir Secret Sharing polynomial interpolation to reconstruct dropout client mask seeds without revealing operational gradients.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_multi_party_shamir_secret_sharing_reconstruction``\n\n[Task]\nAnalyze the Shamir secret sharing reconstruction specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_multi_party_shamir_secret_sharing_reconstruction` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_multi_party_shamir_secret_sharing_reconstruction`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_hardware_tee_intel_tdx_enclave_worker_attestation",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 170,
+    "ci": false,
+    "hash": "312bc4d0275d15157cb176d3cb0526fa9355da12923c3510988b2f9ac38fa4e9",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 TEE 엔클레이브 워커 원격 증명",
+      "en": "Hardware TEE Enclave Federated Worker Attestation"
+    },
+    "prompt": {
+      "ko": "각 연합 에지 노드가 하드웨어 기밀 가상머신(Intel TDX / AMD SEV-SNP) 내부에서 변조되지 않은 훈련 코드를 실행하고 있음을 Quote PCR 원격 증명으로 검증합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_hardware_tee_intel_tdx_enclave_worker_attestation``\n\n[문제 안내]\n해당 하드웨어 TEE 원격 증명 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify hardware TEE Quote PCR reports confirming edge nodes execute untampered training runtimes inside isolated confidential enclaves.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_hardware_tee_intel_tdx_enclave_worker_attestation``\n\n[Task]\nAnalyze the hardware TEE worker attestation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_hardware_tee_intel_tdx_enclave_worker_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_hardware_tee_intel_tdx_enclave_worker_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_model_inversion_defense_with_differential_privacy",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 180,
+    "ci": false,
+    "hash": "44adca232f692a564003ca08161abe80751615a1643f2d9521094c5100c57874",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "차분 프라이버시 기반 모델 역변환 방어",
+      "en": "Model Inversion Defense with Differential Privacy"
+    },
+    "prompt": {
+      "ko": "공격자가 전역 모델 파라미터 경사 하강법을 역수행하여 얼굴 이미지나 의료 기록 원본을 복원하는 모델 역변환 공격(Model Inversion)을 가우시안 섭동으로 차단합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_model_inversion_defense_with_differential_privacy``\n\n[문제 안내]\n해당 모델 역변환 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Block model inversion attacks attempting gradient descent reconstruction of raw private biometric or medical records by tuning differential privacy parameters.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_model_inversion_defense_with_differential_privacy``\n\n[Task]\nAnalyze the model inversion defense specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_model_inversion_defense_with_differential_privacy` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_model_inversion_defense_with_differential_privacy`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_cross_silo_federated_learning_spiffe_mesh_auth",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 185,
+    "ci": false,
+    "hash": "aabcc606894be4dba2b9a4e1860dae038701aca26143c97ec9678298094a8d06",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "크로스 사일로 SPIFFE 연합 인증 메시",
+      "en": "Cross-Silo Federated Learning SPIFFE Mesh Authentication"
+    },
+    "prompt": {
+      "ko": "금융·의료 기관 간 대규모 크로스 사일로(Cross-Silo) 연합 네트워크에서 SPIFFE/SPIRE 기반 암호학적 워크로드 ID 및 상호 mTLS 인증 터널을 확립합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_cross_silo_federated_learning_spiffe_mesh_auth``\n\n[문제 안내]\n해당 SPIFFE 연합 메시 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Establish zero-trust SPIFFE/SPIRE workload cryptographic identity and mTLS mesh tunnels across institutional cross-silo federated learning clusters.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_cross_silo_federated_learning_spiffe_mesh_auth``\n\n[Task]\nAnalyze the cross-silo SPIFFE mesh specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_cross_silo_federated_learning_spiffe_mesh_auth` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_cross_silo_federated_learning_spiffe_mesh_auth`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_byzantine_robust_median_aggregation_defense",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 190,
+    "ci": false,
+    "hash": "269471d6708bcfcba9ef7b76ca2de4ced87f914e0d37e7370c1530ac1257af3a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비잔틴 견고 메디안 집계 방어",
+      "en": "Byzantine Robust Geometric Median Aggregation Defense"
+    },
+    "prompt": {
+      "ko": "유클리드 공간 상에서 비잔틴 노드의 악의적 이상치 영향력을 통계적으로 최소화하는 기하학적 메디안(Geometric Median) Weiszfeld 알고리즘 기반 집계를 구현합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_byzantine_robust_median_aggregation_defense``\n\n[문제 안내]\n해당 기하학적 메디안 집계 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Implement geometric median aggregation via Weiszfeld iterative minimization to bound the influence of Byzantine nodes in high-dimensional parameter spaces.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_byzantine_robust_median_aggregation_defense``\n\n[Task]\nAnalyze the robust median aggregation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_byzantine_robust_median_aggregation_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_byzantine_robust_median_aggregation_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t3_fedsec_autonomous_federated_drift_anomaly_isolation",
+    "tier": 3,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 200,
+    "ci": false,
+    "hash": "290b4092f1c77860df5b52d300eceb7e1ca139a13bcd3a587a9c0d531036bf04",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 연합 가중치 드리프트 이상 노드 격리",
+      "en": "Autonomous Federated Drift Anomaly Worker Isolation"
+    },
+    "prompt": {
+      "ko": "정상 클라이언트의 로컬 데이터 이질성(Non-IID)과 악의적 포이즈닝 드리프트를 실시간 분류기 손실 함수로 판별하여 비잔틴 노드를 자동 사살 격리합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_autonomous_federated_drift_anomaly_isolation``\n\n[문제 안내]\n해당 가중치 드리프트 격리 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Distinguish natural Non-IID statistical data heterogeneity from deliberate poisoning drift, automatically quarantining detected Byzantine nodes in real time.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t3_fedsec_autonomous_federated_drift_anomaly_isolation``\n\n[Task]\nAnalyze the federated drift anomaly isolation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_fedsec_autonomous_federated_drift_anomaly_isolation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_fedsec_autonomous_federated_drift_anomaly_isolation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_sybil_swarm_collusion_poisoning_defense",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 250,
+    "ci": false,
+    "hash": "ea3d5fe1f14574f93ab6303860d7735ea9177065e286320f0c1b6b9fb31cad4f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "시빌 스웜 공모 모델 중독 방어",
+      "en": "Sybil Swarm Collusion Model Poisoning Defense"
+    },
+    "prompt": {
+      "ko": "다수의 가짜 워커 노드가 연합 네트워크에 동시 침투하여 정교하게 공모하는 스웜 비잔틴 공격에 대응하여 그래프 스펙트럴 클러스터링 기반 공모 탐지를 수행합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_sybil_swarm_collusion_poisoning_defense``\n\n[문제 안내]\n해당 시빌 스웜 공모 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Defend against Sybil swarm collusion poisoning where multiple coordinated rogue workers manipulate aggregation by deploying spectral graph clustering defense.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_sybil_swarm_collusion_poisoning_defense``\n\n[Task]\nAnalyze the Sybil swarm collusion defense specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_sybil_swarm_collusion_poisoning_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_sybil_swarm_collusion_poisoning_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_deep_leakage_from_gradients_dlg_reconstruction_shield",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 280,
+    "ci": false,
+    "hash": "4e23a7214b80f80150f01b9fe9317ae91045bb8cff0601e84ec6a73abc56f5f4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "그래디언트 심층 유출 DLG 원본 복원 차단",
+      "en": "Deep Leakage from Gradients DLG Reconstruction Shield"
+    },
+    "prompt": {
+      "ko": "서버가 수신된 그래디언트와 더미 입력 간의 유클리드 거리를 역최적화하여 원본 훈련 픽셀을 100% 복원하는 DLG 공격을 DP-SGD 노이즈 마스킹으로 차단합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_deep_leakage_from_gradients_dlg_reconstruction_shield``\n\n[문제 안내]\n해당 DLG 원본 복원 차단 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Neutralize Deep Leakage from Gradients (DLG) pixel-level input reconstruction attacks by combining DP-SGD calibrated noise with zero-sum cryptographic masking.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_deep_leakage_from_gradients_dlg_reconstruction_shield``\n\n[Task]\nAnalyze the DLG reconstruction shield specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_deep_leakage_from_gradients_dlg_reconstruction_shield` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_deep_leakage_from_gradients_dlg_reconstruction_shield`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_zero_knowledge_proof_zkp_client_update_verification",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 300,
+    "ci": false,
+    "hash": "b3ca219e8af800ddb5291b7f6567e501f04b87132d3a5178e48c4dbb60e9ff25",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "영지식 증명 ZKP 기반 클라이언트 업데이트 검증",
+      "en": "Zero-Knowledge Proof ZKP Client Update Verification"
+    },
+    "prompt": {
+      "ko": "클라이언트가 평문 그래디언트를 공개하지 않고도 해당 업데이트가 올바른 규격(L2-norm <= C 및 유효 훈련 연산)을 준수했음을 zk-SNARKs 증명으로 보증합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_zero_knowledge_proof_zkp_client_update_verification``\n\n[문제 안내]\n해당 영지식 증명 업데이트 검증 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify zk-SNARK zero-knowledge proofs ensuring client updates strictly comply with L2-norm bounds and valid backpropagation without disclosing plaintext weights.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_zero_knowledge_proof_zkp_client_update_verification``\n\n[Task]\nAnalyze the zero-knowledge proof client verification specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_zero_knowledge_proof_zkp_client_update_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_zero_knowledge_proof_zkp_client_update_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_quantum_resistant_hybrid_kem_fl_secure_channel",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 320,
+    "ci": false,
+    "hash": "10d5cc41852d93ecfce3f8da2155751c1c3a720ea6f62e5abf73ecb9d29a6455",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "양자 내성 하이브리드 KEM 연합 보안 채널",
+      "en": "Quantum-Resistant Hybrid KEM Federated Secure Channel"
+    },
+    "prompt": {
+      "ko": "미래 양자 컴퓨터 도청 공격에 대비하여 FIPS 203 ML-KEM-1024 및 X25519 하이브리드 키 캡슐화로 연합 워커 간 비밀 분할 키 채널을 양자 암호학적으로 하드닝합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_quantum_resistant_hybrid_kem_fl_secure_channel``\n\n[문제 안내]\n해당 양자 내성 KEM 채널 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Harden federated secret sharing channels against post-quantum intercept threats by deploying hybrid FIPS 203 ML-KEM-1024 and X25519 key encapsulation.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_quantum_resistant_hybrid_kem_fl_secure_channel``\n\n[Task]\nAnalyze the quantum-resistant KEM federated channel specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_quantum_resistant_hybrid_kem_fl_secure_channel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_quantum_resistant_hybrid_kem_fl_secure_channel`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_byzantine_resilient_fedprox_straggler_mitigation",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 350,
+    "ci": false,
+    "hash": "b7cc48fe21720251ae9185daca9b4f644f19a1f8062c1df3074ddbfcde145862",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비잔틴 내결함 FedProx 지연자 완화",
+      "en": "Byzantine-Resilient FedProx Straggler Mitigation"
+    },
+    "prompt": {
+      "ko": "연합 클러스터 내 지연 노드(Straggler) 및 이질적 시스템 리소스 환경에서 프록시멀 항(Proximal Term)을 결합하여 비잔틴 공격 내성과 동적 수렴 안정성을 동시에 달성합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_byzantine_resilient_fedprox_straggler_mitigation``\n\n[문제 안내]\n해당 FedProx 비잔틴 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Couple proximal regularization terms with robust aggregation to reconcile straggler nodes and preserve convergence stability under Byzantine perturbations.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_byzantine_resilient_fedprox_straggler_mitigation``\n\n[Task]\nAnalyze the Byzantine FedProx straggler mitigation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_byzantine_resilient_fedprox_straggler_mitigation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_byzantine_resilient_fedprox_straggler_mitigation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_hardware_tpm_quote_live_fl_pcr_verification",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 380,
+    "ci": false,
+    "hash": "6d5f87683482e04ee8052d3db57cd9713401bb076a74fb81da87d951f90718f3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 TPM Quote 라이브 연합 PCR 검증",
+      "en": "Hardware TPM Quote Live Federated PCR Verification"
+    },
+    "prompt": {
+      "ko": "연합 노드 부팅 펌웨어 및 커널 무결성을 하드웨어 TPM 2.0 Quote PCR 다이제스트 검증으로 실시간 대조하여 손상된 하드웨어 노드의 가중치 집계 참여를 물리 차단합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_hardware_tpm_quote_live_fl_pcr_verification``\n\n[문제 안내]\n해당 하드웨어 TPM 연합 검증 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce live hardware TPM 2.0 Quote PCR digest attestation across federated workers to physically isolate compromised host platforms from participating in aggregation.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_hardware_tpm_quote_live_fl_pcr_verification``\n\n[Task]\nAnalyze the hardware TPM federated PCR verification specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_hardware_tpm_quote_live_fl_pcr_verification` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_hardware_tpm_quote_live_fl_pcr_verification`."
+      ]
+    }
+  },
+  {
+    "id": "t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone",
+    "tier": 4,
+    "cat": "ai",
+    "track": "fedsec",
+    "points": 450,
+    "ci": false,
+    "hash": "2ab739803bbf6fdbaee64c20169edcdb1f8245ecee8d86b889abaea85acd07a8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 연합 AI 모델 중독 및 프라이버시 방어 종합 캡스톤",
+      "en": "Sovereign Federated AI Poisoning and Privacy Defense Capstone"
+    },
+    "prompt": {
+      "ko": "L2-Norm 클리핑, Multi-Krum 비잔틴 내결함 집계, DP-SGD 가우시안 엡실론 통제, 비밀 분할 안전 집계 및 FIPS 204 ML-DSA-87 하드웨어 TEE 원격 증명을 결합한 종합 실전 방어 캡스톤을 완결합니다.\n\n[챌린지 식별자]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone``\n\n[문제 안내]\n해당 주권 연합 AI 방어 캡스톤 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Execute the end-to-end sovereign federated AI cyber defense capstone uniting L2 clipping, Multi-Krum aggregation, DP-SGD, secure MPC, and FIPS 204 attestation.\n\n[Challenge Identifier]\n`FEDSEC_CHALLENGE_ID: `t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone``\n\n[Task]\nAnalyze the sovereign federated AI capstone specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone`."
       ]
     }
   }

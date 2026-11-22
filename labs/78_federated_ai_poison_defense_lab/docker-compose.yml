@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  fedai-poison-defense-lab:
+    build: .
+    container_name: vhack-lab78-fedai-poison-defense
+    ports:
+      - "127.0.0.1:8078:8078"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
