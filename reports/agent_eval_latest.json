@@ -1,6 +1,6 @@
 {
   "benchmark_version": "2.15.0",
-  "timestamp": "2026-11-22T02:15:13.538188+00:00",
+  "timestamp": "2026-11-22T11:27:05.088761+00:00",
   "model_key": "supersec",
   "model_name": "SuperSec-Agent-v2.27 (VibeHacking Autonomous SOTA)",
   "provider": "VibeHacking Enterprise Engine",
@@ -241,7 +241,7 @@
       }
     ]
   },
-  "duration_seconds": 0.63,
+  "duration_seconds": 1.81,
   "composite_score": 100.0,
   "avg_tool_turns": 1.0
 }
