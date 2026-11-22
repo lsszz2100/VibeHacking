@@ -502,7 +502,7 @@ const MIN_EVIDENCE = 3;
 const REPO = path.resolve(WG, '..');
 function chapters(dir, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (e.name === '.git' || e.name === 'node_modules') continue;
+    if (e.name === '.git' || e.name === 'node_modules' || e.name === 'build' || e.name === 'release') continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) chapters(p, out);
     else if (e.name.endsWith('.md')) out.push(p);
