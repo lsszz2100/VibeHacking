@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  oran-6g-ntn-security-lab:
+    build: .
+    container_name: vhack-lab79-oran-6g-ntn-security
+    ports:
+      - "127.0.0.1:8079:8079"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

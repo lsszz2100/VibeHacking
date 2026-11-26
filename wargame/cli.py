@@ -51,7 +51,7 @@ def load_wargame_db() -> Tuple[List[dict], List[dict], List[dict]]:
 
     # Extract CHALLENGES
     c_start = content.find("const CHALLENGES = ") + len("const CHALLENGES = ")
-    c_end = content.find("\n];\n", c_start)
+    c_end = content.find("\n];", c_start)
     raw_challenges = re.sub(r"^\s*//.*$", "", content[c_start:c_end + 2].strip(), flags=re.MULTILINE)
     challenges = json.loads(raw_challenges, strict=False)
 

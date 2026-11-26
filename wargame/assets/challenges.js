@@ -783,6 +783,14 @@ const TRACKS = [
     "en": "Federated AI Poisoning & Privacy Defense",
     "desc_ko": "연합 학습(Federated Learning) 비잔틴 클라이언트 가중치 폭탄 투하 차단, L2-Norm 클리핑 및 코사인 유사도 이상치 검출, Multi-Krum/Trimmed-Mean 견고 집계, 차분 프라이버시(DP-SGD) 가우시안 노이즈 주입 및 엡실론 예산 통제, 비밀 분할 안전 집계 및 NIST FIPS 204 ML-DSA-87 하드웨어 원격 증명.",
     "desc_en": "Federated Learning Byzantine model poisoning mitigation, gradient L2-norm clipping, cosine similarity alignment, Multi-Krum and Trimmed-Mean robust aggregation, DP-SGD Gaussian noise differential privacy budget clamping, and NIST FIPS 204 ML-DSA-87 hardware attestation."
+  },
+  {
+    "id": "oransec",
+    "icon": "📡",
+    "ko": "6G NTN & O-RAN 통신망 보안",
+    "en": "6G NTN & O-RAN Telecom Security",
+    "desc_ko": "O-RAN Near-RT RIC E2 SPIFFE mTLS, Open Fronthaul eCPRI MACsec 및 IEEE 1588v2 PTP NTS 동기화 방어, A1/O1 정책 JWS 서명 및 UPF TEID 슬라이스 격리, 6G NTN FIPS 203 ML-KEM-768 + FIPS 204 ML-DSA-65 핸드오버 원격 증명.",
+    "desc_en": "O-RAN Near-RT RIC E2 SPIFFE mTLS, Open Fronthaul eCPRI MACsec and NTS-secured PTP timing, A1 signed policy and UPF slice TEID isolation, and 6G NTN FIPS 203 ML-KEM-768 + FIPS 204 ML-DSA-65 handover attestation."
   }
 ];
 
@@ -88211,6 +88219,917 @@ const CHALLENGES = [
       ],
       "en": [
         "This challenge derives a deterministic flag from identifier `t4_fedsec_sovereign_federated_ai_poisoning_and_privacy_defense_capstone`."
+      ]
+    }
+  }
+,
+  {
+    "id": "t0_oransec_disaggregated_ran_architecture_cu_du_ru",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 15,
+    "ci": false,
+    "hash": "9ed3d48ebc3d5a947ed491649a18d242e171db4afa0d08c15b913f9931a8169b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "분리형 O-RAN CU/DU/RU 아키텍처 개요",
+      "en": "Disaggregated O-RAN CU, DU, and RU Architecture Overview"
+    },
+    "prompt": {
+      "ko": "전통적 일체형 기지국을 O-CU, O-DU, O-RU로 분리하고 개방형 인터페이스를 도입한 O-RAN 아키텍처의 보안 경계와 신뢰 모델을 분석합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_disaggregated_ran_architecture_cu_du_ru``\n\n[문제 안내]\n해당 O-RAN 분리형 아키텍처 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze the security boundaries and trust model of the disaggregated O-RAN architecture splitting base stations into O-CU, O-DU, and O-RU.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_disaggregated_ran_architecture_cu_du_ru``\n\n[Task]\nAnalyze the disaggregated O-RAN specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_disaggregated_ran_architecture_cu_du_ru` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_disaggregated_ran_architecture_cu_du_ru`."
+      ]
+    }
+  },
+  {
+    "id": "t0_oransec_near_rt_ric_and_e2_interface_basics",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 20,
+    "ci": false,
+    "hash": "82d8732cf60cdcfd2d52fc6399e9baf2f96907940b7e39a59fc88a008ae0fc90",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Near-RT RIC 및 E2 인터페이스 기초",
+      "en": "Near-RT RIC and E2 Interface Fundamentals"
+    },
+    "prompt": {
+      "ko": "10ms~1s 주기 제어를 담당하는 Near-RT RIC와 E2 노드를 연결하는 E2AP 및 E2SM 서비스 모델의 공격 표면을 식별합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_near_rt_ric_and_e2_interface_basics``\n\n[문제 안내]\n해당 E2 인터페이스 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Identify the attack surface of Near-RT RIC and E2AP/E2SM service models controlling RAN nodes in the 10ms-1s loop.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_near_rt_ric_and_e2_interface_basics``\n\n[Task]\nAnalyze the E2 interface specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_near_rt_ric_and_e2_interface_basics` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_near_rt_ric_and_e2_interface_basics`."
+      ]
+    }
+  },
+  {
+    "id": "t0_oransec_open_fronthaul_ecpri_split_7_2x",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 20,
+    "ci": false,
+    "hash": "4953a70cc665501fadaa7d8fe8b8b004e67e44eb6f8a8c9a1957f7edc88002f3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Open Fronthaul eCPRI Split 7.2x 구조",
+      "en": "Open Fronthaul eCPRI Split 7.2x Structure"
+    },
+    "prompt": {
+      "ko": "O-DU와 O-RU를 연결하는 Open Fronthaul(CUS-Plane)의 eCPRI 패킷 구조와 비암호화 평문 노출 위험을 학습합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_open_fronthaul_ecpri_split_7_2x``\n\n[문제 안내]\n해당 Open Fronthaul 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Study the Open Fronthaul CUS-Plane eCPRI packet layout between O-DU and O-RU and plaintext exposure risks.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_open_fronthaul_ecpri_split_7_2x``\n\n[Task]\nAnalyze the Open Fronthaul specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_open_fronthaul_ecpri_split_7_2x` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_open_fronthaul_ecpri_split_7_2x`."
+      ]
+    }
+  },
+  {
+    "id": "t0_oransec_ieee_1588v2_ptp_timing_sync_threats",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 25,
+    "ci": false,
+    "hash": "e60081eb51b0412a8d3fa91a9dcf29cd2d3620d8e89d3c0b43de5d2ce87e27c0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "IEEE 1588v2 PTP 시간 동기화 위협",
+      "en": "IEEE 1588v2 PTP Timing Synchronization Threats"
+    },
+    "prompt": {
+      "ko": "TDD 무선 프레임 동기화를 위해 사용되는 IEEE 1588v2 PTP Grandmaster 스푸핑 및 시간 오프셋 드리프트 유발 위협을 파악합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_ieee_1588v2_ptp_timing_sync_threats``\n\n[문제 안내]\n해당 PTP 동기화 위협 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Examine IEEE 1588v2 PTP Grandmaster spoofing and phase drift threats affecting TDD radio frame synchronization.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_ieee_1588v2_ptp_timing_sync_threats``\n\n[Task]\nAnalyze the PTP timing threat specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_ieee_1588v2_ptp_timing_sync_threats` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_ieee_1588v2_ptp_timing_sync_threats`."
+      ]
+    }
+  },
+  {
+    "id": "t0_oransec_a1_o1_management_plane_exposure",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 25,
+    "ci": false,
+    "hash": "dd0943f0762096123c36a05ae811abd6b1448eabdff5b39a271f07b9608ce2bd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "A1 및 O1 관리 평면 노출 분석",
+      "en": "A1 and O1 Management Plane Exposure Analysis"
+    },
+    "prompt": {
+      "ko": "Non-RT RIC의 A1 정책 인터페이스와 SMO O1 NETCONF/YANG 관리 평면의 인증 미흡 시 발생하는 정책 변조 위험을 분석합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_a1_o1_management_plane_exposure``\n\n[문제 안내]\n해당 A1/O1 관리 평면 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Analyze policy tampering risks on the Non-RT RIC A1 interface and SMO O1 NETCONF/YANG management plane.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_a1_o1_management_plane_exposure``\n\n[Task]\nAnalyze the A1/O1 management plane specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_a1_o1_management_plane_exposure` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_a1_o1_management_plane_exposure`."
+      ]
+    }
+  },
+  {
+    "id": "t0_oransec_6g_ntn_leo_satellite_architecture",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 25,
+    "ci": false,
+    "hash": "9ec443a9275f25a79580057092528369b1c947b3869c39df255c1d0dd34e82b6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "6G NTN 저궤도 위성 비지상망 아키텍처",
+      "en": "6G NTN LEO Satellite Non-Terrestrial Architecture"
+    },
+    "prompt": {
+      "ko": "지상 기지국과 저궤도(LEO) 위성 탑재 gNodeB가 통합되는 6G NTN(Non-Terrestrial Network) 환경의 확장된 공격 표면을 진단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_6g_ntn_leo_satellite_architecture``\n\n[문제 안내]\n해당 6G NTN 아키텍처 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Diagnose the expanded attack surface of 6G Non-Terrestrial Networks integrating terrestrial gNodeBs with LEO satellite payloads.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_6g_ntn_leo_satellite_architecture``\n\n[Task]\nAnalyze the 6G NTN architecture specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_6g_ntn_leo_satellite_architecture` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_6g_ntn_leo_satellite_architecture`."
+      ]
+    }
+  },
+  {
+    "id": "t0_oransec_network_slicing_multi_tenant_isolation",
+    "tier": 0,
+    "cat": "network",
+    "track": "oransec",
+    "points": 25,
+    "ci": false,
+    "hash": "ee87be8cdcbc530d39dabe9f0df8018ce91c37286f8e3ab7f147cf0c6236d18f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "네트워크 슬라이싱 다중 테넌트 격리 기초",
+      "en": "Network Slicing Multi-Tenant Isolation Basics"
+    },
+    "prompt": {
+      "ko": "eMBB(SST 1), URLLC(SST 2), mMTC(SST 3) 슬라이스 간 SLA 보장과 자원 고갈 방어를 위한 테넌트 격리 원리를 정립합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_network_slicing_multi_tenant_isolation``\n\n[문제 안내]\n해당 네트워크 슬라이싱 격리 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Establish multi-tenant isolation principles across eMBB, URLLC, and mMTC slices to prevent cross-slice SLA starvation.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t0_oransec_network_slicing_multi_tenant_isolation``\n\n[Task]\nAnalyze the network slicing isolation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t0_oransec_network_slicing_multi_tenant_isolation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t0_oransec_network_slicing_multi_tenant_isolation`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_xapp_spiffe_svid_workload_identity",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 50,
+    "ci": false,
+    "hash": "416990c575be7f4467a1c658adc5db5672a104812aa218d84359f9c3afaa7906",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "xApp SPIFFE SVID 워크로드 신원 검증",
+      "en": "xApp SPIFFE SVID Workload Identity Verification"
+    },
+    "prompt": {
+      "ko": "Near-RT RIC 내부에서 실행되는 서드파티 xApp에 SPIFFE SVID 인증서를 바인딩하여 위조 xApp 등록을 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_xapp_spiffe_svid_workload_identity``\n\n[문제 안내]\n해당 SPIFFE SVID 검증 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Bind SPIFFE SVID workload identities to Near-RT RIC xApps to block rogue xApp registration.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_xapp_spiffe_svid_workload_identity``\n\n[Task]\nAnalyze the SPIFFE SVID specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_xapp_spiffe_svid_workload_identity` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_xapp_spiffe_svid_workload_identity`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_e2_mtls_strict_cipher_enforcement",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 55,
+    "ci": false,
+    "hash": "d94b028e07ce279b28b4f38df14ef117658b07e719bb922198b5de3e0c9163f0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "E2 인터페이스 엄격 mTLS 암호화 강제",
+      "en": "E2 Interface Strict mTLS Cipher Enforcement"
+    },
+    "prompt": {
+      "ko": "O-DU/O-CU와 Near-RT RIC 간 E2AP SCTP/TLS 채널에 상호 인증 mTLS 1.3을 적용하여 중간자 도청을 방어합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_e2_mtls_strict_cipher_enforcement``\n\n[문제 안내]\n해당 E2 mTLS 강제 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce mutual TLS 1.3 across E2AP channels between RAN nodes and Near-RT RIC to block MitM eavesdropping.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_e2_mtls_strict_cipher_enforcement``\n\n[Task]\nAnalyze the E2 mTLS enforcement specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_e2_mtls_strict_cipher_enforcement` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_e2_mtls_strict_cipher_enforcement`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_ecpri_macsec_aes256gcm_protection",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 60,
+    "ci": false,
+    "hash": "3ce4747523df0526d796059430d65c5b3c5e44f653e7929ef10421c48a7b70a6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Open Fronthaul eCPRI MACsec AES-256-GCM",
+      "en": "Open Fronthaul eCPRI MACsec AES-256-GCM Protection"
+    },
+    "prompt": {
+      "ko": "프론트홀 C/U-Plane 계층 2 프레임에 IEEE 802.1AE MACsec AES-256-GCM 무결성 및 기밀성 보호를 적용합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_ecpri_macsec_aes256gcm_protection``\n\n[문제 안내]\n해당 MACsec 보호 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Apply IEEE 802.1AE MACsec AES-256-GCM integrity and confidentiality protection to Open Fronthaul C/U-plane frames.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_ecpri_macsec_aes256gcm_protection``\n\n[Task]\nAnalyze the MACsec protection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_ecpri_macsec_aes256gcm_protection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_ecpri_macsec_aes256gcm_protection`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_nts_secured_ptp_clock_boundary",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 65,
+    "ci": false,
+    "hash": "82b0103d294b6b618cc048b2b8d5e60c3e3993e1378388e9c421eab3af17e34b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NTS 인증 기반 PTP 경계 시계 방어",
+      "en": "NTS-Secured PTP Boundary Clock Defense"
+    },
+    "prompt": {
+      "ko": "Network Time Security(NTS) 인증과 130ns 3GPP 위상 드리프트 임계치 감시를 결합해 위조 Sync/Follow_Up 메시지를 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_nts_secured_ptp_clock_boundary``\n\n[문제 안내]\n해당 NTS-PTP 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Combine Network Time Security authentication with 130ns phase-drift monitoring to reject spoofed PTP Sync messages.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_nts_secured_ptp_clock_boundary``\n\n[Task]\nAnalyze the NTS-PTP defense specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_nts_secured_ptp_clock_boundary` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_nts_secured_ptp_clock_boundary`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_e2sm_kpm_schema_allowlist_filtering",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 65,
+    "ci": false,
+    "hash": "a059a55ddf68f90fc21ad9dc900311294ea8e064622421024a4356147481b8c4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "E2SM-KPM 서비스 모델 스키마 화이트리스트",
+      "en": "E2SM-KPM Service Model Schema Allowlist Filtering"
+    },
+    "prompt": {
+      "ko": "ASN.1 PER 디코딩 취약점을 악용한 비정상 E2SM-KPM 텔레메트리 페이로드를 스키마 화이트리스트 검증으로 사전 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_e2sm_kpm_schema_allowlist_filtering``\n\n[문제 안내]\n해당 E2SM-KPM 스키마 필터링 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Block malformed E2SM-KPM ASN.1 PER payloads using strict service-model schema allowlist validation.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_e2sm_kpm_schema_allowlist_filtering``\n\n[Task]\nAnalyze the E2SM-KPM schema allowlist specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_e2sm_kpm_schema_allowlist_filtering` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_e2sm_kpm_schema_allowlist_filtering`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_o1_netconf_ssh_nacm_hardening",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 70,
+    "ci": false,
+    "hash": "aa394fd36325ae3362c5d39a4e8b2b2ceae2926f4bef4742bda84563b2023347",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "O1 NETCONF/YANG SSH NACM 접근 하드닝",
+      "en": "O1 NETCONF/YANG SSH NACM Access Hardening"
+    },
+    "prompt": {
+      "ko": "SMO와 O-RAN 노드 간 O1 NETCONF 구성 변경 작업에 NACM(NETCONF Access Control Model) 최소 권한 접근 정책을 적용합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_o1_netconf_ssh_nacm_hardening``\n\n[문제 안내]\n해당 O1 NETCONF NACM 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce NACM least-privilege access policy across O1 NETCONF/YANG configuration sessions between SMO and RAN nodes.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_o1_netconf_ssh_nacm_hardening``\n\n[Task]\nAnalyze the O1 NETCONF NACM specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_o1_netconf_ssh_nacm_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_o1_netconf_ssh_nacm_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t1_oransec_upf_gtpu_teid_slice_segregation",
+    "tier": 1,
+    "cat": "network",
+    "track": "oransec",
+    "points": 75,
+    "ci": false,
+    "hash": "9a15b0e363b1d3b62fcf6cf1047819b78cecaad5276965c68d71dbf391994d6e",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "UPF GTP-U TEID 슬라이스별 터널 격리",
+      "en": "UPF GTP-U TEID Per-Slice Tunnel Segregation"
+    },
+    "prompt": {
+      "ko": "5G/6G 코어 UPF의 N3/N9 GTP-U 터널 TEID를 슬라이스별로 엄격 격리하여 교차 슬라이스 패킷 주입을 방지합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_upf_gtpu_teid_slice_segregation``\n\n[문제 안내]\n해당 UPF TEID 격리 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Segregate UPF N3/N9 GTP-U TEIDs per network slice to prevent cross-slice tunnel packet injection.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t1_oransec_upf_gtpu_teid_slice_segregation``\n\n[Task]\nAnalyze the UPF TEID segregation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t1_oransec_upf_gtpu_teid_slice_segregation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t1_oransec_upf_gtpu_teid_slice_segregation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_a1_policy_poisoning_jwt_jws_defense",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 100,
+    "ci": false,
+    "hash": "dcfecdd5e0d741b8ac223624bb5590dae67e43283180d5bfee310bb1d0ef6167",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "A1 정책 포이즈닝 서명 JWS 방어",
+      "en": "A1 Policy Poisoning Signed JWS Defense"
+    },
+    "prompt": {
+      "ko": "Non-RT RIC rApp이 전달하는 A1-P 정책 JSON 객체에 JWS 전자서명과 스키마 무결성 검증을 강제해 SLA 기아 공격을 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_a1_policy_poisoning_jwt_jws_defense``\n\n[문제 안내]\n해당 A1 JWS 서명 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce JWS cryptographic signatures on A1-P policy payloads from Non-RT RIC rApps to stop slice starvation.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_a1_policy_poisoning_jwt_jws_defense``\n\n[Task]\nAnalyze the A1 JWS defense specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_a1_policy_poisoning_jwt_jws_defense` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_a1_policy_poisoning_jwt_jws_defense`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_xapp_conflict_mitigation_and_arbitration",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 110,
+    "ci": false,
+    "hash": "cb86429a502a96c84ff6a3e17def0d01ba5e1d13802f63808d30cbfac84e9e93",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다중 xApp 제어 충돌 중재 및 차단",
+      "en": "Multi-xApp Control Conflict Mitigation and Arbitration"
+    },
+    "prompt": {
+      "ko": "서로 다른 xApp이 동일 PRB 자원에 상충하는 제어 명령을 내려 기지국 가용성을 떨어뜨리는 간접 충돌 공격을 중재 엔진으로 방어합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_xapp_conflict_mitigation_and_arbitration``\n\n[문제 안내]\n해당 xApp 충돌 중재 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Deploy a Near-RT RIC conflict mitigation arbiter to prevent competing xApp PRB directives from degrading availability.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_xapp_conflict_mitigation_and_arbitration``\n\n[Task]\nAnalyze the xApp conflict arbitration specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_xapp_conflict_mitigation_and_arbitration` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_xapp_conflict_mitigation_and_arbitration`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_rogue_gnb_imsi_catcher_detection",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 120,
+    "ci": false,
+    "hash": "7203cb5439acca5988e3ef3e4b5ded26f0248c76d7aa79af30f77e465e31f580",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "불법 위조 gNodeB IMSI 캐처 탐지",
+      "en": "Rogue gNodeB and 5G/6G IMSI Catcher Detection"
+    },
+    "prompt": {
+      "ko": "SUCI 비식별화 다운그레이드 및 위조 SIB1 브로드캐스트를 수행하는 불법 기지국을 E2SM-KPM RF 지문 분석으로 탐지합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_rogue_gnb_imsi_catcher_detection``\n\n[문제 안내]\n해당 불법 기지국 탐지 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Detect rogue gNodeBs attempting SUCI downgrade or spoofed SIB1 broadcasts using E2SM-KPM RF fingerprinting.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_rogue_gnb_imsi_catcher_detection``\n\n[Task]\nAnalyze the rogue gNodeB detection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_rogue_gnb_imsi_catcher_detection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_rogue_gnb_imsi_catcher_detection`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_f1_e1_interface_ipsec_ikev2_tunnel",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 125,
+    "ci": false,
+    "hash": "0c4ff574484bc0b108886011ff1a7fb6f0d6ace68cb7d8b099b032983902629f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "F1 및 E1 미드홀 IPsec IKEv2 터널 보호",
+      "en": "F1 and E1 Midhaul IPsec IKEv2 Tunnel Hardening"
+    },
+    "prompt": {
+      "ko": "O-CU-CP, O-CU-UP, O-DU 간 F1/E1 인터페이스에 IKEv2 기반 IPsec ESP 터널과 완벽한 순방향 비밀성(PFS)을 구성합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_f1_e1_interface_ipsec_ikev2_tunnel``\n\n[문제 안내]\n해당 F1/E1 IPsec 터널 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Configure IKEv2 IPsec ESP tunnels with PFS across F1 and E1 midhaul interfaces linking O-CU-CP, O-CU-UP, and O-DU.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_f1_e1_interface_ipsec_ikev2_tunnel``\n\n[Task]\nAnalyze the F1/E1 IPsec hardening specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_f1_e1_interface_ipsec_ikev2_tunnel` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_f1_e1_interface_ipsec_ikev2_tunnel`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_o_cloud_kubernetes_cnf_runtime_sec",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 130,
+    "ci": false,
+    "hash": "76e93cafb5415e2049b6f5f76f33cc72cd830718b875b05d892c03b2004e136a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "O-Cloud 쿠버네티스 CNF 런타임 격리",
+      "en": "O-Cloud Kubernetes CNF Runtime Isolation"
+    },
+    "prompt": {
+      "ko": "vDU/vCU CNF 컨테이너 워크로드의 특권 상승 및 DPDK 호스트 네트워크 탈출을 restricted container security 표준과 Seccomp-BPF로 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_o_cloud_kubernetes_cnf_runtime_sec``\n\n[문제 안내]\n해당 O-Cloud CNF 격리 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Block vDU/vCU CNF container escapes over DPDK interfaces using restricted container security and Seccomp-BPF profiles.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_o_cloud_kubernetes_cnf_runtime_sec``\n\n[Task]\nAnalyze the O-Cloud CNF isolation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_o_cloud_kubernetes_cnf_runtime_sec` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_o_cloud_kubernetes_cnf_runtime_sec`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_6g_ntn_doppler_ephemeris_validation",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 140,
+    "ci": false,
+    "hash": "0d34678eeedffb129c6de70abefd703366af35f8ee2d53af56e290d6285deb42",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "6G NTN 위성 천체력 및 도플러 무결성 검증",
+      "en": "6G NTN Ephemeris and Doppler Shift Integrity Validation"
+    },
+    "prompt": {
+      "ko": "LEO 위성 브로드캐스트 천체력(Ephemeris) 스푸핑을 통한 UE 타이밍 어드밴스 오작동 공격을 칼만 필터 교차 검증으로 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_6g_ntn_doppler_ephemeris_validation``\n\n[문제 안내]\n해당 NTN 천체력 검증 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Validate LEO satellite ephemeris and Doppler shift telemetry via Kalman cross-checks to stop UE timing advance spoofing.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_6g_ntn_doppler_ephemeris_validation``\n\n[Task]\nAnalyze the NTN ephemeris validation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_6g_ntn_doppler_ephemeris_validation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_6g_ntn_doppler_ephemeris_validation`."
+      ]
+    }
+  },
+  {
+    "id": "t2_oransec_5g_aka_suci_privacy_profile_b_audit",
+    "tier": 2,
+    "cat": "network",
+    "track": "oransec",
+    "points": 150,
+    "ci": false,
+    "hash": "02b341ae7291334b03b5a94deed3fa40ced1792c517b20847e973623bf518ca6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "5G-AKA SUCI ECIES Profile B 프라이버시 감사",
+      "en": "5G-AKA SUCI ECIES Profile B Privacy Audit"
+    },
+    "prompt": {
+      "ko": "가입자 영구 식별자 SUPI가 무선 구간에 평문 노출(Null Scheme)되지 않도록 ECIES Profile B(Curve25519) 암호화를 감사·강제합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_5g_aka_suci_privacy_profile_b_audit``\n\n[문제 안내]\n해당 SUCI Profile B 감사 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Audit and enforce ECIES Profile B encryption for SUCI concealment so SUPI is never leaked via the Null Scheme.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t2_oransec_5g_aka_suci_privacy_profile_b_audit``\n\n[Task]\nAnalyze the SUCI Profile B audit specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t2_oransec_5g_aka_suci_privacy_profile_b_audit` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t2_oransec_5g_aka_suci_privacy_profile_b_audit`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_ric_ebpf_xdp_ecpri_flood_mitigation",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 200,
+    "ci": false,
+    "hash": "059155b413c23c24ea2b4243dbffaad84855a59a1fdd41b085a273abdff632d6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF XDP 기반 eCPRI 프론트홀 플러딩 완화",
+      "en": "eBPF XDP eCPRI Fronthaul Flood Mitigation"
+    },
+    "prompt": {
+      "ko": "O-DU NIC 드라이버 단의 eBPF XDP 프로그램으로 비정상 eCPRI 페이로드 플러딩을 0ms 와이어 속도로 드롭합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_ric_ebpf_xdp_ecpri_flood_mitigation``\n\n[문제 안내]\n해당 eBPF XDP 프론트홀 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Drop malformed eCPRI fronthaul flood packets at wire speed directly in the O-DU NIC driver using eBPF XDP.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_ric_ebpf_xdp_ecpri_flood_mitigation``\n\n[Task]\nAnalyze the eBPF XDP fronthaul mitigation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_ric_ebpf_xdp_ecpri_flood_mitigation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_ric_ebpf_xdp_ecpri_flood_mitigation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_ai_ml_r1_model_poisoning_guard",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 210,
+    "ci": false,
+    "hash": "32a0e66b3a714972b3ba40a5c3da3408be41706654e10fbd7cfd186a56f57e34",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "R1 인터페이스 AI/ML xApp 모델 중독 방어",
+      "en": "R1 Interface AI/ML xApp Model Poisoning Defense"
+    },
+    "prompt": {
+      "ko": "Non-RT RIC에서 Near-RT RIC으로 배포되는 트래픽 스티어링 AI/ML 모델의 가중치 서명과 적대적 섭동 내성을 검증합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_ai_ml_r1_model_poisoning_guard``\n\n[문제 안내]\n해당 R1 AI 모델 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify cryptographic weight signatures and adversarial robustness for AI/ML traffic-steering models deployed over R1.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_ai_ml_r1_model_poisoning_guard``\n\n[Task]\nAnalyze the R1 AI model defense specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_ai_ml_r1_model_poisoning_guard` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_ai_ml_r1_model_poisoning_guard`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_6g_ntn_isl_beam_hopping_anti_jamming",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 220,
+    "ci": false,
+    "hash": "e0f34004a7f6cfbc86f04d2826ec26c119f36737ecc77e57280a62251da7c7f1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "6G NTN 위성 간 빔 호핑 항재밍 방어",
+      "en": "6G NTN Inter-Satellite Beam Hopping Anti-Jamming"
+    },
+    "prompt": {
+      "ko": "고출력 지상 재머의 협대역/추종 재밍에 대응해 동적 빔 호핑 시퀀스와 확산 대역 패턴을 암호학적으로 랜덤화합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_6g_ntn_isl_beam_hopping_anti_jamming``\n\n[문제 안내]\n해당 빔 호핑 항재밍 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Randomize dynamic beam-hopping schedules cryptographically to defeat narrowband and follower jamming on 6G NTN links.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_6g_ntn_isl_beam_hopping_anti_jamming``\n\n[Task]\nAnalyze the beam-hopping anti-jamming specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_6g_ntn_isl_beam_hopping_anti_jamming` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_6g_ntn_isl_beam_hopping_anti_jamming`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_intel_tdx_ocloud_vdu_attestation",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 230,
+    "ci": false,
+    "hash": "d3c668501eeed40f0f2f3ae12f9973030bb636cad4d90edef9657868ac9cc5ca",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Intel TDX 기반 O-Cloud vDU 기밀 원격 증명",
+      "en": "Intel TDX O-Cloud vDU Confidential Attestation"
+    },
+    "prompt": {
+      "ko": "공용 엣지 서버에서 구동되는 vDU 기저대역 메모리 평문 탈취를 막기 위해 Intel TDX TD Quote 하드웨어 원격 증명을 수행합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_intel_tdx_ocloud_vdu_attestation``\n\n[문제 안내]\n해당 O-Cloud TDX 원격 증명 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Perform Intel TDX TD Quote hardware attestation to protect vDU baseband keys and memory on shared edge servers.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_intel_tdx_ocloud_vdu_attestation``\n\n[Task]\nAnalyze the O-Cloud TDX attestation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_intel_tdx_ocloud_vdu_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_intel_tdx_ocloud_vdu_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_sba_http2_oauth2_nrf_token_hardening",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 240,
+    "ci": false,
+    "hash": "3600be015c9323c064766d658c0db38cea2a2360a3e3683205dc1f06f2eaea31",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "5G/6G 코어 SBA HTTP/2 NRF OAuth2 하드닝",
+      "en": "5G/6G Core SBA HTTP/2 NRF OAuth2 Hardening"
+    },
+    "prompt": {
+      "ko": "AMF/SMF/UPF 서비스 기반 아키텍처(SBA) 간 NRF 액세스 토큰 재전송 탈취를 RFC 9449 DPoP 및 mTLS 바인딩으로 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_sba_http2_oauth2_nrf_token_hardening``\n\n[문제 안내]\n해당 SBA NRF OAuth2 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Bind 5G/6G Core SBA NRF OAuth2 access tokens to mTLS and RFC 9449 DPoP proofs to prevent NF impersonation.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_sba_http2_oauth2_nrf_token_hardening``\n\n[Task]\nAnalyze the SBA NRF OAuth2 specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_sba_http2_oauth2_nrf_token_hardening` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_sba_http2_oauth2_nrf_token_hardening`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_x2_xn_handover_replay_protection",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 250,
+    "ci": false,
+    "hash": "8180fad0f795d07618a62215dbd16035111ae937636926a146fc52c7ce6d358d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Xn/X2 기지국 간 핸드오버 재전송 방어",
+      "en": "Xn and X2 Inter-gNodeB Handover Replay Protection"
+    },
+    "prompt": {
+      "ko": "지상 gNodeB와 위성 기지국 간 Xn 핸드오버 시 NH/NCC 키 체인 갱신과 단조 증가 카운터 검증으로 키 재사용 공격을 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_x2_xn_handover_replay_protection``\n\n[문제 안내]\n해당 Xn 핸드오버 방어 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Enforce NH/NCC key chaining and monotonic counter checks during terrestrial-to-NTN Xn handovers to block key reuse.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_x2_xn_handover_replay_protection``\n\n[Task]\nAnalyze the Xn handover protection specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_x2_xn_handover_replay_protection` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_x2_xn_handover_replay_protection`."
+      ]
+    }
+  },
+  {
+    "id": "t3_oransec_smo_supply_chain_sigstore_cosign",
+    "tier": 3,
+    "cat": "network",
+    "track": "oransec",
+    "points": 260,
+    "ci": false,
+    "hash": "b67c4612705c39f4cf17fff0e842a0a5cddf6459188112a09a911423a522b905",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SMO rApp/xApp 공급망 Sigstore Cosign 서명",
+      "en": "SMO rApp and xApp Supply Chain Sigstore Cosign"
+    },
+    "prompt": {
+      "ko": "O-RAN 마켓플레이스에서 유입되는 xApp/rApp 컨테이너 이미지의 SBOM 및 Sigstore Cosign 키리스 서명을 어드미션 단계에서 검증합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_smo_supply_chain_sigstore_cosign``\n\n[문제 안내]\n해당 SMO 공급망 서명 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Verify SBOM provenance and Sigstore Cosign keyless signatures at admission before deploying xApp/rApp images.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t3_oransec_smo_supply_chain_sigstore_cosign``\n\n[Task]\nAnalyze the SMO supply chain specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t3_oransec_smo_supply_chain_sigstore_cosign` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t3_oransec_smo_supply_chain_sigstore_cosign`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_pqc_mlkem768_ntn_handover_kem",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 350,
+    "ci": false,
+    "hash": "6094747311e8be8a5b05eeef4a1073c30f89354fa6c5fc42a1aa71c0f34221ed",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "6G NTN FIPS 203 ML-KEM-768 하이브리드 핸드오버",
+      "en": "6G NTN FIPS 203 ML-KEM-768 Hybrid Handover"
+    },
+    "prompt": {
+      "ko": "광역 위성 빔 도청(SNDL)을 무력화하기 위해 Xn 핸드오버 키 합의를 하이브리드 X25519_MLKEM768로 전환합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_pqc_mlkem768_ntn_handover_kem``\n\n[문제 안내]\n해당 NTN ML-KEM-768 핸드오버 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Upgrade 6G NTN Xn handover key agreement to hybrid X25519_MLKEM768 to neutralize Harvest-Now-Decrypt-Later.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_pqc_mlkem768_ntn_handover_kem``\n\n[Task]\nAnalyze the NTN ML-KEM-768 handover specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_pqc_mlkem768_ntn_handover_kem` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_pqc_mlkem768_ntn_handover_kem`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_fips204_mldsa65_ric_attestation",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 370,
+    "ci": false,
+    "hash": "bf730363b8c002b3c325988ab04e9f71a807c097add2d02bd38d8cf20eed3ec8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NIST FIPS 204 ML-DSA-65 RIC 원격 증명",
+      "en": "NIST FIPS 204 ML-DSA-65 RIC Remote Attestation"
+    },
+    "prompt": {
+      "ko": "Near-RT RIC 플랫폼의 부트 측정값과 xApp 실행 무결성을 사후양자 전자서명 ML-DSA-65로 원격 증명합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_fips204_mldsa65_ric_attestation``\n\n[문제 안내]\n해당 ML-DSA-65 RIC 증명 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Attest Near-RT RIC boot measurements and xApp execution integrity with post-quantum NIST FIPS 204 ML-DSA-65.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_fips204_mldsa65_ric_attestation``\n\n[Task]\nAnalyze the ML-DSA-65 RIC attestation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_fips204_mldsa65_ric_attestation` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_fips204_mldsa65_ric_attestation`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_zero_trust_multi_orbit_quorum",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 400,
+    "ci": false,
+    "hash": "af91a9196c1aea9d9d73c1453b44c5be375f85efc800a6244458c2d990b26731",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "다중 궤도 6G NTN 비잔틴 핸드오버 쿼럼",
+      "en": "Multi-Orbit 6G NTN Byzantine Handover Quorum"
+    },
+    "prompt": {
+      "ko": "LEO/MEO 위성 간 동시 핸드오버 시 침해된 위성 노드의 거짓 궤도 라우팅을 최소 3노드 쿼럼 합의로 격리합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_zero_trust_multi_orbit_quorum``\n\n[문제 안내]\n해당 다중 궤도 쿼럼 합의 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Isolate compromised satellite handover relays across LEO/MEO orbits using a minimum 3-node Byzantine quorum.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_zero_trust_multi_orbit_quorum``\n\n[Task]\nAnalyze the multi-orbit quorum specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_zero_trust_multi_orbit_quorum` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_zero_trust_multi_orbit_quorum`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_autonomous_soar_ran_slice_healing",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 420,
+    "ci": false,
+    "hash": "c30e51ef3c6f1b0fc8da7fb2041e60412ed9c9d569c573940da6bbb4b396d784",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "자율 SOAR 기반 O-RAN 슬라이스 자가 치유",
+      "en": "Autonomous SOAR O-RAN Slice Self-Healing"
+    },
+    "prompt": {
+      "ko": "eBPF와 E2SM 텔레메트리 이상 탐지 시 침해된 xApp을 즉시 격리하고 URLLC 슬라이스 대역폭을 자동 복구하는 SOAR 루프를 검증합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_autonomous_soar_ran_slice_healing``\n\n[문제 안내]\n해당 자율 슬라이스 자가 치유 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Validate an autonomous SOAR loop that isolates compromised xApps and restores URLLC slice SLA upon eBPF alerts.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_autonomous_soar_ran_slice_healing``\n\n[Task]\nAnalyze the autonomous slice self-healing specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_autonomous_soar_ran_slice_healing` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_autonomous_soar_ran_slice_healing`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_tpm2_quote_vran_hardware_root",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 440,
+    "ci": false,
+    "hash": "c27f56fcb977cebd75b77fed83c65c2e0dc43a4433c518777dcc9f54aee33ebf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "vRAN 서버 TPM 2.0 Quote 하드웨어 신뢰점",
+      "en": "vRAN Server TPM 2.0 Quote Hardware Root of Trust"
+    },
+    "prompt": {
+      "ko": "원격 셀 사이트 O-DU 서버의 펌웨어 변조를 TPM 2.0 Quote PCR 교차 검증과 상수 시간 HMAC 감사로 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_tpm2_quote_vran_hardware_root``\n\n[문제 안내]\n해당 vRAN TPM 2.0 Quote 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Block firmware tampering on remote cell-site O-DU servers using TPM 2.0 Quote PCR checks and constant-time HMAC.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_tpm2_quote_vran_hardware_root``\n\n[Task]\nAnalyze the vRAN TPM 2.0 Quote specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_tpm2_quote_vran_hardware_root` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_tpm2_quote_vran_hardware_root`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_cross_domain_6g_core_ran_telemetry",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 460,
+    "ci": false,
+    "hash": "552be686273026aec03dbe368ae37159256c9b7f0cfa47ced33a7f79823093a8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "6G 코어-RAN 교차 도메인 위협 상관 분석",
+      "en": "6G Core-RAN Cross-Domain Threat Correlation"
+    },
+    "prompt": {
+      "ko": "UPF GTP-U 이상 트래픽과 Near-RT RIC E2 제어 명령을 실시간 상관 분석하여 지능형 통신망 APT 횡적 이동을 차단합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_cross_domain_6g_core_ran_telemetry``\n\n[문제 안내]\n해당 교차 도메인 상관 분석 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Correlate UPF GTP-U anomalies with Near-RT RIC E2 control events in real time to stop telecom APT lateral movement.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_cross_domain_6g_core_ran_telemetry``\n\n[Task]\nAnalyze the cross-domain correlation specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_cross_domain_6g_core_ran_telemetry` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_cross_domain_6g_core_ran_telemetry`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oransec_sovereign_6g_ntn_oran_capstone",
+    "tier": 4,
+    "cat": "network",
+    "track": "oransec",
+    "points": 500,
+    "ci": false,
+    "hash": "36dd6affdafa8b9e862037f4cfcd27e13450972c22661a52866495d0b746ed5a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "주권 6G NTN & O-RAN 제로 트러스트 캡스톤",
+      "en": "Sovereign 6G NTN and O-RAN Zero-Trust Capstone"
+    },
+    "prompt": {
+      "ko": "E2 SPIFFE mTLS, eCPRI MACsec+NTS-PTP, A1 JWS+TEID 격리, X25519_MLKEM768+ML-DSA-65를 통합한 통신망 제로 트러스트 아키텍처를 완성합니다.\n\n[챌린지 식별자]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_sovereign_6g_ntn_oran_capstone``\n\n[문제 안내]\n해당 6G NTN & O-RAN 캡스톤 명세를 분석하고 올바른 플래그를 도출하여 제출하십시오.",
+      "en": "Complete the sovereign Zero-Trust 6G NTN & O-RAN architecture integrating E2 mTLS, eCPRI MACsec, A1 JWS, and PQC handovers.\n\n[Challenge Identifier]\n`ORANSEC_CHALLENGE_ID: `t4_oransec_sovereign_6g_ntn_oran_capstone``\n\n[Task]\nAnalyze the 6G NTN & O-RAN capstone specification, then derive and submit the flag."
+    },
+    "hints": {
+      "ko": [
+        "이 문제는 식별자 `t4_oransec_sovereign_6g_ntn_oran_capstone` 기반 결정론적 검증 플래그로 풀이할 수 있습니다."
+      ],
+      "en": [
+        "This challenge derives a deterministic flag from identifier `t4_oransec_sovereign_6g_ntn_oran_capstone`."
       ]
     }
   }

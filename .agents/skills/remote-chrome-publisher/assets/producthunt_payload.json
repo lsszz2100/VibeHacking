@@ -2,7 +2,7 @@
   "product": {
     "name": "VibeHacking",
     "tagline": "AI-Driven Cybersecurity & Hands-on Reverse Engineering Platform",
-    "description": "VibeHacking is an open-source, comprehensive cybersecurity education platform featuring 75 modular curriculum sections (492 chapters), 67 interactive Docker labs, 79 guided wargame tracks, and 2,765 zero-defect challenges spanning Web, Cloud, Binary/Pwnable, AI Security, Cryptography, Forensics, and Confidential Computing.",
+    "description": "VibeHacking is an open-source, comprehensive cybersecurity education platform featuring 75 modular curriculum sections (492 chapters), 79 interactive Docker labs, 91 guided wargame tracks, 3,185 zero-defect challenges, and 45 simulators spanning Web, Cloud, Binary/Pwnable, AI Security, Cryptography, Forensics, Confidential Computing, and 6G NTN / O-RAN.",
     "links": {
       "website": "https://lsszz2100.github.io/VibeHacking/",
       "github": "https://github.com/lsszz2100/VibeHacking",
@@ -15,7 +15,7 @@
       "Education",
       "Artificial Intelligence"
     ],
-    "first_comment": "Hello Product Hunt community! 👋\n\nWe are excited to share VibeHacking — an open-source cybersecurity and reverse engineering platform designed for engineers, security researchers, and students.\n\nKey Highlights:\n- 🛡️ 75 Complete Sections across Offensive & Defensive Security (492 in-depth chapters)\n- 🐳 67 Hands-on Docker Environments (127.0.0.1 isolated with automated solvers)\n- 🗺️ 79 Strategic Career Roadmap Tracks (Offensive, Cloud, AppSec, RE, PQC, TEE, AI Security)\n- 🧩 2,765 Zero-Defect Wargame Challenges with deterministic verification\n- 🤖 Autonomous AI Agent Skills (wargame builder, lab creator, remote publisher, compliance reporter)\n\nEverything is 100% open source under MIT License. We'd love your feedback and contributions!",
+    "first_comment": "Hello Product Hunt community! 👋\n\nWe are excited to share VibeHacking v2.29.0 — an open-source cybersecurity and reverse engineering platform designed for engineers, security researchers, and students.\n\nKey Highlights:\n- 🛡️ 75 Complete Sections across Offensive & Defensive Security (492 in-depth chapters)\n- 🐳 79 Hands-on Docker Environments (127.0.0.1 isolated with automated solvers)\n- 🗺️ 91 Strategic Career Roadmap Tracks (Offensive, Cloud, AppSec, RE, PQC, TEE, AI Security, 6G NTN / O-RAN)\n- 🧩 3,185 Zero-Defect Wargame Challenges & 45 Interactive Simulators with deterministic verification\n- 🤖 Autonomous AI Agent Skills (wargame builder, lab creator, remote publisher, compliance reporter)\n\nEverything is 100% open source under MIT License. We'd love your feedback and contributions!",
     "media": {
       "thumbnail": "Product_Hunt.png",
       "gallery": [

@@ -2581,6 +2581,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "✓ Secure multi-party aggregation completed -> FLAG{v228_s4_secure_mpc_federated_mldsa87_attested}"
             }
         ]
+    },
+    "79": {
+        "title": "Oran6gNtnSecurityLab (6G NTN & O-RAN 통신망 인프라 제로 트러스트 보안 랩)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Near-RT RIC E2 xApp 등록 인가 및 SPIFFE mTLS 스키마 화이트리스트 검증",
+                "target": "POST /api/stage1/eval",
+                "poc_explanation": "비인가 xApp의 E2AP 제어 루프 침투를 차단하기 위해 SPIFFE SVID 워크로드 신원, 상호 mTLS, E2SM-KPM 스키마 화이트리스트를 검증합니다.",
+                "exploit_payload": "{\"xapp_id\": \"xapp_oran_2026_kpm_guard\", \"spiffe_svid_uri\": \"spiffe://oran.vibe.local/ns/ric/sa/kpm-guard\", \"e2_mtls_verified\": true, \"e2sm_kpm_schema_allowlisted\": true}",
+                "defense": "E2 인터페이스 mTLS 1.3, SPIFFE SVID 도메인 고정, E2SM-KPM 서비스 모델 화이트리스트.",
+                "sample_output": "✓ Near-RT RIC E2 xApp identity verified -> FLAG{v229_s1_oran_e2_spiffe_mtls_xapp_verified}"
+            },
+            {
+                "step": 2,
+                "name": "Open Fronthaul eCPRI MACsec AES-256-GCM 암호화 및 IEEE 1588v2 PTP NTS 동기화 방어",
+                "target": "POST /api/stage2/eval",
+                "poc_explanation": "O-DU와 O-RU 간 eCPRI Split 7.2x 프론트홀 트래픽을 MACsec AES-256-GCM으로 보호하고 NTS 인증 PTP 위상 드리프트를 130ns 이내로 통제합니다.",
+                "exploit_payload": "{\"fronthaul_protocol\": \"ecpri_split_7_2x\", \"macsec_cipher\": \"AES-256-GCM\", \"ptp_nts_authenticated\": true, \"ptp_clock_drift_ns\": 24.5, \"ecpri_session_id\": \"ecpri_fh_2026_79_alpha\", \"ecpri_frame_hmac\": \"<ecpri_hmac>\"}",
+                "defense": "IEEE 802.1AE MACsec AES-256-GCM, NTS 인증 PTP 경계 시계(<=130ns), 프레임 HMAC 검증.",
+                "sample_output": "✓ Open Fronthaul eCPRI MACsec and PTP sync hardened -> FLAG{v229_s2_ecpri_macsec_ptp_sync_hardened}"
+            },
+            {
+                "step": 3,
+                "name": "A1 정책 서명 RBAC 강제 및 6G 네트워크 슬라이스 UPF GTP-U TEID 격리",
+                "target": "POST /api/stage3/eval",
+                "poc_explanation": "A1 정책 포이즈닝으로 인한 URLLC 슬라이스 SLA 기아 공격을 차단하기 위해 서명된 RBAC 정책과 슬라이스별 UPF TEID 격리를 강제합니다.",
+                "exploit_payload": "{\"slice_sst\": 1, \"a1_policy_signed_rbac\": true, \"sla_bandwidth_guarantees_pct\": 99.5, \"upf_teid_isolation_active\": true}",
+                "defense": "A1-P 정책 JWS 서명 및 RBAC 검증, 슬라이스별 UPF GTP-U TEID 엄격 격리.",
+                "sample_output": "✓ A1 policy poisoning blocked and slice TEID isolated -> FLAG{v229_s3_oran_a1_slice_teid_isolation_enforced}"
+            },
+            {
+                "step": 4,
+                "name": "6G NTN 위성-지상국 PQC 핸드오버(ML-KEM-768 + ML-DSA-65) 및 원격 증명",
+                "target": "POST /api/stage4/eval",
+                "poc_explanation": "광역 위성 빔 SNDL 도청에 대응해 하이브리드 X25519_MLKEM768 핸드오버 키 합의와 NIST FIPS 204 ML-DSA-65 RIC 원격 증명을 수행합니다.",
+                "exploit_payload": "{\"pqc_kem_suite\": \"X25519_MLKEM768\", \"fips204_mldsa65_ric_attestation\": \"sig_oran_mldsa65_ric_enclave_attested\", \"ntn_handover_quorum_nodes\": 4, \"handover_token_hash\": \"<ho_hash>\", \"oran_audit_hmac\": \"<ho_hmac>\"}",
+                "defense": "하이브리드 X25519_MLKEM768 핸드오버, NIST FIPS 204 ML-DSA-65 RIC 증명, 3노드 이상 다중 궤도 쿼럼.",
+                "sample_output": "✓ 6G NTN post-quantum handover attested -> FLAG{v229_s4_6g_ntn_pqc_handover_attested}"
+            }
+        ]
     }
 }
 

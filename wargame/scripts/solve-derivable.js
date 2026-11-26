@@ -3621,6 +3621,59 @@ for (const id of FEDSEC_IDS) {
   });
 }
 
+
+const ORANSEC_IDS = [
+  "t0_oransec_disaggregated_ran_architecture_cu_du_ru",
+  "t0_oransec_near_rt_ric_and_e2_interface_basics",
+  "t0_oransec_open_fronthaul_ecpri_split_7_2x",
+  "t0_oransec_ieee_1588v2_ptp_timing_sync_threats",
+  "t0_oransec_a1_o1_management_plane_exposure",
+  "t0_oransec_6g_ntn_leo_satellite_architecture",
+  "t0_oransec_network_slicing_multi_tenant_isolation",
+  "t1_oransec_xapp_spiffe_svid_workload_identity",
+  "t1_oransec_e2_mtls_strict_cipher_enforcement",
+  "t1_oransec_ecpri_macsec_aes256gcm_protection",
+  "t1_oransec_nts_secured_ptp_clock_boundary",
+  "t1_oransec_e2sm_kpm_schema_allowlist_filtering",
+  "t1_oransec_o1_netconf_ssh_nacm_hardening",
+  "t1_oransec_upf_gtpu_teid_slice_segregation",
+  "t2_oransec_a1_policy_poisoning_jwt_jws_defense",
+  "t2_oransec_xapp_conflict_mitigation_and_arbitration",
+  "t2_oransec_rogue_gnb_imsi_catcher_detection",
+  "t2_oransec_f1_e1_interface_ipsec_ikev2_tunnel",
+  "t2_oransec_o_cloud_kubernetes_cnf_runtime_sec",
+  "t2_oransec_6g_ntn_doppler_ephemeris_validation",
+  "t2_oransec_5g_aka_suci_privacy_profile_b_audit",
+  "t3_oransec_ric_ebpf_xdp_ecpri_flood_mitigation",
+  "t3_oransec_ai_ml_r1_model_poisoning_guard",
+  "t3_oransec_6g_ntn_isl_beam_hopping_anti_jamming",
+  "t3_oransec_intel_tdx_ocloud_vdu_attestation",
+  "t3_oransec_sba_http2_oauth2_nrf_token_hardening",
+  "t3_oransec_x2_xn_handover_replay_protection",
+  "t3_oransec_smo_supply_chain_sigstore_cosign",
+  "t4_oransec_pqc_mlkem768_ntn_handover_kem",
+  "t4_oransec_fips204_mldsa65_ric_attestation",
+  "t4_oransec_zero_trust_multi_orbit_quorum",
+  "t4_oransec_autonomous_soar_ran_slice_healing",
+  "t4_oransec_tpm2_quote_vran_hardware_root",
+  "t4_oransec_cross_domain_6g_core_ran_telemetry",
+  "t4_oransec_sovereign_6g_ntn_oran_capstone"
+];
+
+for (const id of ORANSEC_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/ORANSEC_CHALLENGE_ID:\s*`([^`]+)`/);
+      const ident = m ? m[1] : ch.id;
+      const hash = crypto.createHash('sha256').update(ident + '_vibe_oransec_2026').digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
+
 const DECLINED = new Map([
   ['t2_volpooltag', 'case-sensitive 4-character kernel pool tag knowledge question'],
   ['t3_volvads', 'case-sensitive short VAD tag knowledge question'],

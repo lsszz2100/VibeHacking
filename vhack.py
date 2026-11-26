@@ -775,6 +775,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [11, 48, 56, 68, 69, 72, 74, 76, 77],
     },
+    "79": {
+        "name": "6G NTN & O-RAN 통신망 인프라 제로 트러스트 보안 실전 랩",
+        "dir":  "79_oran_6g_ntn_security_lab",
+        "desc": "Oran6gNtnSecurityLab: Near-RT RIC E2 SPIFFE mTLS 및 E2SM-KPM 스키마 화이트리스트 검증 · Open Fronthaul eCPRI MACsec AES-256-GCM 및 IEEE 1588v2 PTP NTS 동기화 방어 · A1 정책 서명 RBAC 및 6G 네트워크 슬라이스 UPF TEID 격리 · 6G NTN FIPS 203 ML-KEM-768 + FIPS 204 ML-DSA-65 PQC 핸드오버 원격 증명",
+        "url":  "웹 콘솔 & 6G NTN O-RAN 보안 관제기: http://localhost:8079",
+        "difficulty": "★★★★★",
+        "related": [11, 48, 55, 60, 61, 65, 76, 77, 78],
+    },
 }
 
 LABS_METADATA = LABS
@@ -1829,6 +1837,10 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8073, "Lab 73 (SiliconPhotonicsQkdLab Optical QKD Mesh Lab)"),
         (8074, "Lab 74 (QuantumNeuralHybridLab QNN & QPU Memory Defense Lab)"),
         (8075, "Lab 75 (PhotonicIcPufSecurityLab Optical PUF & Silicon Defense Lab)"),
+        (8076, "Lab 76 (NeuromorphicSnnHardwareLab Neuromorphic SNN Lab)"),
+        (8077, "Lab 77 (SatComLaserQkdLab LEO SatCom QKD Lab)"),
+        (8078, "Lab 78 (FedAiPoisonDefenseLab Federated AI Poison Defense Lab)"),
+        (8079, "Lab 79 (Oran6gNtnSecurityLab 6G NTN & O-RAN Security Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

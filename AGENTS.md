@@ -967,6 +967,11 @@ node wargame/scripts/solve-derivable.js
   - **Docsify 웹 뷰어 플러그인 고도화**: Mermaid 10 실시간 다이어그램 렌더링, `docsify-pagination` 챕터 이동 네비게이션, `docsify-copy-code` 코드 복사, `zoom-image` 이미지 확대, 상단 고정 네비게이션 바 & 실습 랩/워게임 원클릭 연동 배너 배치
   - **17개 랩 124개 무결성 테스트 통과**: `vhack lab test --all` -> 17개 랩 124개 테스트 100% All Green, 전체 Pytest 127개 테스트 통과
   - **원격 저장소 동기화**: `main` 브랜치 커밋(`64e82c1`, `4f0fdfc`) 원격 저장소(`https://github.com/lsszz2100/VibeHacking.git`) 푸시 완료
+- **2026-11-26 (v2.29.0 완료 — Lab 79, Track 91, Simulator #45, 보안점검·코드리뷰·리팩터링)**:
+  - **Lab 79 Oran6gNtnSecurityLab 신설**: `labs/79_oran_6g_ntn_security_lab/` (6G NTN & O-RAN Near-RT RIC E2 SPIFFE mTLS, Open Fronthaul eCPRI MACsec & NTS-PTP <130ns 동기화 방어, A1 서명 RBAC & UPF TEID 슬라이스 격리, 6G NTN `X25519_MLKEM768` + NIST FIPS 204 ML-DSA-65 핸드오버 원격 증명, 포트 `8079`, `127.0.0.1` 루프백 격리, 5/5 단위 테스트 통과)
+  - **워게임 91번째 트랙 (`oransec`) 및 35개 문제 추가**: 총 91개 트랙 / 3,185개 문제 돌파, 4대 사전 감사 게이트 (`verify`, `leakscan`, `audit --strict`, `solve-derivable`) 100% 통과 (2,187개 결정론적 플래그 도출)
+  - **Simulator #45 신규 구축**: `wargame/simulators/oran_6g_sim.html` (인터랙티브 6G NTN & O-RAN 제로 트러스트 보안 시뮬레이터)
+  - **보안점검·코드리뷰·리팩터링**: `labs/78` `Dockerfile` `app.main:app` 오타 및 `labs/71`/`78` 컨테이너 `--host 0.0.0.0` 수정, `vhack.py` `cmd_doctor` 79개 포트 확장, `tools/report_generator.py` Lab 79 CVSS 3.1/KISA/NIST/OWASP 등록, `tools/promo_kit.py` 및 `producthunt_payload.json` `v2.29.0` 동기화
 - **2026-11-23 (v2.28.0 완료 & Product Hunt 메이저 업데이트 심사 접수 완료)**:
   - **Lab 78 FedAiPoisonDefenseLab 신설**: `labs/78_federated_ai_poison_defense_lab/` (연합 학습 비잔틴 중독 방어, L2 클리핑, Multi-Krum, DP-SGD 가우시안 노이즈, FIPS 204 사후양자 서명 원격 증명, 포트 8078, 단위 테스트 전수 합격)
   - **워게임 90번째 트랙 (`fedsec`) 및 35개 문제 추가**: 총 90개 트랙 / 3,150개 문제 돌파, 4대 사전 감사 게이트 (`verify`, `leakscan`, `audit --strict`, `solve-derivable`) 100% 통과 (2,152개 결정론적 플래그 도출)

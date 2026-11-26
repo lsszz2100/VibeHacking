@@ -740,6 +740,14 @@ COMPLIANCE_MAP: Dict[str, Dict[str, str]] = {
         "owasp_id": "LLM04:2025",
         "owasp_name": "Federated Learning Gradient Poisoning, Membership Inference Privacy Leakage & Byzantine Worker Sybil Manipulation",
     },
+    "79": {
+        "kisa_id": "2.10.14",
+        "kisa_name": "6G NTN & O-RAN 통신망 인프라 제로 트러스트 보안 통제 (Near-RT RIC E2 SPIFFE mTLS 및 스키마 검증, Open Fronthaul eCPRI MACsec 및 NTS-PTP 동기화 방어, A1 서명 RBAC 및 UPF 슬라이스 TEID 격리, FIPS 203/204 사후양자 핸드오버 원격 증명)",
+        "nist_csf_id": "PR.AC-08",
+        "nist_csf_name": "6G NTN & O-RAN Disaggregated RIC Zero-Trust Attestation, Open Fronthaul MACsec/PTP Integrity & Post-Quantum Handover Protection",
+        "owasp_id": "API10:2023",
+        "owasp_name": "Rogue O-RAN xApp Injection, Open Fronthaul eCPRI/PTP Timing Spoofing & 6G NTN Slice Starvation",
+    },
 }
 
 @dataclass
@@ -2185,6 +2193,23 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
                 "remediation": "Deploy L2-norm gradient clipping and cosine similarity directional pruning, enforce Byzantine-tolerant Multi-Krum and Trimmed-Mean aggregation, inject calibrated Rényi Differential Privacy (RDP) Gaussian noise (epsilon <= 3.0), and mandate NIST FIPS 204 ML-DSA-87 enclave attestation."
             }
         ]
+    },
+    "79": {
+        "title": "79 Oran6gNtnSecurityLab 6G NTN & O-RAN Telecom Infrastructure Security Lab",
+        "category": "Telecom & 6G NTN Security",
+        "findings": [
+            {
+                "vuln_id": "VIBE-2026-7901",
+                "name": "O-RAN Near-RT RIC Rogue xApp Injection, eCPRI/PTP Timing Spoofing & 6G NTN Handover Interception",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:C/C:H/I:H/A:H",
+                "mitre_id": "T1557",
+                "mitre_technique": "Adversary-in-the-Middle: Telecom Fronthaul Timing Spoofing & RIC Policy Poisoning",
+                "mitre_tactic": "Initial Access / Impact / Credential Access",
+                "impact": "Attackers register rogue xApps over unauthenticated E2 interfaces, spoof IEEE 1588v2 PTP Grandmaster clocks to desynchronize Open Fronthaul TDD frames, poison A1 slice policies to starve URLLC bandwidth, and harvest classical 6G NTN handover keys.",
+                "affected_component": "Oran6gNtnSecurityLab Near-RT RIC E2/A1 Controller & 6G NTN Handover Gateway (Port 8079)",
+                "remediation": "Enforce mTLS with SPIFFE SVID workload identities and E2SM schema allowlists, protect Open Fronthaul eCPRI with MACsec AES-256-GCM and NTS-authenticated PTP (<130ns drift), sign A1 policies with RBAC and isolate UPF TEIDs per slice, and mandate hybrid X25519_MLKEM768 + FIPS 204 ML-DSA-65 NTN handover attestation."
+            }
+        ]
     }
 }
 
@@ -2194,7 +2219,7 @@ LAB_CATALOG: Dict[str, Dict[str, Any]] = {
 # ============================================================================
 
 class SecurityReportGenerator:
-    """67개 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
+    """등록된 전체 실습 랩 취약점 데이터를 종합하여 표준화된 진단 보고서를 렌더링하는 엔진"""
 
     def __init__(
         self,

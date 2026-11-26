@@ -21,14 +21,14 @@
 
 <br/>
 
-[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·3150_문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
+[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-터미널_침투·3185_문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 3150 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 90개 트랙 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
+> 🎮 **브라우저 터미널에서 즐기는 침투 CTF 워게임** — 가짜 셸(`connect`·`cat`·`submit`)로 표적 `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 3185 문제를 클리어. 부팅 시퀀스·`ACCESS GRANTED` 연출·매트릭스 레인·사운드·힌트·한영 지원. 본 레포의 91개 트랙 주제 기반. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
 
 <br/>
 
 커뮤니티 · 문의 &nbsp;→&nbsp; [![Discussions](https://img.shields.io/badge/Discussions-커뮤니티_Q%26A-00FF41?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/discussions) &nbsp; [![Security Advisories](https://img.shields.io/badge/보안_권고문-Security_Advisories-EA4335?style=flat-square&logo=github&labelColor=111111)](https://github.com/lsszz2100/VibeHacking/security/advisories)
-&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%20v2.25.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%203%2C045%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+75+labs)+and+terminal+wargame+with+3045+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
+&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%20v2.29.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%203%2C185%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+79+labs)+and+terminal+wargame+with+3185+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
 
 </div>
 
@@ -41,7 +41,7 @@
   &nbsp;
   <img src="https://img.shields.io/badge/ARCH-Linux_x86__64_/_Kernel_eBPF-blue?style=flat-square&labelColor=161b22" />
   &nbsp;
-  <img src="https://img.shields.io/badge/CORE-v2.25.0_RELEASE-blueviolet?style=flat-square&labelColor=161b22" />
+  <img src="https://img.shields.io/badge/CORE-v2.29.0_RELEASE-blueviolet?style=flat-square&labelColor=161b22" />
   &nbsp;
   <img src="https://img.shields.io/badge/AUDIT-100%25_ALL_GREEN-brightgreen?style=flat-square&labelColor=161b22" />
 </div>

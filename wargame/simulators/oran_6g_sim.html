@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulator #45: 6G NTN & O-RAN Security Simulator</title>
+  <style>
+    :root {
+      --bg: #0b111e;
+      --panel: #131c2e;
+      --border: #24324d;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    header {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 6px; font-size: 1.25rem; color: var(--accent); }
+    .sub { color: var(--muted); font-size: 0.9rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .card h2 { margin: 0 0 10px; font-size: 1rem; color: var(--accent); }
+    label { display: block; margin: 8px 0 4px; font-size: 0.85rem; color: var(--muted); }
+    select, input[type="range"] {
+      width: 100%;
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button {
+      background: #1d4ed8;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+    button.attack { background: #b91c1c; }
+    button.defend { background: #15803d; }
+    .log {
+      background: #060a12;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      height: 220px;
+      overflow-y: auto;
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      border: 1px solid var(--border);
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📡 Simulator #45: 6G NTN &amp; O-RAN Near-RT RIC Security</h1>
+      <div class="sub">E2 xApp mTLS/SPIFFE · Open Fronthaul eCPRI MACsec &amp; PTP Sync · A1 Slice Isolation · ML-KEM-768 NTN Handover</div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2>1. Near-RT RIC E2 &amp; Fronthaul</h2>
+        <label for="e2Auth">E2 Interface Auth</label>
+        <select id="e2Auth">
+          <option value="none">Plaintext (Vulnerable)</option>
+          <option value="mtls_spiffe" selected>mTLS + SPIFFE SVID + E2SM Allowlist</option>
+        </select>
+        <label for="fhCipher">Open Fronthaul eCPRI Cipher</label>
+        <select id="fhCipher">
+          <option value="none">Unencrypted eCPRI</option>
+          <option value="macsec" selected>MACsec AES-256-GCM + NTS-PTP</option>
+        </select>
+        <label for="ptpDrift">PTP Clock Drift (ns): <span id="driftVal">22</span> ns</label>
+        <input id="ptpDrift" type="range" min="5" max="300" value="22" oninput="document.getElementById('driftVal').textContent=this.value" />
+      </div>
+
+      <div class="card">
+        <h2>2. Network Slice &amp; 6G NTN Handover</h2>
+        <label for="a1Policy">A1 Policy &amp; UPF TEID Isolation</label>
+        <select id="a1Policy">
+          <option value="unsigned">Unsigned A1 + Shared TEID</option>
+          <option value="rbac_teid" selected>Signed RBAC A1 + Per-Slice TEID</option>
+        </select>
+        <label for="ntnKem">6G NTN Handover KEM</label>
+        <select id="ntnKem">
+          <option value="classical">Classical ECDH P-256 (SNDL Risk)</option>
+          <option value="mlkem768" selected>Hybrid X25519_MLKEM768 + ML-DSA-65</option>
+        </select>
+        <div class="btn-row">
+          <button class="attack" onclick="simulateAttack()">⚡ Simulate Attack</button>
+          <button class="defend" onclick="verifyPosture()">🛡️ Verify Zero-Trust</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3. Real-Time O-RAN Telemetry &amp; Audit Log</h2>
+      <div id="statusBadges" style="margin-bottom:10px;"></div>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+
+  <script>
+    const logEl = document.getElementById('log');
+    const badgesEl = document.getElementById('statusBadges');
+
+    function appendLog(msg, cls = '') {
+      const line = document.createElement('div');
+      if (cls) line.className = cls;
+      line.textContent = `[${new Date().toISOString().slice(11, 19)}] ${msg}`;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function evaluate() {
+      const e2 = document.getElementById('e2Auth').value === 'mtls_spiffe';
+      const fh = document.getElementById('fhCipher').value === 'macsec';
+      const drift = Number(document.getElementById('ptpDrift').value) <= 130;
+      const a1 = document.getElementById('a1Policy').value === 'rbac_teid';
+      const kem = document.getElementById('ntnKem').value === 'mlkem768';
+      return { e2, fh, drift, a1, kem, score: [e2, fh, drift, a1, kem].filter(Boolean).length };
+    }
+
+    function renderBadges(res) {
+      badgesEl.innerHTML = [
+        `<span class="badge ${res.e2 ? 'ok' : 'bad'}">E2 SPIFFE: ${res.e2 ? 'PASS' : 'FAIL'}</span>`,
+        `<span class="badge ${res.fh && res.drift ? 'ok' : 'bad'}">eCPRI/PTP: ${res.fh && res.drift ? 'PASS' : 'FAIL'}</span>`,
+        `<span class="badge ${res.a1 ? 'ok' : 'bad'}">A1 Slice: ${res.a1 ? 'PASS' : 'FAIL'}</span>`,
+        `<span class="badge ${res.kem ? 'ok' : 'bad'}">NTN PQC: ${res.kem ? 'PASS' : 'FAIL'}</span>`
+      ].join('');
+    }
+
+    function simulateAttack() {
+      const res = evaluate();
+      renderBadges(res);
+      appendLog('Launching rogue xApp + PTP Grandmaster spoof + A1 slice starvation + SNDL capture...', 'warn');
+      if (!res.e2) appendLog('ALERT: Rogue xApp injected unauthorized E2SM-RC control loop!', 'bad');
+      if (!res.fh || !res.drift) appendLog('ALERT: eCPRI C/U-plane desynced (>130ns PTP drift)!', 'bad');
+      if (!res.a1) appendLog('ALERT: Unsigned A1 policy starved URLLC slice bandwidth!', 'bad');
+      if (!res.kem) appendLog('ALERT: Classical handover key susceptible to Harvest-Now-Decrypt-Later!', 'bad');
+      if (res.score === 5) appendLog('BLOCKED: All 4 O-RAN & 6G NTN attack vectors neutralized by Zero-Trust controls.', 'ok');
+    }
+
+    function verifyPosture() {
+      const res = evaluate();
+      renderBadges(res);
+      appendLog(`Audit Posture Score: ${res.score}/5 controls enforced.`, res.score === 5 ? 'ok' : 'warn');
+    }
+
+    verifyPosture();
+  </script>
+</body>
+</html>
